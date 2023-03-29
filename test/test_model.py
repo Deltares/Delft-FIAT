@@ -5,10 +5,13 @@ from delft_fiat.io import open_geom, open_grid, open_csv
 from delft_fiat.gis import overlay
 from delft_fiat.models.calc import get_inundation_depth, get_damage_factor
 
+# import pytest
 import time
 from pathlib import Path
+import numpy as np
 
 
+# @pytest.mark.skip(reason="Work in progress")
 def test_FIAT_vector():
     config_file = Path().absolute() / "tmp" / "Casus" / "settings.toml"
     config = ConfigReader(config_file)
@@ -20,7 +23,15 @@ def test_FIAT_vector():
     vulnerability = open_csv(config.get_path("vulnerability", "dbase_file"))
 
     # Upscale the vulnerability data
-    vulnerability.upscale(0.01)
+    scale_dfs = 0.01  # TODO: get from settings.toml
+    vulnerability.upscale(scale_dfs)
+
+    # Get all damage functions that should be iterated over
+    damage_function_categories = [
+        (df_col, df_col.replace("Damage Function: ", "Max Potential Damage: "))
+        for df_col in exposure.headers
+        if df_col.startswith("Damage Function:")
+    ]
 
     # Loop over the exposure objects and time it.
     s = time.time()
@@ -32,18 +43,21 @@ def test_FIAT_vector():
         feature_data = exposure.select(feature.GetField(1))
         hazard_reference = config["hazard"]["spatial_reference"]
         ground_floor_height = float(
-            feature_data[exposure.hdr_index["Ground Floor Height"]]
+            feature_data[exposure.header_index["Ground Floor Height"]]
         )
 
-        # Get all damage functions that should be iterated over
-        damage_function_categories = [
-            c for c in exposure.hdrs if c.startswith("Damage Function:")
-        ]
-
-        for dfc in damage_function_categories:
+        for dfc, max_damage_col in damage_function_categories:
             method_areal_objects = (
                 "mean"  # TODO: get from vulnerability_curves.csv meta data
             )
+
+            # Find the right damage function values and fractions for the feature.
+            damage_function_name = feature_data[exposure.header_index[dfc]]
+            if damage_function_name == "nan":
+                # This feature does not use this type of damage function
+                continue
+            df_hazard_values = vulnerability.data[list(vulnerability.data.keys())[0]]
+            df_fractions = vulnerability.data[damage_function_name]
 
             # Calculate the hazard value with which the damage is calculated and
             # calculate the reduction factor.
@@ -54,18 +68,25 @@ def test_FIAT_vector():
                 method_areal_objects=method_areal_objects,
             )
 
-            # Find the right damage function values and fractions for the feature.
-            damage_function_name = feature_data[exposure.hdr_index[dfc]]
-            df_hazard_values = vulnerability.data[list(vulnerability.data.keys())[0]]
-            df_fractions = vulnerability.data[damage_function_name]
+            # Get the damage factor
+            if hazard_value == hazard_value:
+                damage_factor, object_id = get_damage_factor(
+                    object_id=feature_data[exposure.header_index["Object ID"]],
+                    hazard_value=hazard_value,
+                    damage_function_values=df_hazard_values,
+                    damage_function_fractions=df_fractions,
+                    damage_function_scaling=scale_dfs,
+                )
+            else:
+                damage_factor = np.nan
 
             # Calculate the damage
-            get_damage_factor(
-                object_id=exposure.hdr_index["Object ID"],
-                hazard_value=hazard_value,
-                damage_function_values=df_hazard_values,
-                damage_function_fractions=df_fractions,
+            damage = (
+                float(feature_data[exposure.header_index[max_damage_col]])
+                * damage_factor
             )
+
+            # TODO: save the damage to the results.
 
     el = time.time() - s
     print(f"{el} seconds!")

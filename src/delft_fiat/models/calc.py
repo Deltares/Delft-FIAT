@@ -1,6 +1,7 @@
 from delft_fiat.gis import overlay
 from typing import Optional
 import numpy as np
+from decimal import Decimal
 
 
 def calculate_coefficients(T):
@@ -53,7 +54,11 @@ def get_damage_factor(
     hazard_value: float,
     damage_function_values: tuple,
     damage_function_fractions: tuple,
+    damage_function_scaling: float,
 ):
+    obj_id = -999
+    decimals = abs(Decimal(str(damage_function_scaling)).as_tuple().exponent)
+
     # Raise a warning if the inundation depth exceeds the range of the damage function values.
     try:
         assert hazard_value >= damage_function_values[0]
@@ -63,26 +68,22 @@ def get_damage_factor(
         # The inundation depth exceeded the limits of the damage function.
         obj_id = object_id
 
-        if hazard_value < damage_function[0]:
-            damage_factor = damage_function[2][0]
-        elif hazard_value > damage_function[1]:
-            damage_factor = damage_function[2][-1]
+        if hazard_value < damage_function_values[0]:
+            damage_factor = damage_function_fractions[0]
+        elif hazard_value > damage_function_values[-1]:
+            damage_factor = damage_function_fractions[-1]
 
     else:
-        index = [i for i in range(damage_function[0], damage_function[1] + 1)].index(
-            int(round(Decimal(hazard_value), 2) * 100)
-        )
-        # if damage_function[0] < 0:
-        #     # The damage fraction was not found because of negative water depths in the damage function.
-        #     # Subtract the index range for the negative damage function from the previously calculated index (damage_function[0] is negative)
-        #     index = int(index - (damage_function[0] / (damage_function[0] - damage_function[1]) * len(damage_function[2])))
+        index = [i for i in damage_function_values].index(round(hazard_value, decimals))
 
         try:
-            damage_factor = damage_function[2][index]
+            damage_factor = damage_function_fractions[index]
         except IndexError:
             print(
-                f"Cannot find an appropriate damage fraction for a water depth of {round(Decimal(inundation_depth), 2)} for Object ID {obj_id}."
+                f"Cannot find an appropriate damage fraction for a water depth of {round(hazard_value, decimals)} for Object ID {obj_id}."
             )
+
+    return damage_factor, obj_id
 
 
 def damage_calculator():
