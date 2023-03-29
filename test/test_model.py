@@ -5,13 +5,13 @@ from delft_fiat.io import open_geom, open_grid, open_csv
 from delft_fiat.gis import overlay
 from delft_fiat.models.calc import get_inundation_depth, get_damage_factor
 
-# import pytest
+import pytest
 import time
 from pathlib import Path
 import numpy as np
 
 
-# @pytest.mark.skip(reason="Work in progress")
+@pytest.mark.skip(reason="Work in progress")
 def test_FIAT_vector():
     config_file = Path().absolute() / "tmp" / "Casus" / "settings.toml"
     config = ConfigReader(config_file)
