@@ -1,4 +1,6 @@
 from delft_fiat.gis import overlay
+from typing import Optional
+import numpy as np
 
 
 def calculate_coefficients(T):
@@ -46,8 +48,41 @@ def calculate_coefficients(T):
     return alpha
 
 
-def damage_factor(inun, gr_lvl, method=None):
-    return inun.mean()
+def get_damage_factor(
+    object_id: int,
+    hazard_value: float,
+    damage_function_values: tuple,
+    damage_function_fractions: tuple,
+):
+    # Raise a warning if the inundation depth exceeds the range of the damage function values.
+    try:
+        assert hazard_value >= damage_function_values[0]
+        assert hazard_value <= damage_function_values[-1]
+
+    except AssertionError:
+        # The inundation depth exceeded the limits of the damage function.
+        obj_id = object_id
+
+        if hazard_value < damage_function[0]:
+            damage_factor = damage_function[2][0]
+        elif hazard_value > damage_function[1]:
+            damage_factor = damage_function[2][-1]
+
+    else:
+        index = [i for i in range(damage_function[0], damage_function[1] + 1)].index(
+            int(round(Decimal(hazard_value), 2) * 100)
+        )
+        # if damage_function[0] < 0:
+        #     # The damage fraction was not found because of negative water depths in the damage function.
+        #     # Subtract the index range for the negative damage function from the previously calculated index (damage_function[0] is negative)
+        #     index = int(index - (damage_function[0] / (damage_function[0] - damage_function[1]) * len(damage_function[2])))
+
+        try:
+            damage_factor = damage_function[2][index]
+        except IndexError:
+            print(
+                f"Cannot find an appropriate damage fraction for a water depth of {round(Decimal(inundation_depth), 2)} for Object ID {obj_id}."
+            )
 
 
 def damage_calculator():
@@ -56,36 +91,70 @@ def damage_calculator():
     pass
 
 
-def inundation_depth(
-    h: "numpy.array",
-    ref: str,
-    dem: float,
-    gfh: float,
-):
+def get_inundation_depth(
+    hazard_values: "numpy.array",
+    hazard_reference: str,
+    ground_floor_height: float,
+    ground_elevation: Optional[float] = 0,
+    method_areal_objects: Optional[str] = "mean",
+) -> float:
     """_summary_
 
     Parameters
     ----------
-    h : numpy.array
+    hazard_values : numpy.array
         _description_
-    ref : str
+    hazard_reference : str
         _description_
-    dem : float
+    ground_floor_height : float
         _description_
-    gfh : float
-        _description_
+    ground_elevation : Optional[float], optional
+        _description_, by default 0
+    method_areal_objects : Optional[str], optional
+        _description_, by default "average"
 
     Returns
     -------
-    _type_
+    float
         _description_
     """
+    # This part is specific for flooding hazards.
+    # Set the default values
+    hazard_value = np.NaN
+    reduction_factor = np.NaN
 
-    if ref == "DEM":
-        return h.mean()
+    # Set the negative hazard values to 0.
+    hazard_values = np.where(hazard_values <= 0, np.nan, hazard_values)
 
-    elif ref == "DATUM":
-        return
+    if len(hazard_values) > 1:
+        number_nan = np.sum(np.isnan(hazard_values))
+        if number_nan != len(hazard_values):
+            # There are values other than NaN in hazard_values.
+            # TODO: delete the .lower() functions when this is done at the start of the model.
+            if method_areal_objects.lower() == "mean":
+                hazard_value = np.nanmean(hazard_values)
+                reduction_factor = (len(hazard_values) - number_nan) / len(
+                    hazard_values
+                )
+            elif method_areal_objects.lower() == "max":
+                hazard_value = np.nanmax(hazard_values)
+                reduction_factor = 1
+            else:
+                print(
+                    "We should write a check for testing the 'Average or Max Inundation over Areal Objects' column to only contain 'average' or 'max'"
+                )
+    else:
+        hazard_value = hazard_values[0]
+        reduction_factor = 1
+
+    if hazard_reference.lower() == "datum":
+        # The hazard data is referenced to a Datum (e.g., for flooding this is the water elevation).
+        hazard_value = hazard_value - ground_elevation
+
+    # Subtract the Ground Floor Height from the hazard value
+    hazard_value = hazard_value - ground_floor_height
+
+    return (hazard_value, reduction_factor)
 
 
 def risk_calculator():

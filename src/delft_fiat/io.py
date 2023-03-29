@@ -325,7 +325,7 @@ class CSVLarge(_CSV):
         self,
         oid: str,
     ):
-        return self.__getitem__[oid]
+        return self.__getitem__(oid)
 
 
 class CSVSmall(_CSV):
@@ -839,7 +839,7 @@ def open_csv(
     object
         _description_
     """
-
+    # TODO: If an Exposure CSV contains XY coordinates, save these as a GeomSource object
     size = 20 * 1024 * 1024
     if os.path.getsize(file) < size:
         return CSVSmall(file)
