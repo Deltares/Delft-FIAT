@@ -40,10 +40,3 @@ class BaseModel(metaclass=ABCMeta):
     @abstractmethod
     def run():
         pass
-
-
-if __name__ == "__main__":
-    from delft_fiat.cfg import ConfigReader
-
-    a = BaseModel(ConfigReader(r"C:\CODING\PYTHON_DEV\Delft_FIAT\tmp\settings.toml"))
-    pass

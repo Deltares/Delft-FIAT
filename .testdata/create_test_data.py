@@ -131,11 +131,12 @@ def create_vulnerability():
         return r
 
     wd = arange(0, 5.25, 0.25)
-    dc1 = [0] + [round(min(log_base(5, x), 0.96), 2) for x in wd[1:]]
-    dc2 = [0] + [round(min(log_base(3, x), 0.96), 2) for x in wd[1:]]
+    dc1 = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
+    dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
 
     with open(Path(p, "vulnerability", "vulnerability_curves.csv"), mode="w") as f:
         f.write("#UNIT=meter\n")
+        f.write("#method,mean,max\n")
         f.write("water depth,struct_1,struct_2\n")
         for idx, item in enumerate(wd):
             f.write(f"{item},{dc1[idx]},{dc2[idx]}\n")

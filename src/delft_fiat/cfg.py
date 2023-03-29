@@ -31,6 +31,9 @@ class ConfigReader(dict):
                             self.path,
                         )
                         group[key] = path
+                    else:
+                        if isinstance(item, str):
+                            group[key] = item.lower()
 
     def __repr__(self):
         return f"<ConfigReader object file='{self._filepath}'>"
@@ -53,8 +56,3 @@ class ConfigReader(dict):
         """_Summary_"""
 
         return str(self[gr][item])
-
-
-if __name__ == "__main__":
-    c = ConfigReader(r"C:\CODING\PYTHON_DEV\Delft_FIAT\tmp\Casus\settings.toml")
-    pass

@@ -213,26 +213,33 @@ def _Parse_CSV(
     _meta = {}
     hdrs = []
 
-    obj.Handler.seek(0)
+    obj.handler.seek(0)
 
     while True:
-        line = obj.Handler.readline().decode()
+        line = obj.handler.readline().decode("utf-8-sig")
         if line.startswith("#"):
-            key, item = line.strip().split("=")
-            meta[key.strip().replace("#", "")] = item.strip()
+            t = line.strip().split("=")
+            if len(t) == 1:
+                lst = t[0].split(",")
+                meta[lst[0].strip().replace("#", "")] = [
+                    item.strip() for item in lst[1:]
+                ]
+            else:
+                key, item = t
+                meta[key.strip().replace("#", "")] = item.strip()
         else:
             hdrs = [item.strip() for item in line.split(",")]
             break
 
-    obj.Handler.skip = obj.Handler.tell()
-    t = obj.Handler.readline().strip()
+    obj.handler.skip = obj.handler.tell()
+    t = obj.handler.readline().strip()
     obj.re = regex.compile(rb'"[^"]*"(*SKIP)(*FAIL)|,')
     obj.dtypes = [deter_type(elem.decode()) for elem in obj.re.split(t)]
-    obj.Handler.seek(obj.Handler.skip)
+    obj.handler.seek(obj.handler.skip)
 
     obj._meta = _meta
     obj.meta = meta
-    obj.hdrs = hdrs
+    obj.headers = hdrs
 
 
 ## Structs
@@ -241,18 +248,18 @@ class _CSV(_BaseStruct, metaclass=ABCMeta):
         self,
         file: str,
     ):
-        self.Handler = BufferHandler(file)
+        self.handler = BufferHandler(file)
         # Create body of struct
         _Parse_CSV(
             self,
         )
 
-        self.index_col = self.hdrs[0]
+        self.index_col = self.headers[0]
 
-        self.hdr_index = dict(zip(self.hdrs, range(len(self.hdrs))))
+        self.header_index = dict(zip(self.headers, range(len(self.headers))))
 
     def __del__(self):
-        self.Handler = None
+        self.handler = None
 
     def __getitem__(self):
         pass
@@ -281,11 +288,11 @@ class CSVLarge(_CSV):
 
         _CSV.__init__(self, file)
 
-        index = [None] * self.Handler.size
-        lines = [None] * self.Handler.size
-        lines[0] = self.Handler.skip
+        index = [None] * self.handler.size
+        lines = [None] * self.handler.size
+        lines[0] = self.handler.skip
 
-        with self.Handler as h:
+        with self.handler as h:
             c = 0
             while True:
                 line = h.readline().strip()
@@ -317,9 +324,9 @@ class CSVLarge(_CSV):
             idx = self.data[oid]
         except Exception:
             return None
-        self.Handler.seek(idx)
+        self.handler.seek(idx)
 
-        return replace_empty(self.re.split(self.Handler.readline().strip()))
+        return replace_empty(self.re.split(self.handler.readline().strip()))
 
     def select(
         self,
@@ -348,13 +355,13 @@ class CSVSmall(_CSV):
 
         _CSV.__init__(self, file)
 
-        with self.Handler as h:
+        with self.handler as h:
             b = [replace_empty(self.re.split(line.strip())) for line in h.readlines()]
 
-        self.Handler = None
+        self.handler = None
 
         self.data = dict(
-            zip(self.hdrs, [tuple(map(x, y)) for x, y in zip(self.dtypes, zip(*b))])
+            zip(self.headers, [tuple(map(x, y)) for x, y in zip(self.dtypes, zip(*b))])
         )
 
     def __iter__(self):
@@ -373,14 +380,14 @@ class CSVSmall(_CSV):
         pass
 
     def __repr__(self):
-        if len(self.hdrs) > 6:
+        if len(self.headers) > 6:
             return self._small_repr()
         else:
             return self._big_repr()
 
     def _big_repr(self):
         repr = ""
-        repr += ", ".join([f"{item:6s}" for item in self.hdrs]) + "\n"
+        repr += ", ".join([f"{item:6s}" for item in self.headers]) + "\n"
         m = zip(*[row[0:3] for row in [*self.data.values()]])
         for item in m:
             repr += ", ".join([f"{str(val):6s}" for val in item]) + "\n"
@@ -390,10 +397,10 @@ class CSVSmall(_CSV):
     def _small_repr(self):
         repr = ""
 
-        char_len = [len(h) for h in self.hdrs]
+        char_len = [len(h) for h in self.headers]
 
-        repr += ", ".join([f"{item:6s}" for item in self.hdrs[0:3]]) + " ... "
-        repr += ", ".join([f"{item:6s}" for item in self.hdrs[-3:]]) + "\n"
+        repr += ", ".join([f"{item:6s}" for item in self.headers[0:3]]) + " ... "
+        repr += ", ".join([f"{item:6s}" for item in self.headers[-3:]]) + "\n"
 
         m = zip(*[row[0:4] for row in [*self.data.values()]])
         for item in m:
@@ -443,7 +450,7 @@ class CSVSmall(_CSV):
             ).round(_rnd)
         )
 
-        _hdrs = self.hdrs.copy()
+        _hdrs = self.headers.copy()
         _hdrs.remove(self.index_col)
 
         for c in _hdrs:
@@ -865,16 +872,3 @@ def open_grid(
     """_summary_"""
 
     return GridSource(file, mode)
-
-
-if __name__ == "__main__":
-    f = BufferHandler(
-        r"C:\CODING\PYTHON_DEV\Delft_FIAT\tmp\Database\Vulnerability\h_struct_370.csv"
-    )
-    with f as _f:
-        print(_f.readline())
-    print(f.read())
-    c = CSVSmall(
-        r"C:\CODING\PYTHON_DEV\Delft_FIAT\tmp\Database\Vulnerability\h_struct_370.csv"
-    )
-    pass

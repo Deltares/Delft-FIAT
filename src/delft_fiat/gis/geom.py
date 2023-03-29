@@ -37,6 +37,7 @@ def reproject_feature(
 def reproject(
     gs: "GeomSource",
     crs: str,
+    out: str = None,
 ) -> object:
     """_summary_
 
@@ -46,12 +47,19 @@ def reproject(
         _description_
     crs : str
         _description_
+    out : str
+        _description_
 
     Returns
     -------
     object
         _description_
     """
+
+    if not Path(str(out)).is_dir():
+        out = gs.path.parent
+
+    fname = Path(out, f"{gs.path.stem}_repr{gs.path.suffix}")
 
     out_srs = osr.SpatialReference()
     out_srs.SetFromUserInput(crs)
@@ -88,7 +96,6 @@ def reproject(
     out_srs = None
     transform = None
 
-    fname = Path(gs.path.parent, f"{gs.path.stem}_repr{gs.path.suffix}")
     with open_geom(fname, gs._driver.GetName(), mode="w") as new_gs:
         new_gs.create_layer_from_copy(mem_gs.layer)
 
@@ -97,18 +104,3 @@ def reproject(
     gc.collect()
 
     return new_gs.reopen()
-
-
-if __name__ == "__main__":
-    from delft_fiat.cfg import ConfigReader
-
-    c = ConfigReader(r"C:\CODING\PYTHON_DEV\Delft_FIAT\tmp\Casus\settings.toml")
-
-    a = open_geom(c.get_path("exposure", "geom_file"), mode="r")
-    import time
-
-    s = time.time()
-    gs = reproject(a, "EPSG:4326")
-    e = time.time() - s
-    print(f"{e} seconds!")
-    pass

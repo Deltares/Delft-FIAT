@@ -100,8 +100,4 @@ def pin(
 
     value = band.ReadAsArray(X, Y, 1, 1)
 
-    return value
-
-
-if __name__ == "__main__":
-    pass
+    return value[0]

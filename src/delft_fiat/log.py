@@ -297,12 +297,3 @@ class Log:
         """_summary_"""
 
         self._log()
-
-
-if __name__ == "__main__":
-    log = Log("fiat")
-    log.add_loggers("C:\\temp")
-    a = spawn_child_logger("fiat.twee")
-    log.info("blabla")
-    a.info("blabla2")
-    pass
