@@ -1,7 +1,7 @@
-from delft_fiat.gis import overlay
-from typing import Optional
+import math
 import numpy as np
 from decimal import Decimal
+from typing import Optional
 
 
 def calculate_coefficients(T):
@@ -59,6 +59,9 @@ def get_damage_factor(
     obj_id = -999
     decimals = abs(Decimal(str(damage_function_scaling)).as_tuple().exponent)
 
+    if math.isnan(hazard_value):
+        damage_factor = 0.0
+
     # Raise a warning if the inundation depth exceeds the range of the damage function values.
     try:
         assert hazard_value >= damage_function_values[0]
@@ -74,7 +77,7 @@ def get_damage_factor(
             damage_factor = damage_function_fractions[-1]
 
     else:
-        index = [i for i in damage_function_values].index(round(hazard_value, decimals))
+        index = damage_function_values.index(round(hazard_value, decimals))
 
         try:
             damage_factor = damage_function_fractions[index]
@@ -93,7 +96,7 @@ def damage_calculator():
 
 
 def get_inundation_depth(
-    hazard_values: "numpy.array",
+    hazard_values: "array",
     hazard_reference: str,
     ground_floor_height: float,
     ground_elevation: Optional[float] = 0,
