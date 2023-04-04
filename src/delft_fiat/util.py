@@ -50,11 +50,11 @@ def deter_type(
 ):
     """_summary_"""
 
-    f_p = rf"((^(-)?\d+(\.\d*)*(E(\+|\-){1}\d+)*)|^$)(\n((^(-)?\d+(\.\d*)*(E(\+|\-){1}\d+)*)|^$)){{{l}}}"
-    f_c = re.compile(bytes(f_p, "utf-8"), re.MULTILINE)
+    f_p = rf"((^(-)?\d+(\.\d*)?(E(\+|\-)?\d+)?)$|^$)(\n((^(-)?\d+(\.\d*)?(E(\+|\-)?\d+)?)$|^$)){{{l}}}"
+    f_c = re.compile(bytes(f_p, "utf-8"), re.MULTILINE | re.IGNORECASE)
 
-    i_p = rf"(^(-)?\d+(E(\+|\-){1}\d+)*|^$)(\n(^(-)?\d+(E(\+|\-){1}\d+)*|^$)){{{l}}}"
-    i_c = re.compile(bytes(i_p, "utf-8"), re.MULTILINE)
+    i_p = rf"((^(-)?\d+(E(\+|\-)?\d+)?)$|^$)(\n((^(-)?\d+(E(\+|\-)?\d+)?)$|^$)){{{l}}}"
+    i_c = re.compile(bytes(i_p, "utf-8"), re.MULTILINE | re.IGNORECASE)
 
     # l = (
     #     bool(re.match(b"(^(-)?\d+)|^$|nan", e)),
@@ -77,6 +77,12 @@ def deter_dec(
     ndec = math.floor(math.log(e) / math.log(base))
     return abs(ndec)
 
+def mean(
+    values: list
+):
+    """Very simple python mean"""
+
+    return sum(values)/len(values)
 
 def object_size(obj):
     """Actual size of an object (bit overestimated)
