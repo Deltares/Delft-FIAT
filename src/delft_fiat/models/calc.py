@@ -1,7 +1,11 @@
+from delft_fiat.util import mean
+
 import math
-import numpy as np
-from decimal import Decimal
-from typing import Optional
+
+_inun_calc = {
+    "mean": mean,
+    "max": max,
+}
 
 
 def calculate_coefficients(T):
@@ -50,44 +54,36 @@ def calculate_coefficients(T):
 
 
 def get_damage_factor(
-    object_id: int,
-    hazard_value: float,
-    damage_function_values: tuple,
-    damage_function_fractions: tuple,
-    damage_function_scaling: float,
-):
-    obj_id = -999
-    decimals = abs(Decimal(str(damage_function_scaling)).as_tuple().exponent)
+    haz : float,
+    idx: tuple,
+    values: tuple,
+    sig: int,
+) -> float:
+    """_summary_
 
-    if math.isnan(hazard_value):
-        damage_factor = 0.0
+    Parameters
+    ----------
+    haz : float
+        _description_
+    idx : tuple
+        _description_
+    values : tuple
+        _description_
+    sig : int
+        significant figures
 
-    # Raise a warning if the inundation depth exceeds the range of the damage function values.
-    try:
-        assert hazard_value >= damage_function_values[0]
-        assert hazard_value <= damage_function_values[-1]
+    Returns
+    -------
+    float
+        Damage factor
+    """
+    
+    if math.isnan(haz):
+        return 0.0
+    
+    haz = max(min(haz, idx[-1]), idx[0])
 
-    except AssertionError:
-        # The inundation depth exceeded the limits of the damage function.
-        obj_id = object_id
-
-        if hazard_value < damage_function_values[0]:
-            damage_factor = damage_function_fractions[0]
-        elif hazard_value > damage_function_values[-1]:
-            damage_factor = damage_function_fractions[-1]
-
-    else:
-        index = damage_function_values.index(round(hazard_value, decimals))
-
-        try:
-            damage_factor = damage_function_fractions[index]
-        except IndexError:
-            print(
-                f"Cannot find an appropriate damage fraction for a water depth of {round(hazard_value, decimals)} for Object ID {obj_id}."
-            )
-
-    return damage_factor, obj_id
-
+    return values[idx.index(round(haz, sig))]
 
 def damage_calculator():
     _func = {}
@@ -96,70 +92,57 @@ def damage_calculator():
 
 
 def get_inundation_depth(
-    hazard_values: "array",
-    hazard_reference: str,
-    ground_floor_height: float,
-    ground_elevation: Optional[float] = 0,
-    method_areal_objects: Optional[str] = "mean",
+    haz: list,
+    ref: str,
+    gfh: float,
+    ge: float = 0,
+    method: str = "mean",
 ) -> float:
     """_summary_
 
     Parameters
     ----------
-    hazard_values : numpy.array
+    haz : list
         _description_
-    hazard_reference : str
+    ref : str
         _description_
-    ground_floor_height : float
+    gfh : float
         _description_
-    ground_elevation : Optional[float], optional
+    ge : float, optional
         _description_, by default 0
-    method_areal_objects : Optional[str], optional
-        _description_, by default "average"
+    method : str, optional
+        _description_, by default "mean"
 
     Returns
     -------
     float
         _description_
     """
-    # This part is specific for flooding hazards.
-    # Set the default values
-    hazard_value = np.NaN
-    reduction_factor = np.NaN
 
-    # Set the negative hazard values to 0.
-    hazard_values = np.where(hazard_values <= 0, np.nan, hazard_values)
+    # Remove the negative hazard values to 0.
+    raw_l = len(haz)
+    haz = [n for n in haz if n >= 0]
 
-    if len(hazard_values) > 1:
-        number_nan = np.sum(np.isnan(hazard_values))
-        if number_nan != len(hazard_values):
-            # There are values other than NaN in hazard_values.
-            # TODO: delete the .lower() functions when this is done at the start of the model.
-            if method_areal_objects.lower() == "mean":
-                hazard_value = np.nanmean(hazard_values)
-                reduction_factor = (len(hazard_values) - number_nan) / len(
-                    hazard_values
-                )
-            elif method_areal_objects.lower() == "max":
-                hazard_value = np.nanmax(hazard_values)
-                reduction_factor = 1
-            else:
-                print(
-                    "We should write a check for testing the 'Average or Max Inundation over Areal Objects' column to only contain 'average' or 'max'"
-                )
+    if not haz:
+        return math.nan, math.nan
+    
+    redf = 1
+    
+    if len(haz) > 1:
+        if method.lower() == "mean":
+            redf = len(haz) / raw_l
+        haz = _inun_calc[method.lower()](haz)
     else:
-        hazard_value = hazard_values[0]
-        reduction_factor = 1
+        haz = haz[0]
 
-    if hazard_reference.lower() == "datum":
+    if ref.lower() == "datum":
         # The hazard data is referenced to a Datum (e.g., for flooding this is the water elevation).
-        hazard_value = hazard_value - ground_elevation
+        haz = haz - ge
 
     # Subtract the Ground Floor Height from the hazard value
-    hazard_value = hazard_value - ground_floor_height
+    haz = haz - gfh
 
-    return (hazard_value, reduction_factor)
-
+    return haz, redf
 
 def risk_calculator():
     pass
