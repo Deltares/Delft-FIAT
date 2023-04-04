@@ -84,6 +84,12 @@ def mean(
 
     return sum(values)/len(values)
 
+def mean(values: list):
+    """Very simple python mean"""
+
+    return sum(values) / len(values)
+
+
 def object_size(obj):
     """Actual size of an object (bit overestimated)
     Thanks to this post on stackoverflow:
