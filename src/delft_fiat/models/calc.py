@@ -81,6 +81,7 @@ def get_damage_factor(
     if math.isnan(haz):
         return 0.0
     
+    # Clip based on min and max vulnerability values
     haz = max(min(haz, idx[-1]), idx[0])
 
     return values[idx.index(round(haz, sig))]
@@ -109,7 +110,7 @@ def get_inundation_depth(
     gfh : float
         _description_
     ge : float, optional
-        _description_, by default 0
+        Ground Elevation, by default 0
     method : str, optional
         _description_, by default "mean"
 
