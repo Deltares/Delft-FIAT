@@ -78,18 +78,10 @@ def deter_dec(
     ndec = math.floor(math.log(e) / math.log(base))
     return abs(ndec)
 
-def mean(
-    values: list
-):
-    """Very simple python mean"""
-
-    return sum(values)/len(values)
-
 def mean(values: list):
     """Very simple python mean"""
 
     return sum(values) / len(values)
-
 
 def _flatten_dict_gen(d, parent_key, sep):
     for k, v in d.items():
