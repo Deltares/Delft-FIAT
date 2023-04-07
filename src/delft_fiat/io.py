@@ -73,9 +73,6 @@ class _BaseIO(metaclass=ABCMeta):
         self.close()
         return False
 
-    def __repr__(self):
-        return f"<{self.__class__.__name__} object at {id(self):#018x}>"
-
     def _check_mode(m):
         def _inner(self, *args, **kwargs):
             if not self._mode:
@@ -243,9 +240,9 @@ def _Parse_CSV(
 
     obj.handler.skip = obj.handler.tell()
     _ncol = len(hdrs)
+    obj._ncol = _ncol
 
     if not "dtypes" in meta:
-        b_re = regex.compile(rb'"[^"]*"(*SKIP)(*FAIL)|,|\r\n')
         # _old = [0] * len(hdrs)
         # while True:
         #     line = obj.handler.readline()
@@ -266,12 +263,13 @@ def _Parse_CSV(
             except Exception:
                 _res = b""
             _nlines = t.count(b"\r\n")
-            sd = b_re.split(t)
+            sd = obj.re_m.split(t)
             for idx in range(_ncol):
                 _new[idx] = max(
                     deter_type(b"\n".join(sd[idx::_ncol]), _nlines),
                     _new[idx],
                 )
+        del sd, t
         meta["dtypes"] = [_dtypes_reversed[n] for n in _new]
         setattr(obj, "dtypes", tuple(meta["dtypes"]))
 
@@ -293,6 +291,7 @@ class _CSV(_BaseStruct, metaclass=ABCMeta):
 
         self._header = header
         self.re = regex.compile(rb'"[^"]*"(*SKIP)(*FAIL)|,')
+        self.re_m = regex.compile(rb'"[^"]*"(*SKIP)(*FAIL)|,|\r\n')
 
         self.handler = BufferHandler(file)
         # Create body of struct
@@ -344,8 +343,8 @@ class CSVLarge(_CSV):
                 line = h.readline().strip()
                 if not line:
                     break
-                z = self.re.split(line)[1]
-                index[c] = z.decode()
+                z = self.re.split(line)[0]
+                index[c] = self.dtypes[0](z.decode())
                 lines[c + 1] = len(line) + 2
                 c += 1
 
@@ -374,11 +373,48 @@ class CSVLarge(_CSV):
 
         return replace_empty(self.re.split(self.handler.readline().strip()))
 
-    def select(
+    def get(
         self,
         oid: str,
     ):
+        """_summary_"""
+
         return self.__getitem__(oid)
+
+    def set_index(
+        self,
+        key: str,
+    ):
+        """_summary_"""
+
+        idx = self.header_index[key]
+
+        with self.handler as h:
+            _res = b""
+            new_index = [None] * self.handler.size
+            c = 0
+            while True:
+                t = h.read(100000)
+                if not t:
+                    break
+                t = _res + t
+
+                try:
+                    t, _res = t.rsplit(b"\r\n", 1)
+                except Exception:
+                    _res = b""
+
+                _nlines = t.count(b"\r\n")
+                sd = self.re_m.split(t)
+                new_index[c:_nlines] = [
+                    *map(
+                        self.dtypes[idx],
+                        [item.decode() for item in sd[idx :: self._ncol]],
+                    )
+                ]
+                c += _nlines
+            del sd, t
+        self.data = dict(zip(new_index, self.data.values()))
 
 
 class CSVSmall(_CSV):
@@ -510,7 +546,7 @@ class CSVSmall(_CSV):
         return None
 
 
-class GeomSource(_BaseIO):
+class GeomSource(_BaseIO, _BaseStruct):
     def __new__(
         cls,
         file: str,
@@ -708,7 +744,7 @@ class GeomSource(_BaseIO):
             self.layer.CreateField(ref.GetFieldDefn(n))
 
 
-class GridSource(_BaseIO):
+class GridSource(_BaseIO, _BaseStruct):
     _type_map = {
         "float": gdal.GFT_Real,
         "int": gdal.GDT_Int16,

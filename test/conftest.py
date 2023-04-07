@@ -13,11 +13,11 @@ def cfg():
 
 @pytest.fixture
 def gm(cfg):
-    d = open_geom(cfg.get_path("exposure", "geom_file"))
+    d = open_geom(cfg.get_path("exposure.geom_file"))
     return d
 
 
 @pytest.fixture
 def gr(cfg):
-    d = open_grid(cfg.get_path("hazard", "grid_file"))
+    d = open_grid(cfg.get_path("hazard.grid_file"))
     return d
