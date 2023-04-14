@@ -9,6 +9,11 @@ from osgeo import gdal, ogr
 
 
 class GeomModel(BaseModel):
+    _method = {
+        "area": overlay.clip,
+        "average": overlay.pin,
+    }
+
     def __init__(
         self,
         cfg: "ConfigReader",

@@ -17,10 +17,11 @@ class BaseModel(metaclass=ABCMeta):
         self.srs.SetFromUserInput(self._cfg.get("global.crs"))
 
         # Declarations
-        self.hazard_data = None
-        self.risk_data = None
         self.exposure_data = None
         self.exposure_geoms = None
+        self.exposure_grid = None
+        self.hazard_grid = None
+        self.risk_grid = None
         self.vulnerability_data = None
         self._outhandler = None
 
@@ -39,14 +40,12 @@ class BaseModel(metaclass=ABCMeta):
         data = open_grid(self._cfg.get_path("hazard.grid_file"))
         ## checks
 
-        self.hazard_data = data
-
-    @abstractmethod
-    def read_exposure_data(self):
-        pass
+        self.hazard_grid = data
 
     def read_vulnerability_data(self):
         data = open_csv(self._cfg.get_path("vulnerability.dbase_file"))
+        ## checks
+
         self.vulnerability_data = data
 
     def get_damage_curve(

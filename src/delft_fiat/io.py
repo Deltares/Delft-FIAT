@@ -6,6 +6,7 @@ from delft_fiat.util import (
     _GeomDriverTable,
     _GridDriverTable,
     _dtypes_reversed,
+    _text_chunk_gen,
 )
 
 import atexit
@@ -243,37 +244,18 @@ def _Parse_CSV(
     obj._ncol = _ncol
 
     if not "dtypes" in meta:
-        # _old = [0] * len(hdrs)
-        # while True:
-        #     line = obj.handler.readline()
-        #     if not line:
-        #         break
-        #     _new = [deter_type(e.strip()) for e in obj.re.split(line)]
-        #     _new = [*map(max, zip(_new, _old))]
-        #     _old = _new.copy()
         _new = [0] * _ncol
-        _res = b""
-        while True:
-            t = obj.handler.read(100000)
-            if not t:
-                break
-            t = _res + t
-            try:
-                t, _res = t.rsplit(b"\r\n", 1)
-            except Exception:
-                _res = b""
-            _nlines = t.count(b"\r\n")
-            sd = obj.re_m.split(t)
-            for idx in range(_ncol):
-                _new[idx] = max(
-                    deter_type(b"\n".join(sd[idx::_ncol]), _nlines),
-                    _new[idx],
-                )
-        del sd, t
-        meta["dtypes"] = [_dtypes_reversed[n] for n in _new]
-        setattr(obj, "dtypes", tuple(meta["dtypes"]))
+        with obj.handler as _h:
+            for _nlines, sd in _text_chunk_gen(_h, obj.re_m):
+                for idx in range(_ncol):
+                    _new[idx] = max(
+                        deter_type(b"\n".join(sd[idx::_ncol]), _nlines),
+                        _new[idx],
+                    )
 
-    obj.handler.seek(obj.handler.skip)
+            del sd
+            meta["dtypes"] = [_dtypes_reversed[n] for n in _new]
+            setattr(obj, "dtypes", tuple(meta["dtypes"]))
 
     obj._meta = _meta
     obj.meta = meta
@@ -387,25 +369,19 @@ class CSVLarge(_CSV):
     ):
         """_summary_"""
 
+        if not key in self.headers:
+            raise ValueError("")
+
+        if key == self.index_col:
+            return
+
         idx = self.header_index[key]
+        new_index = [None] * self.handler.size
 
         with self.handler as h:
-            _res = b""
-            new_index = [None] * self.handler.size
             c = 0
-            while True:
-                t = h.read(100000)
-                if not t:
-                    break
-                t = _res + t
 
-                try:
-                    t, _res = t.rsplit(b"\r\n", 1)
-                except Exception:
-                    _res = b""
-
-                _nlines = t.count(b"\r\n")
-                sd = self.re_m.split(t)
+            for _nlines, sd in _text_chunk_gen(h, self.re_m):
                 new_index[c:_nlines] = [
                     *map(
                         self.dtypes[idx],
@@ -413,7 +389,7 @@ class CSVLarge(_CSV):
                     )
                 ]
                 c += _nlines
-            del sd, t
+            del sd
         self.data = dict(zip(new_index, self.data.values()))
 
 
@@ -919,6 +895,7 @@ class GridSource(_BaseIO, _BaseStruct):
 ## Open
 def open_csv(
     file: str,
+    large: bool = False,
 ) -> object:
     """_summary_
 
@@ -933,6 +910,9 @@ def open_csv(
         _description_
     """
     # TODO: If an Exposure CSV contains XY coordinates, save these as a GeomSource object
+
+    if large:
+        return CSVLarge(file)
     size = 20 * 1024 * 1024
     if os.path.getsize(file) < size:
         return CSVSmall(file)
