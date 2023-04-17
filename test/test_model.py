@@ -1,26 +1,25 @@
 """This tests the FIAT model."""
-from delft_fiat.cfg import ConfigReader
-
-from delft_fiat.io import open_geom, open_grid, open_csv
-from delft_fiat.gis import overlay
-from delft_fiat.models.calc import get_inundation_depth, get_damage_factor
-
-import pytest
 import time
 from pathlib import Path
+
 import numpy as np
 
+from delft_fiat.cfg import ConfigReader
+from delft_fiat.gis import overlay
+from delft_fiat.io import open_csv, open_geom, open_grid
+from delft_fiat.models.calc import get_damage_factor, get_inundation_depth
 
-@pytest.mark.skip(reason="Work in progress")
+
+# @pytest.mark.skip(reason="Work in progress")
 def test_FIAT_vector():
     config_file = Path().absolute() / "tmp" / "Casus" / "settings.toml"
     config = ConfigReader(config_file)
 
     # Load the input data.
-    geoms = open_geom(config.get_path("exposure", "geom_file"))
-    hazard = open_grid(config.get_path("hazard", "grid_file"))
-    exposure = open_csv(config.get_path("exposure", "dbase_file"))
-    vulnerability = open_csv(config.get_path("vulnerability", "dbase_file"))
+    geoms = open_geom(config.get_path("exposure.geom_file"))
+    hazard = open_grid(config.get_path("hazard.grid_file"))
+    exposure = open_csv(config.get_path("exposure.dbase_file"))
+    vulnerability = open_csv(config.get_path("vulnerability.dbase_file"))
 
     # Upscale the vulnerability data
     scale_dfs = 0.01  # TODO: get from settings.toml
@@ -37,10 +36,11 @@ def test_FIAT_vector():
     s = time.time()
     for feature in geoms:
         # Get the hazard values per feature in the exposure data
-        hazard_values = overlay.clip(hazard.src, hazard.src.GetRasterBand(1), feature)
+        hazard_values = overlay.clip(
+            hazard.src, hazard.src.GetRasterBand(1), feature)
 
         # Get the feature data to calculate inundation depth.
-        feature_data = exposure.select(feature.GetField(1))
+        feature_data = exposure.get(feature.GetField(1))
         hazard_reference = config["hazard"]["spatial_reference"]
         ground_floor_height = float(
             feature_data[exposure.header_index["Ground Floor Height"]]
@@ -56,7 +56,8 @@ def test_FIAT_vector():
             if damage_function_name == "nan":
                 # This feature does not use this type of damage function
                 continue
-            df_hazard_values = vulnerability.data[list(vulnerability.data.keys())[0]]
+            df_hazard_values = vulnerability.data[list(
+                vulnerability.data.keys())[0]]
             df_fractions = vulnerability.data[damage_function_name]
 
             # Calculate the hazard value with which the damage is calculated and
@@ -81,7 +82,7 @@ def test_FIAT_vector():
                 damage_factor = np.nan
 
             # Calculate the damage
-            damage = (
+            (
                 float(feature_data[exposure.header_index[max_damage_col]])
                 * damage_factor
             )
@@ -91,3 +92,6 @@ def test_FIAT_vector():
     el = time.time() - s
     print(f"{el} seconds!")
     pass
+
+
+test_FIAT_vector()
