@@ -1,6 +1,6 @@
-from delft_fiat.util import mean
-
 import math
+
+from delft_fiat.util import mean
 
 _inun_calc = {
     "mean": mean,
@@ -54,7 +54,7 @@ def calculate_coefficients(T):
 
 
 def get_damage_factor(
-    haz : float,
+    haz: float,
     idx: tuple,
     values: tuple,
     sig: int,
@@ -77,14 +77,15 @@ def get_damage_factor(
     float
         Damage factor
     """
-    
+
     if math.isnan(haz):
         return 0.0
-    
+
     # Clip based on min and max vulnerability values
     haz = max(min(haz, idx[-1]), idx[0])
 
     return values[idx.index(round(haz, sig))]
+
 
 def damage_calculator():
     _func = {}
@@ -93,12 +94,8 @@ def damage_calculator():
 
 
 def get_inundation_depth(
-    haz: list,
-    ref: str,
-    gfh: float,
-    ge: float = 0,
-    method: str = "mean",
-) -> float:
+    haz: list, ref: str, gfh: float, ge: float = 0, method: str = "mean"
+) -> tuple[float, float]:
     """_summary_
 
     Parameters
@@ -126,9 +123,9 @@ def get_inundation_depth(
 
     if not haz:
         return math.nan, math.nan
-    
+
     redf = 1
-    
+
     if len(haz) > 1:
         if method.lower() == "mean":
             redf = len(haz) / raw_l
@@ -144,6 +141,7 @@ def get_inundation_depth(
     haz = haz - gfh
 
     return haz, redf
+
 
 def risk_calculator():
     pass
