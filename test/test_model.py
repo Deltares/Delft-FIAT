@@ -22,7 +22,7 @@ def test_FIAT_vector():
     vulnerability = open_csv(config.get_path("vulnerability.dbase_file"))
 
     # Upscale the vulnerability data
-    scale_dfs = 0.01  # TODO: get from settings.toml
+    scale_dfs = 0.001  # TODO: get from settings.toml
     vulnerability.upscale(scale_dfs)
 
     # Get all damage functions that should be iterated over
@@ -36,12 +36,11 @@ def test_FIAT_vector():
     s = time.time()
     for feature in geoms:
         # Get the hazard values per feature in the exposure data
-        hazard_values = overlay.clip(
-            hazard.src, hazard.src.GetRasterBand(1), feature)
+        hazard_values = overlay.clip(hazard.src, hazard.src.GetRasterBand(1), feature)
 
         # Get the feature data to calculate inundation depth.
-        feature_data = exposure.get(feature.GetField(1))
-        hazard_reference = config["hazard"]["spatial_reference"]
+        feature_data = exposure.get(feature["Object_ID"])
+        hazard_reference = config["hazard.spatial_reference"]
         ground_floor_height = float(
             feature_data[exposure.header_index["Ground Floor Height"]]
         )
@@ -56,36 +55,32 @@ def test_FIAT_vector():
             if damage_function_name == "nan":
                 # This feature does not use this type of damage function
                 continue
-            df_hazard_values = vulnerability.data[list(
-                vulnerability.data.keys())[0]]
+            df_hazard_values = vulnerability.data[list(vulnerability.data.keys())[0]]
             df_fractions = vulnerability.data[damage_function_name]
 
             # Calculate the hazard value with which the damage is calculated and
             # calculate the reduction factor.
             hazard_value, reduction_factor = get_inundation_depth(
-                hazard_values=hazard_values,
-                hazard_reference=hazard_reference,
-                ground_floor_height=ground_floor_height,
-                method_areal_objects=method_areal_objects,
+                haz=hazard_values,
+                ref=hazard_reference,
+                gfh=ground_floor_height,
+                method=method_areal_objects,
             )
 
             # Get the damage factor
             if hazard_value == hazard_value:
-                damage_factor, object_id = get_damage_factor(
-                    object_id=feature_data[exposure.header_index["Object ID"]],
-                    hazard_value=hazard_value,
-                    damage_function_values=df_hazard_values,
-                    damage_function_fractions=df_fractions,
-                    damage_function_scaling=scale_dfs,
+                damage_factor = get_damage_factor(
+                    # object_id=feature_data[exposure.header_index["Object ID"]],
+                    haz=hazard_value,
+                    values=df_fractions,
+                    idx=df_hazard_values,
+                    sig=3,
                 )
             else:
                 damage_factor = np.nan
 
             # Calculate the damage
-            (
-                float(feature_data[exposure.header_index[max_damage_col]])
-                * damage_factor
-            )
+            (float(feature_data[exposure.header_index[max_damage_col]]) * damage_factor)
 
             # TODO: save the damage to the results.
 
