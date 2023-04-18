@@ -1,25 +1,25 @@
-from delft_fiat.error import DriverNotFoundError
-from delft_fiat.util import (
-    Path,
-    deter_type,
-    replace_empty,
-    _GeomDriverTable,
-    _GridDriverTable,
-    _dtypes_reversed,
-    _text_chunk_gen,
-)
-
 import atexit
 import gc
 import os
-import regex
 import weakref
 from abc import ABCMeta, abstractmethod
 from io import BufferedReader, FileIO, TextIOWrapper
-from math import nan, floor, log10
+from math import floor, log10
+
+import regex
 from numpy import arange, cumsum, interp
-from osgeo import gdal, ogr
-from osgeo import osr
+from osgeo import gdal, ogr, osr
+
+from delft_fiat.error import DriverNotFoundError
+from delft_fiat.util import (
+    Path,
+    _dtypes_reversed,
+    _GeomDriverTable,
+    _GridDriverTable,
+    _text_chunk_gen,
+    deter_type,
+    replace_empty,
+)
 
 _IOS = weakref.WeakValueDictionary()
 _IOS_COUNT = 1
@@ -55,7 +55,7 @@ class _BaseIO(metaclass=ABCMeta):
     ):
         """_summary_"""
 
-        if not mode in _BaseIO._mode_map:
+        if mode not in _BaseIO._mode_map:
             raise ValueError("")
 
         self.path = Path(file)
@@ -243,7 +243,7 @@ def _Parse_CSV(
     _ncol = len(hdrs)
     obj._ncol = _ncol
 
-    if not "dtypes" in meta:
+    if "dtypes" not in meta:
         _new = [0] * _ncol
         with obj.handler as _h:
             for _nlines, sd in _text_chunk_gen(_h, obj.re_m):
@@ -369,7 +369,7 @@ class CSVLarge(_CSV):
     ):
         """_summary_"""
 
-        if not key in self.headers:
+        if key not in self.headers:
             raise ValueError("")
 
         if key == self.index_col:
@@ -575,7 +575,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         if not driver and not self._mode:
             driver = _GeomDriverTable[self.path.suffix]
 
-        if not driver in _GeomDriverTable.values():
+        if driver not in _GeomDriverTable.values():
             raise DriverNotFoundError("")
 
         if _GeomDriverTable[self.path.suffix] != driver:
@@ -766,7 +766,7 @@ class GridSource(_BaseIO, _BaseStruct):
 
         _BaseIO.__init__(self, file, mode)
 
-        if not self.path.suffix in _GridDriverTable:
+        if self.path.suffix not in _GridDriverTable:
             raise DriverNotFoundError("")
 
         self._driver = gdal.GetDriverByName(driver)
