@@ -1,11 +1,7 @@
-from delft_fiat.gis import overlay, geom
+from delft_fiat.gis import geom, overlay
 from delft_fiat.io import open_csv, open_geom
 from delft_fiat.models.base import BaseModel
 from delft_fiat.models.calc import *
-
-import time
-from concurrent.futures import ProcessPoolExecutor
-from osgeo import gdal, ogr
 
 
 class GeomModel(BaseModel):

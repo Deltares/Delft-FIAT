@@ -1,7 +1,8 @@
-from delft_fiat.io import open_csv, open_geom, open_grid
-
 from abc import ABCMeta, abstractmethod
+
 from osgeo import osr
+
+from delft_fiat.io import open_csv, open_grid
 
 
 class BaseModel(metaclass=ABCMeta):
@@ -39,7 +40,6 @@ class BaseModel(metaclass=ABCMeta):
     def read_hazard_grid(self):
         data = open_grid(self._cfg.get_path("hazard.grid_file"))
         ## checks
-
         self.hazard_grid = data
 
     def read_vulnerability_data(self):
@@ -66,4 +66,5 @@ class BaseModel(metaclass=ABCMeta):
 
     @abstractmethod
     def run():
+        pass
         pass
