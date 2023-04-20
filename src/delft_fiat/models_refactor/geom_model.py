@@ -9,7 +9,7 @@ ExposureMap: TypeAlias = Union[GeomSource, GridSource]
 CSV: TypeAlias = Union[CSVLarge, CSVSmall]
 
 
-class GeomModel(BaseModel):
+class GeomModel(ModelFactory):
     _method = {
         "area": overlay.clip,
         "average": overlay.pin,
@@ -26,9 +26,9 @@ class GeomModel(BaseModel):
         ##checks
         geom_srs = geom_exposure.get_srs()
         if not self.srs.IsSame(geom_srs):
-            geom_exposure = geom.reproject(geom_exposure, geom_srs.ExportToWkt())
+            export_to_wtk = geom_srs.ExportToWkt()
+            geom_exposure = geom.reproject(geom_exposure, export_to_wtk)
         return geom_exposure
 
     def run(self, hazard_grid: GridSource, exposure: CSV, vulnerability: CSV):
-        for ft in self.exposure_geoms:
-            pass
+        ...
