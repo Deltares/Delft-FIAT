@@ -1,2 +1,2 @@
-class GridModel(object):
+class GridModel(ModelFactory):
     ...

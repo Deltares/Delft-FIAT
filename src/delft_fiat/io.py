@@ -776,7 +776,7 @@ class GridSource(_BaseIO, _BaseStruct):
         self._cur_index = 1
 
         if not self._mode:
-            self.src = gdal.Open(str(self.path))
+            self.src: gdal.Dataset = gdal.Open(str(self.path))
             self.count = self.src.RasterCount
 
     def __iter__(self):

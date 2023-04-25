@@ -1,13 +1,14 @@
 from abc import ABCMeta, abstractmethod
-from typing import TypeAlias, Union
+from typing import List
 
-# from custom_types import *  # type: ignore
 from osgeo import osr
 
-from delft_fiat.io import GeomSource, GridSource
-
-ExposureMap: TypeAlias = Union[GeomSource, GridSource]
-CSV: TypeAlias = Union[CSVLarge, CSVSmall]
+from delft_fiat.models_refactor.model_types import (
+    CSV,
+    DamageType,
+    ExposureMap,
+    GridSource,
+)
 
 
 class ModelFactory(metaclass=ABCMeta):
@@ -53,5 +54,11 @@ class ModelFactory(metaclass=ABCMeta):
         self._exposure_map = self._read_exposure_map(path)
 
     @abstractmethod
-    def run(self, hazard_grid: GridSource, exposure: CSV, vulnerabilities: CSV):
+    def run(
+        self,
+        hazard_grid: GridSource,
+        exposure: CSV,
+        damage_categories: List[DamageType],
+        vulnerabilities: CSV,
+    ):
         raise NotImplementedError
