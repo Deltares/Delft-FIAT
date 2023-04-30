@@ -1,11 +1,11 @@
-from delft_fiat.log import Log
-from delft_fiat.util import generic_path_check
-
 import sys
 from decimal import Decimal
-from osgeo import gdal
-from osgeo import osr
 from pathlib import Path
+
+from osgeo import gdal, osr
+
+from delft_fiat.log import Log
+from delft_fiat.util import generic_path_check
 
 
 def check_config_data(

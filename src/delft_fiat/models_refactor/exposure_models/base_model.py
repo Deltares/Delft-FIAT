@@ -1,17 +1,12 @@
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import Optional
 
-from osgeo import osr
+from osgeo import gdal, osr
 
-from delft_fiat.models_refactor.model_types import (
-    CSV,
-    DamageType,
-    ExposureMap,
-    GridSource,
-)
+from delft_fiat.models_refactor.types import CSV, ExposureMap
 
 
-class ModelFactory(metaclass=ABCMeta):
+class BaseModel(metaclass=ABCMeta):
     """
     Parameters
     ----------
@@ -19,7 +14,7 @@ class ModelFactory(metaclass=ABCMeta):
         _description_, by default ABCMeta
     """
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, crs: str) -> None:
         """_summary_
 
         Parameters
@@ -29,6 +24,7 @@ class ModelFactory(metaclass=ABCMeta):
         """
 
         self.srs = osr.SpatialReference()
+        self.srs.SetFromUserInput(crs)
 
         self._exposure_map: ExposureMap
         self.exposure_map = path
@@ -54,11 +50,11 @@ class ModelFactory(metaclass=ABCMeta):
         self._exposure_map = self._read_exposure_map(path)
 
     @abstractmethod
-    def run(
+    def calc_hazard_impact(
         self,
-        hazard_grid: GridSource,
-        exposure: CSV,
-        damage_categories: List[DamageType],
-        vulnerabilities: CSV,
+        hazard: gdal.Dataset,
+        hazard_ref: str,
+        band_id: int,
+        vulnerabilities: Optional[CSV] = None,
     ):
         raise NotImplementedError

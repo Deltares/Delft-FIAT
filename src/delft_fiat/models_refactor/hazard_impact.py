@@ -1,29 +1,36 @@
-from typing import List
+from typing import List, Tuple
 
-from delft_fiat.models_refactor.model_factory import ModelFactory
-from delft_fiat.models_refactor.model_types import *
+from delft_fiat.io import open_csv, open_grid
+from delft_fiat.models_refactor.exposure_models.base_model import BaseModel
+from delft_fiat.models_refactor.types import CSV, GridSource
 
 
 class HazardImpactModel(object):
-    def __init__(self, cfg):
+    def __init__(self, config):
         self._hazard_grid: GridSource
-        self._exposure: CSV
         self._vulnerability: CSV
-        self._exposure_geom: ExposureMap
-        self._damage_categories: List[DamageType]
+        self._exposure_model: BaseModel
 
-        self.hazard_grid = cfg["hazard_grid"]
-        self.exposure = cfg["exposure"]
-        self.vulnerability = cfg["vulnerability"]
+        self.hazard_grid = config.get_path("hazard.grid_file")
+        self.hazard_ref: str = config.get("hazard.crs")
+        self.vulnerability = (
+            config.get_path("vulnerability.dbase_file"),
+            config.get("vulnerability.spacing"),
+        )
 
-    def _read_hazard_grid(self, path: str):
-        ...
+    def _read_hazard_grid(self, path: str) -> GridSource:
+        try:
+            return open_grid(path)
+        except IOError as ioerr:
+            # write to log
+            raise IOError("Error: File does not appear to exist.") from ioerr
 
-    def _read_exposure(self, path: str):
-        ...
-
-    def _read_vulnerability(self, path: str):
-        ...
+    def _read_vulnerability(self, path: str) -> CSV:
+        try:
+            return open_csv(path)
+        except IOError as ioerr:
+            # write to log
+            raise IOError("Error: File does not appear to exist.") from ioerr
 
     @property
     def hazard_grid(self):
@@ -34,51 +41,39 @@ class HazardImpactModel(object):
         self._hazard_grid = self._read_hazard_grid(path)
 
     @property
-    def exposure(self):
-        return self._exposure
-
-    @exposure.setter
-    def exposure(self, path: str):
-        self._exposure = self._read_exposure(path)
-        headers: List[str] = self._exposure.headers
-        self._damage_categories = self._get_damage_categories(headers)
-
-    @property
-    def vulnerability(self):
+    def vulnerability(self) -> CSV:
         return self._vulnerability
 
     @vulnerability.setter
-    def vulnerability(self, path: str, df: float):
+    def vulnerability(self, params: Tuple[str, str]):
+        path, spacing = params
         self._vulnerability = self._read_vulnerability(path)
-        self._vulnerability.upscale(df)
+        self._vulnerability.upscale(float(spacing))
 
     @property
-    def exposure_geom(self):
-        return self._exposure_geom
+    def exposure_model(self) -> BaseModel:
+        return self._exposure_model
 
-    @exposure_geom.setter
-    def exposure_geom(self, exposure_map: ModelFactory):
-        self._exposure_geom = exposure_map
+    @exposure_model.setter
+    def exposure_model(self, exposure_map: BaseModel) -> None:
+        self._exposure_model = exposure_map
 
-    def _get_damage_categories(self, headers: List[str]):
-        return [
-            (header, header.replace("Damage Function: ", "Max Potential Damage: "))
-            for header in headers
-            if header.startswith("Damage Function:")
-        ]
+    @property
+    def return_period_count(self) -> int:
+        return self._hazard_grid.src.RasterCount
 
-    def simulate_impact(self, exposure_map: ModelFactory):
-        self.exposure_geom = exposure_map
+    def simulate_impact(self, exposure_map: BaseModel):
+        self.exposure_model = exposure_map
+        period_count: int = self.return_period_count
 
-        self.exposure_geom.run(
-            self._hazard_grid,
-            self._exposure,
-            self._damage_categories,
-            self._vulnerability,
-        )
+        for period in range(period_count):
+            self._exposure_model.calc_hazard_impact(
+                hazard=self._hazard_grid.src,
+                hazard_ref=self.hazard_ref,
+                band_id=period + 1,
+                vulnerabilities=self._vulnerability,
+            )
+        # This can be parallelized. Each period can be ran independently
 
-    def write(result: any):
-        ...
-
-    def write(result: any):
-        ...
+    def write(self, result):
+        pass

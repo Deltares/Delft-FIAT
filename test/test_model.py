@@ -16,13 +16,13 @@ def test_FIAT_vector():
     config = ConfigReader(config_file)
 
     # Load the input data.
-    geoms = open_geom(config.get_path("exposure.geom_file"))
     hazard = open_grid(config.get_path("hazard.grid_file"))
+    geoms = open_geom(config.get_path("exposure.geom_file"))
     exposure = open_csv(config.get_path("exposure.dbase_file"))
     vulnerability = open_csv(config.get_path("vulnerability.dbase_file"))
 
     # Upscale the vulnerability data
-    scale_dfs = 0.001  # TODO: get from settings.toml
+    scale_dfs = 0.01  # TODO: get from settings.toml
     vulnerability.upscale(scale_dfs)
 
     # Get all damage functions that should be iterated over
@@ -74,7 +74,7 @@ def test_FIAT_vector():
                     haz=hazard_value,
                     values=df_fractions,
                     idx=df_hazard_values,
-                    sig=3,
+                    sig=2,
                 )
             else:
                 damage_factor = np.nan

@@ -5,7 +5,7 @@ import sys
 from collections.abc import MutableMapping
 from gc import get_referents
 from pathlib import Path
-from types import ModuleType, FunctionType
+from types import FunctionType, ModuleType
 
 BLACKLIST = type, ModuleType, FunctionType
 
@@ -99,10 +99,12 @@ def deter_dec(
     ndec = math.floor(math.log(e) / math.log(base))
     return abs(ndec)
 
+
 def mean(values: list):
     """Very simple python mean"""
 
     return sum(values) / len(values)
+
 
 def _flatten_dict_gen(d, parent_key, sep):
     for k, v in d.items():
@@ -166,7 +168,7 @@ def generic_folder_check(
 
 def generic_path_check(
     path: str,
-    root: str,
+    root: Path,
 ) -> Path:
     """_summary_
 

@@ -482,10 +482,10 @@ class CSVSmall(_CSV):
         repr += "...\n"
         return repr
 
-    def mean():
+    def mean():  # Not used
         pass
 
-    def max():
+    def max():  # Not used
         pass
 
     def upscale(
@@ -503,6 +503,8 @@ class CSVSmall(_CSV):
             _description_, by default True
 
         """
+
+        self.decimals: int = str(delta)[::-1].find(".")
 
         _rnd = abs(floor(log10(delta)))
 

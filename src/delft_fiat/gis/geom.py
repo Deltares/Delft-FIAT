@@ -1,9 +1,9 @@
-from delft_fiat.io import open_geom
-
 import gc
-from osgeo import ogr
-from osgeo import osr
 from pathlib import Path
+
+from osgeo import ogr, osr
+
+from delft_fiat.io import open_geom
 
 
 def coor_transform():
