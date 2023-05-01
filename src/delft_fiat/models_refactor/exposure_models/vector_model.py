@@ -1,3 +1,5 @@
+from io import BufferedWriter, BytesIO
+from os import write
 from typing import Dict, List, cast
 
 from osgeo import gdal, ogr
@@ -122,8 +124,17 @@ class VectorModel(BaseModel):
         band_id: int,
         vulnerabilities: CSV,
     ):
+        f = open("output.csv", "wb")
+
+        writer = BufferedWriter(f, buffer_size=15000)
+
+        writer.write((",".join(self._exposure.headers) + ",Damage" + "\n").encode())
+
+        # f.write((",".join(self._exposure.headers) + ",Damage" + "\n").encode())
+
+        damage: float
         for geom_object in self._exposure_map:
-            damage: float = 0
+            damage = 0
             geom_exposure: List[str] = self._get_object_exposure(
                 feature=geom_object
             )  # geom information
@@ -155,10 +166,21 @@ class VectorModel(BaseModel):
                 if geom_depth <= 0:
                     continue
 
-                damage = self._calc_damage(
+                damage += self._calc_damage(
                     vulnerability=vulnerabilities,
                     max_damage_type=max_damage_type,
                     damage_func=damage_func,
                     geom_exposure=geom_exposure,
                     depth=geom_depth,
-                )  # calculate damage per damage function type
+                )
+                #  calculate damage per damage function type
+            geom_exposure.append(str(damage))
+
+            writestr = ",".join(geom_exposure) + "\n"
+
+            writer.write(writestr.encode())
+            # f.write(writestr.encode())
+
+        writer.flush()
+
+        f.close()
