@@ -1,0 +1,16 @@
+name: delft_fiat
+
+channels:
+  - conda-forge
+
+dependencies:
+  - black
+  - build
+  - mypy
+  - pip
+  - numpy
+  - gdal
+  - tomli
+  - pytest
+  - python=3.10
+

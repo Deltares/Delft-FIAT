@@ -1,5 +1,3 @@
-from delft_fiat.main import FIAT
-
 import click
 
 

@@ -1,4 +1,3 @@
-import time
 from typing import List
 
 from delft_fiat.cfg_test import ConfigReader
@@ -42,17 +41,3 @@ class FIAT:
         for exposure_model in self.exposure_models:
             if exposure_model is not None:
                 self.hazard_impact.simulate_impact(exposure_model)
-
-
-if __name__ == "__main__":
-    setting_file: str = "/Users/sarwanpeiter/Documents/deltaresSB/Delft-FIAT/test/tmp/Casus/settings.toml"
-
-    t1 = time.time()
-    fiat = FIAT(setting_file)
-    fiat.run_sim()
-    t2 = time.time()
-    print("elapsed: ", t2 - t1, "s")
-
-    # run another simulation with updated settings file
-    # FIAT.update_sim_config(newfile)
-    # FIAT.run_sim()
