@@ -1,5 +1,6 @@
 from io import BufferedWriter, BytesIO
 from os import write
+from pathlib import Path
 from typing import Dict, List, cast
 
 from osgeo import gdal, ogr
@@ -48,20 +49,20 @@ class VectorModel(BaseModel):
 
     def _read_exposure(self, path: str) -> CSV:
         try:
-            return open_csv(path)
+            return open_csv(path, large=True)
         except IOError as ioerr:
             # write to log
             raise IOError("Error: File does not appear to exist.") from ioerr
 
     def _get_object_exposure(self, feature: ogr.Feature) -> List[str]:
-        return cast(List[str], self._exposure.get(cast(str, feature["Object_ID"])))
+        return cast(List[str], self._exposure.get(cast(str, feature["Object ID"])))
 
     def _get_hazard_at_object(
         self, hazard: gdal.Dataset, band_id: int, feature: ogr.Feature
     ):
         band: gdal.Band = hazard.GetRasterBand(band_id)
         return overlay.clip(hazard, band, feature)
-
+    
     def _get_damage_categories(self) -> List[DamageType]:
         headers: List[str] = self._exposure.headers
         return [
@@ -123,8 +124,9 @@ class VectorModel(BaseModel):
         hazard_ref: str,
         band_id: int,
         vulnerabilities: CSV,
+        output_path: Path
     ):
-        f = open("output.csv", "wb")
+        f = open(output_path.joinpath("output.csv"), "wb")
 
         writer = BufferedWriter(f, buffer_size=15000)
 

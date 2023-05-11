@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Tuple
 
 from delft_fiat.io import open_csv, open_grid
@@ -27,7 +28,7 @@ class HazardImpactModel(object):
 
     def _read_vulnerability(self, path: str) -> CSV:
         try:
-            return open_csv(path)
+            return open_csv(path, large=False)
         except IOError as ioerr:
             # write to log
             raise IOError("Error: File does not appear to exist.") from ioerr
@@ -62,7 +63,7 @@ class HazardImpactModel(object):
     def return_period_count(self) -> int:
         return self._hazard_grid.src.RasterCount
 
-    def simulate_impact(self, exposure_map: BaseModel):
+    def simulate_impact(self, exposure_map: BaseModel, output_path: Path):
         self.exposure_model = exposure_map
         period_count: int = self.return_period_count
 
@@ -72,6 +73,7 @@ class HazardImpactModel(object):
                 hazard_ref=self.hazard_ref,
                 band_id=period + 1,
                 vulnerabilities=self._vulnerability,
+                output_path=output_path
             )
         # This can be parallelized. Each period can be ran independently
 
