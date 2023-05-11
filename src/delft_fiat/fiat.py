@@ -40,4 +40,5 @@ class FIAT:
     def run_sim(self):
         for exposure_model in self.exposure_models:
             if exposure_model is not None:
-                self.hazard_impact.simulate_impact(exposure_model)
+                self.hazard_impact.simulate_impact(exposure_model, 
+                                                   output_path=self.config.parent.joinpath(self.config["global.output_dir"]))
