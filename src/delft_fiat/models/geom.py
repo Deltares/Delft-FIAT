@@ -6,57 +6,65 @@ from delft_fiat.models.calc import get_inundation_depth, get_damage_factor
 from delft_fiat.util import _pat, replace_empty
 
 import os
+import threading
 import time
 from concurrent.futures import ProcessPoolExecutor, wait, as_completed
 from io import BufferedWriter
 from math import isnan
-from multiprocessing import Process
+from multiprocessing import Lock, Pipe, Process, connection, get_context
+from multiprocessing.queues import Queue, SimpleQueue
 from pathlib import Path
+from quick_queue import QQueue, QJoinableQueue
 
 logger = spawn_logger("fiat.model.geom")
 
 
+## multiprocessing stuff
+
+
+class ResultItem:
+    def __init__(self, fid: int, oid: object, res_str: str, res_dict: dict):
+        """_summary_"""
+
+        self.fid = fid
+        self.oid = oid
+        self.res_str = res_str
+        self.res_dict = res_dict
+
+
+class StopAlarm:
+    def __init__(self):
+        self._reader, self._writer = Pipe(duplex=False)
+
+    def close(self):
+        self._reader.close()
+        self._writer.close()
+
+    def send_sentinel(self):
+        self._writer.send_bytes(b"")
+
+    def clear(self):
+        while self._reader.poll():
+            self._reader.recv_bytes()
+
+
 def worker(
-    writer: BufferTextHandler,
-    geom_writer: GeomMemFileHandler,
+    result_queue: Queue,
     haz: "GridSource",
     idx: int,
     vul: "Table",
     exp: "TableLazy",
     gm: "GeomSource",
 ):
-    """_summary_
-
-    Parameters
-    ----------
-    writer : BufferTextHandler
-        _description_
-    haz : GridSource
-        _description_
-    idx : int
-        _description_
-    vul : Table
-        _description_
-    exp : TableLazy
-        _description_
-    gm : GeomSource
-        _description_
-    """
-
-    header = (
-        ",".join(exp.columns).encode()
-        + b","
-        + ",".join(exp._extra_columns.values()).encode()
-        + b"\r\n"
-    )
-    writer.write(header)
+    """_summary_"""
 
     for ft in gm:
         row = b""
-        ft_new_info = {}
+        _output = {}
 
-        ft_info_raw = exp[ft.GetField(0)]
-        ft_info = replace_empty(_pat.split(ft_info_raw))
+        ft_info = replace_empty(
+            _pat.split(exp[ft.GetField(0)]),
+        )
         ft_info = [x(y) for x, y in zip(exp.dtypes, ft_info)]
 
         if ft_info[exp._columns["Extraction Method"]].lower() == "area":
@@ -68,11 +76,9 @@ def worker(
             "DEM",
             ft_info[exp._columns["Ground Floor Height"]],
         )
-        ft_new_info.update(
-            {"Inundation Depth": inun, "Reduction Factor": redf},
-        )
-
-        row += ft_info_raw
+        # _output.update(
+        #     {"Inundation Depth": inun, "Reduction Factor": redf},
+        # )
 
         for key, col in exp.damage_function.items():
             if isnan(inun) or ft_info[col] == "nan":
@@ -81,14 +87,42 @@ def worker(
                 _df = vul[round(inun, 2), ft_info[col]]
                 _d = _df * ft_info[exp.max_potential_damage[key]] * redf
 
-            ft_new_info[exp._extra_columns[key]] = _d
+            _output[exp._extra_columns[key]] = _d
             row += f",{_d}".encode()
 
-        geom_writer.write_feature(ft, ft_new_info)
-        row += b"\r\n"
-        writer.write(row)
+        result_queue.put(
+            ResultItem(ft.GetFID(), ft.GetField(0), row, _output),
+            block=True,
+        )
 
-    writer.flush()
+
+def manager(
+    result_queue: Queue,
+    alarm: StopAlarm,
+    exp: "TableLazy",
+    writer: BufferTextHandler,
+    geom_writer: GeomMemFileHandler = None,
+):
+    """_summary_"""
+
+    rr = result_queue._reader
+    sr = alarm._reader
+    readers = [rr, sr]
+    while True:
+        mail = connection.wait(readers)
+        if rr in mail:
+            res = result_queue.get()
+            raw_text = exp[res.oid]
+            raw_text += res.res_str + b"\r\n"
+            writer.write(raw_text)
+        else:
+            writer.flush()
+            return
+
+    geom_writer.write_feature(ft, _output)
+
+
+## Actual model
 
 
 class GeomModel(BaseModel):
@@ -105,12 +139,68 @@ class GeomModel(BaseModel):
 
         super().__init__(cfg)
 
+        self._writer = None
+
+        # Reading the data
         self._read_exposure_data()
         self._read_exposure_geoms()
         self._vulnerability_data.upscale(0.01, inplace=True)
 
+        # Starting the writers
+        self._create_writer(
+            self._exposure_data.columns,
+            self._exposure_data._extra_columns,
+        )
+
+        # Starting concurrent stuff
+        self._result_queue = QJoinableQueue()
+        self._alarm = StopAlarm()
+        self._manager = threading.Thread(
+            target=manager,
+            args=(
+                self._result_queue,
+                self._alarm,
+                self._exposure_data,
+                self._writer,
+            ),
+            daemon=True,
+        )
+        self._manager.start()
+
     def __del__(self):
         BaseModel.__del__(self)
+
+    def _clean_up(self):
+        self._managerAlarm.close()
+        self._managerAlarm = None
+        self._result_queue.close()
+        self._result_queue = None
+        self._writer.close()
+        self._writer = None
+
+    def _create_writer(
+        self,
+        cols,
+        add_cols,
+    ):
+        """_summary_"""
+
+        out_csv = "output.csv"
+        if "output.csv.name" in self._cfg:
+            out_csv = self._cfg["output.csv.name"]
+
+        self._writer = BufferTextHandler(
+            Path(self._cfg["output.path"], out_csv),
+            buffer_size=100000,
+        )
+
+        header = (
+            ",".join(cols).encode()
+            + b","
+            + ",".join(add_cols.values()).encode()
+            + b"\r\n"
+        )
+        self._writer.write(header)
 
     def _read_exposure_data(self):
         """_summary_"""
@@ -147,25 +237,16 @@ class GeomModel(BaseModel):
     def run(self):
         """_summary_"""
 
-        out_csv = "output.csv"
-        if "output.csv.name" in self._cfg:
-            out_csv = self._cfg["output.csv.name"]
+        # out_geom = "spatial.gpkg"
+        # if "output.geom.name1" in self._cfg:
+        #     out_geom = self._cfg["output.geom.name1"]
 
-        writer = BufferTextHandler(
-            Path(self._cfg["output.path"], out_csv),
-            buffer_size=100000,
-        )
-
-        out_geom = "spatial.gpkg"
-        if "output.geom.name1" in self._cfg:
-            out_geom = self._cfg["output.geom.name1"]
-
-        geom_writer = GeomMemFileHandler(
-            Path(self._cfg["output.path"], out_geom),
-            self.srs,
-            self._exposure_geoms["file1"].layer.GetLayerDefn(),
-            self._exposure_data._extra_columns_meta,
-        )
+        # geom_writer = GeomMemFileHandler(
+        #     Path(self._cfg["output.path"], out_geom),
+        #     self.srs,
+        #     self._exposure_geoms["file1"].layer.GetLayerDefn(),
+        #     self._exposure_data._extra_columns_meta,
+        # )
 
         if self._hazard_grid.count > 1:
             pcount = min(os.cpu_count(), self._hazard_grid.count)
@@ -173,7 +254,6 @@ class GeomModel(BaseModel):
                 for idx in range(self._hazard_grid.count):
                     p = Pool.submit(
                         worker,
-                        writer,
                         self._hazard_grid,
                         1,
                         self._vulnerability_data,
@@ -184,16 +264,21 @@ class GeomModel(BaseModel):
                     print(f.result())
 
         else:
-            worker(
-                writer,
-                geom_writer,
-                self._hazard_grid,
-                1,
-                self._vulnerability_data,
-                self._exposure_data,
-                self._exposure_geoms["file1"],
+            p = Process(
+                target=worker,
+                args=(
+                    self._result_queue,
+                    self._hazard_grid,
+                    1,
+                    self._vulnerability_data,
+                    self._exposure_data,
+                    self._exposure_geoms["file1"],
+                ),
             )
+            p.start()
+            p.join()
+        self._alarm.send_sentinel()
+        self._manager.join()
 
-        geom_writer.dump2drive()
-        del writer
-        del geom_writer
+        # geom_writer.dump2drive()
+        # del geom_writer
