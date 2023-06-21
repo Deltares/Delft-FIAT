@@ -100,6 +100,7 @@ def manager(
     result_queue: Queue,
     alarm: StopAlarm,
     exp: "TableLazy",
+    gm: "GeomSource",
     writer: BufferTextHandler,
     geom_writer: GeomMemFileHandler = None,
 ):
@@ -115,11 +116,11 @@ def manager(
             raw_text = exp[res.oid]
             raw_text += res.res_str + b"\r\n"
             writer.write(raw_text)
+            geom_writer.write_feature(gm[res.fid], res.res_dict)
         else:
             writer.flush()
+            geom_writer.dump2drive()
             return
-
-    geom_writer.write_feature(ft, _output)
 
 
 ## Actual model
@@ -151,9 +152,10 @@ class GeomModel(BaseModel):
             self._exposure_data.columns,
             self._exposure_data._extra_columns,
         )
+        self._create_geom_writer()
 
         # Starting concurrent stuff
-        self._result_queue = QJoinableQueue()
+        self._result_queue = QQueue()
         self._alarm = StopAlarm()
         self._manager = threading.Thread(
             target=manager,
@@ -161,7 +163,9 @@ class GeomModel(BaseModel):
                 self._result_queue,
                 self._alarm,
                 self._exposure_data,
+                self._exposure_geoms["file1"],
                 self._writer,
+                self._geom_writer,
             ),
             daemon=True,
         )
@@ -177,6 +181,7 @@ class GeomModel(BaseModel):
         self._result_queue = None
         self._writer.close()
         self._writer = None
+        del self._geom_writer
 
     def _create_writer(
         self,
@@ -201,6 +206,18 @@ class GeomModel(BaseModel):
             + b"\r\n"
         )
         self._writer.write(header)
+
+    def _create_geom_writer(self):
+        out_geom = "spatial.gpkg"
+        if "output.geom.name1" in self._cfg:
+            out_geom = self._cfg["output.geom.name1"]
+
+        self._geom_writer = GeomMemFileHandler(
+            Path(self._cfg["output.path"], out_geom),
+            self.srs,
+            self._exposure_geoms["file1"].layer.GetLayerDefn(),
+            self._exposure_data._extra_columns_meta,
+        )
 
     def _read_exposure_data(self):
         """_summary_"""
@@ -279,6 +296,3 @@ class GeomModel(BaseModel):
             p.join()
         self._alarm.send_sentinel()
         self._manager.join()
-
-        # geom_writer.dump2drive()
-        # del geom_writer
