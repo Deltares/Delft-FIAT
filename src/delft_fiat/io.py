@@ -255,7 +255,7 @@ class GeomMemFileHandler:
         self._drive = open_geom(file, "w")
 
     def __del__(self):
-        self._clear_cache()
+        # self._clear_cache()
         self._memory = None
         self._drive = None
 
