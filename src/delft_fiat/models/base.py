@@ -23,12 +23,20 @@ class BaseModel(metaclass=ABCMeta):
         self,
         cfg: "ConfigReader",
     ):
-        """_summary_"""
+        """ 
+        BaseModel class to be used for all models in Delft-FIAT
 
+        Parameters
+        ----------
+        cfg : ConfigReader
+            Configuration reader object
+        """
+
+        # Set the configuration reader
         self._cfg = cfg
         logger.info(f"Using settings from '{self._cfg.filepath}'")
 
-        # Declarations
+        # Initialize the model spatial reference
         self.srs = None
         self._exposure_data = None
         self._exposure_geoms = None
@@ -42,15 +50,18 @@ class BaseModel(metaclass=ABCMeta):
         self._keep_temp = False
         self._out_meta = {}
 
+        # Read the configuration
         self._set_model_srs()
         self._read_hazard_grid()
         self._read_vulnerability_data()
 
+        # Check if the user wants to keep the temporary files
         if "global.keep_temp_files" in self._cfg:
             self._keep_temp = self._cfg.get("global.keep_temp_files")
 
     @abstractmethod
     def __del__(self):
+        """Destructor for the BaseModel class"""
         self.srs = None
 
     def __repr__(self):
@@ -58,16 +69,20 @@ class BaseModel(metaclass=ABCMeta):
 
     @abstractmethod
     def _clean_up(self):
-        pass
+        raise NotImplementedError("clean_up is not implemented yet")
 
     def _read_hazard_grid(self):
-        """_summary_"""
+        """Read the hazard grid"""
 
+        # Read the hazard grid
         path = self._cfg.get("hazard.file")
         logger.info(f"Reading hazard data ('{path.name}')")
+
+        # Generate the kwargs in case of a multiband raster
         kw = self._cfg.generate_kwargs("hazard.multiband")
         data = open_grid(path, **kw)
-        ## checks
+        
+        # Check the hazard subsets 
         logger.info("Executing hazard checks...")
 
         # check for subsets
@@ -76,7 +91,7 @@ class BaseModel(metaclass=ABCMeta):
             path,
         )
 
-        # check the srs
+        # Reproject the hazard grid if needed
         if not check_srs(self.srs, data.get_srs(), path.name):
             logger.warning(
                 f"Spatial reference of '{path.name}' ('{get_srs_repr(data.get_srs())}') \
@@ -113,17 +128,20 @@ does not match the model spatial reference ('{get_srs_repr(self.srs)}')"
         self._hazard_grid = data
 
     def _read_vulnerability_data(self):
+        """Read the vulnerability data"""
+
+        # Read the vulnerability data
         path = self._cfg.get("vulnerability.file")
         logger.info(f"Reading vulnerability curves ('{path.name}')")
-
         index = "water depth"
         if "vulnerability.index" in self._cfg:
             index = self._cfg.get("vulnerability.index")
         data = open_csv(str(path), index=index)
-        ## checks
+
+        # Check the vulnerability subsets
         logger.info("Executing vulnerability checks...")
 
-        ## upscale the data (can be done after the checks)
+        # Upscale the data if needed
         if "vulnerability.step_size" in self._cfg:
             self._vul_step_size = self._cfg.get("vulnerability.step_size")
             self._rounding = deter_dec(self._vul_step_size)
@@ -134,14 +152,18 @@ does not match the model spatial reference ('{get_srs_repr(self.srs)}')"
 using a step size of: {self._vul_step_size}"
         )
         data.upscale(self._vul_step_size, inplace=True)
-        ## When all is done, add it
+
+        # When all is done, add the vulnerability data
         self._vulnerability_data = data
 
     def _set_model_srs(self):
-        """_summary_"""
+        """Set the model spatial reference"""
 
+        # Get the spatial reference from the configuration
         _srs = self._cfg.get("global.crs")
         path = self._cfg.get("hazard.file")
+
+        # Check if the user has set the spatial reference
         if _srs is not None:
             self.srs = osr.SpatialReference()
             self.srs.SetFromUserInput(_srs)
@@ -172,4 +194,4 @@ using a step size of: {self._vul_step_size}"
 
     @abstractmethod
     def run():
-        pass
+        raise NotImplementedError("run is not implemented yet")

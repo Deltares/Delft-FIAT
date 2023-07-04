@@ -7,23 +7,37 @@ from pathlib import Path
 
 
 def coor_transform():
-    pass
+    raise NotImplementedError("coor_transform is not implemented yet")
 
 
 def geom_centroid(ft: ogr.Feature) -> tuple:
-    """_summary_"""
-
-    pass
+    raise NotImplementedError("geom_centroid is not implemented yet")
 
 
 def point_in_geom(
     ft: ogr.Feature,
 ) -> tuple:
-    """_Summary_"""
+    """ Get X and Y coordinates of the point on the surface of the geometry
 
+    Parameters
+    ----------
+    ft : ogr.Feature
+        Vector feature
+
+    Returns
+    -------
+    tuple
+        X and Y coordinates of the point on the surface of the geometry
+    """
+
+    # Get the geometry reference system
     geom = ft.GetGeometryRef()
+
+    # Get the point on the surface of the geometry
     p = geom.PointOnSurface()
     geom = None
+
+    # Return the coordinates of the point
     return p.GetX(), p.GetY()
 
 
@@ -31,7 +45,7 @@ def reproject_feature(
     ft: ogr.Feature,
     crs: str,
 ):
-    pass
+    raise NotImplementedError("reproject_feature is not implemented yet")
 
 
 def reproject(
@@ -40,37 +54,48 @@ def reproject(
     out: str = None,
 ):
     """
-    _summary_
+    Reproject a GeomSource to a new coordinate reference system
 
     Parameters
     ----------
     gs : GeomSource
-        _description_
+        Geometry source file
     crs : str
-        _description_
+        New coordinate reference system
     out : str
-        _description_
+        Output file path
+
+    Returns
+    -------
+    GeomSource
+        Reprojected geometry source file
     """
 
+    # Get the output file path
     if not Path(str(out)).is_dir():
         out = gs.path.parent
 
+    # Create the output file name
     fname = Path(out, f"{gs.path.stem}_repr_fiat{gs.path.suffix}")
 
+    # Create the output file
     out_srs = osr.SpatialReference()
     out_srs.SetFromUserInput(crs)
     out_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
+    # Create the coordinate transformation
     transform = osr.CoordinateTransformation(
         gs.get_srs(),
         out_srs,
     )
 
+    # Create the output file
     mem_gs = open_geom(
         file="memset",
         mode="w",
     )
-
+    
+    # Create the output layer
     mem_gs.create_layer(
         out_srs,
         gs.layer.GetGeomType(),
@@ -79,6 +104,7 @@ def reproject(
         gs.layer.GetLayerDefn(),
     )
 
+    # Reproject the features
     for ft in gs.layer:
         geom = ft.GetGeometryRef()
         geom.Transform(transform)
@@ -91,11 +117,14 @@ def reproject(
     out_srs = None
     transform = None
 
+    # Create the output file
     with open_geom(fname, mode="w") as new_gs:
         new_gs.create_layer_from_copy(mem_gs.layer)
 
+    # Close the memory file
     mem_gs.close()
     del mem_gs
     gc.collect()
 
+    # Reopen the new output file
     return new_gs.reopen()

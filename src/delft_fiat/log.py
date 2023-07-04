@@ -391,25 +391,9 @@ class Logmeta(type):
 
 
 class Log(metaclass=Logmeta):
-    """_summary_"""
+    """Logger class"""
 
     manager = LogManager()
-
-    # def __new__(
-    #     cls,
-    #     name: str,
-    #     log_level: int = 2,
-    # ):
-
-    #     obj = object.__new__(cls)
-    #     obj.__init__(name, log_level)
-
-    #     res = Log.manager.fit_external_logger(obj)
-    #     if res is not None:
-    #         warn(f"{name} is already in use -> returning currently known object", UserWarning)
-    #         obj = res
-
-    #     return obj
 
     def __init__(
         self,
@@ -579,11 +563,15 @@ def setup_default_log(
     ValueError
         _description_
     """
+
+    # Check if the name is valid
     if len(name.split(".")) > 1:
         raise ValueError()
 
+    # Setup the logger
     obj = Log(name, log_level=log_level)
 
+    # Add the streams
     obj.add_cmd_stream(level=log_level)
     obj.add_file_stream(
         dst,

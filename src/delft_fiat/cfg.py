@@ -12,15 +12,32 @@ import tomli
 
 
 class ConfigReader(dict):
+    """ConfigReader class to read the settings file and store the settings in a dictionary."""
+
     def __init__(
         self,
         file: str,
     ):
+        """Initialize the ConfigReader class.
+
+        Parameters
+        ----------
+        file : str
+            Configuration file.
+        """
+
+        # Check if the file exists
+        if not os.path.isfile(file):
+            raise FileNotFoundError(f"Settings file '{file}' not found.")
+
+        # Check the settings file
+        check_config_data(file)
+
         # Set the root directory
         self.filepath = Path(file)
         self.path = self.filepath.parent
 
-        # Load the config as a simple flat dictionary
+        # Load the config as a simple flat dictionary and store it as self
         f = open(file, "rb")
         dict.__init__(self, flatten_dict(tomli.load(f), "", "."))
         f.close()
@@ -40,6 +57,7 @@ class ConfigReader(dict):
 
         # Do some checking concerning the file paths in the settings file
         for key, item in self.items():
+            # Check if the item is a file path
             if key.endswith(("file", "csv")) or key.rsplit(".", 1)[1].startswith(
                 "file"
             ):
@@ -49,6 +67,7 @@ class ConfigReader(dict):
                 )
                 self[key] = path
             else:
+                # Store strings as lowercase
                 if isinstance(item, str):
                     self[key] = item.lower()
 
@@ -79,7 +98,7 @@ class ConfigReader(dict):
     def get_model_type(
         self,
     ):
-        """_Summary_"""
+        """TODO: Implement this function? If so, make this an NotImplementedError."""
 
         if "exposure.geom_file" in self:
             return 0
@@ -90,7 +109,24 @@ class ConfigReader(dict):
         self,
         key: str,
     ):
-        """_Summary_"""
+        """Return the path of a file.
+
+        Parameters
+        ----------
+        key : str
+            Key of the file path.
+
+        Returns
+        -------
+        Path
+            Path of the file.
+
+        Raises
+        ------
+        KeyError
+            If the key is not found in the settings file.
+         """
+        # TODO: Isn't this implemented just as get_key?
 
         return str(self[key])
 
@@ -98,9 +134,23 @@ class ConfigReader(dict):
         self,
         base: str,
     ):
-        """_summary_"""
+        """"Add the remaining settings to the kwargs dictionary, filtered by a base key.
 
+        Parameters
+        ----------
+        base : str
+            Base key.
+        
+        Returns
+        -------
+        dict
+            Dictionary with the remaining settings.
+        """
+
+        # Loop over the keys and store the remaining settings in a dictionary
         keys = [item for item in list(self) if base in item]
+
+        # Create a dictionary with the remaining settings
         kw = {key.split(".")[-1]: self[key] for key in keys}
 
         return kw

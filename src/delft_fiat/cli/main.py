@@ -36,6 +36,14 @@ fiat_start_str = """
 @click.version_option(__version__, message=f"Delft-FIAT {__version__}")
 @click.pass_context
 def main(ctx):
+    """
+    Delft-FIAT: Delft Flood Impact Assessment Tool
+
+    Delft-FIAT is a tool to assess the impact of floods on the economy of a region. 
+    It is developed by Deltares in Delft, The Netherlands.
+    """	
+
+    # Create a dictionary to store objects that need to be passed between
     if ctx.obj is None:
         ctx.obj = {}
 
@@ -59,7 +67,15 @@ _quiet = click.option("-q", "--quiet", count=True, help="Decrease verbosity")
 def info(
     ctx,
 ):
-    pass
+    """
+    Information concerning Delft-FIAT
+
+    Returns
+    -------
+    None.
+    """
+
+    raise NotImplementedError("Info command not implemented yet.")
 
 
 @main.command(
@@ -77,11 +93,24 @@ def run(
     verbose,
 ):
     """
-    \b
-    <cfg>  Configurations file (toml) containing the settings for the FIAT model
+    Run Delft-FIAT via a settings file
+
+    Parameters
+    ----------
+    cfg : str
+        Path to the settings file.
+    verbose : int
+        Verbosity level.
+
+    Returns
+    -------
+    None.
     """
 
+    # Read and parse the settings file 
     cfg = ConfigReader(cfg)
+
+    # Setup the logger
     logger = setup_default_log(
         "fiat",
         log_level=2 + quiet - verbose,
@@ -89,6 +118,8 @@ def run(
     )
     sys.stdout.write(fiat_start_str)
     logger.info(f"Delft-Fiat version: {__version__}")
+
+    # Run the main program
     obj = FIAT(cfg)
     obj.run()
 
