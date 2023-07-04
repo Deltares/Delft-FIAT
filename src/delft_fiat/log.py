@@ -395,6 +395,22 @@ class Log(metaclass=Logmeta):
 
     manager = LogManager()
 
+    # def __new__(
+    #     cls,
+    #     name: str,
+    #     log_level: int = 2,
+    # ):
+
+    #     obj = object.__new__(cls)
+    #     obj.__init__(name, log_level)
+
+    #     res = Log.manager.fit_external_logger(obj)
+    #     if res is not None:
+    #         warn(f"{name} is already in use -> returning currently known object", UserWarning)
+    #         obj = res
+
+    #     return obj
+
     def __init__(
         self,
         name: str,

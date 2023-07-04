@@ -26,13 +26,6 @@ class ConfigReader(dict):
             Configuration file.
         """
 
-        # Check if the file exists
-        if not os.path.isfile(file):
-            raise FileNotFoundError(f"Settings file '{file}' not found.")
-
-        # Check the settings file
-        check_config_data(file)
-
         # Set the root directory
         self.filepath = Path(file)
         self.path = self.filepath.parent
@@ -125,7 +118,7 @@ class ConfigReader(dict):
         ------
         KeyError
             If the key is not found in the settings file.
-         """
+        """
         # TODO: Isn't this implemented just as get_key?
 
         return str(self[key])
@@ -134,13 +127,13 @@ class ConfigReader(dict):
         self,
         base: str,
     ):
-        """"Add the remaining settings to the kwargs dictionary, filtered by a base key.
+        """ "Add the remaining settings to the kwargs dictionary, filtered by a base key.
 
         Parameters
         ----------
         base : str
             Base key.
-        
+
         Returns
         -------
         dict

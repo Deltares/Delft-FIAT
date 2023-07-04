@@ -17,7 +17,7 @@ def geom_centroid(ft: ogr.Feature) -> tuple:
 def point_in_geom(
     ft: ogr.Feature,
 ) -> tuple:
-    """ Get X and Y coordinates of the point on the surface of the geometry
+    """Get X and Y coordinates of the point on the surface of the geometry
 
     Parameters
     ----------
@@ -94,7 +94,7 @@ def reproject(
         file="memset",
         mode="w",
     )
-    
+
     # Create the output layer
     mem_gs.create_layer(
         out_srs,

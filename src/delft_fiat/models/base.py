@@ -23,7 +23,7 @@ class BaseModel(metaclass=ABCMeta):
         self,
         cfg: "ConfigReader",
     ):
-        """ 
+        """
         BaseModel class to be used for all models in Delft-FIAT
 
         Parameters
@@ -81,8 +81,8 @@ class BaseModel(metaclass=ABCMeta):
         # Generate the kwargs in case of a multiband raster
         kw = self._cfg.generate_kwargs("hazard.multiband")
         data = open_grid(path, **kw)
-        
-        # Check the hazard subsets 
+
+        # Check the hazard subsets
         logger.info("Executing hazard checks...")
 
         # check for subsets

@@ -24,8 +24,8 @@ logger = spawn_logger("fiat.model.geom")
 
 
 class GeomModel(BaseModel):
-    """ GeomModel class. """
-    
+    """GeomModel class."""
+
     _method = {
         "area": overlay.clip,
         "centroid": overlay.pin,
@@ -35,14 +35,14 @@ class GeomModel(BaseModel):
         self,
         cfg: "ConfigReader",
     ):
-        """Initialize the GeomModel class.	
+        """Initialize the GeomModel class.
 
         Parameters
         ----------
         cfg : ConfigReader
             _description_
         """
-    
+
         # Initialize the base class
         super().__init__(cfg)
 
@@ -51,12 +51,12 @@ class GeomModel(BaseModel):
         self._read_exposure_geoms()
 
     def __del__(self):
-        """Destructor.""""
+        """Destructor"""
 
         BaseModel.__del__(self)
 
     def _clean_up(self):
-        """ Clean up the temporary files. """
+        """Clean up the temporary files."""
 
         _p = self._cfg.get("output.path.tmp")
         for _f in _p.glob("*"):
@@ -64,7 +64,7 @@ class GeomModel(BaseModel):
         os.rmdir(_p)
 
     def _read_exposure_data(self):
-        """ Read the exposure data. """
+        """Read the exposure data."""
 
         # Read the exposure data
         path = self._cfg.get("exposure.geom.csv")
@@ -88,7 +88,7 @@ class GeomModel(BaseModel):
         self._exposure_data = data
 
     def _read_exposure_geoms(self):
-        """ Read the exposure geometries and store in the object as a dict. """
+        """Read the exposure geometries and store in the object as a dict."""
 
         # Initialize the dict
         _d = {}
@@ -117,10 +117,10 @@ does not match the model spatial reference ('{get_srs_repr(self.srs)}')"
                 logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
                 data = geom.reproject(data, self.srs.ExportToWkt())
 
-            ## Add the data to the dict
+            # Add the data to the dict
             _d[file.rsplit(".", 1)[1]] = data
 
-        ## When all is done, add the exposure data as a dictionary of ExposureTable objects
+        # When all is done, add the exposure data as a dictionary of ExposureTable objects
         self._exposure_geoms = _d
 
     def _patch_up(
@@ -250,6 +250,8 @@ does not match the model spatial reference ('{get_srs_repr(self.srs)}')"
                     futures.append(fs)
             logger.info("Busy...")
             wait(futures)
+            # for p in p_s:
+            #     p.join()
 
         else:
             logger.info(f"Submitting a job for the calculations in a seperate process")
