@@ -1,4 +1,4 @@
-from delft_fiat.check import check_config_entries, check_config_data
+from delft_fiat.check import check_config_entries
 from delft_fiat.util import (
     Path,
     create_hidden_folder,

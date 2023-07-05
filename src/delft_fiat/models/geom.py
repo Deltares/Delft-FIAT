@@ -71,10 +71,10 @@ class GeomModel(BaseModel):
         logger.info(f"Reading exposure data ('{path.name}')")
         data = open_exp(path, index="Object ID")
 
-        ## TODO: Add validity checks here
+        # TODO: Add validity checks here
         logger.info("Executing exposure data checks...")
 
-        ## Information for output
+        # Information for output
         _ex = None
         if self._cfg["hazard.risk"]:
             _ex = ["Risk (EAD)"]
@@ -84,7 +84,7 @@ class GeomModel(BaseModel):
         )
         self._cfg["output.new_columns"] = cols
 
-        ## When all is done, add it
+        # When all is done, add it
         self._exposure_data = data
 
     def _read_exposure_geoms(self):
