@@ -134,7 +134,7 @@ class ConfigReader(dict):
         self,
         base: str,
     ):
-        """"Add the remaining settings to the kwargs dictionary, filtered by a base key.
+        """Add the remaining settings to the kwargs dictionary, filtered by a base key.
 
         Parameters
         ----------

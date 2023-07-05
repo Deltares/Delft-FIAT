@@ -51,7 +51,7 @@ class GeomModel(BaseModel):
         self._read_exposure_geoms()
 
     def __del__(self):
-        """Destructor.""""
+        """Destructor."""
 
         BaseModel.__del__(self)
 
