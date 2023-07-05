@@ -62,6 +62,7 @@ class _BaseIO(metaclass=ABCMeta):
             raise ValueError("")
 
         self.path = Path(file)
+        self._path = Path(file)
 
         self._closed = False
         self._mode = _BaseIO._mode_map[mode]
@@ -153,6 +154,9 @@ class _BaseHandler(metaclass=ABCMeta):
 class _BaseStruct(metaclass=ABCMeta):
     """A struct container"""
 
+    def __init__(self):
+        self._kwargs = {}
+
     @abstractmethod
     def __del__(self):
         pass
@@ -160,6 +164,16 @@ class _BaseStruct(metaclass=ABCMeta):
     def __repr__(self):
         _mem_loc = f"{id(self):#018x}".upper()
         return f"<{self.__class__.__name__} object at {_mem_loc}>"
+
+    def update_kwargs(
+        self,
+        **kwargs,
+    ):
+        """_summary_"""
+
+        self._kwargs.update(
+            **kwargs,
+        )
 
 
 ## Handlers
@@ -811,6 +825,14 @@ class GridSource(_BaseIO, _BaseStruct):
         if not _ext in GRID_DRIVER_MAP:
             raise DriverNotFoundError("")
 
+        _BaseStruct.__init__(self)
+        self.update_kwargs(
+            subset=subset,
+            var_as_band=var_as_band,
+        )
+
+        _BaseIO.__init__(self, file, mode)
+
         driver = GRID_DRIVER_MAP[_ext]
 
         if not subset:
@@ -818,9 +840,7 @@ class GridSource(_BaseIO, _BaseStruct):
         self.subset = subset
 
         if subset is not None and not var_as_band:
-            file = f"{driver.upper()}:" + f'"{file}"' + f":{subset}"
-
-        _BaseIO.__init__(self, file, mode)
+            self._path = f"{driver.upper()}:" + f'"{file}"' + f":{subset}"
 
         self._driver = gdal.GetDriverByName(driver)
 
@@ -835,7 +855,7 @@ class GridSource(_BaseIO, _BaseStruct):
         self._var_as_band = var_as_band
 
         if not self._mode:
-            self.src = gdal.OpenEx(str(self.path), open_options=open_options)
+            self.src = gdal.OpenEx(str(self._path), open_options=open_options)
             self.count = self.src.RasterCount
 
             if self.count == 0:
@@ -885,7 +905,12 @@ class GridSource(_BaseIO, _BaseStruct):
 
         if not self._closed:
             return self
-        return GridSource.__new__(GridSource, self.path)
+        return GridSource.__new__(
+            GridSource,
+            self.path,
+            self.subset,
+            self._var_as_band,
+        )
 
     @_BaseIO._check_mode
     @_BaseIO._check_state

@@ -27,6 +27,8 @@ def reproject(
         _description_
     """
 
+    _gs_kwargs = gs._kwargs
+
     if not Path(str(out)).is_dir():
         out = gs.path.parent
 
@@ -59,4 +61,4 @@ def reproject(
 
     os.remove(fname_int)
 
-    return open_grid(fname)
+    return open_grid(fname, **_gs_kwargs)
