@@ -81,7 +81,10 @@ def run(
     <cfg>  Configurations file (toml) containing the settings for the FIAT model
     """
 
+    # Read and parse the settings file
     cfg = ConfigReader(cfg)
+
+    # Setup the logger
     logger = setup_default_log(
         "fiat",
         log_level=2 + quiet - verbose,
@@ -89,6 +92,8 @@ def run(
     )
     sys.stdout.write(fiat_start_str)
     logger.info(f"Delft-Fiat version: {__version__}")
+
+    # Run the main program
     obj = FIAT(cfg)
     obj.run()
 

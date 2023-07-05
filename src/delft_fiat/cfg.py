@@ -1,4 +1,4 @@
-from delft_fiat.check import check_config_entries
+from delft_fiat.check import check_config_entries, check_config_data
 from delft_fiat.util import (
     Path,
     create_hidden_folder,
@@ -127,7 +127,7 @@ class ConfigReader(dict):
         self,
         base: str,
     ):
-        """ "Add the remaining settings to the kwargs dictionary, filtered by a base key.
+        """Add the remaining settings to the kwargs dictionary, filtered by a base key.
 
         Parameters
         ----------
