@@ -1,4 +1,4 @@
-from delft_fiat.check import check_config_entries
+from delft_fiat.check import check_config_entries, check_config_data
 from delft_fiat.util import (
     Path,
     create_hidden_folder,
@@ -29,9 +29,6 @@ class ConfigReader(dict):
         # Check if the file exists
         if not os.path.isfile(file):
             raise FileNotFoundError(f"Settings file '{file}' not found.")
-
-        # Check the settings file
-        check_config_data(file)
 
         # Set the root directory
         self.filepath = Path(file)
