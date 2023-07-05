@@ -45,7 +45,7 @@ class FIAT:
         file = Path(file)
 
         # Check if the path is absolute or relative
-        if not Path(file).is_absolute(): 
+        if not Path(file).is_absolute():
             file = Path(Path.cwd(), file)
 
         # Read and parse the settings file
@@ -54,14 +54,14 @@ class FIAT:
         return cls(cfg)
 
     def run(self):
-        """Run the main program. Up to now, only the GeomModel is implemented. 
-        Later, the GridModel and other models will be added. This wil then be 
+        """Run the main program. Up to now, only the GeomModel is implemented.
+        Later, the GridModel and other models will be added. This wil then be
         transformed into the model factory pattern.
-        
+
         Returns
         -------
         None.
-        
+
         """
 
         model = GeomModel(self.cfg)

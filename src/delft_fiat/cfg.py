@@ -122,7 +122,7 @@ class ConfigReader(dict):
         ------
         KeyError
             If the key is not found in the settings file.
-         """
+        """
         # TODO: Isn't this implemented just as get_key?
 
         return str(self[key])
@@ -137,7 +137,7 @@ class ConfigReader(dict):
         ----------
         base : str
             Base key.
-        
+
         Returns
         -------
         dict

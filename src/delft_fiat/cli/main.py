@@ -39,9 +39,9 @@ def main(ctx):
     """
     Delft-FIAT: Delft Flood Impact Assessment Tool
 
-    Delft-FIAT is a tool to assess the impact of floods on the economy of a region. 
+    Delft-FIAT is a tool to assess the impact of floods on the economy of a region.
     It is developed by Deltares in Delft, The Netherlands.
-    """	
+    """
 
     # Create a dictionary to store objects that need to be passed between
     if ctx.obj is None:
@@ -107,7 +107,7 @@ def run(
     None.
     """
 
-    # Read and parse the settings file 
+    # Read and parse the settings file
     cfg = ConfigReader(cfg)
 
     # Setup the logger

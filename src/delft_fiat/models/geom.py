@@ -24,8 +24,8 @@ logger = spawn_logger("fiat.model.geom")
 
 
 class GeomModel(BaseModel):
-    """ GeomModel class. """
-    
+    """GeomModel class."""
+
     _method = {
         "area": overlay.clip,
         "centroid": overlay.pin,
@@ -35,14 +35,14 @@ class GeomModel(BaseModel):
         self,
         cfg: "ConfigReader",
     ):
-        """Initialize the GeomModel class.	
+        """Initialize the GeomModel class.
 
         Parameters
         ----------
         cfg : ConfigReader
             _description_
         """
-    
+
         # Initialize the base class
         super().__init__(cfg)
 
@@ -56,7 +56,7 @@ class GeomModel(BaseModel):
         BaseModel.__del__(self)
 
     def _clean_up(self):
-        """ Clean up the temporary files. """
+        """Clean up the temporary files."""
 
         _p = self._cfg.get("output.path.tmp")
         for _f in _p.glob("*"):
@@ -64,7 +64,7 @@ class GeomModel(BaseModel):
         os.rmdir(_p)
 
     def _read_exposure_data(self):
-        """ Read the exposure data. """
+        """Read the exposure data."""
 
         # Read the exposure data
         path = self._cfg.get("exposure.geom.csv")
@@ -88,7 +88,7 @@ class GeomModel(BaseModel):
         self._exposure_data = data
 
     def _read_exposure_geoms(self):
-        """ Read the exposure geometries and store in the object as a dict. """
+        """Read the exposure geometries and store in the object as a dict."""
 
         # Initialize the dict
         _d = {}
