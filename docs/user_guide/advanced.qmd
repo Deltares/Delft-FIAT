@@ -1,8 +1,7 @@
 ---
 title: Advanced options
 ---
-
-# List more advanced user options
+Advanced FIAT users can use the options as described in @tbl-toml for more control over their FIAT model run.
 
 | Field                        | Description                                                                                           | Required | Default                | Example      |
 |------------------------------|-------------------------------------------------------------------------------------------------------|----------|------------------------|--------------|
@@ -16,4 +15,4 @@ title: Advanced options
 | chunk                        | Divide grid into smaller chunks. Define grid chunk size (Advise to use the setting under global.grid) | No       |                        | [1024, 1014] |
 | **[vulnerability]**          |                                                                                                       |          |                        |              |
 | step_size                    | Interpolation scale for the hazard magnitude to create the vulnerability curves                       | No       |                        | 0.1          |
-: Settings.toml input (required and optional fields) {#tbl-toml .striped .hover .column-page-inset-right}
+: Advanced settings.toml input (required and optional fields) {#tbl-toml .striped .hover .column-page-inset-right}
