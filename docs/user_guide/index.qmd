@@ -39,4 +39,6 @@ To calculate the flood extent, FIAT extracts either the average or maximum water
 
 
 ![**FIAT Workflow.**
-The damage of the flood **water level** in each object is determined by flood depth-damage functions, which relate the water level to the maximum potential damage of an asset, returning a **damage fraction**. The damage fraction is multiplied with the **max. potential damage** to obtain a monetary **damage per object**.](../_static/images/FIAT_Scheme.png){#fig-fiat}
+The damage of the flood **water level** in each object is determined by flood depth-damage functions, which relate the water level to the maximum potential damage of an asset, returning a **damage fraction**. The damage fraction is multiplied with the **max. potential damage** to obtain a monetary **damage per object**.](../_static/images/FIAT_Scheme.svg){#fig-fiat}
+
+
