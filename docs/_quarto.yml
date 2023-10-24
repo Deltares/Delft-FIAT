@@ -42,9 +42,9 @@ website:
       contents:
         - user_guide/index.qmd
         - user_guide/data/settings.qmd
-        - user_guide/data/folder_structure.qmd
         - section: "Data"
           contents:
+            - user_guide/data/folder_structure.qmd
             - user_guide/data/hazard.qmd
             - user_guide/data/exposure.qmd
             - user_guide/data/vulnerability.qmd
@@ -63,7 +63,6 @@ website:
         - developments/changelog.qmd
         - developments/roadmap.qmd
         - developments/guide.qmd
-        - developments/env.qmd
 
 format:
   html:

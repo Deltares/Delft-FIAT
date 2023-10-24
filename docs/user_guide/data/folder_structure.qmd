@@ -1,27 +1,23 @@
-## Delft-FIAT Folder Dependencies
 ---
 title: "Folder structure"
-
 ---
 
-FIAT computes the damage of a flood event at a specified geographic location based on three main data inputs;
-
-  - [Hazard data](hazard.qmd)
-  - [Exposure data](exposure.qmd)
-  - [Vulnerability data](vulnerability.qmd)
-
-It is recommended to set up folder dependency set up as shown below to ensure that FIAT can find each data file and run smoothly.
+It is recommended to set up a folder structure as shown below to ensure that FIAT can find each data file and run smoothly. The files inside the folders are example files and do not need to be of those data types or named as such.
 
 ```
 
 ├───📁 FIAT/
+    |
+    ├───📁 hazard/
+    │   └───📄 hazard_map.nc
+    |
     ├───📁 exposure/
     │   ├───📄 buildings.gpkg
     │   └───📄 exposure.csv
-    ├───📁 hazard/
-    │   └───📄 hazard_map.geotiff
+    |
     ├───📁 vulnerability/
     │   └───📄 damage_curves.csv
+    |
     └───📄 settings.toml
 
 ```
