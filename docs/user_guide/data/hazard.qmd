@@ -3,27 +3,29 @@ title: "Hazard data"
 ---
 Using flood maps as hazard input FIAT computes the the impact of a flood event or the risk of a returning flood on a community. Flood maps analyse the potential flood extent and magnitude in specific geographic areas using indicators such as hydraulic data, rainfall, historical events, infrastructure and so forth.
 
-Flood maps can be obtained from various sources. The [FEMA Flood Map Service Center (MSC)](https://msc.fema.gov/portal/home) provides an extensive amount of flood hazard mapping products created under the National Flood Insurance Program.
+Flood maps can be obtained from various sources. The [The Global Flood Database](http://global-flood-database.cloudtostreet.info/) provides an extensive amount of global flood hazard mapping products.
+
+::: {.callout-tip}
+The user can also create an own flood model using the [**SFINCS model**](https://sfincs.readthedocs.io/en/latest/index.html)
+:::
 
 The user is free to run the model with a variety of flood scenarios e.g. including mitigation and adaptation measures over a range of future climate conditions, as long as flood maps are available for those scenarios. The flood maps can be either **flood elevation** or **flood depth maps**.
 
-::: {.callout-note}
-Flood elevation maps uses the datum as a reference point, whereas flood depth maps use the surface elevation to refer to.
-:::
 
 ::: {.callout-caution}
-Working with elevation maps, the datum must be the same as the one used to obtain the ground elevation in the exposure data.
+**Flood elevation maps** use the **datum** as a reference point, whereas **flood depth maps** use the **surface elevation** to refer to. The datum of the elevation map must be the same as the one used to obtain the ground elevation in the exposure data.
 :::
 
 With FIAT the user has the option to asses the impact of a single flood event or the flood risk with multiple return periods. To do the latter, the user must provide multiple hazard maps with the same extent and projection.
 
-In each case some requirements must be met. For both scenarios the hazard files of any map should be made available as a **raster or vector file** ([<ins><h14>*hazard file types*</h14></ins>]) and must be located in the 'hazard' folder. The file name is free to choose by the user and must simply be refered to in the *settings.toml* configuration file.
+In each case some requirements must be met. For both scenarios the hazard files of any map should be made available as a **raster or vector file** ([<ins><h14>hazard file types</h14></ins>]) and must be located in the 'hazard' folder. The file name is free to choose by the user and must simply be refered to in the *settings.toml* configuration file.
 
 # Event Map
 
 ....The flood maps must be either uncompressed or compressed  using the LZW method .
 ....
-....
+....  
+
 # Risk Map
 
 ...The flood maps must be either uncompressed or compressed  using the LZW method .
