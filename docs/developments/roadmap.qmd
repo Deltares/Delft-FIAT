@@ -2,4 +2,8 @@
 title: "Roadmap"
 ---
 
-## In essence: what's in the pipeline
+## 2023 - Q4
+The biggest priority in this quarter is to go open source and to release a first version of FIAT for both the Vector and Raster models.
+
+## 2024 - Q1
+The biggest priority in this quarter is to create a stable version of FIAT for both the Vector and Raster models.
