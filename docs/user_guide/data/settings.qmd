@@ -7,7 +7,7 @@ The model settings are configured in a *settings.toml* file. The configuration f
 File paths in the settings can be relative to the settings.toml file or absolute.
 :::
 
-| Field                    | Example                                  | Required                           | Note                                                                                                          |
+| Field                    | Example                                  | Required                           | Description                                                                                                          |
 |------------------------------|------------------------------------------|-------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | **[global]**                 |                                          |                                     |                                                                                                               |
 | crs                          | 'EPSG:32617'                             | No                                  | Projection                                                                                                    |

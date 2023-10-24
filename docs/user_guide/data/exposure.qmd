@@ -6,7 +6,11 @@ include-in-header:
 
 ---
 
-The **exposure data** serves to describe the assets within the affected region that the user intends to assess. This data file should be made available in either **CSV format or raster file** ([<ins><h14>*exposure file types*</h14></ins>]) and must be located in the 'exposure' folder, following the prescribed naming convention e.g 'exposure.csv' or 'exposure.nc.
+The **exposure data** serves to describe the assets within the affected region that the user intends to assess. This data file should be made available in either **CSV format or raster file** ([<ins><h14>exposure file types</h14></ins>]) and must be located in the 'exposure' folder, following the prescribed naming convention e.g 'exposure.csv' or 'exposure.nc.
+
+::: {.callout-tip}
+You can also create your exposure data with the [**HydroMT-FIAT  model builder**](https://deltares.github.io/hydromt_fiat/latest/#).
+:::
 
 ::: {.callout-warning}
  Assets cannot be outside the area of the hazard map input! Assets that fully fall out of the hazard extend are automatically removed by FIAT. BUT any asset that partially falls outside the flood map extent must be removed manually by the user.
@@ -78,9 +82,6 @@ The maximum potential damage correspond to the damage functions for each asset. 
 The damage results are aggregated over any aggregation label that the user specifies in the exposure data and are returned as damages per aggregation zone within that aggregation type. These aggregation labels can include for example: land use, census tract, and census block.
 The user can add columns manually, naming the new column `“Aggregation Label:” {'Label name'}`, in which the user is free to select a descriptive 'Label name' for the aggregation area.
 If the user wishes to add aggregation zones via vector file, **FIAT Toolbox** offers a post-processing tool to do so.
-
-**here not sure, need to ask**
-An aggregation variable is similar to an aggregation label, except that it can take continuous values instead of discrete labels, and the summation of damages occurs over ‘bins’. For example, one can include the social vulnerability index (SVI) as an aggregation variable. The column name in the exposure data should then be “Aggregation Variable: SVI”. The damages for objects that fall within an SVI class, for example between 0 and 0.2, will be added together to return the damages for different SVI classes. These classes are specified in the configuration file (see Section 4.4).
 
 
 ###### <ins><h14>*exposure file types*</h14></ins>
