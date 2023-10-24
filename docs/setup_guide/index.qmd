@@ -14,7 +14,7 @@ title: "Setup guide"
   </li>
   <li class="nav-item" role="presentation">
     <a class="nav-link" href="kernel/application.html">
-      <i class="bi bi-gear"></i>FIAT as application
+      <i class="bi bi-gear"></i>Freeze FIAT as an application
     </a>
   </li>
   <li class="nav-item" role="presentation">
@@ -27,6 +27,7 @@ title: "Setup guide"
 ```
 :::
 
-## Some very general info
+## Overview
+FIAT requires Python 3.9 or greater, a [package manager](general/conda.qmd), and Git to be installed. After that, FIAT can be [installed](kernel/installation.qmd) for use or for development, or it can be [freezed](kernel/application.qmd) as an application/executable.
 
-Maybe something about python or conda
+It's possible to [run FIAT on Linux](kernel/linux.qmd) but this is currently in the bèta phase.

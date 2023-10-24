@@ -1,3 +1,5 @@
 ---
 title: "FIAT on Linux"
 ---
+
+It's possible to run FIAT on Linux but priorities are set on releasing and finalizing other parts of the documentation so this will be filled at a later stage.

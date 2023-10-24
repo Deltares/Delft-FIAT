@@ -1,95 +1,54 @@
 ---
 title: "Installing FIAT"
 ---
-# Delft-FIAT: Fast Impact Assessment Tool
-Combined assessment for spatial (raster) and object (vector)
 
-
-## Prerequisites
-Delft-FIAT requires Python 3.9 or greater, a package manager e.g. Conda/Mamba/Micro3 and Git to be installed.
-A detailed description on how to set up the package manager can be found here.
-
-
-## Installation for Use
+# For Use
 FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.
 
-### Installation in existing environment
-If you want to install FIAT into an existing environment, simply check out into the desired environment and run **pip install**;
-
-`pip install git+https://github.com/Deltares/Delft-FIAT.git`
-
-### Installation in new environment
+## New environment
 To create a new environment follow the steps below.
 
-**Create a new environment:**
+- Create a new environment:
 
-`conda create -n fiat python=3.11.*
+    `conda create -n fiat python=3.11.*`
 
-**Activate the environment:**
-`conda activate fiat`
+- Activate the environment:
 
-**Install FIAT from Github:**
-After creating the new environment, you need to install all dependencies from the Deltares Github server. You can use **pip install** to do so;
+    `conda activate fiat`
+
+- Install FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use **pip install** to do so:
+
+    `pip install git+https://github.com/Deltares/Delft-FIAT.git`
+
+## Existing environment
+If you want to install FIAT into an existing environment, simply activate the desired environment and run **pip install**:
 
 `pip install git+https://github.com/Deltares/Delft-FIAT.git`
 
 
-## Installation for Development
-This is for those who wish to contribute to the development of FIAT at this early stage.
+# For Development
+This is for those who wish to contribute to the development of FIAT.
 
-### Clone FIAT from Github
-First, clone the repository into your local directory, in which all your repositories are located:
+- First, clone the FIAT repository on Github into a local directory of choice:
 
-`cd ~/{your path}`
+    `cd ~/{your path}`
 
+    `git clone https://github.com/Deltares/Delft-FIAT.git fiat`
 
-`git clone https://github.com/Deltares/Delft-FIAT.git fiat`
+- Create a new development environment. Make sure you either have tomli or tomllib (build-in with Python 3.11) in your base enviroment. Go into your cloned FIAT repository folder and create the environment file by running the *make_env.py* script:
 
-### Create a new development environment
-Now let's do the python stuff. Make sure you either have tomli or tomllib (build-in with py 3.11) in your base enviroment.
+    `cd ~/{your path}/fiat`
 
-Go into your FIAT repository and create the environment file by running the *make_env.py* script;
+    `python make_env.py dev`
 
-`cd ~/{your path}/fiat`
+- Then, create and activate the new environment in conda:
 
-`python make_env.py dev`
+    `conda env create -f environment.yml`
 
-Then, create and activate the new environment in conda;
+    `conda activate fiat_dev`
 
-`conda env create -f environment.yml`
+- To install all the required dependencies, run:
 
-`conda activate fiat_dev`
+    `pip install -e . `
 
-To install all the required dependencies run;
-
-`pip install -e . `
-
-There ya go. FIAT is now installed on your local machine for develpment purposes.
-
-
-## Freeze FIAT as an application
-This more or less assumes the one went for a development install
-If not: do the development install for FIAT first
-
-Create a yaml for a seperate environment
-
-`python make_env.py build`
-
-Again, create the environment with conda
-
-`conda env create -f environment.yml`
-
-This time FIAT will be automatically installed with the environment
-Now, go to the .build/core directory;
-
-`cd ./.build/core`
-
-And just execute the pybuild.bat script;
-
-`pybuild.bat`
-
-That's it.
-FIAT will be located in the {root}/bin/core/Release folder.
-
-## License
-Delft-FIAT is available under the **GPLv3** license. Find further details [here](https://github.com/Deltares/Delft-FIAT/blob/master/LICENSE).
+There you go. FIAT is now installed on your local machine for development purposes.

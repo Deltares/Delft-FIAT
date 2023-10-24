@@ -32,7 +32,7 @@ website:
         - section: "General setup"
           contents:
             - "setup_guide/general/conda.qmd"
-        - section: "FIAT kernel/ package"
+        - section: "FIAT package"
           contents:
             - setup_guide/kernel/installation.qmd
             - setup_guide/kernel/application.qmd
