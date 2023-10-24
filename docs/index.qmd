@@ -11,7 +11,7 @@ include-in-header:
 
 **FIAT** works with an easy format for exposed assets, consisting of information on the location, exposed value, ground floor height, and associated depth-damage function, which can be modified by the user. A simple configuration file specifies the location of depth-damage functions and flood maps, as well as return periods of flood maps if calculating risk (@fig-FIAT).
 
-Thanks to its flexible character, FIAT **integrates** with various software applications such as flood adaptation planning tool [**FloodAdapt**](https://www.deltares.nl/en/software-and-data/products/floodadapt) or an [interTwin digital twin](https://www.intertwin.eu/intertwin-use-case-deploying-floodadapt-a-digital-twin-for-flood-impact-modelling-anywhere-on-earth/) and can be called multiple times to e.g. assess uncertainty in damage estimates, or run for numerous flood scenarios.
+Thanks to its flexible character, FIAT **integrates** with various software applications such as flood adaptation planning tool [FloodAdapt](https://www.deltares.nl/en/software-and-data/products/floodadapt) or an [interTwin digital twin](https://www.intertwin.eu/intertwin-use-case-deploying-floodadapt-a-digital-twin-for-flood-impact-modelling-anywhere-on-earth/) and can be called multiple times to e.g. assess uncertainty in damage estimates, or run for numerous flood scenarios.
 
 
 :::{.column-page}
