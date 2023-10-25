@@ -1,9 +1,9 @@
 ---
 title: "Settings file"
 ---
-The model settings are configured in a *settings.toml* file. The configuration file consists of important core information and can be extended with a range of optional input, see @tbl-toml:
+The model settings are configured in a *settings.toml* file. The configuration file consists of important core information and can be extended with a range of optional input, see @tbl-toml. More advanced options are described in the [Advanced options](../advanced.qmd) page.
 
-For a simple model the configuration file only needs the required fields and can be kept rather simple;
+For a simple model the configuration file only needs the required fields and can be kept rather simple:
 
 ```html
 [output]
@@ -88,7 +88,7 @@ If the user prefers to create a more advanced model or to utilize grid data inst
 | csv                          | File path to exposure.csv file, that contains information about e.g. asset type, max. potential damage, aggregation and so forth)                                            | Yes                                 | 'exposure/exposure.csv'                                                   | 'exposure/exposure.csv'                   |
 | file1                        | File path of exposure vector file with Object ID column to enable linking exposure.csv output to vector file.                                                                | Yes                                 | **buildings**: 'exposure/buildings.gpkg' **roads**: 'exposure/roads.gpkg' | 'exposure/buildings.gpkg'                 |
 | crs                          | Projection of exposure data                                                                                                                                                  | Yes, if crs is unknown in dataset   |                                                                           | 'EPSG:32617'                              |
-| index                        | Define the name of the index column of the data to link the exposure CSV file with the exposure vector file.                                                                 | Yes                                 | 'Object ID'                                                               | 'Object ID'                               |
+| index                        | Define the name of the index column of the data to link the exposure CSV file with the exposure vector file.                                                                 | No                                 | 'Object ID'                                                               | 'Object ID'                               |
 | **[exposure.grid]**          |                                                                                                                                                                              |                                     |                                                                           |                                           |
 | file                         | File path to exposure.nc grid file, that contains the spatial information and information about the maximum potential damage per cell.                                       | Yes, if netCDF is provided as input | 'exposure/raster.nc'                                                      | 'exposure/raster.nc'                      |
 | crs                          | Output projection                                                                                                                                                            | Yes, if crs is unknown in dataset   |                                                                           | 'EPSG:32617'                              |
@@ -97,5 +97,3 @@ If the user prefers to create a more advanced model or to utilize grid data inst
 | **[vulnerability]**          |                                                                                                                                                                              |                                     |                                                                           |                                           |
 | file                         | File path to vulnerability_curves.csv file, that contains the damage functions.                                                                                              | Yes                                 |                                                                           | 'vulnerability/ vulnerability_curves.csv' |
 : Settings.toml input (required and optional fields) {#tbl-toml .striped .hover .column-page-inset-right}
-
-

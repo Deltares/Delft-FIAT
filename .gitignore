@@ -112,3 +112,6 @@ environment.yml
 
 # Cython debug symbols
 cython_debug/
+
+# example output data
+docs/examples/example_output
