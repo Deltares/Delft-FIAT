@@ -1,0 +1,465 @@
+---
+title: "Delft FIAT Documentation"
+date: 2023-10-27
+toc: true
+format:
+  pdf:
+    number-sections: true
+    colorlinks: false
+    papersize: A4
+    layout: portrait
+    number-depth: 3
+    highlight-style: github
+    toc-depth: 2
+---
+
+{{< pagebreak >}}
+
+# Getting to Know Delft-FIAT
+
+[**Delft-FIAT**](https://www.deltares.nl/en/software-and-data/products/delft-fiat-flood-impact-assessment-tool) is a free, python-based **Fast Impact Assessment Tool**, designed and continuously improved by Deltares. It is configured to run quick, consistent, and well-founded **flood damage** and **risk calculations** on the basis of flood maps and additional inputs such as depth-damage functions, asset locations, and their maximum potential damages. Delft-FIAT allows rapid assessment of the direct **economic** and **monetary impacts** to buildings, utilities, and roads for specified flood events and return periods. Fast impact modeling removes bottlenecks in **climate adaptation planning**, allowing for large numbers of calculations needed to understand the effectiveness of adaptation strategies and the changes in damage and risk as climate and socio-economic conditions change. In the further documentation, Delft-FIAT will be refered to simply as **FIAT**.
+
+**FIAT** works with an easy format for exposed assets, consisting of information on the location, exposed value, ground floor height, and associated depth-damage function, which can be modified by the user. A simple configuration file specifies the location of depth-damage functions and flood maps, as well as return periods of flood maps if calculating risk.
+
+Thanks to its flexible character, FIAT **integrates** with various software applications such as flood adaptation planning tool [FloodAdapt](https://www.deltares.nl/en/software-and-data/products/floodadapt) or an [interTwin digital twin](https://www.intertwin.eu/intertwin-use-case-deploying-floodadapt-a-digital-twin-for-flood-impact-modelling-anywhere-on-earth/) and can be called multiple times to e.g. assess uncertainty in damage estimates, or run for numerous flood scenarios.
+
+<html>
+<head>
+<meta charset="utf-8"/>
+</head>
+<body>
+<div class="mxgraph" style="max-width:100%;padding:3em 0 18em 0;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;xml&quot;:&quot;&lt;mxfile host=\&quot;app.diagrams.net\&quot; modified=\&quot;2023-10-25T06:59:31.803Z\&quot; agent=\&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.46\&quot; etag=\&quot;QpuXOlBkvi8B3uUODvBo\&quot; version=\&quot;22.0.7\&quot; type=\&quot;device\&quot;&gt;&lt;diagram name=\&quot;Page-1\&quot; id=\&quot;aSg1EHzWzZEX-zshLOQz\&quot;&gt;&lt;mxGraphModel dx=\&quot;746\&quot; dy=\&quot;479\&quot; grid=\&quot;1\&quot; gridSize=\&quot;10\&quot; guides=\&quot;1\&quot; tooltips=\&quot;1\&quot; connect=\&quot;1\&quot; arrows=\&quot;1\&quot; fold=\&quot;1\&quot; page=\&quot;1\&quot; pageScale=\&quot;1\&quot; pageWidth=\&quot;850\&quot; pageHeight=\&quot;1100\&quot; math=\&quot;0\&quot; shadow=\&quot;0\&quot;&gt;&lt;root&gt;&lt;mxCell id=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;1\&quot; parent=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-1\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b&amp;gt;Flood maps&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;50\&quot; y=\&quot;100\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-3\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b&amp;gt;&amp;amp;nbsp; &amp;amp;nbsp; &amp;amp;nbsp; &amp;amp;nbsp; Damage functions&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;50\&quot; y=\&quot;190\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-4\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b&amp;gt;Exposure&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;50\&quot; y=\&quot;290\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-7\&quot; value=\&quot;&amp;lt;font size=&amp;quot;1&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;amp;nbsp; &amp;amp;nbsp; Flood Impact&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;540\&quot; y=\&quot;191\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-8\&quot; value=\&quot;\&quot; style=\&quot;rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;280\&quot; y=\&quot;150\&quot; width=\&quot;255\&quot; height=\&quot;165\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-9\&quot; value=\&quot;&amp;lt;font size=&amp;quot;1&amp;quot; style=&amp;quot;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;font-size: 28px;&amp;quot;&amp;gt;Delft-FIAT&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=0;fillColor=#080c80ff;strokeColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;328.13\&quot; y=\&quot;150\&quot; width=\&quot;158.75\&quot; height=\&quot;158.75\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-14\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;YvDSmxeZs--AiFGO8erU-1\&quot;&gt;&lt;mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;mxPoint x=\&quot;242\&quot; y=\&quot;131.5\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;330\&quot; y=\&quot;130\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-15\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;mxPoint x=\&quot;240.13\&quot; y=\&quot;219.5\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;330.13\&quot; y=\&quot;219.5\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-16\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;mxPoint x=\&quot;240.13\&quot; y=\&quot;319.5\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;330.13\&quot; y=\&quot;319.5\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-17\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;mxPoint x=\&quot;491.88\&quot; y=\&quot;220.5\&quot; as=\&quot;sourcePoint\&quot;/&gt;&lt;mxPoint x=\&quot;551.1004778278927\&quot; y=\&quot;220.6985665163221\&quot; as=\&quot;targetPoint\&quot;/&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-22\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;4&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;333\&quot; y=\&quot;112\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-23\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;1&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;70\&quot; y=\&quot;117.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-24\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;2&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;70\&quot; y=\&quot;207.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-25\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;3&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;70\&quot; y=\&quot;307.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-26\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;5&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;&gt;&lt;mxGeometry x=\&quot;562\&quot; y=\&quot;208.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;/root&gt;&lt;/mxGraphModel&gt;&lt;/diagram&gt;&lt;/mxfile&gt;&quot;}"></div>
+<script type="text/javascript" src="https://app.diagrams.net/js/viewer-static.min.js"></script>
+</body>
+</html>
+
+
+
+|   | Field            | Description                                                                        |
+|---|------------------|-----------------------------------------------------------------------------|
+| 1 | Flood maps       | Hazard input: Selected per damage simulation                                |
+| 2 | Damage functions | Vulnerability input: Prepared in set-up phase, coupled to exposure objects  |
+| 3 | Exposure data    | Exposure input: Prepared in set-up phase, object details and metadata       |
+| 4 | Delft-FIAT       | Fast Impact Assesment Tool coupled with FIAT Toolbox for post-processing    |
+| 5 | Flood damages    | Object + aggregated level of monetary and economic damages                  |
+: Delft-FIAT input {#tbl-toml .striped .hover .column-screen}
+
+{{< pagebreak >}}
+
+# Set up Guide
+
+## Set up Miniforge3
+
+In order to develop on **FIAT** locally, the Python package manager **Miniforge3** is recommended.
+
+- Download and install [Miniforge3](https://github.com/conda-forge/miniforge#mambaforge)
+
+- Initialize conda by running the following in the Miniforge prompt:
+
+    `conda init`
+
+- Depending on your computer settings, you might also have to run the following in a Powershell terminal as administrator:
+
+    `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned`
+
+## Freeze Fiat as application
+
+To freeze FIAT as an application/executable, it is required to have the FIAT repository cloned on your local machine. A different environment is needed to build the application:
+
+- Create a yml for a seperate **build** environment:
+
+    `python make_env.py build`
+
+- Create the environment with mamba. This time, FIAT will be automatically installed with the environment:
+
+    `mamba env create -f environment.yml`
+
+- Go to the .build/core directory and execute the pybuild.bat script:
+
+    `cd ./.build/core`
+
+    `pybuild.bat `
+
+That's it.
+A FIAT application will be located in the `{root}/bin/core/Release` folder.
+
+## Installing FIAT
+### For Use
+FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.
+
+#### New environment
+To create a new environment follow the steps below.
+
+- Create a new environment:
+
+    `conda create -n fiat python=3.11.*`
+
+- Activate the environment:
+
+    `conda activate fiat`
+
+- Install FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use **pip install** to do so:
+
+    `pip install git+https://github.com/Deltares/Delft-FIAT.git`
+
+#### Existing environment
+If you want to install FIAT into an existing environment, simply activate the desired environment and run **pip install**:
+
+`pip install git+https://github.com/Deltares/Delft-FIAT.git`
+
+
+### For Development
+This is for those who wish to contribute to the development of FIAT.
+
+- First, clone the FIAT repository on Github into a local directory of choice:
+
+    `cd ~/{your path}`
+
+    `git clone https://github.com/Deltares/Delft-FIAT.git fiat`
+
+- Create a new development environment. Make sure you either have tomli or tomllib (build-in with Python 3.11) in your base enviroment. Go into your cloned FIAT repository folder and create the environment file by running the *make_env.py* script:
+
+    `cd ~/{your path}/fiat`
+
+    `python make_env.py dev`
+
+- Then, create and activate the new environment in conda:
+
+    `conda env create -f environment.yml`
+
+    `conda activate fiat_dev`
+
+- To install all the required dependencies, run:
+
+    `pip install -e . `
+
+There you go. FIAT is now installed on your local machine for development purposes.
+
+{{< pagebreak >}}
+
+# User Guide
+
+## Quick start
+FIAT computes the damage of (a) flood event(s) at a specified geographic location based on a settings file and three main data inputs:
+
+  - [Settings file](data/settings.qmd)
+  - [Hazard data](data/hazard.qmd)
+  - [Exposure data](data/exposure.qmd)
+  - [Vulnerability data](data/vulnerability.qmd)
+
+The HydroMT plugin [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) can be used to set up the FIAT model data but that is not compulsory. If a user sets up their own FIAT model data, it is recommended to save the data into the same [folder structure](data/folder_structure.qmd) that HydroMT-FIAT creates.
+
+![FIAT Workflow.The damage of the flood water level in each object is determined by flood depth-damage functions, which relate the water level to the maximum potential damage of an asset, returning a damage fraction. The damage fraction is multiplied with the max. potential damage to obtain a monetary damage per object](/_static/images/FIATScheme.png)
+
+## General User Information
+
+**FIAT** derives **aggregated damages and risk** at asset-level and aggregated levels based upon flood maps and additional inputs such as depth-damage functions, asset locations and their maximum potential damages.
+For each asset specified in the exposure dataset, the water depth or elevation is subtracted from the flood map at the location of the assets.
+
+::: {.callout-note}
+Water elevations are converted to water depths using the ground elevation of each asset.
+:::
+
+To calculate the flood extent, FIAT extracts either the average or maximum water depth and the fraction of the building that is flooded. The **inundation depth** within buildings is obtained by subtracting the **ground floor height** from the **water depth**. FIAT derives the damage fraction for each asset using its inundation depth and interpolating over its depth-damage curve. Thereafter, the damage to the asset is calculated as the product of the maximum potential damage and the damage fraction. In case an asset is only partially flooded, the damages will be reduced by the dry fraction of the building. Instead of single events, the user can also provide return-period flood maps as input. Hence, FIAT calculates and integrates the associated return-period damages to derive the expected annual damages.
+
+{{< pagebreak >}}
+
+# Data
+
+## Settings file
+
+The model settings are configured in a *settings.toml* file. The configuration file consists of important core information and can be extended with a range of optional input, see @tbl-toml. More advanced options are described in the [Advanced options](../advanced.qmd) page.
+
+
+For a simple model the configuration file only needs the required fields and can be kept rather simple:
+
+```html
+[output]
+path = "output" 
+
+[output.csv]
+name = "output.csv" 
+
+[output.geom]
+name1 = "spatial.gpkg"
+
+[hazard]
+file = "hazard/SL_10yr_reprojected.tif"
+crs = "EPSG:4326"
+elevation_reference = "DEM"
+risk = false
+
+[exposure.geom]
+csv = "./exposure/exposure.csv"
+crs = "EPSG:4326"
+file1 = "./exposure/buildings.gpkg"
+
+[vulnerability]
+file = "./vulnerability/vulnerability_curves.csv"
+
+```
+
+[**output**]  
+`path` :  This will create an output folder in the working directory 
+
+[**output.csv**]  
+`name`: This will create an output CSV file that contains the information from the exposure.csv and the damages per asset
+
+[**output.geom**]  
+`name1`: This will create an output vector file that contains the objects and the    
+damages per asset
+
+[**hazard**]  
+`file`: The file path to the hazard file  
+`crs`: The projection of the hazard file. If no global projection is defined, the output will be in the same projection as the hazard map.   
+`elevation_reference`: In this case the hazard input is a flood map, therefore "DEM" is defined as reference. If it would be an elevation map the input would be "datum"  
+`risk`: in this case "false" as a single event is assessed. 
+
+[**exposure.geom**]
+`csv`: This will create an exposure CSV file within the exposure folder ([folder strucute](folder_structure.qmd)) that contains the [required information](exposure.qmd) per asset.  
+`crs`: The projection of the exposure vector file.  
+`file1`: This will create an exposure vector file within the exposure folder with the assets'geometry and Object ID.
+
+[**vulnerability**]  
+`file`: This will create an vulnerability curves CSV file within the vulnerability folder ([folder strucute](folder_structure.qmd)) that contains the damage curves. 
+
+::: {.callout-note}
+File paths in the settings can be relative to the settings.toml file or absolute.
+:::
+
+If the user prefers to create a more advanced model or to utilize grid data instead of object data, FIAT offers the flexibility to customize settings for each variable (@tbl-toml)
+
+| Field                        | Description                                                                                                                                                                  | Required                            | Example                                   |
+|------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|-------------------------------------------|
+| **[global]**                 |                                                                                                                                                                              |                                     |                                           |
+| crs                          | Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.                                          | No                                  | 'EPSG:32617'                              |
+| **[global grid]**            |                                                                                                                                                                              |                                     |                                           |
+| chunk                        | Divide grid into smaller chunks. Define grid chunk size                                                                                                                      | No                                  | [1024, 1014]                              |
+| **[output]**                 |                                                                                                                                                                              |                                     |                                           |
+| path                         | Set directory path to save the output                                                                                                                                        | Yes                                 | 'output'                                  |
+| **[output.csv]**             |                                                                                                                                                                              |                                     |                                           |
+| name                         | File name of the output.csv file containing the exposure data incl. the damage per asset.                                                                                    | Yes                                 | 'output.csv'                              |
+| **[output.geom]**            |                                                                                                                                                                              |                                     |                                           |
+| name1                        | File name of the output vector data. Can be various spatial files. Find details about  file formats in the data documentation.                                               | Yes                                 | 'spatial.gpkg'                            |
+| **[output.grid]**            |                                                                                                                                                                              | optional                            |                                           |
+| name                         | File name of the output for the grid model; WARN: not fully implemented yet                                                                                                  | Yes, if working with grid           | 'output.nc'                               |
+| **[hazard]**                 |                                                                                                                                                                              |                                     |                                           |
+| file                         | Directory path to hazard file (raster or netCDF). Can contain one (for events) or multiple (for return periods) bands                                                        | Yes                                 | 'hazard/event_map.nc'                     |
+| crs                          | Projection of hazard data                                                                                                                                                    | Yes, if crs is unknown in dataset   | 'EPSG:32617'                              |
+| elevation_ reference         | Define the elevation reference. Either Digital Elevation Model (Flood depth map) or Datum (Flood elevation map)                                                              | Yes                                 | 'dem'                                     |
+| risk                         | Hazard input is a returning event and multiple flood maps are ingested to compute the risk. True/False If true, risk (EAD) is computed. If false, a single event is computed | Yes                                 | True                                      |
+| return_ periods              | Return periods for hazard calculation when they cannot be inferred from the data itself                                                                                      | No                                  | [2, 5, 10, 25]                            |
+| **[hazard.settings]**        |                                                                                                                                                                              |                                     |                                           |
+| subset                       | Specific layer from a multilayered netCDF file (GDAL can't read those properly)                                                                                              | No                                  | 'zs'                                      |
+| var_ as_band                 | True/False Read netCDF subdatasets as raster bands                                                                                                                           | No                                  | False                                     |
+| **[exposure.geom]**          |                                                                                                                                                                              |                                     |                                           |
+| csv                          | File path to exposure.csv file, that contains information about e.g. asset type, max. potential damage, aggregation and so forth)                                            | Yes                                 | 'exposure/exposure.csv'                   |
+| file1                        | File path of exposure vector file with Object ID column to enable linking exposure.csv output to vector file.                                                                | Yes                                 | 'exposure/buildings.gpkg'                 |
+| crs                          | Projection of exposure data                                                                                                                                                  | Yes, if crs is unknown in dataset   | 'EPSG:32617'                              |
+| index                        | Define the name of the index column of the data to link the exposure CSV file with the exposure vector file.                                                                 | No                                  | 'Object ID'                               |
+| **[exposure.grid]**          |                                                                                                                                                                              |                                     |                                           |
+| file                         | File path to exposure.nc grid file, that contains the spatial information and information about the maximum potential damage per cell.                                       | Yes, if netCDF is provided as input | 'exposure/raster.nc'                      |
+| crs                          | Output projection                                                                                                                                                            | Yes, if crs is unknown in dataset   | 'EPSG:32617'                              |
+| **[exposure.grid.settings]** |                                                                                                                                                                              |                                     |                                           |
+| var_ as_band                 | True/False Read netCDF subdatasets as raster bands                                                                                                                           | No                                  | True                                      |
+| **[vulnerability]**          |                                                                                                                                                                              |                                     |                                           |
+| file                         | File path to vulnerability_curves.csv file, that contains the damage functions.                                                                                              | Yes                                 | 'vulnerability/ vulnerability_curves.csv' |
+: Settings.toml input (required and optional fields) {#tbl-toml .striped .column-page-inset-right}
+
+## Hazard Data
+
+Using flood maps as hazard input FIAT computes the the impact of a flood event or the risk of a returning flood on a community. Flood maps analyse the potential flood extent and magnitude in specific geographic areas using indicators such as hydraulic data, rainfall, historical events, infrastructure and so forth.
+
+Flood maps can be obtained from various sources. The [The Global Flood Database](http://global-flood-database.cloudtostreet.info/) provides an extensive amount of global flood hazard mapping products.
+
+::: {.callout-tip}
+The user can also create an own flood model using the [**SFINCS model**](https://sfincs.readthedocs.io/en/latest/index.html)
+:::
+
+The user is free to run the model with a variety of flood scenarios e.g. including mitigation and adaptation measures over a range of future climate conditions, as long as flood maps are available for those scenarios. The flood maps can be either **flood elevation** or **flood depth maps**.
+
+
+::: {.callout-caution}
+**Flood elevation maps** use the **datum** as a reference point, whereas **flood depth maps** use the **surface elevation** to refer to. The datum of the elevation map must be the same as the one used to obtain the ground elevation in the exposure data.
+:::
+
+With FIAT the user has the option to asses the impact of a single flood event or the flood risk with multiple return periods. To do the latter, the user must provide multiple hazard maps with the same extent and projection.
+
+In each case some requirements must be met. For both scenarios the hazard files of any map should be made available as a **raster or vector file** ([<ins><h14>hazard file types</h14></ins>]) and must be located in the 'hazard' folder. The file name is free to choose by the user and must simply be refered to in the *settings.toml* configuration file.
+
+### Event Map
+
+ Information will follow
+
+### Risk Map
+
+Information will follow
+
+
+**acceptable hazard file types**:'.vrt': 'VRT', '.tif': 'GTiff', '.tiff': 'COG', '.ntf': 'NITF', '.img': 'HFA', '.asc': 'AAIGrid', '.dt2': 'DTED', '.png': 'PNG', '.jpg': 'JPEG', '.gif': 'GIF', '.fits': 'FITS', '.xpm': 'XPM', '.bmp': 'BMP', '.pix': 'PCIDSK', '.map': 'PCRaster', '.mpl': 'ILWIS', '.rgb': 'SGI', '.hgt': 'SRTMHGT', '.ter': 'Terragen', '.nc': 'netCDF', '.cub': 'ISIS3', '.xml': 'PDS4', '.ers': 'ERS', '.jp2': 'JP2OpenJPEG', '.grib2': 'GRIB', '.rsw': 'RMF', '.rst': 'RST', '.grd': 'NWT_GRD', '.rda': 'R', '.kmz': 'KMLSUPEROVERLAY', '.webp': 'WEBP', '.pdf': 'PDF', '.sqlite': 'Rasterlite', '.mbtiles': 'MBTiles', '.ct1': 'CALS', '.mrf': 'MRF', '.pnm': 'PNM', '.hdr': 'MFF', '.bt': 'BT', '.lcp': 'LCP', '.gtx': 'GTX', '.gvb': 'NTv2', '.kro': 'KRO', '.byn': 'BYN', '.dem': 'USGSDEM', '.kea': 'KEA', '.bag': 'BAG', '.gen': 'ADRG', '.blx': 'BLX', '.sg-grd-z': 'SAGA', '.xyz': 'XYZ', '.hf2': 'HF2', '.dat': 'ZMap', '.sigdem': 'SIGDEM', '.gpkg': 'GPKG', '.gdb': 'OpenFileGDB', '.bil': 'EHdr', '': 'MEM'
+
+## Exposure Data 
+
+The **exposure data** serves to describe the assets within the affected region that the user intends to assess. This data file should be made available in either **CSV format or raster file** ([<ins><h14>exposure file types</h14></ins>]) and must be located in the 'exposure' folder, following the prescribed naming convention e.g 'exposure.csv' or 'exposure.nc.
+
+::: {.callout-tip}
+You can also create your exposure data with the [**HydroMT-FIAT  model builder**](https://deltares.github.io/hydromt_fiat/latest/#).
+:::
+
+::: {.callout-warning}
+ Assets cannot be outside the area of the hazard map input! Assets that fully fall out of the hazard extend are automatically removed by FIAT. BUT any asset that partially falls outside the flood map extent must be removed manually by the user.
+:::
+
+
+#### Raster Data
+
+Raster files must be **pre-processed** before being ingested into th FIAT model. Raster projection and extend must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a raster file is required. A damage function must be assigned to each raster file together with a value of the **Max Potential Damage** for each raster cell.
+
+#### CSV Data
+
+Along with the *exposure.csv* - file it is advisable to render an additional vector file of the exposed objects (e.g. points, building footbprints) with an index column, carrying the same name as the index column of the *exposure.csv* to allow for merging of the exposure files (optional). The name of the vector file should be descriptive of the objects it represents (e.g. 'buildings.gpkg','road.gpkg') and must be specified in the *settings.toml* configuration file. The advantage of providing this extra vector file is that (1) water levels or depths can be considered over the entire object (when 'extraction method' = 'area'); this can be more appropriate than point estimates for large buildings.(2) FIAT offers the **FIAT Toolbox** application to post-process the model results and improves visualization and interpretation of the results in GIS software applications.
+
+The exposure data CSV file contains information about each object in the area of interest that is needed for the damage calculation. Each row represents an object, such as a building, road segment, or utility, and each column represents an attribute of the object, such as its location, elevation or maximum potential damage value.
+For users who would want to create their own exposure data, or modify existing exposure data, a description of the default fields (columns) in the exposure data CSV can be found in @tbl-exposure.
+
+| Field                                  | Description                                                                                | Required                                 | Example                    |
+|----------------------------------------|--------------------------------------------------------------------------------------------|------------------------------------------|----------------------------|
+| Object ID                              | Unique numerical indentifier of the object                                                 | Yes                                      | 1                          |
+| Object Name                            | Unique name of the object                                                                  | No                                       | fp_1                       |
+| Primary Object Type                    | Object type                                                                                | No                                       | RES1_1SNB                  |
+| Secondary Object Type                  | More specification about object type                                                       | No                                       | Res 1,1 Story no basement  |
+| Extraction Method                      | Method to extract water depth                                                              | Yes                                      | option: 'centroid', 'area' |
+| Damage Function: Structure             | Damage function for the structure                                                          | at least one Damage Function of any kind | struct_2                   |
+| Damage Function: Content               | Damage function for the content                                                            | at least one Damage Function of any kind | cont_62                    |
+| Damage Function: Other                 | Damage function other (e.g. roads)                                                         | at least one Damage Function of any kind |                            |
+| Ground Floor Height                    | Elevation of the finished floor above ground level. Units must be coherent with hazard map | Yes                                      | 4                          |
+| Ground Elevation                       | Ground elevation at location of object. Units must be coherent with hazard map             | Yes, if water level map as hazard input  | 10.11                      |
+| Max Potential Damage: Structure        | Maximum potential structural damage                                                        | at least one Max Potential Damage        | 193457.00                  |
+| Max Potential Damage: Content          | Maximum potential content damage                                                           | at least one Max Potential Damage        | 386984.00                  |
+| Max Potential Damage: Other            | Maximum potential other damage (e.g. roads)                                                | at least one Max Potential Damage        |                            |
+| Aggregation Level:<e.g., Census Tract> | Aggregation label for Census Tract                                                         | No                                       | 1205                       |
+: exposure.csv input {#tbl-exposure .striped .hover .column-page-inset-right}
+
+A more detailed description of the data fields in the *exposure.csv* can be found below;
+
+ **Object ID/Object name**
+ Object ID and Object name are administrative information, which the user is free to choose. Input must be unique for each object, if they are not unique, FIAT gives a warning and stops the model built-up.
+
+**Primary/Secondary object type**
+The primary object type describes the category of the asset (e.g. residential or commercial). The secondary object type allows for a more detailed profile of the object (e.g. single-story home, or grocery store). The developer of the exposure dataset is free to set their own categories of object types. (*Exception: FIAT requires **roads** to be assigned as **primary object type = ‘road**’, to summarize road damages separately from buildings and utilities*.)
+
+::: {.callout-note}
+ Defining primary/secondary object types facilitates the assignment of damage functions to the objects for the user by creating automatic look-up tables.
+:::
+
+**Extraction Method**
+The extraction method refers to which water level or water depth is selected over an object. The options are (1) centroid, which selects the water level or depth at the center of the object, or (2) area, which considers the water level or depth over the entire polygon and takes either an average or maximum; this latter choice is selected in the setting file.
+
+::: {.callout-important}
+ In case the user selects 'area' as extraction method, the user must provide an Object-Location vector file, which contains the areal polygons of the objects.
+:::
+
+**Damage Functions**
+
+There are three damage function fields: structure, content, and other. At least one of these must be provided for each object. The value that is entered is the name of the damage function. This name is coupled to the damage function CSV file via the setting file. The field **'Damage function: other'** can refer to various object types (e.g. the inventory of a restaurant). The user is free to use any damage function for this field. Damage functions can be obtained from [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific functions when available.
+
+**Ground Floor Height**
+The Ground floor height gives the distance of the finished floor of an asset above ground level. E.g. a building is raised by 1 foot above the ground, the ground floor height is equal to 1 foot.
+
+**Ground Elevation**
+The ground elevation is the value of a digital elevation model (DEM) at the location of the object.
+
+**Maximum Potential Damage**
+The maximum potential damage correspond to the damage functions for each asset. For each damage function type that was assigned, a maximum potential damage must also be assigned. These values represent the maximum damage to the structure, content, or other (e.g. inventory). There are methods to derive these values, based on building type and area of the building. Global maximum damage values can be obtained from  [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific damage values. In the US, [FEMA Hazus](https://www.fema.gov/flood-maps/products-tools/hazusis) an industry standard in how to derive these values.
+
+**Aggregation Label**
+The damage results are aggregated over any aggregation label that the user specifies in the exposure data and are returned as damages per aggregation zone within that aggregation type. These aggregation labels can include for example: land use, census tract, and census block.
+The user can add columns manually, naming the new column `“Aggregation Label:” {'Label name'}`, in which the user is free to select a descriptive 'Label name' for the aggregation area.
+If the user wishes to add aggregation zones via vector file, **FIAT Toolbox** offers a post-processing tool to do so.
+
+
+**acceptable exposure file types**:'.fits': 'FITS', '.pix': 'PCIDSK', '.nc': 'netCDF', '.xml': 'PDS4', '.pdf': 'PDF', '.mbtiles': 'MBTiles', '.bag': 'BAG', '.shp': 'ESRI Shapefile', '.mid': 'MapInfo File', '.000': 'S57', '.dgn': 'DGN', '.csv': 'CSV', '.gml': 'GML', '.gpx': 'GPX', '.kmz': 'LIBKML', '.kml': 'KML', '.geojson': 'GeoJSON', '.geojsons': 'GeoJSONSeq', '.gmt': 'OGR_GMT', '.gpkg': 'GPKG', '.sqlite': 'SQLite', '.map': 'WAsP', '.gdb': 'OpenFileGDB', '.dxf': 'DXF', '.dwg': 'CAD', '.fgb': 'FlatGeobuf', '.txt': 'Geoconcept', '.sql': 'PGDUMP', '.igc': 'GPSBabel', '.ods': 'ODS', '.xlsx': 'XLSX', '.jml': 'JML', '.x10': 'VDV', '.mvt': 'MVT', '': 'Memory'
+
+## Vulnerability Data 
+
+The **vulnerability** of an asset is determined by its building type (e.g. 'residential 1-story building') and the inundation depth, also refered to as water depth, during a flood event. Different assests incur different degrees of damage at varying inundation levels. This **vulnerability** can be quantified via **Flood Depth-Damage** functions.
+The damage function relates the water depth to the maximum potential damage per object and returns the damage fraction (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. The value of the maximum potential damage differs per object, and must be specified in the [exposure data](http://localhost:4202/user_guide/data/exposure.html).
+
+```{python}
+#| echo: false
+#| label: fig-damagefunction
+#| fig-cap: "Damage functions of different assets: governmental, commercial, industrial assets"
+import numpy as np
+import matplotlib.pyplot as plt
+
+water_depth = np.arange(-4,25,1)
+GOV1 = [0,0,0,0,0.02,0.11,0.16,0.22,0.28,0.35,0.38,0.41,0.44,0.47,0.5,0.54,0.57,0.59,0.62,0.66,0.68,0.7,0.72,0.74,0.76,0.77,0.78,0.79,0.8]
+COM2 = [0,0,0,0,0,0.05,0.08,0.13,0.14,0.14,0.15,0.17,0.19,0.22,0.26,0.31,0.37,0.44,0.51,0.59,0.65,0.7,0.74,0.79,0.83,0.87,0.91,0.95,0.98]
+IND4= [0,0,0,0,0,0.13,0.14,0.19,0.22,0.25,0.28,0.3,0.33,0.34,0.36,0.39,0.4,0.42,0.42,0.43,0.43,0.44,0.44,0.44,0.44,0.44,0.45,0.45,0.45]
+
+labels=["GOV2","COM2", "IND4"]
+plt.plot(water_depth, GOV1)
+plt.plot(water_depth, COM2)
+plt.plot(water_depth, IND4)
+plt.xlabel('Water depth (ft)')
+plt.ylabel('Fraction of maximum potential damage')
+plt.legend(labels)
+plt.gca().get_legend().set_title('')
+```
+
+
+The damage functions must be given in a two-column CSV file ('*vulnerability.csv*'), located in the 'vulnerability'- folder. The first column contains the water depth, and the second column the corresponding damage fraction. A header row is required, describing the unit of the water depth; `#UNIT = ['unit'] (e.g., '#UNIT = feet')`. A second column, named `'#METHOD'`, must be defined for each damage-curve separately above the Damage-Curve ID. The method refers to the nature of the damage fraction, whether it's the 'maximum' or 'mean' value. The Damage-Curve ID must coincide with the information of the damage function ID defined in the exposure data file. 
+
+Water depths may be negative for objects which have damage below the ground floor height, and the user is free to choose any water depth increments in the CSV file. The damage function CSV files can have any name the user would like to assign to them.
+Multiple damage-functions can be described in one CSV file, by simply adding consecutive columns next to one another.
+
+::: {.callout-tip}
+You can also create damage functions with the [**HydroMT-FIAT  model builder**](https://deltares.github.io/hydromt_fiat/latest/#).
+:::
+
+::: {.callout-important}
+ Water depth units (e.g. feet or meters) must be consistent with the units of the flood hazard map and the exposure data (ground elevation, ground floor height).
+:::
+
+```{python}
+#| echo: false
+#| label: tbl-csvdamagefunction
+#| tbl-cap: Multiple Damage function CSV file. Left column = water depth, consecutive columns = damage functions for different assets identified with ID e.g. 'AGR1'.
+
+
+import pandas as pd
+import tabulate
+
+relative_path = "C:/Users/rautenba/Delft-FIAT/docs/_static/vulnerability_curves.csv"
+data = pd.read_csv(relative_path, header = None)
+data = data.fillna('')
+df = pd.DataFrame(data)
+df.index = [" "] * len(df)
+df.columns = [" "] * len(df.columns)
+df
+```
+
+{{< pagebreak >}}
+
+# Frequently asked questions
+
+### How do I install FIAT?
+Visit the [Setup guide](../setup_guide/index.qmd), which provides installation instructions for Windows.
+
+### How do I report a bug?
+You can submit a new [issue](https://github.com/Deltares/Delft-FIAT/issues/new/choose) with the *Bugs* template in the FIAT repository. You can also submit an issue regarding *Missing or bad documentation*, a *Feature request*, or you can *Ask a question*.
+
+### How do I build a model?
+You can use [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) to build a FIAT model or you can follow the instructions in the [User guide](../user_guide/index.qmd).
+
+### How do I modify parameters or calibrate my model?
+You can manually change parameters (e.g., the Ground Floor Height) in your exposure data in Excel or with Python. You can also use [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) for this.
+
+### How do I request different output?
+You can change the output data types in the *settings.toml* file, visit the [Settings file](../user_guide/data/settings.qmd) page for more information.
+
+### Can I use FIAT for other hazards than flooding?
+Yes! If the damage that hazard causes can be estimated in the same manner as FIAT uses for flooding, other hazard maps can be used in combination with corresponding damage functions.
+
+### What does FIAT have to do with the car brand FIAT?
+Nothing, it is an acronym for **F**lood **I**mpact **A**ssessment **T**ool.
