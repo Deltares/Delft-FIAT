@@ -7,10 +7,10 @@ For a simple model the configuration file only needs the required fields and can
 
 ```html
 [output]
-path = "output" 
+path = "output"
 
 [output.csv]
-name = "output.csv" 
+name = "output.csv"
 
 [output.geom]
 name1 = "spatial.gpkg"
@@ -31,29 +31,29 @@ file = "./vulnerability/vulnerability_curves.csv"
 
 ```
 
-[**output**]  
-`path` :  This will create an output folder in the working directory 
+[**output**]
+`path` :  This will create an output folder in the working directory
 
-[**output.csv**]  
+[**output.csv**]
 `name`: This will create an output CSV file that contains the information from the exposure.csv and the damages per asset
 
-[**output.geom**]  
-`name1`: This will create an output vector file that contains the objects and the    
+[**output.geom**]
+`name1`: This will create an output vector file that contains the objects and the
 damages per asset
 
-[**hazard**]  
-`file`: The file path to the hazard file  
-`crs`: The projection of the hazard file. If no global projection is defined, the output will be in the same projection as the hazard map.   
-`elevation_reference`: In this case the hazard input is a flood map, therefore "DEM" is defined as reference. If it would be an elevation map the input would be "datum"  
-`risk`: in this case "false" as a single event is assessed. 
+[**hazard**]
+`file`: The file path to the hazard file
+`crs`: The projection of the hazard file. If no global projection is defined, the output will be in the same projection as the hazard map.
+`elevation_reference`: In this case the hazard input is a flood map, therefore "DEM" is defined as reference. If it would be an elevation map the input would be "datum"
+`risk`: in this case "false" as a single event is assessed.
 
 [**exposure.geom**]
-`csv`: This will create an exposure CSV file within the exposure folder ([folder strucute](folder_structure.qmd)) that contains the [required information](exposure.qmd) per asset.  
-`crs`: The projection of the exposure vector file.  
+`csv`: This will create an exposure CSV file within the exposure folder ([folder strucute](folder_structure.qmd)) that contains the [required information](exposure.qmd) per asset.
+`crs`: The projection of the exposure vector file.
 `file1`: This will create an exposure vector file within the exposure folder with the assets'geometry and Object ID.
 
-[**vulnerability**]  
-`file`: This will create an vulnerability curves CSV file within the vulnerability folder ([folder strucute](folder_structure.qmd)) that contains the damage curves. 
+[**vulnerability**]
+`file`: This will create an vulnerability curves CSV file within the vulnerability folder ([folder strucute](folder_structure.qmd)) that contains the damage curves.
 
 ::: {.callout-note}
 File paths in the settings can be relative to the settings.toml file or absolute.

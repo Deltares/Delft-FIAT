@@ -35,4 +35,3 @@ Thanks to its flexible character, FIAT **integrates** with various software appl
 | 4 | Delft-FIAT       | Fast Impact Assesment Tool coupled with FIAT Toolbox for post-processing    |
 | 5 | Flood damages    | Object + aggregated level of monetary and economic damages                  |
 : {.striped .hover}
-

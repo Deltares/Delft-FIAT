@@ -175,10 +175,10 @@ For a simple model the configuration file only needs the required fields and can
 
 ```html
 [output]
-path = "output" 
+path = "output"
 
 [output.csv]
-name = "output.csv" 
+name = "output.csv"
 
 [output.geom]
 name1 = "spatial.gpkg"
@@ -199,29 +199,29 @@ file = "./vulnerability/vulnerability_curves.csv"
 
 ```
 
-[**output**]  
-`path` :  This will create an output folder in the working directory 
+[**output**]
+`path` :  This will create an output folder in the working directory
 
-[**output.csv**]  
+[**output.csv**]
 `name`: This will create an output CSV file that contains the information from the exposure.csv and the damages per asset
 
-[**output.geom**]  
-`name1`: This will create an output vector file that contains the objects and the    
+[**output.geom**]
+`name1`: This will create an output vector file that contains the objects and the
 damages per asset
 
-[**hazard**]  
-`file`: The file path to the hazard file  
-`crs`: The projection of the hazard file. If no global projection is defined, the output will be in the same projection as the hazard map.   
-`elevation_reference`: In this case the hazard input is a flood map, therefore "DEM" is defined as reference. If it would be an elevation map the input would be "datum"  
-`risk`: in this case "false" as a single event is assessed. 
+[**hazard**]
+`file`: The file path to the hazard file
+`crs`: The projection of the hazard file. If no global projection is defined, the output will be in the same projection as the hazard map.
+`elevation_reference`: In this case the hazard input is a flood map, therefore "DEM" is defined as reference. If it would be an elevation map the input would be "datum"
+`risk`: in this case "false" as a single event is assessed.
 
 [**exposure.geom**]
-`csv`: This will create an exposure CSV file within the exposure folder ([folder strucute](folder_structure.qmd)) that contains the [required information](exposure.qmd) per asset.  
-`crs`: The projection of the exposure vector file.  
+`csv`: This will create an exposure CSV file within the exposure folder ([folder strucute](folder_structure.qmd)) that contains the [required information](exposure.qmd) per asset.
+`crs`: The projection of the exposure vector file.
 `file1`: This will create an exposure vector file within the exposure folder with the assets'geometry and Object ID.
 
-[**vulnerability**]  
-`file`: This will create an vulnerability curves CSV file within the vulnerability folder ([folder strucute](folder_structure.qmd)) that contains the damage curves. 
+[**vulnerability**]
+`file`: This will create an vulnerability curves CSV file within the vulnerability folder ([folder strucute](folder_structure.qmd)) that contains the damage curves.
 
 ::: {.callout-note}
 File paths in the settings can be relative to the settings.toml file or absolute.
@@ -298,7 +298,7 @@ Information will follow
 
 **acceptable hazard file types**:'.vrt': 'VRT', '.tif': 'GTiff', '.tiff': 'COG', '.ntf': 'NITF', '.img': 'HFA', '.asc': 'AAIGrid', '.dt2': 'DTED', '.png': 'PNG', '.jpg': 'JPEG', '.gif': 'GIF', '.fits': 'FITS', '.xpm': 'XPM', '.bmp': 'BMP', '.pix': 'PCIDSK', '.map': 'PCRaster', '.mpl': 'ILWIS', '.rgb': 'SGI', '.hgt': 'SRTMHGT', '.ter': 'Terragen', '.nc': 'netCDF', '.cub': 'ISIS3', '.xml': 'PDS4', '.ers': 'ERS', '.jp2': 'JP2OpenJPEG', '.grib2': 'GRIB', '.rsw': 'RMF', '.rst': 'RST', '.grd': 'NWT_GRD', '.rda': 'R', '.kmz': 'KMLSUPEROVERLAY', '.webp': 'WEBP', '.pdf': 'PDF', '.sqlite': 'Rasterlite', '.mbtiles': 'MBTiles', '.ct1': 'CALS', '.mrf': 'MRF', '.pnm': 'PNM', '.hdr': 'MFF', '.bt': 'BT', '.lcp': 'LCP', '.gtx': 'GTX', '.gvb': 'NTv2', '.kro': 'KRO', '.byn': 'BYN', '.dem': 'USGSDEM', '.kea': 'KEA', '.bag': 'BAG', '.gen': 'ADRG', '.blx': 'BLX', '.sg-grd-z': 'SAGA', '.xyz': 'XYZ', '.hf2': 'HF2', '.dat': 'ZMap', '.sigdem': 'SIGDEM', '.gpkg': 'GPKG', '.gdb': 'OpenFileGDB', '.bil': 'EHdr', '': 'MEM'
 
-## Exposure Data 
+## Exposure Data
 
 The **exposure data** serves to describe the assets within the affected region that the user intends to assess. This data file should be made available in either **CSV format or raster file** ([<ins><h14>exposure file types</h14></ins>]) and must be located in the 'exposure' folder, following the prescribed naming convention e.g 'exposure.csv' or 'exposure.nc.
 
@@ -380,7 +380,7 @@ If the user wishes to add aggregation zones via vector file, **FIAT Toolbox** of
 
 **acceptable exposure file types**:'.fits': 'FITS', '.pix': 'PCIDSK', '.nc': 'netCDF', '.xml': 'PDS4', '.pdf': 'PDF', '.mbtiles': 'MBTiles', '.bag': 'BAG', '.shp': 'ESRI Shapefile', '.mid': 'MapInfo File', '.000': 'S57', '.dgn': 'DGN', '.csv': 'CSV', '.gml': 'GML', '.gpx': 'GPX', '.kmz': 'LIBKML', '.kml': 'KML', '.geojson': 'GeoJSON', '.geojsons': 'GeoJSONSeq', '.gmt': 'OGR_GMT', '.gpkg': 'GPKG', '.sqlite': 'SQLite', '.map': 'WAsP', '.gdb': 'OpenFileGDB', '.dxf': 'DXF', '.dwg': 'CAD', '.fgb': 'FlatGeobuf', '.txt': 'Geoconcept', '.sql': 'PGDUMP', '.igc': 'GPSBabel', '.ods': 'ODS', '.xlsx': 'XLSX', '.jml': 'JML', '.x10': 'VDV', '.mvt': 'MVT', '': 'Memory'
 
-## Vulnerability Data 
+## Vulnerability Data
 
 The **vulnerability** of an asset is determined by its building type (e.g. 'residential 1-story building') and the inundation depth, also refered to as water depth, during a flood event. Different assests incur different degrees of damage at varying inundation levels. This **vulnerability** can be quantified via **Flood Depth-Damage** functions.
 The damage function relates the water depth to the maximum potential damage per object and returns the damage fraction (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. The value of the maximum potential damage differs per object, and must be specified in the [exposure data](http://localhost:4202/user_guide/data/exposure.html).
@@ -408,7 +408,7 @@ plt.gca().get_legend().set_title('')
 ```
 
 
-The damage functions must be given in a two-column CSV file ('*vulnerability.csv*'), located in the 'vulnerability'- folder. The first column contains the water depth, and the second column the corresponding damage fraction. A header row is required, describing the unit of the water depth; `#UNIT = ['unit'] (e.g., '#UNIT = feet')`. A second column, named `'#METHOD'`, must be defined for each damage-curve separately above the Damage-Curve ID. The method refers to the nature of the damage fraction, whether it's the 'maximum' or 'mean' value. The Damage-Curve ID must coincide with the information of the damage function ID defined in the exposure data file. 
+The damage functions must be given in a two-column CSV file ('*vulnerability.csv*'), located in the 'vulnerability'- folder. The first column contains the water depth, and the second column the corresponding damage fraction. A header row is required, describing the unit of the water depth; `#UNIT = ['unit'] (e.g., '#UNIT = feet')`. A second column, named `'#METHOD'`, must be defined for each damage-curve separately above the Damage-Curve ID. The method refers to the nature of the damage fraction, whether it's the 'maximum' or 'mean' value. The Damage-Curve ID must coincide with the information of the damage function ID defined in the exposure data file.
 
 Water depths may be negative for objects which have damage below the ground floor height, and the user is free to choose any water depth increments in the CSV file. The damage function CSV files can have any name the user would like to assign to them.
 Multiple damage-functions can be described in one CSV file, by simply adding consecutive columns next to one another.
