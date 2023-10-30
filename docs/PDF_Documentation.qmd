@@ -430,7 +430,7 @@ You can also create damage functions with the [**HydroMT-FIAT  model builder**](
 import pandas as pd
 import tabulate
 
-relative_path = "C:/Users/rautenba/Delft-FIAT/docs/_static/vulnerability_curves.csv"
+relative_path = "./_static/vulnerability_curves.csv"
 data = pd.read_csv(relative_path, header = None)
 data = data.fillna('')
 df = pd.DataFrame(data)
