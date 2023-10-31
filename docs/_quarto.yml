@@ -1,5 +1,9 @@
 project:
   type: website
+  render:
+    - "*.qmd"
+    - "*.ipynb"
+    - "!PDF_Documentation.qmd"
 
 website:
   title: "Delft FIAT"
