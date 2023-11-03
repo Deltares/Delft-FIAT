@@ -56,7 +56,9 @@ jobs:
         run: python make_env.py docs --py-version ${{ matrix.python-version }}.*
 
       - name: Update environment
-        run: mamba env update -f environment.yml
+        run: |
+          mamba env update -f environment.yml
+          pip install -e .
 
       - name: Generate API Reference
         run: python docs/api.py

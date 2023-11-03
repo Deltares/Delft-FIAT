@@ -11,22 +11,37 @@ def clip(
     srs: osr.SpatialReference,
     gtf: tuple,
     ft: ogr.Feature,
-) -> object:
-    """_summary_.
+):
+    """Clip a grid based on a feature (vector).
 
     Parameters
     ----------
-    src : gdal.Dataset
-        _description_
-    band : gdal.Band
-        _description_
+    band : Grid
+        An object that contains a connection the band within the dataset. For further
+        information, see [Grid](/api/Grid.qmd)!
+    srs : osr.SpatialReference
+        Spatial reference (Projection) of the Grid object (e.g. WGS84).
+        Can be optained with the \
+[get_srs](/api/GridSource/get_srs.qmd) method.
+    gtf : tuple
+        The geotransform of a grid dataset.
+        Can be optained via the [get_geotransform]\
+(/api/GridSource/get_geotransform.qmd) method.
+        Has the following shape: (left, xres, xrot, upper, yrot, yres).
     ft : ogr.Feature
-        _description_
+        A Feature according to the \
+[ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
+        Can be optained by indexing a \
+[GeomSource](/api/GeomSource.qmd).
 
     Returns
     -------
-    numpy.array
-        _description_
+    Array
+        A 1D array containing the clipped values.
+
+    See Also
+    --------
+    - [clip_weighted](/api/overlay/clip_weighted.qmd)
     """
     geom = ft.GetGeometryRef()
 
@@ -74,22 +89,47 @@ def clip_weighted(
     gtf: tuple,
     ft: ogr.Feature,
     upscale: int = 1,
-) -> object:
-    """_summary_.
+):
+    """Clip a grid based on a feature (vector), but weighted.
+
+    This method caters to those who wish to have information about the percentages of \
+cells that are touched by the feature.
+
+    Warning!
+    --------
+    A high upscale value comes with a calculation penalty!
 
     Parameters
     ----------
-    src : gdal.Dataset
-        _description_
-    band : gdal.Band
-        _description_
+    band : Grid
+        An object that contains a connection the band within the dataset. For further
+        information, see [Grid](/api/Grid.qmd)!
+    srs : osr.SpatialReference
+        Spatial reference (Projection) of the Grid object (e.g. WGS84).
+        Can be optained with the \
+[get_srs](/api/GridSource/get_srs.qmd) method.
+    gtf : tuple
+        The geotransform of a grid dataset.
+        Can be optained via the [get_geotransform]\
+(/api/GridSource/get_geotransform.qmd) method.
+        Has the following shape: (left, xres, xrot, upper, yrot, yres).
     ft : ogr.Feature
-        _description_
+        A Feature according to the \
+[ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
+        Can be optained by indexing a \
+[GeomSource](/api/GeomSource.qmd).
+    upscale : int
+        How much the underlying grid will be upscaled.
+        The higher the value, the higher the accuracy.
 
     Returns
     -------
-    numpy.array
-        _description_
+    Array
+        A 1D array containing the clipped values.
+
+    See Also
+    --------
+    - [clip](/api/overlay/clip.qmd)
     """
     geom = ft.GetGeometryRef()
 
@@ -145,7 +185,7 @@ def pin(
     band: Grid,
     gtf: tuple,
     point: tuple,
-) -> object:
+):
     """_summary_.
 
     Parameters

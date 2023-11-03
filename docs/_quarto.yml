@@ -11,6 +11,7 @@ website:
   favicon: _static/logo.png
   search:
     location: navbar
+    limit: 5
     type: textbox
   navbar:
     logo: _static/logo.png
@@ -110,20 +111,20 @@ quartodoc:
     include_imports: true
     include_inherited: true
 
+  # Basics of FIAT
   sections:
     - title: Basics
       desc: The higher level components of FIAT.
+    - subtitle: Core
+      desc: Two main components of working with FIAT.
       package: fiat.main
       contents:
-        - FIAT
-    - subtitle: Configuration
-      desc: Concerning the configuration of FIAT.
-      package: fiat.cfg
-      contents:
+        - name: FIAT
+          children: separate
         - name: ConfigReader
           children: separate
     - subtitle: Models
-      desc: The models of FIAT.
+      desc: The individual models of FIAT.
       package: fiat.models
       contents:
         - name: GeomModel
@@ -131,16 +132,33 @@ quartodoc:
         - name: GridModel
           children: separate
 
+    # Geospatial methods
     - title: GIS
       desc: Geospatial bound operations.
-      package: fiat.gis
-
+    - subtitle: Geometry (vector)
+      desc: Geometry specific methods
+      package: fiat.gis.geom
+      contents:
+        - point_in_geom
+        - reproject
+    - subtitle: Grid (raster)
+      desc: Grid specific methods
+      package: fiat.gis.grid
+      contents:
+        - reproject
     - subtitle: Overlay
       desc: For combined vector and raster methods
       package: fiat.gis.overlay
       contents:
         - clip
+        - clip_weighted
         - pin
+    - subtitle: Utility
+      desc: Some utility for the GIS module (basic)
+      package: fiat.gis.util
+      contents:
+        - world2pixel
+        - pixel2world
 
     - title: I/O
       desc: Input/ output bound operations.
@@ -149,6 +167,9 @@ quartodoc:
         - name: GeomSource
           children: separate
         - name: GridSource
+          children: separate
+        - name: Grid
+          children: separate
       options:
         include_imports: true
         include_inherited: true
