@@ -1,5 +1,6 @@
 project:
   type: website
+  output-dir: "_site"
   render:
     - "*.qmd"
     - "*.ipynb"
@@ -8,9 +9,12 @@ project:
 website:
   title: "Delft FIAT"
   favicon: _static/logo.png
+  search:
+    location: navbar
+    type: textbox
   navbar:
     logo: _static/logo.png
-    search: false
+    search: true
     pinned: true
     left:
       - getting_started/index.qmd
@@ -19,12 +23,19 @@ website:
       - api/index.qmd
       - developments/index.qmd
     right:
+      # - href: https://www.deltares.nl/en
+      #   icon: _static/images/deltares-blue.svg
+      #   aria-label: Deltares_org
       - icon: github
-        href: https://github.com/Deltares/Delft-FIAT
-        aria-label: GitHub
+        menu:
+          - text: Source Code
+            url:  https://github.com/Deltares/Delft-FIAT
+          - text: Report an Issue
+            url:  https://github.com/Deltares/Delft-FIAT/issues/new/choose
 
   sidebar:
     - title: "Getting started"
+      border: true
       collapse-level: 3
       contents:
         - getting_started/index.qmd
@@ -56,10 +67,6 @@ website:
           contents:
             - user_guide/examples.qmd
         - user_guide/advanced.qmd
-    - title: "API Reference"
-      collapse-level: 3
-      contents:
-        - api/index.qmd
     - title: "Developments"
       collapse-level: 3
       contents:
@@ -87,3 +94,61 @@ filters:
 
 execute:
   freeze: auto
+  cache: true
+
+metadata-files:
+  - api/_sidebar.yml
+
+quartodoc:
+  parser: numpy
+  package: fiat
+  title: API Reference
+  style: pkgdown
+  dir: api
+  sidebar: api/_sidebar.yml
+  options:
+    include_imports: true
+    include_inherited: true
+
+  sections:
+    - title: Basics
+      desc: The higher level components of FIAT.
+      package: fiat.main
+      contents:
+        - FIAT
+    - subtitle: Configuration
+      desc: Concerning the configuration of FIAT.
+      package: fiat.cfg
+      contents:
+        - name: ConfigReader
+          children: separate
+    - subtitle: Models
+      desc: The models of FIAT.
+      package: fiat.models
+      contents:
+        - name: GeomModel
+          children: separate
+        - name: GridModel
+          children: separate
+
+    - title: GIS
+      desc: Geospatial bound operations.
+      package: fiat.gis
+
+    - subtitle: Overlay
+      desc: For combined vector and raster methods
+      package: fiat.gis.overlay
+      contents:
+        - clip
+        - pin
+
+    - title: I/O
+      desc: Input/ output bound operations.
+      package: fiat.io
+      contents:
+        - name: GeomSource
+          children: separate
+        - name: GridSource
+      options:
+        include_imports: true
+        include_inherited: true

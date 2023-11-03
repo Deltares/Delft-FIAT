@@ -1,3 +1,7 @@
 /.quarto/
 /_site/
 /_freeze/
+/api/*
+!api/.gitkeep
+*.jupyter_cache/
+objects.json

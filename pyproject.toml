@@ -149,7 +149,7 @@ exclude_also = [
 ignore_errors = true
 
 [tool.coverage.html]
-directory = "docs/code_cov"
+directory = ".cov"
 
 ## Linting stuff
 [tool.black]

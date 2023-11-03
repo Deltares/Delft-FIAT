@@ -19,6 +19,7 @@ __pycache__/
 *$py.class
 
 # Local documentation and temporary files (calculation etc.)
+.cov/
 .docs/
 tmp/
 whl/
@@ -71,11 +72,6 @@ cover/
 
 # Scrapy stuff:
 .scrapy
-
-# Sphinx documentation
-.docs/_build/
-.docs/source/_generated/
-.docs/_examples/
 
 # PyBuilder
 .pybuilder/
