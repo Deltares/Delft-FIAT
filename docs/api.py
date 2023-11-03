@@ -210,6 +210,7 @@ def create_tree(
 
 
 if __name__ == "__main__":
-    yml = r"c:\CODING\PY_DEV\Delft_FIAT\docs\_quarto.yml"
+    p = Path(__file__).parent
+    yml = Path(p, "_quarto.yml").as_posix()
 
     create_tree(yml)
