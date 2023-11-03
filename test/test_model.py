@@ -5,9 +5,9 @@ from fiat.models import GeomModel, GridModel
 from osgeo import gdal
 
 
-def test_geom_model(tmpdir, cfg_event):
-    cfg_event.set_output_dir(str(tmpdir))
-    model = GeomModel(cfg_event)
+def test_geom_model(tmpdir, cfg_geom_event):
+    cfg_geom_event.set_output_dir(str(tmpdir))
+    model = GeomModel(cfg_geom_event)
     model.run()
 
     # check the output
@@ -16,9 +16,9 @@ def test_geom_model(tmpdir, cfg_event):
     assert float(out[3, "Total Damage"]) == 1038
 
 
-def test_geom_missing(tmpdir, cfg_event_mis):
-    cfg_event_mis.set_output_dir(str(tmpdir))
-    model = GeomModel(cfg_event_mis)
+def test_geom_missing(tmpdir, cfg_geom_event_mis):
+    cfg_geom_event_mis.set_output_dir(str(tmpdir))
+    model = GeomModel(cfg_geom_event_mis)
     model.run()
 
     assert Path(str(tmpdir), "missing.log").exists()
@@ -26,9 +26,9 @@ def test_geom_missing(tmpdir, cfg_event_mis):
     assert sum(1 for _ in missing) == 1
 
 
-def test_geom_risk(tmpdir, cfg_risk):
-    cfg_risk.set_output_dir(str(tmpdir))
-    model = GeomModel(cfg_risk)
+def test_geom_risk(tmpdir, cfg_geom_risk):
+    cfg_geom_risk.set_output_dir(str(tmpdir))
+    model = GeomModel(cfg_geom_risk)
     model.run()
 
     out = open_csv(Path(str(tmpdir), "output.csv"), index="Object ID")
@@ -37,9 +37,9 @@ def test_geom_risk(tmpdir, cfg_risk):
     assert float(out[3, "Risk (EAD)"]) == 1022.47
 
 
-def test_grid_model(tmpdir, cfg_grid):
-    cfg_grid.set_output_dir(str(tmpdir))
-    model = GridModel(cfg_grid)
+def test_grid_model(tmpdir, cfg_grid_event):
+    cfg_grid_event.set_output_dir(str(tmpdir))
+    model = GridModel(cfg_grid_event)
     model.run()
 
     src = gdal.OpenEx(
@@ -57,3 +57,25 @@ def test_grid_model(tmpdir, cfg_grid):
     src = None
     assert int(arr[2, 4] * 10) == 14091
     assert int(arr[7, 3] * 10) == 8700
+
+
+def test_grid_risk(tmpdir, cfg_grid_risk):
+    cfg_grid_risk.set_output_dir(str(tmpdir))
+    model = GridModel(cfg_grid_risk)
+    model.run()
+
+    src = gdal.OpenEx(
+        str(Path(str(tmpdir), "ead.nc")),
+    )
+    arr = src.ReadAsArray()
+    src = None
+    assert int(arr[1, 2] * 10) == 10920
+    assert int(arr[5, 6] * 10) == 8468
+
+    src = gdal.OpenEx(
+        str(Path(str(tmpdir), "ead_total.nc")),
+    )
+    arr = src.ReadAsArray()
+    src = None
+    assert int(arr[1, 2] * 10) == 10920
+    assert int(arr[5, 6] * 10) == 8468

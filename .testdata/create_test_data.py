@@ -385,7 +385,7 @@ def create_settings_grid():
             "keep_temp_files": True,
         },
         "output": {
-            "path": "output/event",
+            "path": "output/event_grid",
             "grid": {"name": "output.nc"},
         },
         "hazard": {
@@ -414,6 +414,16 @@ def create_settings_grid():
 
     with open(Path(p, "settings_grid.toml"), "wb") as f:
         tomli_w.dump(doc, f)
+
+    doc_r = copy.deepcopy(doc)
+    doc_r["output"]["path"] = "output/risk_grid"
+    doc_r["hazard"]["file"] = "hazard/risk_map.nc"
+    doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
+    doc_r["hazard"]["settings"] = {"var_as_band": True}
+    doc_r["hazard"]["risk"] = True
+
+    with open(Path(p, "settings_grid_risk.toml"), "wb") as f:
+        tomli_w.dump(doc_r, f)
 
 
 def create_settings_risk():

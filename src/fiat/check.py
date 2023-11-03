@@ -210,10 +210,11 @@ def check_hazard_rp_iden(
     if deter_type(bn_str, l - 1) != 3:
         return [float(n) for n in bnames]
 
-    if len(rp_cfg) == len(bnames):
-        rp_str = "\n".join([str(n) for n in rp_cfg]).encode()
-        if deter_type(rp_str, l - 1) != 3:
-            return rp_cfg
+    if rp_cfg is not None:
+        if len(rp_cfg) == len(bnames):
+            rp_str = "\n".join([str(n) for n in rp_cfg]).encode()
+            if deter_type(rp_str, l - 1) != 3:
+                return rp_cfg
 
     logger.error(
         f"'{path.name}': cannot determine the return periods for the risk calculation"

@@ -1,15 +1,15 @@
 """The FIAT model workers."""
 
-from math import isnan
+from math import floor, isnan
 from pathlib import Path
 
 from numpy import full, ravel, unravel_index, where
 
 from fiat.gis import geom, overlay
-from fiat.io import BufferTextHandler, GridSource
+from fiat.io import BufferTextHandler, GridSource, open_grid
 from fiat.log import LogItem, Sender
-from fiat.models.calc import calc_haz
-from fiat.util import NEWLINE_CHAR, _pat, replace_empty
+from fiat.models.calc import calc_haz, calc_risk
+from fiat.util import NEWLINE_CHAR, _pat, create_windows, replace_empty
 
 
 def geom_worker(
@@ -120,17 +120,22 @@ def grid_worker_exact(
     write_bands = []
     exp_nds = []
     dmfs = []
+    band_n = ""
+
+    # Check the band names
+    if haz.count > 1:
+        band_n = "_" + cfg.get("hazard.band_names")[idx - 1]
 
     # Extract the hazard band as an object
     haz_band = haz[idx]
     # Set the output directory
     _out = cfg.get("output.path")
     if cfg.get("hazard.risk"):
-        _out = cfg.get("hazard.path.risk")
+        _out = cfg.get("output.path.risk")
 
     # Create the outgoing netcdf containing every exposure damages
-    out_src = GridSource(
-        Path(_out, "output.nc"),
+    out_src = open_grid(
+        Path(_out, f"output{band_n}.nc"),
         mode="w",
     )
     out_src.create(
@@ -142,10 +147,10 @@ def grid_worker_exact(
     out_src.set_srs(exp.get_srs())
     out_src.set_geotransform(exp.get_geotransform())
     # Create the outgoing total damage grid
-    td_out = GridSource(
+    td_out = open_grid(
         Path(
             _out,
-            "total_damages.nc",
+            f"total_damages{band_n}.nc",
         ),
         mode="w",
     )
@@ -200,7 +205,7 @@ def grid_worker_exact(
             _coords = _coords[_hcoords]
             e_ch = e_ch[_hcoords]
             h_1d = h_1d[_hcoords]
-            h_1d.clip(min(vul.index), max(vul.index))
+            h_1d = h_1d.clip(min(vul.index), max(vul.index))
 
             dmm = [vul[round(float(n), 2), dmfs[idx]] for n in h_1d]
             e_ch = e_ch * dmm
@@ -223,18 +228,17 @@ def grid_worker_exact(
 
     # Flush the cache and dereference
     for _w in write_bands[:]:
-        w = _w
         write_bands.remove(_w)
-        w.flush()
-        w = None
+        _w.close()
+        _w = None
 
     # Flush and close all
     exp_bands = None
-    td_band.flush()
+    td_band.close()
     td_band = None
     td_out = None
 
-    out_src.flush()
+    out_src.close()
     out_src = None
 
     haz_band = None
@@ -243,3 +247,131 @@ def grid_worker_exact(
 def grid_worker_loose():
     """_summary_."""
     pass
+
+
+def grid_worker_risk(
+    cfg: object,
+    chunk: tuple,
+):
+    """_summary_."""
+    _rp_coef = cfg.get("hazard.rp_coefficients")
+    _out = cfg.get("output.path")
+    _chunk = [floor(_n / len(_rp_coef)) for _n in chunk]
+    td = []
+    rp = []
+
+    # TODO this is really fucking bad; fix in the future
+    # Read the data from the calculations
+    for _name in cfg.get("hazard.band_names"):
+        td.append(
+            open_grid(
+                Path(cfg.get("output.path.risk"), f"total_damages_{_name}.nc"),
+                chunk=_chunk,
+                mode="r",
+            )
+        )
+        rp.append(
+            open_grid(
+                Path(cfg.get("output.path.risk"), f"total_damages_{_name}.nc"),
+                chunk=_chunk,
+                mode="r",
+            )
+        )
+
+    # Create the estimatied annual damages output file
+    exp_bands = {}
+    write_bands = []
+    exp_nds = []
+    ead_src = open_grid(
+        Path(_out, "ead.nc"),
+        mode="w",
+    )
+    ead_src.create(
+        rp[0].shape,
+        rp[0].count,
+        rp[0].dtype,
+        options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
+    )
+    ead_src.set_srs(rp[0].get_srs())
+    ead_src.set_geotransform(rp[0].get_geotransform())
+
+    # Gather and set information before looping through windows.
+    for idx in range(rp[0].count):
+        exp_bands[idx] = [obj[idx + 1] for obj in rp]
+        write_bands.append(ead_src[idx + 1])
+        exp_nds.append(rp[0][idx + 1].nodata)
+        write_bands[idx].src.SetNoDataValue(exp_nds[idx])
+
+    # Do the calculation for the EAD
+    for idx, rpx in exp_bands.items():
+        for _w in create_windows(rp[0].shape, _chunk):
+            ead_ch = write_bands[idx][_w]
+            # check for one
+            d_ch = rpx[0][_w]
+            d_1d = ravel(d_ch)
+            _coords = where(d_1d != exp_nds[0])[0]
+
+            # Check if something is there
+            if len(_coords) == 0:
+                continue
+
+            data = [_data[_w] for _data in rpx]
+            data = [ravel(_data)[_coords] for _data in data]
+            data = calc_risk(_rp_coef, data)
+            idx2d = unravel_index(_coords, *[_chunk])
+            ead_ch[idx2d] = data
+            write_bands[idx].write_chunk(ead_ch, _w[:2])
+
+    rpx = None
+
+    # Do some cleaning
+    exp_bands = None
+    for _w in write_bands[:]:
+        write_bands.remove(_w)
+        _w.close()
+        _w = None
+    ead_src.close()
+    ead_src = None
+
+    # Create ead total outgoing dataset
+    td_src = open_grid(
+        Path(_out, "ead_total.nc"),
+        mode="w",
+    )
+    td_src.create(
+        td[0].shape,
+        1,
+        td[0].dtype,
+        options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
+    )
+    td_src.set_srs(td[0].get_srs())
+    td_src.set_geotransform(td[0].get_geotransform())
+    td_band = td_src[1]
+    td_noval = -0.5 * 2**128
+    td_band.src.SetNoDataValue(td_noval)
+
+    # Do the calculations for total damages
+    for _w in create_windows(td[0].shape, _chunk):
+        # Get the data
+        td_ch = td_band[_w]
+        data = [_data[1][_w] for _data in td]
+        d_1d = ravel(data[0])
+        _coords = where(d_1d != td[0][1].nodata)[0]
+
+        # Check whether there is data to begin with
+        if len(_coords) == 0:
+            continue
+
+        # Get data, calc risk and write it.
+        data = [ravel(_i)[_coords] for _i in data]
+        data = calc_risk(_rp_coef, data)
+        idx2d = unravel_index(_coords, *[_chunk])
+        td_ch[idx2d] = data
+        td_band.write_chunk(td_ch, _w[:2])
+
+    # Cleaning up afterwards
+    td = None
+    td_band.close()
+    td_band = None
+    td_src.close()
+    td_src = None

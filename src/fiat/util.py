@@ -8,6 +8,7 @@ import re
 import sys
 from collections.abc import MutableMapping
 from gc import get_referents
+from itertools import product
 from pathlib import Path
 from types import FunctionType, ModuleType
 
@@ -172,6 +173,29 @@ def _text_chunk_gen(
         sd = _pat_multi.split(t)
         del t
         yield _nlines, sd
+
+
+def create_windows(
+    shape: tuple,
+    chunk: tuple,
+):
+    """_summary_."""
+    _x, _y = shape
+    _lu = tuple(
+        product(
+            range(0, _x, chunk[0]),
+            range(0, _y, chunk[1]),
+        ),
+    )
+    for _l, _u in _lu:
+        w = min(chunk[0], _x - _l)
+        h = min(chunk[1], _y - _u)
+        yield (
+            _l,
+            _u,
+            w,
+            h,
+        )
 
 
 class DoNotCall(type):

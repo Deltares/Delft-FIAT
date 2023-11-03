@@ -11,7 +11,7 @@ from fiat.check import (
 from fiat.io import open_grid
 from fiat.log import spawn_logger
 from fiat.models.base import BaseModel
-from fiat.models.util import grid_worker_exact
+from fiat.models.util import grid_worker_exact, grid_worker_risk
 
 logger = spawn_logger("fiat.model.grid")
 
@@ -59,9 +59,19 @@ class GridModel(BaseModel):
 
         self.exposure_grid = data
 
-    def resolve():
+    def resolve(self):
         """_summary_."""
-        pass
+        if self.cfg.get("hazard.risk"):
+            logger.info("Setting up risk calculations..")
+
+            # Time the function
+            _s = time.time()
+            grid_worker_risk(
+                self.cfg,
+                self.exposure_grid.chunk,
+            )
+            _e = time.time() - _s
+            logger.info(f"Risk calculation time: {round(_e, 2)} seconds")
 
     def run(self):
         """_summary_."""
@@ -87,6 +97,7 @@ in regards to band: '{_nms[idx]}'"
                     )
                     futures.append(fs)
             logger.info("Busy...")
+            # Wait for the children to finish their calculations
             wait(futures)
 
         else:
@@ -106,7 +117,7 @@ in regards to band: '{_nms[idx]}'"
             logger.info("Busy...")
             p.join()
         _e = time.time() - _s
-
         logger.info(f"Calculations time: {round(_e, 2)} seconds")
+        self.resolve()
         logger.info(f"Output generated in: '{self.cfg['output.path']}'")
         logger.info("Grid calculation are done!")

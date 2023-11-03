@@ -6,7 +6,6 @@ import os
 import weakref
 from abc import ABCMeta, abstractmethod
 from io import BufferedReader, BufferedWriter, FileIO, TextIOWrapper
-from itertools import product
 from math import floor, log10
 from typing import Any
 
@@ -558,8 +557,6 @@ class Grid(
         else:
             ValueError("")
 
-        self.create_windows()
-
     def __iter__(self):
         self.flush()
         self._reset_chunking()
@@ -636,24 +633,6 @@ class Grid(
     def shape(self):
         """_summary_."""
         return self._x, self._y
-
-    def create_windows(self):
-        """_summary_."""
-        _lu = tuple(
-            product(
-                range(0, self._x, self._chunk[0]),
-                range(0, self._y, self._chunk[1]),
-            ),
-        )
-        for _l, _u in _lu:
-            w = min(self._chunk[0], self._x - _l)
-            h = min(self._chunk[1], self._y - _u)
-            yield (
-                _l,
-                _u,
-                w,
-                h,
-            )
 
     def get_metadata_item(
         self,
@@ -1268,6 +1247,13 @@ class GridSource(_BaseIO, _BaseStruct):
     def get_srs(self):
         """_summary_."""
         return self.src.GetSpatialRef()
+
+    def set_chunk_size(
+        self,
+        chunk: tuple,
+    ):
+        """_summary_."""
+        self._chunk = chunk
 
     @_BaseIO._check_mode
     def set_geotransform(self, affine: tuple):

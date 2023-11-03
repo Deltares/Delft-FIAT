@@ -3,7 +3,6 @@
 from abc import ABCMeta, abstractmethod
 from multiprocessing import Manager
 from os import cpu_count
-from pathlib import Path
 
 from osgeo import osr
 
@@ -129,11 +128,6 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             # Directly calculate the coefficients
             rp_coef = calc_rp_coef(rp)
             self.cfg["hazard.rp_coefficients"] = rp_coef
-            # Set the risk folder for raster calculations
-            self.cfg["output.path.risk"] = Path(
-                self.cfg["output.path"],
-                "rp_damages",
-            )
 
         # Information for output
         ns = check_hazard_band_names(

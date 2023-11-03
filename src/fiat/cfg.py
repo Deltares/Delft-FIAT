@@ -57,6 +57,10 @@ class ConfigReader(dict):
         # Create the hidden temporary folder
         self._create_temp_dir()
 
+        # Create risk directory if needed
+        if self.get("hazard.risk"):
+            self._create_risk_dir()
+
         # Set the cache size per GDAL object
         _cache_size = self.get("global.gdal_cache")
         if _cache_size is not None:
@@ -108,6 +112,14 @@ class ConfigReader(dict):
             _p = Path(self.path, _p)
         generic_folder_check(_p)
         self["output.path"] = _p
+
+    def _create_risk_dir(
+        self,
+    ):
+        """_summary_."""
+        _ph = Path(self["output.path"], "rp_damages")
+        generic_folder_check(_ph)
+        self["output.path.risk"] = _ph
 
     def _create_temp_dir(
         self,
