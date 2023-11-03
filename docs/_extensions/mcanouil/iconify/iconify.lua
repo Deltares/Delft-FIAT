@@ -71,7 +71,7 @@ local function is_valid_size(size)
       return 'font-size: ' .. value .. ';'
     end
   end
-  return 'font-size: ' .. size .. ';' 
+  return 'font-size: ' .. size .. ';'
 end
 
 return {
@@ -97,13 +97,13 @@ return {
       local aria_label = pandoc.utils.stringify(kwargs["label"])
       if is_empty(aria_label) then
         aria_label =  ' aria-label="' .. label .. '"'
-      else 
+      else
         attributes = attributes .. aria_label
       end
       local title = pandoc.utils.stringify(kwargs["title"])
       if is_empty(title) then
         title =  ' title="' .. label .. '"'
-      else 
+      else
         attributes = attributes .. title
       end
       -- local style = pandoc.utils.stringify(kwargs["style"])

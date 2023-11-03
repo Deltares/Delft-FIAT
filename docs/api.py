@@ -3,9 +3,12 @@ import yaml
 from pathlib import Path
 
 from quartodoc import (
-    Builder, blueprint, collect,
+    Builder,
+    blueprint,
+    collect,
 )
 from quartodoc.layout import DocAttribute, Page, Section
+
 
 def parse_content(
     cont: Page,
@@ -50,9 +53,7 @@ def parse_content(
                 cont = DocAttribute.from_griffe(cont.obj.name, cont.obj)
             else:
                 builder.write_doc_pages([cont], filter="*")
-                members_paths.append(
-                    f"{rel_dir}/{parent.obj.name}/{cont.obj.name}.qmd"
-                )
+                members_paths.append(f"{rel_dir}/{parent.obj.name}/{cont.obj.name}.qmd")
             members.append(cont)
         else:
             if members:
@@ -60,7 +61,7 @@ def parse_content(
                 content = {
                     "section": cont.path,
                     "href": f"{rel_dir}/{cont.path}.qmd",
-                    "contents": members_paths
+                    "contents": members_paths,
                 }
             else:
                 content = f"{rel_dir}/{cont.path}.qmd"
@@ -101,11 +102,11 @@ def parse_section(
             rel_dir,
             members=[],
             members_paths=[],
-            module = module,
+            module=module,
         )
         section_content.append(content)
     if sect.subtitle is not None:
-        sub = True       
+        sub = True
 
     return section_content, sub, title
 
@@ -142,7 +143,7 @@ def parse_tree_section(
             "contents": section_content,
             "section": section_title,
         }
-        content.append(section)    
+        content.append(section)
 
 
 def create_tree(
@@ -190,9 +191,11 @@ def create_tree(
         "website": {
             "sidebar": {
                 "collapse-level": 2,
-                "contents": {"section": "API Reference",
-                             "href": "api/index.qmd",
-                              "contents": content,},
+                "contents": {
+                    "section": "API Reference",
+                    "href": "api/index.qmd",
+                    "contents": content,
+                },
                 "id": rel_dir,
             }
         }
