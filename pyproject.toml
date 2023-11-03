@@ -88,6 +88,7 @@ dev = [
 ]
 docs = [
     "jupyter",
+    "jupyter-cache",
     "matplotlib",
     "pandas",
     "quartodoc",
