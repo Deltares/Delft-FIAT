@@ -21,14 +21,21 @@ from fiat.util import (
 
 
 class ConfigReader(dict):
-    """_summary_."""
+    """Object holding information from a settings file.
+
+    Parameters
+    ----------
+    file : Path | str
+        Path to the settings file.
+    extra : dict, optional
+        Extra arguments that are not in the settings file.
+    """
 
     def __init__(
         self,
-        file: str,
+        file: Path | str,
         extra: dict = None,
     ):
-        """_summary_."""
         # container for extra
         self._build = True
         self._extra = {}
@@ -132,7 +139,18 @@ class ConfigReader(dict):
     def get_model_type(
         self,
     ):
-        """_Summary_."""
+        """Get the types of models.
+
+        Inferred by the arguments in the settings file.
+        When enough arguments are present for one type of model, \
+the bool is set to True.
+
+        Returns
+        -------
+        tuple
+            Tuple containing booleans for each model.
+            Order is (GeomModel, GridModel).
+        """
         _models = [False, False]
 
         if check_config_geom(self):
@@ -146,14 +164,39 @@ class ConfigReader(dict):
         self,
         key: str,
     ):
-        """_Summary_."""
+        """Get a Path to a file that is present in the object.
+
+        Parameters
+        ----------
+        key : str
+            Key of the Path. (e.g. exposure.geom.file1)
+
+        Returns
+        -------
+        Path
+            A path.
+        """
         return str(self[key])
 
     def generate_kwargs(
         self,
         base: str,
     ):
-        """_summary_."""
+        """Generate keyword arguments.
+
+        Based on the base string of certain arguments of the settings file.
+        E.g. `hazard.settings` for all extra hazard settings.
+
+        Parameters
+        ----------
+        base : str
+            Base of wanted keys/ values.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the keyword arguments.
+        """
         keys = [item for item in list(self) if base in item]
         kw = {key.split(".")[-1]: self[key] for key in keys}
 
@@ -163,7 +206,13 @@ class ConfigReader(dict):
         self,
         path: Path | str,
     ):
-        """_summary_."""
+        """Set the output directory.
+
+        Parameters
+        ----------
+        path : Path | str
+            A Path to the new directory.
+        """
         _p = Path(path)
         if not _p.is_absolute():
             _p = Path(self.path, _p)

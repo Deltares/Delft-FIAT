@@ -19,6 +19,7 @@ from osgeo import osr
 
 osr.UseExceptions()
 
+from .cfg import ConfigReader
 from .main import FIAT
 from .version import __version__
 

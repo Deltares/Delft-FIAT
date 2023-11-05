@@ -31,7 +31,18 @@ logger = spawn_logger("fiat.model.geom")
 
 
 class GeomModel(BaseModel):
-    """_summary_."""
+    """Geometry model.
+
+    Needs the following from the settings file in order to be run:
+        - exposure.csv.file
+        - exposure.geom.file1
+        - output.geom.file1
+
+    Parameters
+    ----------
+    cfg : [](`fiat.ConfigReader`)
+        ConfigReader object containing the information from the settings file.
+    """
 
     _method = {
         "area": overlay.clip,
@@ -42,7 +53,6 @@ class GeomModel(BaseModel):
         self,
         cfg: object,
     ):
-        """_summary_."""
         super().__init__(cfg)
 
         self._read_exposure_data()

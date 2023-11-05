@@ -117,7 +117,7 @@ quartodoc:
       desc: The higher level components of FIAT.
     - subtitle: Core
       desc: Two main components of working with FIAT.
-      package: fiat.main
+      package: fiat
       contents:
         - name: FIAT
           children: separate
@@ -160,8 +160,18 @@ quartodoc:
         - world2pixel
         - pixel2world
 
+    # I/O module
     - title: I/O
       desc: Input/ output bound operations.
+    - subtitle: Methods
+      desc: Input/ output methods
+      package: fiat.io
+      contents:
+        - open_csv
+        - open_geom
+        - open_grid
+    - subtitle: Objects
+      desc:
       package: fiat.io
       contents:
         - name: GeomSource
@@ -170,6 +180,7 @@ quartodoc:
           children: separate
         - name: Grid
           children: separate
-      options:
-        include_imports: true
-        include_inherited: true
+        - name: Table
+          children: separate
+        - name: TableLazy
+          children: separate
