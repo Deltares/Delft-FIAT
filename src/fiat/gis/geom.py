@@ -5,7 +5,7 @@ from pathlib import Path
 
 from osgeo import ogr, osr
 
-from fiat.io import open_geom
+from fiat.io import GeomSource, open_geom
 
 
 def coor_transform():
@@ -21,7 +21,21 @@ def geom_centroid(ft: ogr.Feature) -> tuple:
 def point_in_geom(
     ft: ogr.Feature,
 ) -> tuple:
-    """_Summary_."""
+    """Create a point within a polygon.
+
+    This is in essence a very lazy centroid. Keep in mind though, it can differ quite
+    a bit from the actual centroid.
+
+    Parameters
+    ----------
+    ft : ogr.Feature
+        The feature (polygon or linestring) in which to create the point.
+
+    Returns
+    -------
+    tuple
+        The x and y coordinate of the created point.
+    """
     geom = ft.GetGeometryRef()
     p = geom.PointOnSurface()
     geom = None
@@ -37,26 +51,30 @@ def reproject_feature(
 
 
 def reproject(
-    gs: object,
+    gs: GeomSource,
     crs: str,
-    out: str = None,
+    out_dir: Path | str = None,
 ):
-    """
-    _summary_.
+    """Reproject a geometry layer.
 
     Parameters
     ----------
     gs : GeomSource
-        _description_
+        Input object.
     crs : str
-        _description_
-    out : str
-        _description_
-    """
-    if not Path(str(out)).is_dir():
-        out = gs.path.parent
+        Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
+    out_dir : Path | str, optional
+        Output directory. If not defined, if will be inferred from the input object.
 
-    fname = Path(out, f"{gs.path.stem}_repr_fiat{gs.path.suffix}")
+    Returns
+    -------
+    GeomSource
+        Output object. A lazy reading of the just creating geometry file.
+    """
+    if not Path(str(out_dir)).is_dir():
+        out_dir = gs.path.parent
+
+    fname = Path(out_dir, f"{gs.path.stem}_repr_fiat{gs.path.suffix}")
 
     out_srs = osr.SpatialReference()
     out_srs.SetFromUserInput(crs)

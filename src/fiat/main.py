@@ -18,7 +18,6 @@ class FIAT:
     ----------
     cfg : ConfigReader
         Object containing the information from the setttings file.
-        For more information: look [here](/api/ConfigReader.qmd)
     """
 
     def __init__(self, cfg: ConfigReader):
@@ -49,7 +48,7 @@ class FIAT:
         return cls(cfg)
 
     def run(self):
-        """Run FIAT with given settings.
+        """Run FIAT with provided settings.
 
         Will determine which models to run based on input.
         I.e. if enough input is provioded for the GeomModel, it will be run.

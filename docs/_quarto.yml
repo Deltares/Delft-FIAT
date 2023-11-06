@@ -6,6 +6,23 @@ project:
     - "*.ipynb"
     - "!PDF_Documentation.qmd"
 
+filters:
+   - include-code-files
+   - interlinks
+  #  - section-bibliographies
+
+interlinks:
+  sources:
+    python:
+      url: https://docs.python.org/3/
+    numpy:
+      url: https://numpy.org/doc/stable/
+
+metadata-files:
+  - api/_sidebar.yml
+
+number-sections: false
+
 website:
   title: "Delft FIAT"
   favicon: _static/logo.png
@@ -87,18 +104,9 @@ format:
 # bibliography: references.bib
 # citeproc: false
 
-number-sections: false
-
-filters:
-   - include-code-files
-  #  - section-bibliographies
-
 execute:
   freeze: auto
   cache: true
-
-metadata-files:
-  - api/_sidebar.yml
 
 quartodoc:
   parser: numpy
@@ -106,6 +114,7 @@ quartodoc:
   title: API Reference
   style: pkgdown
   dir: api
+  render_interlinks: true
   sidebar: api/_sidebar.yml
   options:
     include_imports: true
@@ -114,7 +123,6 @@ quartodoc:
   # Basics of FIAT
   sections:
     - title: Basics
-      desc: The higher level components of FIAT.
     - subtitle: Core
       desc: Two main components of working with FIAT.
       package: fiat
@@ -134,7 +142,6 @@ quartodoc:
 
     # Geospatial methods
     - title: GIS
-      desc: Geospatial bound operations.
     - subtitle: Geometry (vector)
       desc: Geometry specific methods
       package: fiat.gis.geom
@@ -162,16 +169,15 @@ quartodoc:
 
     # I/O module
     - title: I/O
-      desc: Input/ output bound operations.
     - subtitle: Methods
-      desc: Input/ output methods
+      desc: Input/ output bound operations
       package: fiat.io
       contents:
         - open_csv
         - open_geom
         - open_grid
     - subtitle: Objects
-      desc:
+      desc: Objects constructed from data
       package: fiat.io
       contents:
         - name: GeomSource

@@ -1,5 +1,6 @@
 """Combined vector and raster methods for FIAT."""
 
+from numpy import array
 from osgeo import gdal, ogr, osr
 
 from fiat.gis.util import pixel2world, world2pixel
@@ -36,7 +37,7 @@ def clip(
 
     Returns
     -------
-    Array
+    array
         A 1D array containing the clipped values.
 
     See Also
@@ -124,7 +125,7 @@ cells that are touched by the feature.
 
     Returns
     -------
-    Array
+    array
         A 1D array containing the clipped values.
 
     See Also
@@ -185,22 +186,25 @@ def pin(
     band: Grid,
     gtf: tuple,
     point: tuple,
-):
-    """_summary_.
+) -> array:
+    """Pin a the value of a cell based on a coordinate.
 
     Parameters
     ----------
-    src : gdal.Band
-        _description_
-    band : gdal.Band
-        _description_
+    band : Grid
+        Input object. This holds a connection to the specified band.
+    gtf : tuple
+        The geotransform of a grid dataset.
+        Can be optained via the [get_geotransform]\
+(/api/GridSource/get_geotransform.qmd) method.
+        Has the following shape: (left, xres, xrot, upper, yrot, yres).
     point : tuple
-        _description_
+        x and y coordinate.
 
     Returns
     -------
-    numpy.array
-        _description_
+    array
+        A NumPy array containing one value.
     """
     X, Y = world2pixel(gtf, *point)
 

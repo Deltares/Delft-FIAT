@@ -61,7 +61,9 @@ jobs:
           pip install -e .
 
       - name: Generate API Reference
-        run: python docs/api.py
+        run: |
+          python docs/api.py
+          quartodoc interlinks docs/_quarto.yml
 
       - name: Generate docs
         run: |

@@ -1,6 +1,7 @@
 """The config interpreter of FIAT."""
 
 import os
+from pathlib import Path
 from typing import Any
 
 import tomli
@@ -12,7 +13,6 @@ from fiat.check import (
     check_config_grid,
 )
 from fiat.util import (
-    Path,
     create_hidden_folder,
     flatten_dict,
     generic_folder_check,

@@ -1,6 +1,7 @@
 /.quarto/
-/_site/
 /_freeze/
+/_inv/
+/_site/
 /api/*
 !api/.gitkeep
 *.jupyter_cache/

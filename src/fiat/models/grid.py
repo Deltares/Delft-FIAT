@@ -17,13 +17,22 @@ logger = spawn_logger("fiat.model.grid")
 
 
 class GridModel(BaseModel):
-    """_summary_."""
+    """Grid model.
+
+    Needs the following settings in order to be run: \n
+    - exposure.grid.file
+    - output.grid.file
+
+    Parameters
+    ----------
+    cfg : ConfigReader
+        ConfigReader object containing the settings.
+    """
 
     def __init__(
         self,
         cfg: object,
     ):
-        """_summary_."""
         super().__init__(cfg)
 
         self._read_exposure_grid()
@@ -60,7 +69,13 @@ class GridModel(BaseModel):
         self.exposure_grid = data
 
     def resolve(self):
-        """_summary_."""
+        """Create EAD output from the outputs of different return periods.
+
+        This is done but reading, loading and iterating over the those files.
+        In contrary to the geometry model, this does not concern temporary data.
+
+        - This method might become private.
+        """
         if self.cfg.get("hazard.risk"):
             logger.info("Setting up risk calculations..")
 
@@ -74,7 +89,10 @@ class GridModel(BaseModel):
             logger.info(f"Risk calculation time: {round(_e, 2)} seconds")
 
     def run(self):
-        """_summary_."""
+        """Run the grid model with provided settings.
+
+        Generates output in the specified `output.path` directory.
+        """
         _nms = self.cfg.get("hazard.band_names")
 
         if self.hazard_grid.count > 1:

@@ -6,6 +6,7 @@ from concurrent.futures import ProcessPoolExecutor, wait
 from multiprocessing import Process
 from pathlib import Path
 
+from fiat.cfg import ConfigReader
 from fiat.check import (
     check_exp_columns,
     check_geom_extent,
@@ -33,15 +34,15 @@ logger = spawn_logger("fiat.model.geom")
 class GeomModel(BaseModel):
     """Geometry model.
 
-    Needs the following from the settings file in order to be run:
-        - exposure.csv.file
-        - exposure.geom.file1
-        - output.geom.file1
+    Needs the following settings in order to be run: \n
+    - exposure.csv.file
+    - exposure.geom.file1
+    - output.geom.file1
 
     Parameters
     ----------
-    cfg : [](`fiat.ConfigReader`)
-        ConfigReader object containing the information from the settings file.
+    cfg : ConfigReader
+        ConfigReader object containing the settings.
     """
 
     _method = {
@@ -51,7 +52,7 @@ class GeomModel(BaseModel):
 
     def __init__(
         self,
-        cfg: object,
+        cfg: ConfigReader | dict,
     ):
         super().__init__(cfg)
 
@@ -137,7 +138,13 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
     def resolve(
         self,
     ):
-        """_summary_."""
+        """Create permanent output.
+
+        This is done but reading, loading and sorting the temporary output within
+        the `.tmp` folder within the output folder. \n
+
+        - This method might become private.
+        """
         # Setup some local referenced datasets and metadata
         _exp = self.exposure_data
         _risk = self.cfg.get("hazard.risk")
@@ -250,7 +257,10 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
     def run(
         self,
     ):
-        """_summary_."""
+        """Run the geometry model with provided settings.
+
+        Generates output in the specified `output.path` directory.
+        """
         # Get band names for logging
         _nms = self.cfg.get("hazard.band_names")
 
