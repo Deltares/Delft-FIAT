@@ -64,7 +64,7 @@ jobs:
         run: |
           python docs/api.py
           cd docs/
-          quartodoc interlinks docs/_quarto.yml
+          quartodoc interlinks _quarto.yml
           cd ..
 
       - name: Generate docs
