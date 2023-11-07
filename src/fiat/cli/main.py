@@ -48,7 +48,7 @@ def run(args):
     # Setup the logger
     logger = setup_default_log(
         "fiat",
-        log_level=2 + args.quiet - args.verbose,
+        level=2 + args.quiet - args.verbose,
         dst=cfg.get("output.path"),
     )
     sys.stdout.write(fiat_start_str)

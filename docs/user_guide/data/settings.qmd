@@ -9,7 +9,7 @@ For a simple model the `settings.toml` configuration file can be kept rather sim
 [output]
 path = "output"
 
-[output.csv]  
+[output.csv]
 name = "output.csv"
 
 [output.geom]
@@ -37,7 +37,7 @@ file = "./vulnerability/vulnerability_curves.csv"
 [**output.csv**]   
 `name`: This will create an output CSV file that contains the information from the exposure.csv and the damages per asset.
 
-[**output.geom**]   
+[**output.geom**]
 `name1`: This will create an output vector file that contains the objects and the
 damages per asset as vector objects. 
 
@@ -48,11 +48,11 @@ damages per asset as vector objects.
 `risk`: For single events risk is set to "false". In case of reoccuring events risk is set to "true".
 
 [**exposure.geom**]
-`csv`: This will create an exposure CSV file within the [exposure folder](folder_structure.qmd) that contains the [required information](exposure.qmd) per asset.   
-`crs`: The projection of the exposure vector file.   
+`csv`: This will create an exposure CSV file within the [exposure folder](folder_structure.qmd) that contains the [required information](exposure.qmd) per asset.
+`crs`: The projection of the exposure vector file.
 `file1`: This will create an exposure vector file within the exposure folder with the assets'geometry and Object ID.
 
-[**vulnerability**]   
+[**vulnerability**]
 `file`: This will create an vulnerability curves CSV file within the [vulnerability folder](folder_structure.qmd) that contains the [damage curves](vulnerability.qmd).
 
 ::: {.callout-note}

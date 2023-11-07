@@ -465,7 +465,7 @@ class LogManager:
 
         logger.parent = parent
         if parent is not None:
-            logger.log_level = parent.log_level
+            logger.level = parent.level
 
     def resolve_logger_tree(
         self,
@@ -513,38 +513,20 @@ class LogManager:
     #     return logger
 
 
-def spawn_logger(
-    name: str,
-) -> "Log":
-    """Spawn a logger within a hierarchy.
-
-    Parameters
-    ----------
-    name : str
-        _description_
-
-    Returns
-    -------
-    Log
-        _description_
-    """
-    return Log(name)
-
-
 class Logmeta(type):
     """_summary_."""
 
     def __call__(
         cls,
         name: str,
-        log_level: int = 2,
+        level: int = 2,
     ):
         """Override default calling behaviour.
 
         To accommodate the check in the logger tree.
         """
-        obj = cls.__new__(cls, name, log_level)
-        cls.__init__(obj, name, log_level)
+        obj = cls.__new__(cls, name, level)
+        cls.__init__(obj, name, level)
 
         res = Log.manager.resolve_logger_tree(obj)
         if res is not None:
@@ -632,18 +614,26 @@ class Receiver:
 
 
 class Log(metaclass=Logmeta):
-    """_summary_."""
+    """Generate a logger.
+
+    Parameters
+    ----------
+    name : str
+        _description_
+    level : int, optional
+        _description_, by default 2
+    """
 
     manager = LogManager()
 
     # def __new__(
     #     cls,
     #     name: str,
-    #     log_level: int = 2,
+    #     level: int = 2,
     # ):
 
     #     obj = object.__new__(cls)
-    #     obj.__init__(name, log_level)
+    #     obj.__init__(name, level)
 
     #     res = Log.manager.fit_external_logger(obj)
     #     if res is not None:
@@ -656,18 +646,9 @@ class Log(metaclass=Logmeta):
     def __init__(
         self,
         name: str,
-        log_level: int = 2,
+        level: int = 2,
     ):
-        """Generate a logger.
-
-        Parameters
-        ----------
-        name : str
-            _description_
-        log_level : int, optional
-            _description_, by default 2
-        """
-        self._log_level = _Level(log_level)
+        self._level = _Level(level)
         self.name = name
         self.bubble_up = True
         self.parent = None
@@ -679,7 +660,7 @@ class Log(metaclass=Logmeta):
         pass
 
     def __repr__(self):
-        _lvl_str = str(LogLevels(self.log_level)).split(".")[1]
+        _lvl_str = str(LogLevels(self.level)).split(".")[1]
         return f"<Log {self.name} level={_lvl_str}>"
 
     def __str__(self):
@@ -745,16 +726,16 @@ class Log(metaclass=Logmeta):
         self._handlers.append(FileHandler(dst=dst, level=level, name=filename))
 
     @property
-    def log_level(self):
+    def level(self):
         """_summary_."""
-        return self._log_level
+        return self._level
 
-    @log_level.setter
-    def log_level(
+    @level.setter
+    def level(
         self,
         val: int,
     ):
-        self._log_level = _Level(val)
+        self._level = _Level(val)
 
     @handleLog
     def debug(self, msg: str):
@@ -786,9 +767,27 @@ class Log(metaclass=Logmeta):
         self._log()
 
 
+def spawn_logger(
+    name: str,
+) -> Log:
+    """Spawn a logger within a hierarchy.
+
+    Parameters
+    ----------
+    name : str
+        _description_
+
+    Returns
+    -------
+    Log
+        _description_
+    """
+    return Log(name)
+
+
 def setup_default_log(
     name: str,
-    log_level: int,
+    level: int,
     dst: str,
 ) -> Log:
     """_summary_.
@@ -797,7 +796,7 @@ def setup_default_log(
     ----------
     name : str
         _description_
-    log_level : int
+    level : int
         _description_
     dst : str
         _description_
@@ -806,21 +805,16 @@ def setup_default_log(
     -------
     Log
         _description_
-
-    Raises
-    ------
-    ValueError
-        _description_
     """
     if len(name.split(".")) > 1:
         raise ValueError()
 
-    obj = Log(name, log_level=log_level)
+    obj = Log(name, level=level)
 
-    obj.add_c_handler(level=log_level)
+    obj.add_c_handler(level=level)
     obj.add_file_handler(
         dst,
-        level=log_level,
+        level=level,
         filename=name,
     )
 
@@ -830,22 +824,31 @@ def setup_default_log(
 def setup_mp_log(
     queue: queue.Queue,
     name: str,
-    log_level: int,
+    level: int,
     dst: str = None,
 ):
     """_summary_.
+
+    _extended_summary_
 
     Parameters
     ----------
     queue : queue.Queue
         _description_
-    log_level : int
+    name : str
+        _description_
+    level : int
         _description_
     dst : str, optional
         _description_, by default None
+
+    Returns
+    -------
+    Receiver
+        _description_
     """
     obj = Receiver(queue)
-    h = FileHandler(level=log_level, dst=dst, name=name)
+    h = FileHandler(level=level, dst=dst, name=name)
     h.set_formatter(MessageFormatter("{asctime:20s}{message}"))
     obj.add_handler(h)
     return obj
