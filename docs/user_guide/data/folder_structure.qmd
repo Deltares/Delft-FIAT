@@ -16,7 +16,7 @@ It is recommended to set up a folder structure as shown below to ensure that FIA
     │   └───📄 exposure.csv
     |
     ├───📁 vulnerability/
-    │   └───📄 damage_curves.csv
+    │   └───📄 vulnerability_curves.csv
     |
     └───📄 settings.toml
 

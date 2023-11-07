@@ -6,7 +6,7 @@ include-in-header:
 
 ---
 
-The **exposure data** serves to describe the assets within the affected region that the user intends to assess. This data file should be made available in either **CSV format or raster file** ([<ins><h14>exposure file types</h14></ins>]) and must be located in the 'exposure' folder, following the prescribed naming convention e.g 'exposure.csv' or 'exposure.nc.
+The **exposure data** serves to describe the assets within the region of interest. This data file should be made available in either **CSV format or rastesr file** (see acceptable file types at the bottom of this page) and must be located in the 'exposure' folder. We recommened the user follows the [FIAT folder dependency structure and file naming.](folder_structure.qmd)  
 
 ::: {.callout-tip}
 You can also create your exposure data with the [**HydroMT-FIAT  model builder**](https://deltares.github.io/hydromt_fiat/latest/#).
@@ -80,7 +80,7 @@ The maximum potential damage correspond to the damage functions for each asset. 
 
 **Aggregation Label**
 The damage results are aggregated over any aggregation label that the user specifies in the exposure data and are returned as damages per aggregation zone within that aggregation type. These aggregation labels can include for example: land use, census tract, and census block.
-The user can add columns manually, naming the new column `“Aggregation Label:” {'Label name'}`, in which the user is free to select a descriptive 'Label name' for the aggregation area.
+The user can add columns to the csv file manually or with the help of the **FIAT Toolbox**, in which the user is free to select a descriptive 'Label name' for the additional attributes.
 If the user wishes to add aggregation zones via vector file, **FIAT Toolbox** offers a post-processing tool to do so.
 
 

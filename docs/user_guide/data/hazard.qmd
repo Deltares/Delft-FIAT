@@ -18,7 +18,7 @@ The user is free to run the model with a variety of flood scenarios e.g. includi
 
 With FIAT the user has the option to asses the impact of a single flood event or the flood risk with multiple return periods. To do the latter, the user must provide multiple hazard maps with the same extent and projection.
 
-In each case some requirements must be met. For both scenarios the hazard files of any map should be made available as a **raster or vector file** ([<ins><h14>hazard file types</h14></ins>]) and must be located in the 'hazard' folder. The file name is free to choose by the user and must simply be refered to in the *settings.toml* configuration file.
+In each case some requirements must be met. For both scenarios the hazard files of any map should be made available as a **raster or vector file**  (see acceptable file types at the bottom of this page) and must be located in the 'hazard' folder. The file name is free to choose by the user and must simply be refered to in the *settings.toml* configuration file.
 
 # Event Map
 
