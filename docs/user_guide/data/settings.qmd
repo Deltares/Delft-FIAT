@@ -1,7 +1,7 @@
 ---
 title: "Settings file"
 ---
-The user must set the standard model settings in the `settings.toml` configuration file. Beyond standard settings FIAT offers the freedom to provide additional input to create a more detailed model (@tbl-toml) . More advanced options are described in the [Advanced options](../advanced.qmd) page.
+The user must set the model settings in the `settings.toml` configuration file. Beyond standard settings FIAT offers the freedom to provide additional input to create a more detailed model (@tbl-toml). More advanced options are described in the [Advanced options](../advanced.qmd) page.
 
 For a simple model the `settings.toml` configuration file can be kept rather simple (only required fields):
 
@@ -32,20 +32,20 @@ file = "./vulnerability/vulnerability_curves.csv"
 ```
 
 [**output**]   
-`path` :  This will create an output folder in the working directory
+`path` :  This will create an output folder in the working directory.
 
 [**output.csv**]   
-`name`: This will create an output CSV file that contains the information from the exposure.csv and the damages per asset
+`name`: This will create an output CSV file that contains the information from the exposure.csv and the damages per asset.
 
 [**output.geom**]   
 `name1`: This will create an output vector file that contains the objects and the
-damages per asset
+damages per asset as vector objects. 
 
 [**hazard**]   
-`file`: The file path to the hazard file   
+`file`: The file path to the hazard file.   
 `crs`: The projection of the hazard file. If no global projection is defined, the output will be in the same projection as the hazard map.   
-`elevation_reference`: In this case the hazard input is a flood map, therefore "DEM" is defined as reference. If it would be an elevation map the input would be "datum"  
-`risk`: in this case "false" as a single event is assessed.
+`elevation_reference`: In this case the hazard input is a flood map, therefore "DEM" is defined as reference. The input for elevation map is "datum". 
+`risk`: For single events risk is set to "false". In case of reoccuring events risk is set to "true".
 
 [**exposure.geom**]
 `csv`: This will create an exposure CSV file within the [exposure folder](folder_structure.qmd) that contains the [required information](exposure.qmd) per asset.   
@@ -59,7 +59,8 @@ damages per asset
 File paths in the settings can be relative to the settings.toml file or absolute.
 :::
 
-If the user prefers to create a more advanced model or to utilize grid data instead of object data, FIAT offers the flexibility to customize settings for each variable (@tbl-toml)
+### Optional input 
+If the user prefers to create a more detailed model or to utilize grid data instead of object data, FIAT offers the flexibility to customize settings for each variable (@tbl-toml). Advanced FIAT users can find more options in the [Advanced options](../advanced.qmd).
 
 | Field                        | Description                                                                                                                                                                  | Required                            | Default                                                                   | Example                                   |
 |------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|---------------------------------------------------------------------------|-------------------------------------------|
