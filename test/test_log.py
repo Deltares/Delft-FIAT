@@ -17,7 +17,7 @@ def test_stream(log1, log2):
 
 
 def test_log(tmpdir):
-    log = Log("test_log", log_level=2)
+    log = Log("test_log", level=2)
     log.add_c_handler(
         level=2,
     )

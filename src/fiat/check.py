@@ -31,7 +31,7 @@ def check_config_entries(
     if not all(_check):
         error_log = setup_default_log(
             "error",
-            log_level=2,
+            level=2,
             dst=str(parent),
         )
         _missing = [item for item, b in zip(_man_cols, _check) if not b]

@@ -7,6 +7,7 @@ import weakref
 from abc import ABCMeta, abstractmethod
 from io import BufferedReader, BufferedWriter, FileIO, TextIOWrapper
 from math import floor, log10
+from pathlib import Path
 from typing import Any
 
 from numpy import arange, array, column_stack, interp, ndarray
@@ -16,7 +17,6 @@ from fiat.error import DriverNotFoundError
 from fiat.util import (
     GEOM_DRIVER_MAP,
     GRID_DRIVER_MAP,
-    Path,
     _dtypes_from_string,
     _dtypes_reversed,
     _pat,
@@ -1734,23 +1734,31 @@ class ExposureTable(TableLazy):
 
 ## Open
 def open_csv(
-    file: str,
-    sep: str = ",",
+    file: Path | str,
+    delimiter: str = ",",
     header: bool = True,
     index: str = None,
     large: bool = False,
 ) -> object:
-    """_summary_.
+    """Open a csv file.
 
     Parameters
     ----------
     file : str
-        _description_
+        Path to the file.
+    delimiter : str, optional
+        Column seperating character, either something like `','` or `';'`.
+    header : bool, optional
+        Wether or not to use headers.
+    index : str, optional
+        Name of the index column.
+    large : bool, optional
+        If `True`, a lazy read is executed.
 
     Returns
     -------
-    object
-        _description_
+    Table | TableLazy
+        Object holding parsed csv data.
     """
     _handler = BufferHandler(file)
 
@@ -1766,11 +1774,28 @@ def open_csv(
 
 
 def open_exp(
-    file: str,
+    file: Path | str,
     header: bool = True,
     index: str = None,
 ):
-    """_summary_."""
+    """_summary_.
+
+    _extended_summary_
+
+    Parameters
+    ----------
+    file : str
+        _description_
+    header : bool, optional
+        _description_, by default True
+    index : str, optional
+        _description_, by default None
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
     _handler = BufferHandler(file)
 
     parser = CSVParser(
@@ -1783,10 +1808,25 @@ def open_exp(
 
 
 def open_geom(
-    file: str,
+    file: Path | str,
     mode: str = "r",
 ):
-    """_summary_."""
+    """Open a geometry source file.
+
+    This source file is lazily read.
+
+    Parameters
+    ----------
+    file : str
+        Path to the file.
+    mode : str, optional
+        Open in `read` or `write` mode.
+
+    Returns
+    -------
+    GeomSource
+        Object that holds a connection to the source file.
+    """
     return GeomSource(
         file,
         mode,
@@ -1794,13 +1834,36 @@ def open_geom(
 
 
 def open_grid(
-    file: str,
+    file: Path | str,
     chunk: tuple = None,
     subset: str = None,
     var_as_band: bool = False,
     mode: str = "r",
 ):
-    """_summary_."""
+    """Open a grid source file.
+
+    This source file is lazily read.
+
+    Parameters
+    ----------
+    file : Path | str
+        Path to the file.
+    chunk : tuple, optional
+        Chunk size in x and y direction.
+    subset : str, optional
+        In netCDF files, multiple variables are seen as subsets and can therefore not
+        be loaded like normal bands. Specify one if one of those it wanted.
+    var_as_band : bool, optional
+        Again with netCDF files: if all variables have the same dimensions, set this
+        flag to `True` to look the subsets as bands.
+    mode : str, optional
+        Open in `read` or `write` mode.
+
+    Returns
+    -------
+    GridSource
+        Object that holds a connection to the source file.
+    """
     return GridSource(
         file,
         chunk,

@@ -140,6 +140,18 @@ quartodoc:
         - name: GridModel
           children: separate
 
+    # Logging
+    - title: Logging
+      desc: Logging module of FIAT
+      package: fiat.log
+      contents:
+        - spawn_logger
+        - setup_default_log
+        - setup_mp_log
+        - name: Log
+          children: separate
+        - Receiver
+
     # Geospatial methods
     - title: GIS
     - subtitle: Geometry (vector)

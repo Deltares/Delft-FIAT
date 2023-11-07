@@ -266,7 +266,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # Setup the mp logger for missing stuff
         _receiver = setup_mp_log(
-            self._queue, "missing", log_level=2, dst=self.cfg.get("output.path")
+            self._queue, "missing", level=2, dst=self.cfg.get("output.path")
         )
 
         logger.info("Starting the calculations")
