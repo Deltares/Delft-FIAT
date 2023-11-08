@@ -58,7 +58,11 @@ jobs:
       - name: Update environment
         run: |
           mamba env update -f environment.yml
+          pip install tomli-w
           pip install -e .
+
+      - name: Create Testdata
+        run: python .testdata/create_test_data.py
 
       - name: Generate API Reference
         run: |
