@@ -6,40 +6,40 @@ include-in-header:
 
 ---
 
-The **exposure data** serves to describe the assets within the region of interest. This data file should be made available in either **CSV format or rastesr file** (see acceptable file types at the bottom of this page) and must be located in the 'exposure' folder. We recommened the user follows the [FIAT folder dependency structure and file naming.](folder_structure.qmd)  
+The **exposure data** describe the assets within the region of interest. This data file should be made available in either **CSV or raster format** (see acceptable file types at the bottom of this page) and must be located in the 'exposure' folder. We recommened the user follows the [FIAT folder dependency structure and file naming.](folder_structure.qmd)  
 
 ::: {.callout-tip}
 You can also create your exposure data with the [**HydroMT-FIAT  model builder**](https://deltares.github.io/hydromt_fiat/latest/#).
 :::
 
 ::: {.callout-warning}
- Assets cannot be outside the area of the hazard map input! Assets that fully fall out of the hazard extend are automatically removed by FIAT. BUT any asset that partially falls outside the flood map extent must be removed manually by the user.
+Assets cannot be outside the area of the hazard map input! Assets that fully fall out of the hazard extend are automatically removed by FIAT. BUT any asset that partially falls outside the flood map extent must be removed manually by the user.
 :::
 
 
 #### Raster Data
 
-Raster files must be **pre-processed** before being ingested into th FIAT model. Raster projection and extend must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a raster file is required. A damage function must be assigned to each raster file together with a value of the **Max Potential Damage** for each raster cell.
+Raster files must be **pre-processed** before being ingested into the FIAT model. Raster projection and extent must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a raster file with the **Max Potential Damage** per cell is required. A damage function must be assigned to each raster file as well.
 
 #### CSV Data
 
-Along with the *exposure.csv* - file it is advisable to render an additional vector file of the exposed objects (e.g. points, building footbprints) with an index column, carrying the same name as the index column of the *exposure.csv* to allow for merging of the exposure files (optional). The name of the vector file should be descriptive of the objects it represents (e.g. 'buildings.gpkg','road.gpkg') and must be specified in the *settings.toml* configuration file. The advantage of providing this extra vector file is that (1) water levels or depths can be considered over the entire object (when 'extraction method' = 'area'); this can be more appropriate than point estimates for large buildings.(2) FIAT offers the **FIAT Toolbox** application to post-process the model results and improves visualization and interpretation of the results in GIS software applications.
+Along with the *exposure.csv* - file it is advisable to render one or more vector files of the exposed objects (e.g. points, building footprints) with an index column, carrying the same name as the index column of the *exposure.csv* to allow for merging of the exposure files (optional). The name of the vector file should be descriptive of the objects it represents (e.g. 'buildings.gpkg','road.gpkg') and must be specified in the *settings.toml* configuration file. The advantage of providing these extra vector files is that (1) water levels or depths can be considered over the entire object (when 'extraction method' = 'area'); this can be more appropriate than point estimates for large buildings.(2) FIAT offers the **FIAT Toolbox** application to post-process the model results and improves visualization and interpretation of the results in GIS software applications.
 
 The exposure data CSV file contains information about each object in the area of interest that is needed for the damage calculation. Each row represents an object, such as a building, road segment, or utility, and each column represents an attribute of the object, such as its location, elevation or maximum potential damage value.
 For users who would want to create their own exposure data, or modify existing exposure data, a description of the default fields (columns) in the exposure data CSV can be found in @tbl-exposure.
 
 | Field                                  | Description                                                                                | Required                                 | Example                    |
 |----------------------------------------|--------------------------------------------------------------------------------------------|------------------------------------------|----------------------------|
-| Object ID                              | Unique numerical indentifier of the object                                                 | Yes                                      | 1                          |
+| Object ID                              | Unique numerical identifier of the object                                                 | Yes                                      | 1                          |
 | Object Name                            | Unique name of the object                                                                  | No                                       | fp_1                       |
-| Primary Object Type                    | Object type                                                                                | No                                       | RES1_1SNB                  |
-| Secondary Object Type                  | More specification about object type                                                       | No                                       | Res 1,1 Story no basement  |
-| Extraction Method                      | Method to extract water depth                                                              | Yes                                      | option: 'centroid', 'area' |
+| Primary Object Type                    | General object type                                                                                | No                                       | RES1_1SNB                  |
+| Secondary Object Type                  | More specific object type                                                       | No                                       | Res 1,1 Story no basement  |
+| Extraction Method                      | Method to extract water depth                                                              | Yes                                      | options: 'centroid' or 'area' |
 | Damage Function: Structure             | Damage function for the structure                                                          | at least one Damage Function of any kind | struct_2                   |
 | Damage Function: Content               | Damage function for the content                                                            | at least one Damage Function of any kind | cont_62                    |
 | Damage Function: Other                 | Damage function other (e.g. roads)                                                         | at least one Damage Function of any kind |                            |
 | Ground Floor Height                    | Elevation of the finished floor above ground level. Units must be coherent with hazard map | Yes                                      | 4                          |
-| Ground Elevation                       | Ground elevation at location of object. Units must be coherent with hazard map             | Yes, if water level map as hazard input  | 10.11                      |
+| Ground Elevation                       | Ground elevation relative to datum at location of object. Units must be coherent with hazard map             | Yes, if water level map as hazard input  | 10.11                      |
 | Max Potential Damage: Structure        | Maximum potential structural damage                                                        | at least one Max Potential Damage        | 193457.00                  |
 | Max Potential Damage: Content          | Maximum potential content damage                                                           | at least one Max Potential Damage        | 386984.00                  |
 | Max Potential Damage: Other            | Maximum potential other damage (e.g. roads)                                                | at least one Max Potential Damage        |                            |
@@ -70,18 +70,18 @@ The extraction method refers to which water level or water depth is selected ove
 There are three damage function fields: structure, content, and other. At least one of these must be provided for each object. The value that is entered is the name of the damage function. This name is coupled to the damage function CSV file via the setting file. The field **'Damage function: other'** can refer to various object types (e.g. the inventory of a restaurant). The user is free to use any damage function for this field. Damage functions can be obtained from [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific functions when available.
 
 **Ground Floor Height**
-The Ground floor height gives the distance of the finished floor of an asset above ground level. E.g. a building is raised by 1 foot above the ground, the ground floor height is equal to 1 foot.
+The ground floor height gives the distance of the finished floor of an asset above ground level. E.g. a building is raised by 1 foot above the ground, the ground floor height is equal to 1 foot.
 
 **Ground Elevation**
 The ground elevation is the value of a digital elevation model (DEM) at the location of the object.
 
 **Maximum Potential Damage**
-The maximum potential damage correspond to the damage functions for each asset. For each damage function type that was assigned, a maximum potential damage must also be assigned. These values represent the maximum damage to the structure, content, or other (e.g. inventory). There are methods to derive these values, based on building type and area of the building. Global maximum damage values can be obtained from  [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific damage values. In the US, [FEMA Hazus](https://www.fema.gov/flood-maps/products-tools/hazusis) an industry standard in how to derive these values.
+The maximum potential damage correspond to the damage functions for each asset. For each damage function type that was assigned, a maximum potential damage must also be assigned. These values represent the maximum damage to the structure, content, or other (e.g. inventory). There are methods to derive these values, based on building type and area of the building. Global maximum damage values can be obtained from  [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific damage values. In the US, [FEMA Hazus](https://www.fema.gov/flood-maps/products-tools/hazusis) is an industry standard in how to derive these values.
 
 **Aggregation Label**
-The damage results are aggregated over any aggregation label that the user specifies in the exposure data and are returned as damages per aggregation zone within that aggregation type. These aggregation labels can include for example: land use, census tract, and census block.
-The user can add columns to the csv file manually or with the help of the **FIAT Toolbox**, in which the user is free to select a descriptive 'Label name' for the additional attributes.
-If the user wishes to add aggregation zones via vector file, **FIAT Toolbox** offers a post-processing tool to do so.
+These columns can be used by **FIAT Toolbox** to aggregate over any aggregation label that the user specifies. These aggregation labels can include for example: land use, census tract, and census block.
+The user can add columns to the csv file manually or with the help of the [**HydroMT-FIAT  model builder**](https://deltares.github.io/hydromt_fiat/latest/#), in which the user is free to select a descriptive 'Label name' for the additional attributes.
+If the user wishesto cenneted these aggregated results to a vector file, **FIAT Toolbox** offers a post-processing tool to do so.
 
 
 ###### <ins><h14>*exposure file types*</h14></ins>
