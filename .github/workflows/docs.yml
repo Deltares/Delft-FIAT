@@ -68,5 +68,6 @@ jobs:
 
       - name: Generate docs
         run: |
+          cd docs/
           quarto render
           echo "DOC_VERSION=$(mamba run -n fiat_docs python -c 'from fiat.version import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
