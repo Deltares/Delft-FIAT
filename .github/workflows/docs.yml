@@ -62,12 +62,11 @@ jobs:
 
       - name: Generate API Reference
         run: |
-          python docs/api.py
           cd docs/
-          quartodoc interlinks _quarto.yml
-          cd ..
+          python api.py
+          quartodoc interlinks
 
       - name: Generate docs
         run: |
-          quarto render docs/
-          echo "DOC_VERSION=$(mamba run -n hydromt python -c 'from fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
+          quarto render
+          echo "DOC_VERSION=$(mamba run -n fiat_docs python -c 'from fiat.version import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV

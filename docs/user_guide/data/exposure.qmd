@@ -6,7 +6,7 @@ include-in-header:
 
 ---
 
-The **exposure data** serves to describe the assets within the region of interest. This data file should be made available in either **CSV format or rastesr file** (see acceptable file types at the bottom of this page) and must be located in the 'exposure' folder. We recommened the user follows the [FIAT folder dependency structure and file naming.](folder_structure.qmd)  
+The **exposure data** serves to describe the assets within the region of interest. This data file should be made available in either **CSV format or rastesr file** (see acceptable file types at the bottom of this page) and must be located in the 'exposure' folder. We recommened the user follows the [FIAT folder dependency structure and file naming.](folder_structure.qmd)
 
 ::: {.callout-tip}
 You can also create your exposure data with the [**HydroMT-FIAT  model builder**](https://deltares.github.io/hydromt_fiat/latest/#).
