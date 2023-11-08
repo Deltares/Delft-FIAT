@@ -31,7 +31,7 @@ include-in-header:
 :::
 
 ## Quick start
-FIAT computes the damage of (a) flood event(s) at a specified geographic location based on a settings file and three main data inputs:
+FIAT computes the socioeconomic damage of (a) flood event(s) at a specified geographic location based on flood models and vulnerability functions which are configured in a settings file and three main data inputs:
 
   - [Settings file](data/settings.qmd)
   - [Hazard data](data/hazard.qmd)
@@ -42,7 +42,7 @@ The HydroMT plugin [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) can 
 
 ## General User Information
 
-**FIAT** derives **aggregated damages and risk** at asset-level and aggregated levels based upon flood maps and additional inputs such as depth-damage functions, asset locations and their maximum potential damages.
+FIAT derives **aggregated damages and risk** at asset-level and aggregated levels based upon flood maps and additional inputs such as depth-damage functions, asset locations and their maximum potential damages.
 For each asset specified in the exposure dataset, the water depth or elevation is subtracted from the flood map at the location of the assets.
 
 ::: {.callout-note}
