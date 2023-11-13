@@ -25,13 +25,13 @@ number-sections: false
 
 website:
   title: "Delft FIAT"
-  favicon: _static/logo.svg
+  favicon: _static/logo.png
   search:
     location: navbar
     limit: 5
     type: textbox
   navbar:
-    logo: _static/logo.svg
+    logo: _static/logo.png
     search: true
     pinned: true
     left:
