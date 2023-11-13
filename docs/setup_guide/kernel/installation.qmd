@@ -2,10 +2,10 @@
 title: "Installing FIAT"
 ---
 
-# For Use
+## For Use
 FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.
 
-## New environment
+### New environment
 To create a new environment follow the steps below.
 
 - Create a new environment:
@@ -20,13 +20,13 @@ To create a new environment follow the steps below.
 
     `pip install git+https://github.com/Deltares/Delft-FIAT.git`
 
-## Existing environment
+### Existing environment
 If you want to install FIAT into an existing environment, simply activate the desired environment and run **pip install**:
 
 `pip install git+https://github.com/Deltares/Delft-FIAT.git`
 
 
-# For Development
+## For Development
 This is for those who wish to contribute to the development of FIAT.
 
 - First, clone the FIAT repository on Github into a local directory of choice:

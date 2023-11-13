@@ -1,0 +1,13 @@
+---
+title: "Contributing"
+---
+
+We welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. Our [Developer guide](guide.qmd) explains how can be contributed in code developments.
+
+## Rights
+The XXX [license](https://github.com/Deltares/Delft-FIAT/blob/master/LICENSE) applies to all contributions.
+
+## Issue conventions {#sec-issue-conventions}
+FIAT has known and unknown bugs. Improvements through bug reports or feature requests in our [issue tracker](https://github.com/Deltares/Delft-FIAT/issues) are welcomed. Please search open and closed existing issues, before creating a new one.
+
+For issues related to pre- and post-processing of FIAT data, please refer to respectively the [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) and [FIAT Toolbox](https://github.com/Deltares/fiat_toolbox) repositories.

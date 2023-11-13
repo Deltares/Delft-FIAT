@@ -39,7 +39,8 @@ website:
       - setup_guide/index.qmd
       - user_guide/index.qmd
       - api/index.qmd
-      - changelog.qmd
+      - text: "Developments"
+        file: developments/index.qmd
     right:
       # - href: https://www.deltares.nl/en
       #   icon: _static/images/deltares-blue.svg
@@ -88,9 +89,11 @@ website:
     - title: "Developments"
       collapse-level: 3
       contents:
+        - developments/index.qmd
+        - developments/guide.qmd
         - changelog.qmd
         - developments/roadmap.qmd
-        - developments/guide.qmd
+
 
 format:
   html:

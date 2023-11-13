@@ -13,3 +13,5 @@ This is the first (pre-)release of Delft-FIAT. It aims to have a stable version 
     - The `GridModel` requires a configuration file that indicates where the exposure raster(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in raster data as exposure layers (e.g. commercial, residential, industrial) holding the maximum potential damage values, which should be in the same resolution, size, and projection as the hazard map. To calculate damages, the exposure raster and hazard raster are overlaid and per cell, the maximum potential damage is multiplied with the damage fraction corresponding to the hazard value in that cell. Risk can also be calculated with the `GridModel`, although it must be noted that this functionality has not been thoroughly tested. More information can be found in the [User guide](user_guide/index.qmd).
     - Delft-FIAT can be freezed into an executable, see [Freeze FIAT as an application](setup_guide/kernel/application.qmd).
 
+### Foreseen future fixes
+- Here we can write about fixes we will not do now but in Q1 of 2024.
