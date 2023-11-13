@@ -88,7 +88,8 @@ website:
     - title: "Developments"
       collapse-level: 3
       contents:
-        - developments/changelog.qmd
+        - developments/index.qmd
+        - changelog.qmd
         - developments/roadmap.qmd
         - developments/guide.qmd
 

@@ -31,28 +31,28 @@ file = "./vulnerability/vulnerability_curves.csv"
 
 ```
 
-[**output**]   
+[**output**]
 `path` :  The path to the output folder in the working directory.
 
-[**output.csv**]   
+[**output.csv**]
 `name`: The path to the output CSV file that will be created, that contains the information from the exposure.csv and the damages per asset.
 
 [**output.geom**]
 `name1`: This will create an output vector file that contains the objects and the
 damages per asset as vector objects.
 
-[**hazard**]   
-`file`: The file path to the hazard file.   
-`crs`: The projection of the hazard file. If no global projection is defined, the output will be in the same projection as the hazard map.   
-`elevation_reference`: This defines the reference of the flood map. In case of a flood-depth map this should be "DEM" while in case of a water-elevation map this should be "datum".   
+[**hazard**]
+`file`: The file path to the hazard file.
+`crs`: The projection of the hazard file. If no global projection is defined, the output will be in the same projection as the hazard map.
+`elevation_reference`: This defines the reference of the flood map. In case of a flood-depth map this should be "DEM" while in case of a water-elevation map this should be "datum".
 `risk`: In case of a risk calculation this is set to "true", while for a single events this is set to "false".
 
-[**exposure.geom**]   
-`csv`: The path to the exposure CSV file within the [exposure folder](folder_structure.qmd) that contains the [required information](exposure.qmd) per asset.   
-`crs`: The projection of the exposure vector file.   
+[**exposure.geom**]
+`csv`: The path to the exposure CSV file within the [exposure folder](folder_structure.qmd) that contains the [required information](exposure.qmd) per asset.
+`crs`: The projection of the exposure vector file.
 `file1`: The path to the exposure vector file within the exposure folder with the assets 'geometry and Object ID.
 
-[**vulnerability**]   
+[**vulnerability**]
 `file`: The path to the vulnerability curves CSV file within the [vulnerability folder](folder_structure.qmd) that contains the [damage curves](vulnerability.qmd).
 
 ::: {.callout-note}

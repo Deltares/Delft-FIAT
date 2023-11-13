@@ -1,9 +1,0 @@
----
-title: "Developments"
----
-
-# What's new?
-
-## Pre-release v0.1.0 - November 2023
-This is the first (pre-)release of Delft-FIAT. It aims to have a stable version of the `geom` (vector) model and an experimental version of the `grid` (raster) model.
-
