@@ -32,13 +32,19 @@ fiat_start_str = """
 """
 
 
-#
+# Info function
 def info(args):
     """_summary_."""
-    pass
+    sys.stdout.write(fiat_start_str)
+    sys.stdout.write(
+        """This tool is meant for quick impact assessment.
+
+It is open source and meant to be used and implemented as such.
+Therefore it is available under the GPLv3 license.\n"""
+    )
 
 
-#
+# Run FIAT function
 def run(args):
     """_summary_."""
     # Setup the config reader
@@ -87,10 +93,12 @@ def main():
         metavar="<commands>",
     )
 
-    subparser.add_parser(
+    info_parser = subparser.add_parser(
         name="info",
         help="Information concerning Delft-FIAT",
+        formatter_class=MainHelpFormatter,
     )
+    info_parser.set_defaults(func=info)
 
     run_parser = subparser.add_parser(
         name="run",

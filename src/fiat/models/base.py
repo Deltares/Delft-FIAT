@@ -7,6 +7,7 @@ from os import cpu_count
 from osgeo import osr
 
 from fiat.check import (
+    check_duplicate_columns,
     check_global_crs,
     check_hazard_band_names,
     check_hazard_rp_iden,
@@ -145,12 +146,17 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         path = self.cfg.get("vulnerability.file")
         logger.info(f"Reading vulnerability curves ('{path.name}')")
 
-        index = "water depth"
-        if "vulnerability.index" in self.cfg:
-            index = self.cfg.get("vulnerability.index")
-        data = open_csv(str(path), index=index)
+        # Setting the keyword arguments from settings file
+        kw = {"index": "water depth"}
+        kw.update(
+            self.cfg.generate_kwargs("vulnerability.settings"),
+        )
+        data = open_csv(str(path), **kw)
         ## checks
         logger.info("Executing vulnerability checks...")
+
+        # Column check
+        check_duplicate_columns(data._dup_cols)
 
         # upscale the data (can be done after the checks)
         if "vulnerability.step_size" in self.cfg:

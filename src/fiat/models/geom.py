@@ -7,6 +7,7 @@ from multiprocessing import Process
 from pathlib import Path
 
 from fiat.check import (
+    check_duplicate_columns,
     check_exp_columns,
     check_geom_extent,
     check_internal_srs,
@@ -63,13 +64,21 @@ class GeomModel(BaseModel):
         """_summary_."""
         path = self.cfg.get("exposure.csv.file")
         logger.info(f"Reading exposure data ('{path.name}')")
-        index_col = "Object ID"
-        if self.cfg.get("exposure.csv.index") is not None:
-            index_col = self.cfg.get("exposure.csv.index")
-        data = open_exp(path, index=index_col)
+
+        # Setting the keyword arguments from settings file
+        kw = {"index": "Object ID"}
+        kw.update(
+            self.cfg.generate_kwargs("exposure.csv.settings"),
+        )
+        data = open_exp(path, **kw)
         ##checks
         logger.info("Executing exposure data checks...")
+
+        # Check for mandatory columns
         check_exp_columns(data.columns)
+
+        # Check for duplicate columns
+        check_duplicate_columns(data._dup_cols)
 
         ## Information for output
         _ex = None

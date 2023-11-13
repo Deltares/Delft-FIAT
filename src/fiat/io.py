@@ -19,11 +19,10 @@ from fiat.util import (
     Path,
     _dtypes_from_string,
     _dtypes_reversed,
-    _pat,
-    _pat_multi,
     _read_gridsrouce_layers,
     _text_chunk_gen,
     deter_type,
+    regex_pattern,
     replace_empty,
 )
 
@@ -379,14 +378,17 @@ class CSVParser:
     def __init__(
         self,
         handler: BufferHandler,
+        delimiter: str,
         header: bool,
         index: str = None,
     ):
         """_summary_."""
+        self.delim = delimiter
         self.data = handler
         self.meta = {}
         self.meta["index_col"] = -1
         self.meta["index_name"] = None
+        self.meta["delimiter"] = delimiter
         self.index = None
         self.columns = None
         self._nrow = self.data.size
@@ -402,6 +404,7 @@ class CSVParser:
         """_summary_."""
         _get_index = False
         _get_dtypes = True
+        _pat_multi = regex_pattern(self.delim, multi=True)
 
         if index is not None:
             try:
@@ -428,7 +431,7 @@ class CSVParser:
             if _get_dtypes:
                 _dtypes = [0] * self._ncol
             with self.data as _h:
-                for _nlines, sd in _text_chunk_gen(_h):
+                for _nlines, sd in _text_chunk_gen(_h, pattern=_pat_multi):
                     if _get_dtypes:
                         for idx in range(self._ncol):
                             _dtypes[idx] = max(
@@ -450,6 +453,7 @@ class CSVParser:
         header: bool,
     ):
         """_summary_."""
+        _pat = regex_pattern(self.delim)
         self.data.seek(0)
 
         while True:
@@ -462,12 +466,12 @@ class CSVParser:
                 if len(t) == 1:
                     tl = t[0].split(":")
                     if len(tl) > 1:
-                        lst = tl[1].split(",")
+                        lst = tl[1].split(self.delim)
                         _entry = tl[0].strip().replace("#", "").lower()
                         _val = [item.strip() for item in lst]
                         self.meta[_entry] = _val
                     else:
-                        lst = t[0].split(",")
+                        lst = t[0].split(self.delim)
                         _entry = lst[0].strip().replace("#", "").lower()
                         _val = [item.strip() for item in lst[1:]]
                         self.meta[_entry] = _val
@@ -484,13 +488,20 @@ class CSVParser:
                 self._nrow += 1
                 break
 
-            self.columns = [item.strip() for item in line.split(",")]
+            self.columns = [item.strip() for item in line.split(self.delim)]
+            self._resolve_column_headers()
             self._ncol = len(self.columns)
             break
 
         self.data.skip = self.data.tell()
         self.meta["ncol"] = self._ncol
         self.meta["nrow"] = self._nrow
+
+    def _resolve_column_headers(self):
+        """_summary_."""
+        _cols = self.columns
+        _cols = [_col if _col else f"Unnamed_{_i+1}" for _i, _col in enumerate(_cols)]
+        self.columns = _cols
 
     def read(
         self,
@@ -1289,6 +1300,7 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
     ) -> object:
         """_summary_."""
         # Declarations
+        self._dup_cols = None
         self.dtypes = ()
         self.meta = kwargs
         self.index_col = -1
@@ -1301,12 +1313,24 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
         if "index_int" in kwargs:
             index_int = kwargs.pop("index_int")
 
+        if "delimiter" in kwargs:
+            self.delimiter = kwargs.pop("delimiter")
+
         # Create body of struct
         if "dtypes" in kwargs:
             self.dtypes = kwargs.pop("dtypes")
 
         if columns is None:
             columns = [f"col_{num}" for num in range(kwargs["ncol"])]
+
+        # Some checking in regards to duplicates in column headers
+        if len(set(columns)) != len(columns):
+            _set = list(set(columns))
+            _counts = [columns.count(elem) for elem in _set]
+            _dup = [elem for _i, elem in enumerate(_set) if _counts[_i] > 1]
+            self._dup_cols = _dup
+
+        # Create the column indexing
         self._columns = dict(zip(columns, range(kwargs["ncol"])))
 
         if index is None:
@@ -1441,8 +1465,11 @@ class Table(_Table):
         """_summary_."""
         dtypes = kwargs["dtypes"]
         ncol = kwargs["ncol"]
-        kwargs["nrow"]
         index_col = kwargs["index_col"]
+        _pat_multi = regex_pattern(
+            kwargs["delimiter"],
+            multi=True,
+        )
         with data as h:
             _d = _pat_multi.split(h.read().strip())
 
@@ -1735,7 +1762,7 @@ class ExposureTable(TableLazy):
 ## Open
 def open_csv(
     file: str,
-    sep: str = ",",
+    delimiter: str = ",",
     header: bool = True,
     index: str = None,
     large: bool = False,
@@ -1756,6 +1783,7 @@ def open_csv(
 
     parser = CSVParser(
         _handler,
+        delimiter,
         header,
         index,
     )
@@ -1767,6 +1795,7 @@ def open_csv(
 
 def open_exp(
     file: str,
+    delimiter: str = ",",
     header: bool = True,
     index: str = None,
 ):
@@ -1775,6 +1804,7 @@ def open_exp(
 
     parser = CSVParser(
         _handler,
+        delimiter,
         header,
         index,
     )

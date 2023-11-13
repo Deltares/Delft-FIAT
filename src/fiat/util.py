@@ -39,8 +39,15 @@ _dtypes_from_string = {
     "str": str,
 }
 
-_pat = regex.compile(rb'"[^"]*"(*SKIP)(*FAIL)|,')
-_pat_multi = regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|,|{NEWLINE_CHAR}'.encode())
+
+def regex_pattern(
+    delimiter: str,
+    multi: bool = False,
+):
+    """_summary_."""
+    if not multi:
+        return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}'.encode())
+    return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}|{NEWLINE_CHAR}'.encode())
 
 
 def _read_gridsource_info(
@@ -154,6 +161,7 @@ GRID_DRIVER_MAP[""] = "MEM"
 
 def _text_chunk_gen(
     h: object,
+    pattern: re.Pattern,
     chunk_size: int = 100000,
 ):
     _res = b""
@@ -170,7 +178,7 @@ def _text_chunk_gen(
         except Exception:
             _res = b""
         _nlines = t.count(NEWLINE_CHAR.encode())
-        sd = _pat_multi.split(t)
+        sd = pattern.split(t)
         del t
         yield _nlines, sd
 
