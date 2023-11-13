@@ -89,7 +89,7 @@ website:
       collapse-level: 3
       contents:
         - developments/index.qmd
-        - developments/changelog.qmd
+        - changelog.qmd
         - developments/roadmap.qmd
         - developments/guide.qmd
 
