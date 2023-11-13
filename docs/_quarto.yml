@@ -25,13 +25,13 @@ number-sections: false
 
 website:
   title: "Delft FIAT"
-  favicon: _static/logo.png
+  favicon: _static/logo.svg
   search:
     location: navbar
     limit: 5
     type: textbox
   navbar:
-    logo: _static/logo.png
+    logo: _static/logo.svg
     search: true
     pinned: true
     left:
@@ -39,7 +39,7 @@ website:
       - setup_guide/index.qmd
       - user_guide/index.qmd
       - api/index.qmd
-      - developments/changelog.qmd
+      - changelog.qmd
     right:
       # - href: https://www.deltares.nl/en
       #   icon: _static/images/deltares-blue.svg
@@ -88,7 +88,6 @@ website:
     - title: "Developments"
       collapse-level: 3
       contents:
-        - developments/index.qmd
         - changelog.qmd
         - developments/roadmap.qmd
         - developments/guide.qmd
