@@ -16,7 +16,7 @@ include-in-header:
     </a>
   </li>
   <li class="nav-item" role="presentation">
-    <a class="nav-link" href="examples.qmd">
+    <a class="nav-link" href="../examples/index.qmd">
       <i class="bi bi-graph-up"></i>Examples
     </a>
   </li>
@@ -38,7 +38,7 @@ FIAT computes the socioeconomic damage of (a) flood event(s) at a specified geog
   - [Exposure data](data/exposure.qmd)
   - [Vulnerability data](data/vulnerability.qmd)
 
-The HydroMT plugin [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) can be used to set up the FIAT model data but that is not compulsory. If a user sets up their own FIAT model data, it is recommended to save the data into the same [folder structure](data/folder_structure.qmd) that HydroMT-FIAT creates.
+The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model data but that is not compulsory. If a user sets up their own FIAT model data, it is recommended to save the data into the same [folder structure](data/folder_structure.qmd) that HydroMT-FIAT creates.
 
 ## General User Information
 

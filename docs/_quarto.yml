@@ -84,7 +84,7 @@ website:
             - user_guide/data/vulnerability.qmd
         - section: "Examples"
           contents:
-            - user_guide/examples.qmd
+            - examples/index.qmd
         - user_guide/advanced.qmd
     - title: "Developments"
       collapse-level: 3

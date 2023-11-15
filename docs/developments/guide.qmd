@@ -2,7 +2,7 @@
 title: "Developer guide"
 ---
 
-The aim of FIAT is to be a lean calculation core, focusing on the main tasks of FIAT of combining exposure, vulnerability and hazard data and calculating damages and risk. Developments related to pre- and post-processing of FIAT data should be done in respectively the [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) and [FIAT Toolbox](https://github.com/Deltares/fiat_toolbox) repositories.
+The aim of FIAT is to be a lean calculation core, focusing on the main tasks of FIAT of combining exposure, vulnerability and hazard data and calculating damages and risk. Developments related to pre- and post-processing of FIAT data should be done in respectively the [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) and [FIAT Toolbox](https://github.com/Deltares/fiat_toolbox) repositories.
 
 ## Guidelines
 Please follow the guidelines when contributing to the FIAT development:

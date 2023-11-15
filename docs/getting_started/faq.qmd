@@ -9,10 +9,10 @@ Visit the [Setup guide](../setup_guide/index.qmd), which provides installation i
 You can submit a new [issue](https://github.com/Deltares/Delft-FIAT/issues/new/choose) with the *Bugs* template in the FIAT repository. You can also submit an issue regarding *Missing or bad documentation*, a *Feature request*, or you can *Ask a question*.
 
 ### How do I build a model?
-You can use [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) to build a FIAT model or you can follow the instructions in the [User guide](../user_guide/index.qmd).
+You can use [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) to build a FIAT model or you can follow the instructions in the [User guide](../user_guide/index.qmd).
 
 ### How do I modify parameters or calibrate my model?
-You can manually change parameters (e.g., the Ground Floor Height) in your exposure data in Excel or with Python. You can also use [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) for this.
+You can manually change parameters (e.g., the Ground Floor Height) in your exposure data in Excel or with Python. You can also use [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) for this.
 
 ### How do I request different output?
 You can change the output data types in the *settings.toml* file, visit the [Settings file](../user_guide/data/settings.qmd) page for more information.

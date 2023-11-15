@@ -147,7 +147,7 @@ FIAT computes the damage of (a) flood event(s) at a specified geographic locatio
   - [Exposure data](data/exposure.qmd)
   - [Vulnerability data](data/vulnerability.qmd)
 
-The HydroMT plugin [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) can be used to set up the FIAT model data but that is not compulsory. If a user sets up their own FIAT model data, it is recommended to save the data into the same [folder structure](data/folder_structure.qmd) that HydroMT-FIAT creates.
+The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model data but that is not compulsory. If a user sets up their own FIAT model data, it is recommended to save the data into the same [folder structure](data/folder_structure.qmd) that HydroMT-FIAT creates.
 
 ![FIAT Workflow.The damage of the flood water level in each object is determined by flood depth-damage functions, which relate the water level to the maximum potential damage of an asset, returning a damage fraction. The damage fraction is multiplied with the max. potential damage to obtain a monetary damage per object](/_static/images/FIATScheme.png)
 
@@ -450,10 +450,10 @@ Visit the [Setup guide](../setup_guide/index.qmd), which provides installation i
 You can submit a new [issue](https://github.com/Deltares/Delft-FIAT/issues/new/choose) with the *Bugs* template in the FIAT repository. You can also submit an issue regarding *Missing or bad documentation*, a *Feature request*, or you can *Ask a question*.
 
 ### How do I build a model?
-You can use [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) to build a FIAT model or you can follow the instructions in the [User guide](../user_guide/index.qmd).
+You can use [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) to build a FIAT model or you can follow the instructions in the [User guide](../user_guide/index.qmd).
 
 ### How do I modify parameters or calibrate my model?
-You can manually change parameters (e.g., the Ground Floor Height) in your exposure data in Excel or with Python. You can also use [HydroMT-FIAT](https://github.com/Deltares/hydromt_fiat) for this.
+You can manually change parameters (e.g., the Ground Floor Height) in your exposure data in Excel or with Python. You can also use [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) for this.
 
 ### How do I request different output?
 You can change the output data types in the *settings.toml* file, visit the [Settings file](../user_guide/data/settings.qmd) page for more information.

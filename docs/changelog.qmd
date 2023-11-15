@@ -14,4 +14,5 @@ This is the first (pre-)release of Delft-FIAT. It aims to have a stable version 
     - Delft-FIAT can be freezed into an executable, see [Freeze FIAT as an application](setup_guide/kernel/application.qmd).
 
 ### Foreseen future fixes
-- Here we can write about fixes we will not do now but in Q1 of 2024.
+- Issues with duplicate Object IDs are handeled in a next release, check [issue #85](https://github.com/Deltares/Delft-FIAT/issues/85).
+- The method to calculate the centroid of polygons will be refined in a next release, check [issue #77](https://github.com/Deltares/Delft-FIAT/issues/77).

@@ -1,5 +1,0 @@
----
-title: "Examples"
----
-
-{{< embed ../examples/run_fiat.ipynb echo:true output:true keep-ipynb >}}
