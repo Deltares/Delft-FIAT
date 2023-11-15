@@ -15,15 +15,15 @@ FIAT can be used to assess flood damages to buildings, roads, utilities, and oth
 1. A or multiple **geometry files** (see acceptable file types at the bottom of this page) with an attribute `Object ID` that holds unique IDs over all geometry files
 2. One **CSV file** containing a column `Object ID` linking to the geometries in the geometry file(s) and exposure information like maximum potential damages
 
-Along with the *exposure.csv* - file it is advisable to render one or more vector files of the exposed objects (e.g. points, building footprints) with an index column, carrying the same name as the index column of the *exposure.csv* to allow for merging of the exposure files (optional). The name of the vector file should be descriptive of the objects it represents (e.g. 'buildings.gpkg','road.gpkg') and must be specified in the *settings.toml* configuration file. The advantage of providing these extra vector files is that (1) water levels or depths can be considered over the entire object (when 'extraction method' = 'area'); this can be more appropriate than point estimates for large buildings.(2) FIAT offers the **FIAT Toolbox** application to post-process the model results and improves visualization and interpretation of the results in GIS software applications.
-
 
 ### Geometry file
-A user can specify one or multiple **geometry files** in the [settings.toml](settings.qmd). Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page. All geometry files must have an attribute `Object ID` that holds unique IDs over all geometry files. For example, when using a GeoPackage file with roads containing `Object IDs` 1-100, a second GeoPackage file with building footprints should contain `Object IDs` from 101-n.
+A user can specify one or multiple **geometry files** in the [settings.toml](settings.qmd). It is advisable to give descriptive names to the geometry files, e.g., *buildings.gpkg* or *road.gpkg*. Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page. All geometry files must have an attribute `Object ID` that holds unique IDs over all geometry files. For example, when using a GeoPackage file with roads containing `Object IDs` 1-100, a second GeoPackage file with building footprints should contain `Object IDs` from 101-n.
 
 ::: {.callout-warning}
 Assets cannot be outside the area of the hazard map input! Assets that fully fall out of the hazard extend are automatically removed by FIAT. BUT any asset that partially falls outside the flood map extent must be removed manually by the user.
 :::
+
+ When providing a polygon or line geometry file, a user can choose to use the *area extraction method* ('extraction method' = 'area', see @tbl-exposure) for considering water levels or depths over the whole area of the asset. This can be more appropriate than point estimates for example for large buildings.
 
 ### CSV
 The exposure data CSV file contains information about each object in the area of interest that is needed for the damage calculation. Each row represents an object, such as a building, road segment, or utility, and each column represents an attribute of the object, such as its location, elevation or maximum potential damage value.
@@ -88,5 +88,6 @@ If the user wishesto cenneted these aggregated results to a vector file, **FIAT 
 ## Raster Data
 Raster files must be **pre-processed** before being ingested into the FIAT model. Raster projection and extent must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a raster file with the **Max Potential Damage** per cell is required. A damage function must be assigned to each raster file as well.
 
-###### <ins><h14>*exposure file types*</h14></ins>
+
+###### <ins><h14>*exposure geometry file types*</h14></ins>
     {acceptable exposure file types:'.fits': 'FITS', '.pix': 'PCIDSK', '.nc': 'netCDF', '.xml': 'PDS4', '.pdf': 'PDF', '.mbtiles': 'MBTiles', '.bag': 'BAG', '.shp': 'ESRI Shapefile', '.mid': 'MapInfo File', '.000': 'S57', '.dgn': 'DGN', '.csv': 'CSV', '.gml': 'GML', '.gpx': 'GPX', '.kmz': 'LIBKML', '.kml': 'KML', '.geojson': 'GeoJSON', '.geojsons': 'GeoJSONSeq', '.gmt': 'OGR_GMT', '.gpkg': 'GPKG', '.sqlite': 'SQLite', '.map': 'WAsP', '.gdb': 'OpenFileGDB', '.dxf': 'DXF', '.dwg': 'CAD', '.fgb': 'FlatGeobuf', '.txt': 'Geoconcept', '.sql': 'PGDUMP', '.igc': 'GPSBabel', '.ods': 'ODS', '.xlsx': 'XLSX', '.jml': 'JML', '.x10': 'VDV', '.mvt': 'MVT', '': 'Memory'}
