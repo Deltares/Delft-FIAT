@@ -1,7 +1,7 @@
 ---
 title: "Hazard data"
 ---
-FIAT computes the impact of a flood event or the risk of flooding on a community by using flood maps as hazard input. Flood maps describe the potential flood extent and magnitude in specific geographic areas.
+FIAT computes the impact of a flood event or the risk of flooding on a community by using flood maps as hazard input. Flood maps describe the potential flood extent and magnitude in specific geographic areas. Currently, FIAT is only 
 
 These flood maps can be obtained from various sources. The [The Global Flood Database](http://global-flood-database.cloudtostreet.info/) provides an extensive amount of global flood hazard mapping products.
 
@@ -9,16 +9,16 @@ These flood maps can be obtained from various sources. The [The Global Flood Dat
 The user can also create their own flood model using the [**SFINCS model**](https://sfincs.readthedocs.io/en/latest/index.html)
 :::
 
-The user is free to run the model with a variety of flood scenarios e.g. including mitigation and adaptation measures over a range of future climate conditions, as long as flood maps are available for those scenarios. The flood maps can be either **flood elevation** or **flood depth maps**.
+The user is free to run the model with a variety of flood scenarios, e.g., including mitigation and adaptation measures over a range of future climate conditions, as long as flood maps are available for those scenarios. The flood maps can be either **flood elevation** or **flood depth** maps.
 
 
 ::: {.callout-caution}
 **Flood elevation maps** use the **datum** as a reference point, whereas **flood depth maps** use the **ground elevation** to refer to. The datum of the elevation map must be the same as the one used to obtain the ground elevation in the exposure data.
 :::
 
-With FIAT the user has the option to assess the impact of a single flood event or the flood risk based on a set of events with multiple return periods. To do the latter, the user must provide multiple hazard maps with the same extent and projection.
+With FIAT, the user has the option to assess the impact of a single flood event or the flood risk based on a set of events with multiple return periods. To do the latter, the user must provide multiple hazard maps with the same extent and projection.
 
-In each case, some requirements must be met. The hazard files of any map should be made available as a **raster or vector file**  (see acceptable file types at the bottom of this page) and must be located in the 'hazard' folder. The file name is free to be chosen by the user and must simply be refered to in the *settings.toml* configuration file.
+In each case, some requirements must be met. The hazard files of any map should be made available as a **raster file**, see the acceptable file types at the bottom of this page. It is recommended to place the hazard files in the 'hazard' folder, see the [FIAT folder structure page](folder_structure.qmd). The file name is free to be chosen by the user and must simply be refered to in the [settings.toml](settings.qmd) configuration file.
 
 # Event Map
 

@@ -30,6 +30,7 @@ website:
     location: navbar
     limit: 5
     type: textbox
+  back-to-top-navigation: true
   navbar:
     logo: _static/logo.png
     search: true
@@ -76,15 +77,13 @@ website:
       contents:
         - user_guide/index.qmd
         - user_guide/data/settings.qmd
-        - section: "Data"
+        - text: "Data"
+          file: user_guide/data/folder_structure.qmd
           contents:
-            - user_guide/data/folder_structure.qmd
             - user_guide/data/hazard.qmd
             - user_guide/data/exposure.qmd
             - user_guide/data/vulnerability.qmd
-        - section: "Examples"
-          contents:
-            - examples/index.qmd
+        - examples/index.qmd
         - user_guide/advanced.qmd
     - title: "Developments"
       collapse-level: 3

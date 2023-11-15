@@ -31,14 +31,14 @@ include-in-header:
 :::
 
 ## Quick start
-FIAT computes the socioeconomic damage of (a) flood event(s) at a specified geographic location based on flood models and vulnerability functions which are configured in a settings file and three main data inputs:
+FIAT computes the (economic) damage and risk of flood events at a specified geographic location based on flood inundation data, exposured assets and vulnerability functions. The model can be configured with a settings file and three main data inputs:
 
   - [Settings file](data/settings.qmd)
   - [Hazard data](data/hazard.qmd)
   - [Exposure data](data/exposure.qmd)
   - [Vulnerability data](data/vulnerability.qmd)
 
-The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model data but that is not compulsory. If a user sets up their own FIAT model data, it is recommended to save the data into the same [folder structure](data/folder_structure.qmd) that HydroMT-FIAT creates.
+The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same [folder structure](data/folder_structure.qmd) that HydroMT-FIAT creates.
 
 ## General User Information
 

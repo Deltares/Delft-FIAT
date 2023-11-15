@@ -1,7 +1,10 @@
 ---
-title: "Folder structure"
+title: "Data"
 ---
 
+FIAT is data agnostic; what you put in is what you get out. Please follow the guidelines in this documentation to build your FIAT model and pay close attention to the validation of data together with local experts.
+
+## Folder structure
 It is recommended to set up a folder structure as shown below to ensure that FIAT can find each data file and run smoothly. The files inside the folders are example files and do not need to be of those data types or named as such.
 
 ```
