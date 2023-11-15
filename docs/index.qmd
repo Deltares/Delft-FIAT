@@ -29,9 +29,9 @@ Thanks to its flexible character, FIAT **integrates** with various software appl
 
 |   | Field            | Description                                                                        |
 |---|------------------|-----------------------------------------------------------------------------|
-| 1 | Flood maps       | Hazard input: Selected per damage simulation                                |
-| 2 | Damage functions | Vulnerability input: Prepared in set-up phase, coupled to exposure objects  |
-| 3 | Exposure data    | Exposure input: Prepared in set-up phase, object details and metadata       |
-| 4 | Delft-FIAT       | Fast Impact Assesment Tool coupled with FIAT Toolbox for post-processing    |
-| 5 | Flood damages    | Object + aggregated level of monetary and economic damages                  |
+| 1 | Flood maps       | Hazard input: Selected per damage/risk simulation                                |
+| 2 | Damage functions | Vulnerability input: Prepared when setting up the model, coupled to exposure objects  |
+| 3 | Exposure data    | Exposure input: Prepared when setting up the model, including exposure assets and max potential damages       |
+| 4 | Delft-FIAT       | Flood Impact Assesment Tool    |
+| 5 | Flood impact    | Resulting (economic) damages and risk                  |
 : {.striped .hover}
