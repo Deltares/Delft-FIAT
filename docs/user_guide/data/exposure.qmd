@@ -60,7 +60,7 @@ A more detailed description of the data fields in the *exposure.csv* can be foun
 
 **Object ID**
 The object ID is used to link the geometries to the information in the exposure CSV. The object ID must be unique for each object. At the moment of writing, FIAT does not check whether the object IDs are indeed unique and it is the responsibility of the user to ensure this. At a later stage, FIAT will have a built-in check for this.
- 
+
 **Object name**
 The object name field can be chosen freely and can serve as a field for identifying the damages assets.
 
