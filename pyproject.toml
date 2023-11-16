@@ -88,6 +88,7 @@ dev = [
 ]
 docs = [
     "jupyter",
+    "jupyter-cache",
     "matplotlib",
     "pandas",
     "quartodoc",
@@ -126,6 +127,7 @@ testpaths = [
 [tool.coverage.run]
 branch = true
 source = ["./src"]
+omit = ["*/gui/*"]
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
@@ -149,7 +151,7 @@ exclude_also = [
 ignore_errors = true
 
 [tool.coverage.html]
-directory = "docs/code_cov"
+directory = ".cov"
 
 ## Linting stuff
 [tool.black]
@@ -162,7 +164,7 @@ line-length = 88
 # enable pydocstyle (E), pyflake (F) and isort (I), pytest-style (PT)
 select = ["E", "F", "I", "PT", "D"]
 ignore-init-module-imports = true
-ignore = ["D211", "D213", "E741", "D105", "E712", "B904"]
+ignore = ["B904", "D105", "D211", "D213", "D301", "E712", "E741"]
 exclude = ["docs"]
 
 [tool.ruff.per-file-ignores]
