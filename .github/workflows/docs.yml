@@ -32,7 +32,7 @@ jobs:
       - name: Generate env yaml
         run: |
           pip install tomli
-          python make_env.py test -p ${{ matrix.python-version }}.*
+          python make_env.py docs -p ${{ matrix.python-version }}.*
 
       - name: Load cache
         id: cache
