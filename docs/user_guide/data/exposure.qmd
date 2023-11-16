@@ -26,7 +26,7 @@ When using a GeoPackage file with roads containing `Object IDs` 1-100, a second 
 When providing a polygon or line geometry file, a user can choose to use the *area extraction method* ('extraction method' = 'area', see @tbl-exposure) for considering water levels or depths over the whole area of the asset. This can be more appropriate than point estimates for example for large buildings.
 
 ::: {.callout-warning}
-Assets cannot be outside the area of the hazard map input! Assets that fully fall out of the hazard extend are automatically removed by FIAT. BUT any asset that partially falls outside the flood map extent must be removed manually by the user.
+Assets cannot be partially or fully outside the hazard map extent! FIAT will stop if it detects any.
 :::
 
 ### CSV
