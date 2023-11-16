@@ -8,4 +8,4 @@ The aim of FIAT is to be a lean calculation core, focusing on the main tasks of 
 Please follow the guidelines when contributing to the FIAT development:
 
 1. Create an issue if it does not yet exist, when starting contributing. For more information on the issues, see the [contributing page](index.qmd/@sec-issue-conventions).
-2. 
+2.
