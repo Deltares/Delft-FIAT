@@ -1,7 +1,7 @@
 ---
 title: "Hazard data"
 ---
-FIAT computes the impact of a flood event or the risk of flooding on a community by using flood maps as hazard input. Flood maps describe the potential flood extent and magnitude in specific geographic areas. Currently, FIAT is only 
+FIAT computes the impact of a flood event or the risk of flooding on a community by using flood maps as hazard input. Flood maps describe the potential flood extent and magnitude in specific geographic areas. Currently, FIAT is only
 
 These flood maps can be obtained from various sources. The [The Global Flood Database](http://global-flood-database.cloudtostreet.info/) provides an extensive amount of global flood hazard mapping products.
 

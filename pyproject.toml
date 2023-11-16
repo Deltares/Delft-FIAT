@@ -127,6 +127,7 @@ testpaths = [
 [tool.coverage.run]
 branch = true
 source = ["./src"]
+omit = ["*/gui/*"]
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
