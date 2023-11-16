@@ -71,6 +71,7 @@ jobs:
       - name: Setup api & testdata
         run: |
           export PATH=/usr/share/miniconda3/bin:$PATH
+          mamba run -n fiat_docs python -m pip install tomli-w
           mamba run -n fiat_docs python .testdata/create_test_data.py
           cd docs
           mamba run -n fiat_docs python api.py
