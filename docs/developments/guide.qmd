@@ -8,4 +8,11 @@ The aim of FIAT is to be a lean calculation core, focusing on the main tasks of 
 Please follow the guidelines when contributing to the FIAT development:
 
 1. Create an issue if it does not yet exist, when starting contributing. For more information on the issues, see the [contributing page](index.qmd/@sec-issue-conventions).
-2.
+2. Fork the repository.
+3. Develop on the repository with descriptive commit messages.
+4. We work with Ruff linting, so always format the added or changed code with this library.
+5. For each newly developed feature we require a pytest test.
+6. Create a Pull Request to the master branch stating the developments made and the related issue.
+7. Once reviewed and if accepted, Deltares will merge the developments to the master branch.
+
+We would like to get in touch with those that want to contribute. Do not hesitate to send us an email [email address coming soon]!

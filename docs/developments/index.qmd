@@ -2,7 +2,7 @@
 title: "Contributing"
 ---
 
-We welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. Our [Developer guide](guide.qmd) explains how can be contributed in code developments.
+We welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. Our [developer guide](guide.qmd) explains how can be contributed in code developments.
 
 ## Rights
 The XXX [license](https://github.com/Deltares/Delft-FIAT/blob/master/LICENSE) applies to all contributions.

@@ -1,9 +1,9 @@
 ---
 title: "Settings file"
 ---
-The user must set the model settings in the `settings.toml` configuration file. Beyond standard settings FIAT offers the freedom to provide additional input to create a more detailed model (@tbl-toml). More advanced options are described in the [Advanced options](../advanced.qmd) page.
+The user must set the model settings in the `settings.toml` configuration file. Beyond standard settings FIAT offers the freedom to provide additional setting to have more control over FIAT (@tbl-toml). More advanced options are described in the [advanced options](../advanced.qmd) page.
 
-For a simple model the `settings.toml` configuration file can be kept rather simple (only required fields):
+For simply running FIAT with most standard settings, the `settings.toml` configuration file can be kept rather simple (only required fields). An example for running a geometry model is given below:
 
 ```html
 [output]
@@ -22,45 +22,61 @@ elevation_reference = "DEM"
 risk = false
 
 [exposure.geom]
-csv = "./exposure/exposure.csv"
-crs = "EPSG:4326"
 file1 = "./exposure/buildings.gpkg"
+crs = "EPSG:4326"
+
+[exposure.csv]
+file = "./exposure/exposure.csv"
 
 [vulnerability]
 file = "./vulnerability/vulnerability_curves.csv"
 
 ```
 
-[**output**]
-`path` :  The path to the output folder in the working directory.
+The fields are elaborated below:
 
-[**output.csv**]
+**[output]**
+
+`path`:  The path to the output folder in the working directory.
+
+**[output.csv]**
+
 `name`: The path to the output CSV file that will be created, that contains the information from the exposure.csv and the damages per asset.
 
-[**output.geom**]
-`name1`: This will create an output vector file that contains the objects and the
-damages per asset as vector objects.
+**[output.geom]**
 
-[**hazard**]
-`file`: The file path to the hazard file.
+`name1`: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.
+
+**[hazard]**
+
+`file`: The file path to the hazard file, can be a list of files.
+
 `crs`: The projection of the hazard file. If no global projection is defined, the output will be in the same projection as the hazard map.
-`elevation_reference`: This defines the reference of the flood map. In case of a flood-depth map this should be "DEM" while in case of a water-elevation map this should be "datum".
-`risk`: In case of a risk calculation this is set to "true", while for a single events this is set to "false".
 
-[**exposure.geom**]
-`csv`: The path to the exposure CSV file within the [exposure folder](folder_structure.qmd) that contains the [required information](exposure.qmd) per asset.
-`crs`: The projection of the exposure vector file.
-`file1`: The path to the exposure vector file within the exposure folder with the assets 'geometry and Object ID.
+`elevation_reference`: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be "DEM" while in case of a flood-elevation map this should be "datum".
 
-[**vulnerability**]
-`file`: The path to the vulnerability curves CSV file within the [vulnerability folder](folder_structure.qmd) that contains the [damage curves](vulnerability.qmd).
+`risk`: In case of a risk calculation this must be set to "true", for a single events this must be set to "false".
+
+**[exposure.geom]**
+
+`file1`: The path to the exposure vector file (recommended to be within the [exposure folder](folder_structure.qmd)) with the assets' geometry and Object ID. The user can provide multiple vector files by creating more fields like `file2`, `file3`, etc.
+
+`crs`: The projection of the exposure vector file(s).
+
+**[exposure.csv]**
+
+`file`: The path to the exposure CSV file (recommended to be within the [exposure folder](folder_structure.qmd)) that contains the [required information](exposure.qmd) per asset. There can only be one exposure CSV file.
+
+**[vulnerability]**
+
+`file`: The path to the vulnerability curves CSV file within the [vulnerability folder](folder_structure.qmd) that contains the [damage curves](vulnerability.qmd). Only one vulnerability curves file is allowed.
 
 ::: {.callout-note}
 File paths in the settings can be relative to the settings.toml file or absolute.
 :::
 
 ### Optional input
-If the user prefers to create a more detailed model or to utilize grid data instead of object data, FIAT offers the flexibility to customize settings for each variable (@tbl-toml). Advanced FIAT users can find more options in the [Advanced options](../advanced.qmd).
+If the user prefers to have more control over their model run or to utilize grid data instead of vector data, FIAT offers the flexibility to customize settings for each variable (@tbl-toml). Advanced FIAT users can find more options in the [advanced options page](../advanced.qmd).
 
 | Field                        | Description                                                                                                                                                                  | Required                            | Default                                                                   | Example                                   |
 |------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|---------------------------------------------------------------------------|-------------------------------------------|
@@ -86,10 +102,13 @@ If the user prefers to create a more detailed model or to utilize grid data inst
 | subset                       | Specific layer from a multilayered netCDF file (GDAL can't read those properly)                                                                                              | No                                  |                                                                           | 'zs'                                      |
 | var_as_band                  | True/False Read netCDF subdatasets as raster bands                                                                                                                           | No                                  |                                                                           | False                                     |
 | **[exposure.geom]**          |                                                                                                                                                                              |                                     |                                                                           |                                           |
-| csv                          | File path to exposure.csv file, that contains information about e.g. asset type, max. potential damage, aggregation and so forth)                                            | Yes                                 | 'exposure/exposure.csv'                                                   | 'exposure/exposure.csv'                   |
 | file1                        | File path of exposure vector file with Object ID column to enable linking exposure.csv output to vector file.                                                                | Yes                                 | **buildings**: 'exposure/buildings.gpkg' **roads**: 'exposure/roads.gpkg' | 'exposure/buildings.gpkg'                 |
 | crs                          | Projection of exposure data                                                                                                                                                  | Yes, if crs is unknown in dataset   |                                                                           | 'EPSG:32617'                              |
-| index                        | Define the name of the index column of the data to link the exposure CSV file with the exposure vector file.                                                                 | No                                 | 'Object ID'                                                               | 'Object ID'                               |
+| index                        | Define the name of the index column of the data to link the exposure CSV file with the exposure vector file.                                                                 | No                                  | 'Object ID'                                                               | 'Object ID'                               |
+| **[exposure.csv]**           |                                                                                                                                                                              |                                     |                                                                           |                                           |
+| csv                          | File path to exposure.csv file, that contains information about e.g. asset type, max. potential damage, aggregation and so forth)                                            | Yes                                 | 'exposure/exposure.csv'                                                   | 'exposure/exposure.csv'                   |
+| **[exposure.csv.settings]**  |                                                                                                                                                                              |                                     |                                                                           |                                           |
+| delimiter                    | The delimiter of the CSV file, by default this is a comma (',')                                                                                                              | No                                  | ','                                                                       | ';'                                       |
 | **[exposure.grid]**          |                                                                                                                                                                              |                                     |                                                                           |                                           |
 | file                         | File path to exposure.nc grid file, that contains the spatial information and information about the maximum potential damage per cell.                                       | Yes, if netCDF is provided as input | 'exposure/raster.nc'                                                      | 'exposure/raster.nc'                      |
 | crs                          | Output projection                                                                                                                                                            | Yes, if crs is unknown in dataset   |                                                                           | 'EPSG:32617'                              |
