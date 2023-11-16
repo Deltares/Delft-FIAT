@@ -42,14 +42,14 @@ The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest
 
 ## General User Information
 
-FIAT derives **aggregated damages and risk** at asset-level and aggregated levels based upon flood maps and additional inputs such as depth-damage functions, asset locations and their maximum potential damages.
-For each asset specified in the exposure dataset, the water depth or elevation is subtracted from the flood map at the location of the assets.
+FIAT derives **damages and risk** at asset-level based on flood maps and additional inputs such as depth-damage functions, asset locations and their maximum potential damages.
+For each asset specified in the exposure dataset, the water depth or level is sampled from the flood map at the location of the assets.
 
 ::: {.callout-note}
 Water elevations are converted to water depths using the ground elevation of each asset.
 :::
 
-To calculate the flood extent, FIAT extracts either the average or maximum water depth and the fraction of the building that is flooded. The **inundation depth** within buildings is obtained by subtracting the **ground floor height** from the **water depth**. FIAT derives the damage fraction for each asset using its inundation depth and interpolating over its depth-damage curve. Thereafter, the damage to the asset is calculated as the product of the maximum potential damage and the damage fraction. In case an asset is only partially flooded, the damages will be reduced by the dry fraction of the building. Instead of single events, the user can also provide return-period flood maps as input. Hence, FIAT calculates and integrates the associated return-period damages to derive the expected annual damages.
+See @fig-fiat for an overview of the FIAT workflow. To obtain the flood inundation level, FIAT extracts the water depth or level at the location of each asset. For line or polygon assets, either the average or maximum water depth or level and the fraction of the asset are extracted from the hazard map. The **inundation depth** within buildings or on top of for example, roads, is obtained by subtracting the **ground floor height** from the **water depth**. FIAT derives the damage fraction for each asset using its inundation depth and interpolating over its depth-damage curve. Thereafter, the damage to the asset is calculated as the product of the maximum potential damage and the damage fraction. In case an asset is only partially flooded, the damages will be reduced by the dry fraction of the building. Instead of single events, the user can also provide return-period flood maps as input. Hence, FIAT calculates and integrates the associated return-period damages to derive the expected annual damages.
 
 
 ![**FIAT Workflow.**
