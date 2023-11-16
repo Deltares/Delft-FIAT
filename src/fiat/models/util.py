@@ -9,7 +9,7 @@ from fiat.gis import geom, overlay
 from fiat.io import BufferTextHandler, GridSource, open_grid
 from fiat.log import LogItem, Sender
 from fiat.models.calc import calc_haz, calc_risk
-from fiat.util import NEWLINE_CHAR, _pat, create_windows, replace_empty
+from fiat.util import NEWLINE_CHAR, create_windows, regex_pattern, replace_empty
 
 
 def geom_worker(
@@ -26,6 +26,7 @@ def geom_worker(
     band = haz[idx]
     # Setup some metadata
     _band_name = cfg["hazard.band_names"][idx - 1]
+    _pat = regex_pattern(exp.delimiter)
     _ref = cfg.get("hazard.elevation_reference")
     _rnd = cfg.get("vulnerability.round")
     vul_min = min(vul.index)

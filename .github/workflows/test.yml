@@ -32,42 +32,49 @@ jobs:
       - name: Check-out source
         uses: actions/checkout@v3
 
-      - name: Setup Miniforge
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-          miniforge-variant: Miniforge3
-          miniforge-version: latest
-          activate-environment: fiat_test
-          use-mamba: true
-
       - name: Generate env yaml
-        run: pip install tomli && python make_env.py test --py-version ${{ matrix.python-version }}.*
+        run: pip install tomli && python make_env.py test -p ${{ matrix.python-version }}.*
 
-      - name: Set cache date
-        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
-
-      - name: Check cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ matrix.prefix }}
-          key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}
+      - name: load from cache
         id: cache
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            /usr/share/miniconda3
+            ~/pycache
+          # the below two settings mean we'll alway srestore the cache
+          # but the cache hit output can tell us if we have to update afterwards
+          key: test-py${{ matrix.python-version }}-${{ hashFiles('environment.yml')  }}
+          restore-keys: |
+            test-py${{ matrix.python-version }}
+
+      - name: Fail on no cache restore
+        if: steps.cache.outputs.cache-matched-key == ''
+        run: |
+          echo "Failed to restore any cache. exiting..."
+          exit 1
 
       - name: Update environment
-        run: mamba env update -f environment.yml
         if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          mamba env update -n fiat_test -f environment.yml
 
-      - name: Install Delft-FIAT
-        run:
-          pip install -e .
+      - name: Conda info
+        run: |
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          conda info
+          conda list -n fiat_test
 
       - name: Create testdata
-        run:
-          python .testdata/create_test_data.py
+        run: |
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          mamba run -n fiat_test python .testdata/create_test_data.py
 
       - name: Test
-        run: python -m pytest --verbose --cov=fiat --cov-report xml
+        run: |
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          mamba run -n fiat_test python -m pytest --verbose --cov=fiat --cov-report xml
 
       - name: Upload code coverage
         uses: codecov/codecov-action@v3

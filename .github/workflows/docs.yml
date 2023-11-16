@@ -29,49 +29,49 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install ubuntu packages
+      - name: Generate env yaml
+        run: |
+          pip install tomli
+          python make_env.py docs -p ${{ matrix.python-version }}.*
+
+      - name: Load cache
+        id: cache
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            /usr/share/miniconda3
+            ~/pycache
+          # the below two settings mean we'll alway srestore the cache
+          # but the cache hit output can tell us if we have to update afterwards
+          key: docs-${{ hashFiles('environment.yml')  }}
+          restore-keys: |
+            docs
+
+      - name: Cache failed
+        if: steps.cache.outputs.cache-matched-key == ''
+        run: |
+          echo "Failed to restore any cache. exiting..."
+          exit 1
+
+      - name: Update environment
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          mamba env update -n fiat_docs -f environment.yml
+
+      - name: Setup quarto
         run: |
           sudo apt install -y curl
           sudo apt install -y gdebi-core
           mkdir tmp
-
-      - name: Download quarto
-        run: |
           curl -L https://github.com/quarto-dev/quarto-cli/releases/download/v1.3.450/quarto-1.3.450-linux-amd64.deb --output tmp/quarto.deb
           chmod +x tmp/quarto.deb
-
-      - name: Install quarto
-        run: sudo gdebi -n tmp/quarto.deb
-
-      - name: Setup Miniforge
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-          miniforge-variant: Miniforge3
-          miniforge-version: latest
-          activate-environment: fiat_docs
-          use-mamba: true
-
-      - name: Generate env yaml
-        run: python make_env.py docs --py-version ${{ matrix.python-version }}.*
-
-      - name: Update environment
-        run: |
-          mamba env update -f environment.yml
-          pip install tomli-w
-          pip install -e .
-
-      - name: Create Testdata
-        run: python .testdata/create_test_data.py
-
-      - name: Generate API Reference
-        run: |
-          cd docs/
-          python api.py
-          quartodoc interlinks
+          sudo gdebi -n tmp/quarto.deb
 
       - name: Generate docs
         run: |
-          cd docs/
-          quarto render
-          echo "DOC_VERSION=$(mamba run -n fiat_docs python -c 'from fiat.version import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          source /usr/share/miniconda3/etc/profile.d/conda.sh
+          conda activate fiat_docs
+          quarto render docs/
+          echo "DOC_VERSION=$(mamba run -n fiat_docs python -c 'from fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV

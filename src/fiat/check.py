@@ -103,6 +103,19 @@ def check_global_crs(
         sys.exit()
 
 
+## Text files
+def check_duplicate_columns(
+    cols,
+):
+    """_summary_."""
+    if cols is not None:
+        logger.error(
+            f"Duplicate columns were encountered. Wrong column could \
+be used. Check input for these columns: {cols}"
+        )
+        sys.exit()
+
+
 ## GIS
 def check_grid_exact(
     haz,
