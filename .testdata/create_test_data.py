@@ -349,12 +349,6 @@ def create_settings():
             "file": "vulnerability/vulnerability_curves.csv",
             "step_size": 0.01,
         },
-        "categorical_bins": {
-            "low": 0.25,
-            "medium-low": 0.5,
-            "medium-high": 0.75,
-            "high": 1,
-        },
     }
 
     with open(Path(p, "settings.toml"), "wb") as f:
@@ -403,12 +397,6 @@ def create_settings_grid():
         "vulnerability": {
             "file": "vulnerability/vulnerability_curves.csv",
             "step_size": 0.01,
-        },
-        "categorical_bins": {
-            "low": 0.25,
-            "medium-low": 0.5,
-            "medium-high": 0.75,
-            "high": 1,
         },
     }
 
@@ -463,12 +451,6 @@ def create_settings_risk():
         "vulnerability": {
             "file": "vulnerability/vulnerability_curves.csv",
             "step_size": 0.01,
-        },
-        "categorical_bins": {
-            "low": 0.25,
-            "medium-low": 0.5,
-            "medium-high": 0.75,
-            "high": 1,
         },
     }
 

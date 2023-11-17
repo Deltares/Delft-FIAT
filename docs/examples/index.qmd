@@ -4,4 +4,4 @@ title: "Examples"
 
 This part of the documentation is under development. In the future, it will show more examples of how to use FIAT. Until that, this minimal example is available:
 
-- [Running FIAT](run_fiat.ipynb)
+- [Single event example](single_event.ipynb)

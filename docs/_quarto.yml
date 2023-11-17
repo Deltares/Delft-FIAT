@@ -5,6 +5,8 @@ project:
     - "*.qmd"
     - "*.ipynb"
     - "!PDF_Documentation.qmd"
+  post-render:
+    - "examples/clear_notebooks.py"
 
 filters:
    - include-code-files

@@ -82,5 +82,5 @@ jobs:
           export PATH=/usr/share/miniconda3/bin:$PATH
           source /usr/share/miniconda3/etc/profile.d/conda.sh
           conda activate fiat_docs
-          quarto render docs/
+          quarto render docs/ --execute
           echo "DOC_VERSION=$(mamba run -n fiat_docs python -c 'from fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
