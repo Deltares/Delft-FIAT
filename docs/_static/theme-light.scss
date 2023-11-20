@@ -1,13 +1,10 @@
 /*-- scss:defaults --*/
 
-
-
 $background: #212529;
 $highlight: #292e33;
 $highlight: #373a3c;
 $links: #080c80;
 $text: #ffffff;
-
 
 // $body-bg: $background;
 // $body-color: $text;
@@ -20,8 +17,6 @@ $navbar-hl: $links ;
 .nav-tabs .nav-item.show .nav-link {
     border: 1px solid rgb(222, 226, 230)
 }
-
-
 
 .nav-tabs .nav-link:hover {
     background-color: $highlight;

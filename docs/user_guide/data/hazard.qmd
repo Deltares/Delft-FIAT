@@ -18,7 +18,7 @@ The user is free to run the model with a variety of flood scenarios, e.g., inclu
 
 With FIAT, the user has the option to assess the impact of a single flood event or the flood risk based on a set of events with multiple return periods. To do the latter, the user must provide multiple hazard maps with the same extent and projection.
 
-In each case, some requirements must be met. The hazard files of any map should be made available as a **raster file**, see the acceptable file types at the bottom of this page. It is recommended to place the hazard files in the 'hazard' folder, see the [FIAT folder structure page](folder_structure.qmd). The file name is free to be chosen by the user and must simply be refered to in the [settings.toml](settings.qmd) configuration file.
+In each case, some requirements must be met. The hazard files of any map should be made available as a **raster file**, see the acceptable file types at the bottom of this page. It is recommended to place the hazard files in the 'hazard' folder, see the [folder structure](data.qmd#folder-structure). The file name is free to be chosen by the user and must simply be refered to in the [settings.toml](settings.qmd) configuration file.
 
 # Event Map
 
@@ -32,5 +32,5 @@ In each case, some requirements must be met. The hazard files of any map should 
 ...
 ....
 
-###### <ins><h14>*hazard file types*</h14></ins>
-    {acceptable hazard file types:{'.vrt': 'VRT', '.tif': 'GTiff', '.tiff': 'COG', '.ntf': 'NITF', '.img': 'HFA', '.asc': 'AAIGrid', '.dt2': 'DTED', '.png': 'PNG', '.jpg': 'JPEG', '.gif': 'GIF', '.fits': 'FITS', '.xpm': 'XPM', '.bmp': 'BMP', '.pix': 'PCIDSK', '.map': 'PCRaster', '.mpl': 'ILWIS', '.rgb': 'SGI', '.hgt': 'SRTMHGT', '.ter': 'Terragen', '.nc': 'netCDF', '.cub': 'ISIS3', '.xml': 'PDS4', '.ers': 'ERS', '.jp2': 'JP2OpenJPEG', '.grib2': 'GRIB', '.rsw': 'RMF', '.rst': 'RST', '.grd': 'NWT_GRD', '.rda': 'R', '.kmz': 'KMLSUPEROVERLAY', '.webp': 'WEBP', '.pdf': 'PDF', '.sqlite': 'Rasterlite', '.mbtiles': 'MBTiles', '.ct1': 'CALS', '.mrf': 'MRF', '.pnm': 'PNM', '.hdr': 'MFF', '.bt': 'BT', '.lcp': 'LCP', '.gtx': 'GTX', '.gvb': 'NTv2', '.kro': 'KRO', '.byn': 'BYN', '.dem': 'USGSDEM', '.kea': 'KEA', '.bag': 'BAG', '.gen': 'ADRG', '.blx': 'BLX', '.sg-grd-z': 'SAGA', '.xyz': 'XYZ', '.hf2': 'HF2', '.dat': 'ZMap', '.sigdem': 'SIGDEM', '.gpkg': 'GPKG', '.gdb': 'OpenFileGDB', '.bil': 'EHdr', '': 'MEM'}
+## Supported formats
+An overview of supported formats is presented [here](supported.qmd#gridded-data-files)

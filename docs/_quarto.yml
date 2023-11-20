@@ -38,16 +38,17 @@ website:
     search: true
     pinned: true
     left:
-      - getting_started/index.qmd
+      - text: Getting Started
+        file: getting_started/index.qmd
       - setup_guide/index.qmd
       - user_guide/index.qmd
       - api/index.qmd
       - text: "Developments"
         file: developments/index.qmd
     right:
-      # - href: https://www.deltares.nl/en
-      #   icon: _static/images/deltares-blue.svg
-      #   aria-label: Deltares_org
+      # - icon: _static/images/deltares-blue.svg
+      #   href: https://www.deltares.nl/en
+      #   aria-label: Deltares-Image
       - icon: github
         menu:
           - text: Source Code
@@ -60,7 +61,8 @@ website:
       border: true
       collapse-level: 3
       contents:
-        - getting_started/index.qmd
+        - text: Getting started
+          file: getting_started/index.qmd
         - getting_started/faq.qmd
     - title: "Setup guide"
       collapse-level: 3
@@ -75,16 +77,21 @@ website:
             - setup_guide/kernel/application.qmd
             - setup_guide/kernel/linux.qmd
     - title: "User guide"
-      collapse-level: 3
+      collapse-level: 2
       contents:
         - user_guide/index.qmd
         - user_guide/data/settings.qmd
         - text: "Data"
-          file: user_guide/data/folder_structure.qmd
+          file: user_guide/data/data.qmd
           contents:
             - user_guide/data/hazard.qmd
-            - user_guide/data/exposure.qmd
+            - text: Exposure data
+              file: user_guide/data/exposure.qmd
+              contents:
+                - user_guide/data/exposure/csv.qmd
+                - user_guide/data/exposure/geometries.qmd
             - user_guide/data/vulnerability.qmd
+            - user_guide/data/supported.qmd
         - examples/index.qmd
         - user_guide/advanced.qmd
     - title: "Developments"
@@ -103,6 +110,10 @@ format:
       dark: [cosmo, _static/theme-dark.scss]
     css: _static/styles.css
     toc: true
+    toc-expand: false
+    page-layout: article
+    grid:
+      content-mode: standard
 
 # bibliography: references.bib
 # citeproc: false

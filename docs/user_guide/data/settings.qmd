@@ -3,6 +3,7 @@ title: "Settings file"
 ---
 The user must set the model settings in the `settings.toml` configuration file. Beyond standard settings FIAT offers the freedom to provide additional setting to have more control over FIAT (@tbl-toml). More advanced options are described in the [advanced options](../advanced.qmd) page.
 
+### Required input
 For simply running FIAT with most standard settings, the `settings.toml` configuration file can be kept rather simple (only required fields). An example for running a geometry model is given below:
 
 ```html
@@ -59,17 +60,17 @@ The fields are elaborated below:
 
 **[exposure.geom]**
 
-`file1`: The path to the exposure vector file (recommended to be within the [exposure folder](folder_structure.qmd)) with the assets' geometry and Object ID. The user can provide multiple vector files by creating more fields like `file2`, `file3`, etc.
+`file1`: The path to the exposure vector file (recommended to be within the [exposure folder](data.qmd)) with the assets' geometry and Object ID. The user can provide multiple vector files by creating more fields like `file2`, `file3`, etc.
 
 `crs`: The projection of the exposure vector file(s).
 
 **[exposure.csv]**
 
-`file`: The path to the exposure CSV file (recommended to be within the [exposure folder](folder_structure.qmd)) that contains the [required information](exposure.qmd) per asset. There can only be one exposure CSV file.
+`file`: The path to the exposure CSV file (recommended to be within the [exposure folder](data.qmd)) that contains the [required information](exposure.qmd) per asset. There can only be one exposure CSV file.
 
 **[vulnerability]**
 
-`file`: The path to the vulnerability curves CSV file within the [vulnerability folder](folder_structure.qmd) that contains the [damage curves](vulnerability.qmd). Only one vulnerability curves file is allowed.
+`file`: The path to the vulnerability curves CSV file within the [vulnerability folder](data.qmd) that contains the [damage curves](vulnerability.qmd). Only one vulnerability curves file is allowed.
 
 ::: {.callout-note}
 File paths in the settings can be relative to the settings.toml file or absolute.

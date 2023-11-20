@@ -1,18 +1,14 @@
 ---
-title: Getting started
-# listing:
-#   contents:
-#     - installing.qmd
-#     - running.qmd
-#     - faq.qmd
-#   type: grid
-#   sort: false
-#   fields: [title, image]
+title: ""
+format:
+  html:
+    title-block-style: none
+    toc: false
 ---
 #
 ::: column-page-inset-right
 
-{{< include /_static/listing_code.html >}}
+{{< include /_static/listing_code_large.html >}}
 ```{=html}
 
 <ul id="index-chooser" class="nav nav-tabs" role="tablist">

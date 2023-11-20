@@ -147,7 +147,7 @@ FIAT computes the damage of (a) flood event(s) at a specified geographic locatio
   - [Exposure data](data/exposure.qmd)
   - [Vulnerability data](data/vulnerability.qmd)
 
-The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model data but that is not compulsory. If a user sets up their own FIAT model data, it is recommended to save the data into the same [folder structure](data/folder_structure.qmd) that HydroMT-FIAT creates.
+The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model data but that is not compulsory. If a user sets up their own FIAT model data, it is recommended to save the data into the same [folder structure](data/data.qmd#folder-structure) that HydroMT-FIAT creates.
 
 ![FIAT Workflow.The damage of the flood water level in each object is determined by flood depth-damage functions, which relate the water level to the maximum potential damage of an asset, returning a damage fraction. The damage fraction is multiplied with the max. potential damage to obtain a monetary damage per object](/_static/images/FIATScheme.png)
 
@@ -216,12 +216,12 @@ damages per asset
 `risk`: in this case "false" as a single event is assessed.
 
 [**exposure.geom**]
-`csv`: This will create an exposure CSV file within the exposure folder ([folder strucute](folder_structure.qmd)) that contains the [required information](exposure.qmd) per asset.
+`csv`: This will create an exposure CSV file within the exposure folder ([folder strucute](data.qmd)) that contains the [required information](exposure.qmd) per asset.
 `crs`: The projection of the exposure vector file.
 `file1`: This will create an exposure vector file within the exposure folder with the assets'geometry and Object ID.
 
 [**vulnerability**]
-`file`: This will create an vulnerability curves CSV file within the vulnerability folder ([folder strucute](folder_structure.qmd)) that contains the damage curves.
+`file`: This will create an vulnerability curves CSV file within the vulnerability folder ([folder strucute](data.qmd)) that contains the damage curves.
 
 ::: {.callout-note}
 File paths in the settings can be relative to the settings.toml file or absolute.

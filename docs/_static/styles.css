@@ -1,1 +1,9 @@
 /* css styles */
+
+[aria-label="Deltares-Image"] {
+    height: 30px;
+}
+
+.navbar-right .fa-github {
+    font-size: 40px; /* Adjust the value as needed */
+}

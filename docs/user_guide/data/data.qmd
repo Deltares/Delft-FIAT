@@ -4,6 +4,18 @@ title: "Data"
 
 FIAT is data agnostic; what you put in is what you get out. Please follow the guidelines in this documentation to build your FIAT model and pay close attention to the validation of data together with local experts.
 
+## Types of Data
+Here a quick overview is give of the data:
+
+- [Hazard](hazard.qmd)
+    - Hazard values in a gridded format
+- [Exposure](exposure.qmd)
+    - Exposure data either in vector or gridded format
+- [Vulnerability](vulnerability.qmd)
+    - Data concerning the impact of hazard
+
+These are the types of data that FIAT needs in order to run properly.
+
 ## Folder structure
 It is recommended to set up a folder structure as shown below to ensure that FIAT can find each data file and run smoothly. The files inside the folders are example files and do not need to be of those data types or named as such.
 
