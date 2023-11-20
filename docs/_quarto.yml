@@ -92,6 +92,7 @@ website:
                 - user_guide/data/exposure/geometries.qmd
             - user_guide/data/vulnerability.qmd
             - user_guide/data/supported.qmd
+        - user_guide/models.qmd
         - examples/index.qmd
         - user_guide/advanced.qmd
     - title: "Developments"

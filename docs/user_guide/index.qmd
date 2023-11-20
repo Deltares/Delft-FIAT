@@ -34,11 +34,17 @@ include-in-header:
 FIAT computes the (economic) damage and risk of flood events at a specified geographic location based on flood inundation data, exposured assets and vulnerability functions. The model can be configured with a settings file and three main data inputs:
 
   - [Settings file](data/settings.qmd)
-  - [Hazard data](data/hazard.qmd)
-  - [Exposure data](data/exposure.qmd)
-  - [Vulnerability data](data/vulnerability.qmd)
+  - [Data](data/data.qmd)
 
 The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same [folder structure](data/data.qmd#folder-structure) that HydroMT-FIAT creates.
+
+## Regarding the models
+The data of course is used by either one or both of the following models:
+
+- GeomModel
+- GridModel
+
+Some more information about the models can be found [here](models.qmd).
 
 ## General User Information
 

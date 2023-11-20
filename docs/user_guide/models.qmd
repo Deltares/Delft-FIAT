@@ -1,0 +1,14 @@
+---
+title: Models
+---
+
+Within FIAT, two types of models are currently present:
+
+- GeomModel
+- GridModel
+
+## GeomModel
+The `GeomModel` requires a configuration file that indicates where the exposure geom(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in vector data as exposure assets (e.g., building footprints, road segments, and utility locations) one by one. Each exposure asset gets overlaid with the hazard map and with this data, the corresponding damage fraction is taken from the vulnerability curve and multiplied with the maximum potential damage to get the flood damage. When the user supplies multiple hazard maps with related return periods, they can choose to also calculate risk.
+
+## GridModel
+The `GridModel` requires a configuration file that indicates where the exposure raster(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in raster data as exposure layers (e.g. commercial, residential, industrial) holding the maximum potential damage values, which should be in the same resolution, size, and projection as the hazard map. To calculate damages, the exposure raster and hazard raster are overlaid and per cell, the maximum potential damage is multiplied with the damage fraction corresponding to the hazard value in that cell. Risk can also be calculated with the `GridModel`, although it must be noted that this functionality has not been thoroughly tested.

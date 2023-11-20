@@ -2,16 +2,35 @@
 title: "What's new?"
 ---
 
+## Unreleased
+
+### Added
+
+### Changed
+
+### Deprecated
+
 ## v0.1.0rc1 (2023-11-30)
 This is the first and pre-release of Delft-FIAT. It aims to have a stable version of the `GeomModel` for calculating damages and risk for vector exposure data and an experimental version of the `GridModel` for calculating damages and risk for raster exposure data.
 
 ### Added
-- This documentation
-- This repository and architecture of Delft-FIAT
-- The following features are highlighted:
-    - The `GeomModel` requires a configuration file that indicates where the exposure geom(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in vector data as exposure assets (e.g., building footprints, road segments, and utility locations) one by one. Each exposure asset gets overlaid with the hazard map and with this data, the corresponding damage fraction is taken from the vulnerability curve and multiplied with the maximum potential damage to get the flood damage. When the user supplies multiple hazard maps with related return periods, they can choose to also calculate risk. More information can be found in the [User guide](user_guide/index.qmd).
-    - The `GridModel` requires a configuration file that indicates where the exposure raster(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in raster data as exposure layers (e.g. commercial, residential, industrial) holding the maximum potential damage values, which should be in the same resolution, size, and projection as the hazard map. To calculate damages, the exposure raster and hazard raster are overlaid and per cell, the maximum potential damage is multiplied with the damage fraction corresponding to the hazard value in that cell. Risk can also be calculated with the `GridModel`, although it must be noted that this functionality has not been thoroughly tested. More information can be found in the [User guide](user_guide/index.qmd).
-    - Delft-FIAT can be freezed into an executable, see [Freeze FIAT as an application](setup_guide/kernel/application.qmd).
+- Documentation
+- Command line user interface
+- Main `FIAT` object from which it's run
+- `GeomModel`; the vector based model
+- `GridModel`; the raster based model
+- `ConfigReader`; for reading the settings file
+- I/O methods and structs
+    - `open_csv` which returns e.g. `Table`
+    - `open_geom` which returns a `GeomSource`
+    - `open_grid` which returns a `GridSource`
+- GIS related operations like:
+    - `geom.reproject` to reproject vector files
+    - `grid.reproject` to reproject raster files
+    - `overlay.clip` to clip a grid based on a polygon
+    - and more...
+- Some smalller miscellaneous methods and object
+    - In the [API reference](api/index.qmd)
 
 ### Foreseen future fixes
 - Issues with duplicate Object IDs are handeled in a next release, check [issue #85](https://github.com/Deltares/Delft-FIAT/issues/85).
