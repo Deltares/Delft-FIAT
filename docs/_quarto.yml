@@ -98,10 +98,8 @@ website:
       collapse-level: 3
       contents:
         - developments/index.qmd
-        - developments/guide.qmd
         - changelog.qmd
-        - developments/roadmap.qmd
-
+        - developments/guide.qmd
 
 format:
   html:

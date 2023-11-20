@@ -1,13 +1,25 @@
 ---
-title: "Contributing"
+title: "Developments"
 ---
+
+Welcome to Delft-FIAT. Here we present an overview of what's going on.
+
+## Roadmap
+What are we up to and what are the goals.
+
+### 2023 - Q4
+The biggest priority in this quarter is to go open source and to release a first version of FIAT for both the Vector and Raster models.
+
+### 2024 - Q1
+The biggest priority in this quarter is to create a stable version of FIAT for both the Vector and Raster models.
 
 We welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. Our [developer guide](guide.qmd) explains how can be contributed in code developments.
 
-## Rights
-The XXX [license](https://github.com/Deltares/Delft-FIAT/blob/master/LICENSE) applies to all contributions.
+## What's new...
+In order to see what has been done and what has been changed, please see the [changelog](../changelog.qmd).
 
-## Issue conventions {#sec-issue-conventions}
-FIAT has known and unknown bugs. Improvements through bug reports or feature requests in our [issue tracker](https://github.com/Deltares/Delft-FIAT/issues) are welcomed. Please search open and closed existing issues, before creating a new one.
+## Contribute?
+Please check out our [developer guide](guide.qmd) if you'd like to contribute to FIAT!
 
-For issues related to pre- and post-processing of FIAT data, please refer to respectively the [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) and [FIAT Toolbox](https://github.com/Deltares/fiat_toolbox) repositories.
+## Licencing
+The MIT [license](https://github.com/Deltares/Delft-FIAT/blob/master/LICENSE) applies to all contributions.
