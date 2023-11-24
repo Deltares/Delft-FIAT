@@ -10,6 +10,10 @@ What are we up to and what are the goals.
 ### 2023 - Q4
 The biggest priority in this quarter is to go open source and to release a first version of FIAT for both the Vector and Raster models.
 
+#### Short term fixes
+- Issues with duplicate Object IDs are handeled in a next release, check [issue #85](https://github.com/Deltares/Delft-FIAT/issues/85).
+- The method to calculate the centroid of polygons will be refined in a next release, check [issue #77](https://github.com/Deltares/Delft-FIAT/issues/77).
+
 ### 2024 - Q1
 The biggest priority in this quarter is to create a stable version of FIAT for both the Vector and Raster models.
 

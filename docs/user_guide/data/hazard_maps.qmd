@@ -1,0 +1,74 @@
+---
+title: Types of hazard maps
+---
+::: {.callout-tip}
+The most advised format for both event and risk is netCDF.
+:::
+
+## Event
+Event maps are generally supplied in singular fashion (i.e. one band per event map).
+This band just simply contains the hazard values per cell. Let's have a quick peek at the data using [gdalinfo](https://gdal.org/programs/gdalinfo.html):
+
+:::: {.columns}
+::: {style="height: 400px; overflow: auto;"}
+```{python}
+#| echo: false
+!gdalinfo ../../../.testdata/hazard/event_map.nc
+```
+:::
+::::
+::: {.callout-note}
+Allthough netCDF is the preferred format, GeoTIFF's are also very handy for single events.
+:::
+
+As one can see, this dataset has only one band (variable).
+
+When created, it is preferred that the event map is compressed to prevent unneccessary data on the hard drive.
+More information regarding the compression and others settings can be found [here](https://gdal.org/drivers/raster/netcdf.html#creation-options).
+
+## Risk
+Risk maps in gerenal should contain multiple bands.
+
+These bands can be either supplied in either one of two ways:
+
+- Multiple variables (like normal bands)
+- As a subdataset
+
+Lets take a look quick look at the data (again with `gdalinfo`):
+
+:::: {.columns}
+::: {style="height: 400px; overflow: auto;"}
+```{python}
+#| echo: false
+!gdalinfo ../../../.testdata/hazard/risk_map.nc
+```
+:::
+::::
+::: {.callout-note}
+Instead of seeing normal metadata, we only get an overview of the available subdatasets.
+:::
+
+Multiple netCDF variables are normally not recognized as bands by the [netCDF driver](https://gdal.org/drivers/raster/netcdf.html) of GDAL.
+Instead they are interpreted as subdatasets (!). One can set the key `var_as_band` to `true` within the [settings file](settings.qmd)
+to read the subdatasets as bands.
+
+```toml
+[hazard]
+file = <your-file>
+risk = true
+[hazard.settings]
+var_as_band = true
+```
+
+When supplied in one subdataset (all bands are within that subdataset),
+the `subset` variable within the [settings file](settings.qmd) should be set under the header `hazard.settings`.
+The value set to `subset` should be the name of the desired subdataset.
+
+```toml
+[hazard]
+file = <your-file>
+risk = true
+[hazard.settings]
+var_as_band = false
+subset = <your-wanted-subdataset>
+```

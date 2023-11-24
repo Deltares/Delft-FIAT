@@ -29,9 +29,8 @@ This is the first and pre-release of Delft-FIAT. It aims to have a stable versio
     - `grid.reproject` to reproject raster files
     - `overlay.clip` to clip a grid based on a polygon
     - and more...
+- Ability to 'compile'/ freeze FIAT as an application/ binary
+    - Windows
+    - Linux (tested on [Debian](https://www.debian.org/)/ [Ubuntu](https://ubuntu.com/))
 - Some smalller miscellaneous methods and object
     - In the [API reference](api/index.qmd)
-
-### Foreseen future fixes
-- Issues with duplicate Object IDs are handeled in a next release, check [issue #85](https://github.com/Deltares/Delft-FIAT/issues/85).
-- The method to calculate the centroid of polygons will be refined in a next release, check [issue #77](https://github.com/Deltares/Delft-FIAT/issues/77).

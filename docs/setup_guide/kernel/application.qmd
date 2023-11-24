@@ -14,9 +14,9 @@ To freeze FIAT as an application/executable, it is required to have the FIAT rep
 
 - Go to the .build/core directory and execute the pybuild.bat script:
 
-    `cd ./.build/core`
+    `cd ./.build`
 
-    `pybuild.bat `
+    `win64.bat`
 
 That's it.
-A FIAT application will be located in the `{root}/bin/core/Release` folder.
+A FIAT application will be located in the `{root}/bin/Release` folder.
