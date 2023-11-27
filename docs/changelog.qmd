@@ -2,14 +2,6 @@
 title: "What's new?"
 ---
 
-## Unreleased
-
-### Added
-
-### Changed
-
-### Deprecated
-
 ## v0.1.0rc1 (2023-11-30)
 This is the first and pre-release of Delft-FIAT. It aims to have a stable version of the `GeomModel` for calculating damages and risk for vector exposure data and an experimental version of the `GridModel` for calculating damages and risk for raster exposure data.
 
