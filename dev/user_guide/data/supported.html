@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Delft FIAT - Supported formats</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../_static/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 5,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="../../_static/styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Delft FIAT</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../getting_started/index.html" rel="" target="">
+ <span class="menu-text">Getting Started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../setup_guide/index.html" rel="" target="">
+ <span class="menu-text">Setup guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../../user_guide/index.html" rel="" target="" aria-current="page">
+ <span class="menu-text">User guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../api/index.html" rel="" target="">
+ <span class="menu-text">API Reference</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../developments/index.html" rel="" target="">
+ <span class="menu-text">Developments</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-bi-github" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+      <i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-bi-github">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Delft-FIAT" rel="" target="">
+ <span class="dropdown-text">Source Code</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://github.com/Deltares/Delft-FIAT/issues/new/choose" rel="" target="">
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/data/data.html">Data</a></li><li class="breadcrumb-item"><a href="../../user_guide/data/supported.html">Supported formats</a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">User guide</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/data/settings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings file</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../user_guide/data/data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../user_guide/data/hazard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hazard data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/data/hazard_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Types of hazard maps</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../user_guide/data/exposure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exposure data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/data/exposure/csv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CSV</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/data/exposure/geometries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Geometry</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/data/vulnerability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Vulnerability data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/data/supported.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Supported formats</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Models</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../examples/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Examples</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/advanced.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Advanced options</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#settings-file" id="toc-settings-file" class="nav-link active" data-scroll-target="#settings-file">Settings file</a></li>
+  <li><a href="#comma-seperated-values-csv" id="toc-comma-seperated-values-csv" class="nav-link" data-scroll-target="#comma-seperated-values-csv">Comma seperated values (CSV)</a></li>
+  <li><a href="#geometry-files" id="toc-geometry-files" class="nav-link" data-scroll-target="#geometry-files">Geometry files</a></li>
+  <li><a href="#gridded-data-files" id="toc-gridded-data-files" class="nav-link" data-scroll-target="#gridded-data-files">Gridded data files</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Supported formats</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="settings-file" class="level2">
+<h2 class="anchored" data-anchor-id="settings-file">Settings file</h2>
+<p>For the settings file, only one format is supported:</p>
+<ul>
+<li><a href="https://toml.io/en/">toml</a></li>
+</ul>
+</section>
+<section id="comma-seperated-values-csv" class="level2">
+<h2 class="anchored" data-anchor-id="comma-seperated-values-csv">Comma seperated values (CSV)</h2>
+<p>Your run of the mill csv files. As long as one provides the delimiter in the settings file, anything goes. For example:</p>
+<ul>
+<li>comma</li>
+<li>semicolon</li>
+<li>tab</li>
+</ul>
+<p>The amount of columns are determined by length of the header or the first line of data.</p>
+</section>
+<section id="geometry-files" class="level2">
+<h2 class="anchored" data-anchor-id="geometry-files">Geometry files</h2>
+<p>Below a list is presented of supported drivers in regards to the vector files:</p>
+<div class="columns">
+<div class="center" width="70%" style="height: 500px; overflow: auto;">
+<div class="cell" data-execution_count="1">
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div id="tbl-geom-drivers" class="anchored">
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<caption>Table&nbsp;1: Available drivers for vector data</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">File extension</th>
+<th data-quarto-table-cell-role="th">Driver</th>
+<th data-quarto-table-cell-role="th">Long name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>Memory</td>
+<td>Memory</td>
+</tr>
+<tr class="even">
+<td>.000</td>
+<td>S57</td>
+<td>IHO S-57 (ENC)</td>
+</tr>
+<tr class="odd">
+<td>.bag</td>
+<td>BAG</td>
+<td>Bathymetry Attributed Grid</td>
+</tr>
+<tr class="even">
+<td>.csv</td>
+<td>CSV</td>
+<td>Comma Separated Value (.csv)</td>
+</tr>
+<tr class="odd">
+<td>.dgn</td>
+<td>DGN</td>
+<td>Microstation DGN</td>
+</tr>
+<tr class="even">
+<td>.dwg</td>
+<td>CAD</td>
+<td>AutoCAD Driver</td>
+</tr>
+<tr class="odd">
+<td>.dxf</td>
+<td>DXF</td>
+<td>AutoCAD DXF</td>
+</tr>
+<tr class="even">
+<td>.fgb</td>
+<td>FlatGeobuf</td>
+<td>FlatGeobuf</td>
+</tr>
+<tr class="odd">
+<td>.fits</td>
+<td>FITS</td>
+<td>Flexible Image Transport System</td>
+</tr>
+<tr class="even">
+<td>.gdb</td>
+<td>OpenFileGDB</td>
+<td>ESRI FileGDB</td>
+</tr>
+<tr class="odd">
+<td>.geojson</td>
+<td>GeoJSON</td>
+<td>GeoJSON</td>
+</tr>
+<tr class="even">
+<td>.geojsons</td>
+<td>GeoJSONSeq</td>
+<td>GeoJSON Sequence</td>
+</tr>
+<tr class="odd">
+<td>.gml</td>
+<td>GML</td>
+<td>Geography Markup Language (GML)</td>
+</tr>
+<tr class="even">
+<td>.gmt</td>
+<td>OGR_GMT</td>
+<td>GMT ASCII Vectors (.gmt)</td>
+</tr>
+<tr class="odd">
+<td>.gpkg</td>
+<td>GPKG</td>
+<td>GeoPackage</td>
+</tr>
+<tr class="even">
+<td>.gpx</td>
+<td>GPX</td>
+<td>GPX</td>
+</tr>
+<tr class="odd">
+<td>.igc</td>
+<td>GPSBabel</td>
+<td>GPSBabel</td>
+</tr>
+<tr class="even">
+<td>.ili</td>
+<td>Interlis 2</td>
+<td>Interlis 2</td>
+</tr>
+<tr class="odd">
+<td>.jml</td>
+<td>JML</td>
+<td>OpenJUMP JML</td>
+</tr>
+<tr class="even">
+<td>.json</td>
+<td>JSONFG</td>
+<td>OGC Features and Geometries JSON</td>
+</tr>
+<tr class="odd">
+<td>.kml</td>
+<td>KML</td>
+<td>Keyhole Markup Language (KML)</td>
+</tr>
+<tr class="even">
+<td>.kmz</td>
+<td>LIBKML</td>
+<td>Keyhole Markup Language (LIBKML)</td>
+</tr>
+<tr class="odd">
+<td>.map</td>
+<td>WAsP</td>
+<td>WAsP .map format</td>
+</tr>
+<tr class="even">
+<td>.mbtiles</td>
+<td>MBTiles</td>
+<td>MBTiles</td>
+</tr>
+<tr class="odd">
+<td>.mid</td>
+<td>MapInfo File</td>
+<td>MapInfo File</td>
+</tr>
+<tr class="even">
+<td>.mvt</td>
+<td>MVT</td>
+<td>Mapbox Vector Tiles</td>
+</tr>
+<tr class="odd">
+<td>.nc</td>
+<td>netCDF</td>
+<td>Network Common Data Format</td>
+</tr>
+<tr class="even">
+<td>.ods</td>
+<td>ODS</td>
+<td>Open Document/ LibreOffice / OpenOffice Spreadsheet</td>
+</tr>
+<tr class="odd">
+<td>.pdf</td>
+<td>PDF</td>
+<td>Geospatial PDF</td>
+</tr>
+<tr class="even">
+<td>.pix</td>
+<td>PCIDSK</td>
+<td>PCIDSK Database File</td>
+</tr>
+<tr class="odd">
+<td>.pmtiles</td>
+<td>PMTiles</td>
+<td>ProtoMap Tiles</td>
+</tr>
+<tr class="even">
+<td>.shp</td>
+<td>ESRI Shapefile</td>
+<td>ESRI Shapefile</td>
+</tr>
+<tr class="odd">
+<td>.sql</td>
+<td>PGDUMP</td>
+<td>PostgreSQL SQL dump</td>
+</tr>
+<tr class="even">
+<td>.sqlite</td>
+<td>SQLite</td>
+<td>SQLite / Spatialite</td>
+</tr>
+<tr class="odd">
+<td>.txt</td>
+<td>Geoconcept</td>
+<td>Geoconcept</td>
+</tr>
+<tr class="even">
+<td>.x10</td>
+<td>VDV</td>
+<td>VDV-451/VDV-452/INTREST Data Format</td>
+</tr>
+<tr class="odd">
+<td>.xlsx</td>
+<td>XLSX</td>
+<td>MS Office Open XML spreadsheet</td>
+</tr>
+<tr class="even">
+<td>.xml</td>
+<td>PDS4</td>
+<td>NASA Planetary Data System 4</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="gridded-data-files" class="level2">
+<h2 class="anchored" data-anchor-id="gridded-data-files">Gridded data files</h2>
+<p>Below a list is presented of supported drivers in regards to the raster files:</p>
+<div class="columns">
+<div class="center" width="70%" style="height: 500px; overflow: auto;">
+<div class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div id="tbl-grid-drivers" class="anchored">
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<caption>Table&nbsp;2: Available drivers for gridded data</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">File extension</th>
+<th data-quarto-table-cell-role="th">Driver</th>
+<th data-quarto-table-cell-role="th">Long name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>MEM</td>
+<td>In Memory Raster</td>
+</tr>
+<tr class="even">
+<td>.asc</td>
+<td>AAIGrid</td>
+<td>Arc/Info ASCII Grid</td>
+</tr>
+<tr class="odd">
+<td>.bag</td>
+<td>BAG</td>
+<td>Bathymetry Attributed Grid</td>
+</tr>
+<tr class="even">
+<td>.bil</td>
+<td>EHdr</td>
+<td>ESRI .hdr Labelled</td>
+</tr>
+<tr class="odd">
+<td>.blx</td>
+<td>BLX</td>
+<td>Magellan topo (.blx)</td>
+</tr>
+<tr class="even">
+<td>.bmp</td>
+<td>BMP</td>
+<td>MS Windows Device Independent Bitmap</td>
+</tr>
+<tr class="odd">
+<td>.bt</td>
+<td>BT</td>
+<td>VTP .bt (Binary Terrain) 1.3 Format</td>
+</tr>
+<tr class="even">
+<td>.byn</td>
+<td>BYN</td>
+<td>Natural Resources Canada's Geoid</td>
+</tr>
+<tr class="odd">
+<td>.ct1</td>
+<td>CALS</td>
+<td>CALS (Type 1)</td>
+</tr>
+<tr class="even">
+<td>.cub</td>
+<td>ISIS3</td>
+<td>USGS Astrogeology ISIS cube (Version 3)</td>
+</tr>
+<tr class="odd">
+<td>.dat</td>
+<td>ZMap</td>
+<td>ZMap Plus Grid</td>
+</tr>
+<tr class="even">
+<td>.dem</td>
+<td>USGSDEM</td>
+<td>USGS Optional ASCII DEM (and CDED)</td>
+</tr>
+<tr class="odd">
+<td>.dt2</td>
+<td>DTED</td>
+<td>DTED Elevation Raster</td>
+</tr>
+<tr class="even">
+<td>.ers</td>
+<td>ERS</td>
+<td>ERMapper .ers Labelled</td>
+</tr>
+<tr class="odd">
+<td>.fits</td>
+<td>FITS</td>
+<td>Flexible Image Transport System</td>
+</tr>
+<tr class="even">
+<td>.gdb</td>
+<td>OpenFileGDB</td>
+<td>ESRI FileGDB</td>
+</tr>
+<tr class="odd">
+<td>.gen</td>
+<td>ADRG</td>
+<td>ARC Digitized Raster Graphics</td>
+</tr>
+<tr class="even">
+<td>.gif</td>
+<td>GIF</td>
+<td>Graphics Interchange Format (.gif)</td>
+</tr>
+<tr class="odd">
+<td>.gpkg</td>
+<td>GPKG</td>
+<td>GeoPackage</td>
+</tr>
+<tr class="even">
+<td>.grd</td>
+<td>NWT_GRD</td>
+<td>Northwood Numeric Grid Format .grd/.tab</td>
+</tr>
+<tr class="odd">
+<td>.grib2</td>
+<td>GRIB</td>
+<td>GRIdded Binary (.grb, .grb2)</td>
+</tr>
+<tr class="even">
+<td>.gtx</td>
+<td>GTX</td>
+<td>NOAA Vertical Datum .GTX</td>
+</tr>
+<tr class="odd">
+<td>.gvb</td>
+<td>NTv2</td>
+<td>NTv2 Datum Grid Shift</td>
+</tr>
+<tr class="even">
+<td>.hdr</td>
+<td>MFF</td>
+<td>Vexcel MFF Raster</td>
+</tr>
+<tr class="odd">
+<td>.hf2</td>
+<td>HF2</td>
+<td>HF2/HFZ heightfield raster</td>
+</tr>
+<tr class="even">
+<td>.hgt</td>
+<td>SRTMHGT</td>
+<td>SRTMHGT File Format</td>
+</tr>
+<tr class="odd">
+<td>.img</td>
+<td>HFA</td>
+<td>Erdas Imagine Images (.img)</td>
+</tr>
+<tr class="even">
+<td>.jp2</td>
+<td>JP2OpenJPEG</td>
+<td>JPEG-2000 driver based on OpenJPEG library</td>
+</tr>
+<tr class="odd">
+<td>.jpg</td>
+<td>JPEG</td>
+<td>JPEG JFIF</td>
+</tr>
+<tr class="even">
+<td>.kea</td>
+<td>KEA</td>
+<td>KEA Image Format (.kea)</td>
+</tr>
+<tr class="odd">
+<td>.kmz</td>
+<td>KMLSUPEROVERLAY</td>
+<td>Kml Super Overlay</td>
+</tr>
+<tr class="even">
+<td>.kro</td>
+<td>KRO</td>
+<td>KOLOR Raw</td>
+</tr>
+<tr class="odd">
+<td>.lcp</td>
+<td>LCP</td>
+<td>FARSITE v.4 Landscape File (.lcp)</td>
+</tr>
+<tr class="even">
+<td>.map</td>
+<td>PCRaster</td>
+<td>PCRaster Raster File</td>
+</tr>
+<tr class="odd">
+<td>.mbtiles</td>
+<td>MBTiles</td>
+<td>MBTiles</td>
+</tr>
+<tr class="even">
+<td>.mpl</td>
+<td>ILWIS</td>
+<td>ILWIS Raster Map</td>
+</tr>
+<tr class="odd">
+<td>.mrf</td>
+<td>MRF</td>
+<td>Meta Raster Format</td>
+</tr>
+<tr class="even">
+<td>.nc</td>
+<td>netCDF</td>
+<td>Network Common Data Format</td>
+</tr>
+<tr class="odd">
+<td>.ntf</td>
+<td>NITF</td>
+<td>National Imagery Transmission Format</td>
+</tr>
+<tr class="even">
+<td>.pdf</td>
+<td>PDF</td>
+<td>Geospatial PDF</td>
+</tr>
+<tr class="odd">
+<td>.pix</td>
+<td>PCIDSK</td>
+<td>PCIDSK Database File</td>
+</tr>
+<tr class="even">
+<td>.png</td>
+<td>PNG</td>
+<td>Portable Network Graphics</td>
+</tr>
+<tr class="odd">
+<td>.pnm</td>
+<td>PNM</td>
+<td>Portable Pixmap Format (netpbm)</td>
+</tr>
+<tr class="even">
+<td>.rda</td>
+<td>R</td>
+<td>R Object Data Store</td>
+</tr>
+<tr class="odd">
+<td>.rgb</td>
+<td>SGI</td>
+<td>SGI Image File Format 1.0</td>
+</tr>
+<tr class="even">
+<td>.rst</td>
+<td>RST</td>
+<td>Idrisi Raster A.1</td>
+</tr>
+<tr class="odd">
+<td>.rsw</td>
+<td>RMF</td>
+<td>Raster Matrix Format</td>
+</tr>
+<tr class="even">
+<td>.sg-grd-z</td>
+<td>SAGA</td>
+<td>SAGA GIS Binary Grid (.sdat, .sg-grd-z)</td>
+</tr>
+<tr class="odd">
+<td>.sigdem</td>
+<td>SIGDEM</td>
+<td>Scaled Integer Gridded DEM .sigdem</td>
+</tr>
+<tr class="even">
+<td>.sqlite</td>
+<td>Rasterlite</td>
+<td>Rasterlite</td>
+</tr>
+<tr class="odd">
+<td>.ter</td>
+<td>Terragen</td>
+<td>Terragen heightfield</td>
+</tr>
+<tr class="even">
+<td>.tif</td>
+<td>GTiff</td>
+<td>GeoTIFF</td>
+</tr>
+<tr class="odd">
+<td>.tiff</td>
+<td>COG</td>
+<td>Cloud optimized GeoTIFF generator</td>
+</tr>
+<tr class="even">
+<td>.vrt</td>
+<td>VRT</td>
+<td>Virtual Raster</td>
+</tr>
+<tr class="odd">
+<td>.webp</td>
+<td>WEBP</td>
+<td>WEBP</td>
+</tr>
+<tr class="even">
+<td>.xml</td>
+<td>PDS4</td>
+<td>NASA Planetary Data System 4</td>
+</tr>
+<tr class="odd">
+<td>.xpm</td>
+<td>XPM</td>
+<td>X11 PixMap Format</td>
+</tr>
+<tr class="even">
+<td>.xyz</td>
+<td>XYZ</td>
+<td>ASCII Gridded XYZ</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
