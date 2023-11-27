@@ -27,6 +27,11 @@ format:
       <i class="bi bi-question-octagon"></i>Frequently asked questions
     </a>
   </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="../api/index.html">
+      <i class="bi bi-list-ul"></i>API Reference
+    </a>
+  </li>
 </ul>
 
 ```

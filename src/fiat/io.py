@@ -173,11 +173,14 @@ class _BaseStruct(metaclass=ABCMeta):
         _mem_loc = f"{id(self):#018x}".upper()
         return f"<{self.__class__.__name__} object at {_mem_loc}>"
 
-    def update_kwargs(
+    def _update_kwargs(
         self,
         **kwargs,
     ):
-        """_summary_."""
+        """Update the keyword arguments.
+
+        Only for internal use.
+        """
         self._kwargs.update(
             **kwargs,
         )
@@ -538,7 +541,19 @@ class Grid(
     _BaseIO,
     _BaseStruct,
 ):
-    """_summary_."""
+    """A source object for a specific raster band.
+
+    Acquired by indexing a GridSource object.
+
+    Parameters
+    ----------
+    band : gdal.Band
+        A band defined by GDAL.
+    chunk : tuple, optional
+        Chunk size in x direction and y direction.
+    mode : str, optional
+        The I/O mode. Either `r` for reading or `w` for writing.
+    """
 
     def __init__(
         self,
@@ -546,7 +561,6 @@ class Grid(
         chunk: tuple = None,
         mode: str = "r",
     ):
-        """_summary_."""
         _BaseIO.__init__(self, mode=mode)
 
         self.src = band
@@ -625,42 +639,65 @@ class Grid(
         self._u = 0
 
     def close(self):
-        """_summary_."""
+        """Close the Grid object."""
         _BaseIO.close(self)
         self.src = None
         gc.collect()
 
     def flush(self):
-        """_summary_."""
+        """Flush the grid object."""
         if self.src is not None:
             self.src.FlushCache()
 
     @property
     def chunk(self):
-        """_summary_."""
+        """Return the chunk size."""
         return self._chunk
 
     @property
     def shape(self):
-        """_summary_."""
+        """Return the shape of the grid.
+
+        Returns
+        -------
+        tuple
+            Size in x direction, size in y direction
+        """
         return self._x, self._y
 
     def get_metadata_item(
         self,
         entry: str,
     ):
-        """_summary_."""
+        """Get specific metadata item.
+
+        Parameters
+        ----------
+        entry : str
+            Identifier of item.
+
+        Returns
+        -------
+        object
+            Information is present.
+        """
         return self.src.GetMetadataItem(entry)
 
     def set_chunk_size(
         self,
         chunk: tuple,
     ):
-        """_summary_."""
+        """Set the chunking size.
+
+        Parameters
+        ----------
+        chunk : tuple
+            Size in x direction, size in y direction.
+        """
         self._chunk = chunk
 
     @_BaseIO._check_mode
-    def write(
+    def _write(
         self,
         data: array,
     ):
@@ -679,18 +716,44 @@ class Grid(
         chunk: array,
         upper_left: tuple | list,
     ):
-        """_summary_.
+        """Write a chunk of data to the band.
+
+        Only in write (`'w'`) mode.
 
         Parameters
         ----------
         chunk : array
-            _description_
+            Array of data.
+        upper_left : tuple | list
+            Upper left corner of the chunk.
+            N.b. these are not coordinates, but indices.
         """
         self.src.WriteArray(chunk, *upper_left)
 
 
 class GeomSource(_BaseIO, _BaseStruct):
-    """_summary_."""
+    """A source object for geospatial vector data.
+
+    Essentially an OGR DataSource wrapper.
+
+    Parameters
+    ----------
+    file : str
+        Path to a file.
+    mode : str, optional
+        The I/O mode. Either `r` for reading or `w` for writing.
+
+    Usage
+    -----
+    Index the GeomSource directly to get features.
+    ```Python
+    # Load a file
+    gm = GeomSource(< path-to-file >)
+
+    # Index it!
+    feature = gm[1]
+    ```
+    """
 
     _type_map = {
         "int": ogr.OFTInteger64,
@@ -713,33 +776,6 @@ class GeomSource(_BaseIO, _BaseStruct):
         file: str,
         mode: str = "r",
     ):
-        """Essentially an OGR DataSource Wrapper.
-
-        Parameters
-        ----------
-        file : str
-            _description_
-        driver : str, optional
-            _description_, by default ""
-        mode : str, optional
-            _description_, by default "r"
-
-        Returns
-        -------
-        object
-            _description_
-
-        Raises
-        ------
-        ValueError
-            _description_
-        DriverNotFoundError
-            _description_
-        OSError
-            _description_
-        OSError
-            _description_
-        """
         _BaseIO.__init__(self, file, mode)
 
         if self.path.suffix not in GEOM_DRIVER_MAP:
@@ -786,7 +822,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         )
 
     def close(self):
-        """_summary_."""
+        """Close the GeomSouce."""
         _BaseIO.close(self)
 
         self.layer = None
@@ -800,12 +836,15 @@ class GeomSource(_BaseIO, _BaseStruct):
     #     return self.layer.GetFeatureCount()
 
     def flush(self):
-        """_summary_."""
+        """Flush the data.
+
+        This only serves a purpose in write mode (`mode = 'w'`).
+        """
         if self.src is not None:
             self.src.FlushCache()
 
     def reopen(self):
-        """_summary_."""
+        """Reopen a closed GeomSource."""
         if not self._closed:
             return self
         obj = GeomSource.__new__(GeomSource, self.path)
@@ -815,13 +854,20 @@ class GeomSource(_BaseIO, _BaseStruct):
     @property
     @_BaseIO._check_state
     def bounds(self):
-        """_summary_."""
+        """Return the bounds of the GridSource.
+
+        Returns
+        -------
+        list
+            Contains the four boundaries of the grid. This take the form of \
+[left, right, top, bottom]
+        """
         return self.layer.GetExtent()
 
     @property
     @_BaseIO._check_state
     def fields(self):
-        """_summary_."""
+        """Return the names of the fields."""
         if self.layer is not None:
             _flds = self.layer.GetLayerDefn()
             fh = [
@@ -836,7 +882,15 @@ class GeomSource(_BaseIO, _BaseStruct):
         self,
         ft: ogr.Feature,
     ):
-        """_summary_."""
+        """Add a feature to the layer.
+
+        Only in write (`'w'`) mode.
+
+        Parameters
+        ----------
+        ft : ogr.Feature
+            A feature object defined by OGR.
+        """
         self.layer.CreateFeature(ft)
 
     @_BaseIO._check_mode
@@ -847,7 +901,20 @@ class GeomSource(_BaseIO, _BaseStruct):
         in_ft: ogr.Feature,
         out_ft: ogr.Feature,
     ):
-        """_summary_."""
+        """Add a feature to a layer by using properties from another.
+
+        Only in write (`'w'`) mode.
+
+        Parameters
+        ----------
+        geom : ogr.Geometry
+            The geometry of the new feature. Defined by OGR.
+        in_ft : ogr.Feature
+            The input feature. The properties and fieldinfo are used from this one
+            to set information on the new feature. Defined by OGR.
+        out_ft : ogr.Feature
+            New feature. Empty. Defined by OGR.
+        """
         out_ft.SetGeometry(geom)
 
         for n in range(in_ft.GetFieldCount()):
@@ -862,14 +929,16 @@ class GeomSource(_BaseIO, _BaseStruct):
         name: str,
         type: object,
     ):
-        """_summary_.
+        """Add a new field.
+
+        Only in write (`'w'`) mode.
 
         Parameters
         ----------
         name : str
-            _description_
-        type : _type_
-            _description_
+            Name of the new field.
+        type : object
+            Type of the new field.
         """
         self.layer.CreateField(
             ogr.FieldDefn(
@@ -884,14 +953,15 @@ class GeomSource(_BaseIO, _BaseStruct):
         self,
         fmap: dict,
     ):
-        """_summary_.
+        """Add multiple fields at once.
+
+        Only in write (`'w'`) mode.
 
         Parameters
         ----------
-        name : str
-            _description_
-        type : _type_
-            _description_
+        fmap : dict
+            A dictionary where the keys are the names of the new fields and the values
+            are the data types of the new field.
         """
         self.layer.CreateFields(
             [
@@ -907,12 +977,17 @@ class GeomSource(_BaseIO, _BaseStruct):
         srs: osr.SpatialReference,
         geom_type: int,
     ):
-        """_summary_.
+        """Create a new vector layer.
+
+        Only in write (`'w'`) mode.
 
         Parameters
         ----------
         srs : osr.SpatialReference
-            _description_
+            Spatial Reference System.
+        geom_type : int
+            Type of geometry. E.g. 'POINT' or 'POLYGON'. It is supplied as an integer
+            that complies with a specific geometry type according to GDAL.
         """
         self.layer = self.src.CreateLayer(self.path.stem, srs, geom_type)
 
@@ -923,12 +998,16 @@ class GeomSource(_BaseIO, _BaseStruct):
         layer: ogr.Layer,
         overwrite: bool = True,
     ):
-        """_Summary_.
+        """Create a new layer by copying another layer.
+
+        Only in write (`'w'`) mode.
 
         Parameters
         ----------
         layer : ogr.Layer
-            _description_
+            A layer defined by OGR.
+        overwrite : bool, optional
+            If set to `True`, it will overwrite an existing layer.
         """
         _ow = {
             True: "YES",
@@ -940,16 +1019,19 @@ class GeomSource(_BaseIO, _BaseStruct):
         )
 
     def get_bbox(self):
-        """_summary_."""
+        """Get the bouding box.
+
+        Call <object>.bounds instead.
+        """
         return self.layer.GetExtent()
 
-    def get_layer(self, l_id):
+    def _get_layer(self, l_id):
         """_summary_."""
         pass
 
     @_BaseIO._check_state
     def get_srs(self):
-        """_Summary_."""
+        """Return the srs (Spatial Reference System)."""
         return self.layer.GetSpatialRef()
 
     @_BaseIO._check_mode
@@ -958,19 +1040,50 @@ class GeomSource(_BaseIO, _BaseStruct):
         self,
         ref: ogr.FeatureDefn,
     ):
-        """_summary_.
+        """Set layer meta from another layer's meta.
+
+        Only in write (`'w'`) mode.
 
         Parameters
         ----------
         ref : ogr.FeatureDefn
-            _description_
+            The definition of a layer. Defined by OGR.
         """
         for n in range(ref.GetFieldCount()):
             self.layer.CreateField(ref.GetFieldDefn(n))
 
 
 class GridSource(_BaseIO, _BaseStruct):
-    """_summary_."""
+    """A source object for geospatial gridded data.
+
+    Essentially a gdal Dataset wrapper.
+
+    Parameters
+    ----------
+    file : str
+        The path to a file.
+    chunk : tuple, optional
+        Chunking size of the data.
+    subset : str, optional
+        The wanted subset of data. This is applicable to netCDF files containing \
+multiple variables.
+    var_as_band : bool, optional
+        Whether to interpret the variables as bands.
+        This is applicable to netCDF files containing multiple variables.
+    mode : str, optional
+        The I/O mode. Either `r` for reading or `w` for writing.
+
+    Usage
+    -----
+    Can be indexed directly to get a `Grid` object.
+    ```Python
+    # Open a file
+    gs = open_grid(< path-to-file >)
+
+    # Index it (take the first band)
+    grid = gs[1]
+    ```
+    """
 
     _type_map = {
         "float": gdal.GFT_Real,
@@ -999,30 +1112,10 @@ class GridSource(_BaseIO, _BaseStruct):
         var_as_band: bool = False,
         mode: str = "r",
     ):
-        """Essentially a GDAL Dataset Wrapper.
-
-        Parameters
-        ----------
-        file : str
-            _description_
-        chunk : tuple, optional
-            _description_, by default None
-        subset : str, optional
-            _description_, by default None
-        var_as_band : bool, optional
-            _description_, by default False
-        mode : str, optional
-            _description_, by default "r"
-
-        Raises
-        ------
-        DriverNotFoundError
-            _description_
-        """
         _open_options = []
 
         _BaseStruct.__init__(self)
-        self.update_kwargs(
+        self._update_kwargs(
             subset=subset,
             var_as_band=var_as_band,
         )
@@ -1102,7 +1195,7 @@ class GridSource(_BaseIO, _BaseStruct):
         )
 
     def close(self):
-        """_summary_."""
+        """Close the GridSource."""
         _BaseIO.close(self)
 
         self.src = None
@@ -1111,12 +1204,15 @@ class GridSource(_BaseIO, _BaseStruct):
         gc.collect()
 
     def flush(self):
-        """_summary_."""
+        """Flush the data.
+
+        This only serves a purpose in write mode (`mode = 'w'`).
+        """
         if self.src is not None:
             self.src.FlushCache()
 
     def reopen(self):
-        """_summary_."""
+        """Reopen a closed GridSource."""
         if not self._closed:
             return self
         obj = GridSource.__new__(
@@ -1132,7 +1228,14 @@ class GridSource(_BaseIO, _BaseStruct):
     @property
     @_BaseIO._check_state
     def bounds(self):
-        """_summary_."""
+        """Return the bounds of the GridSource.
+
+        Returns
+        -------
+        list
+            Contains the four boundaries of the grid. This take the form of \
+[left, right, top, bottom]
+        """
         _gtf = self.src.GetGeoTransform()
         return (
             _gtf[0],
@@ -1143,13 +1246,19 @@ class GridSource(_BaseIO, _BaseStruct):
 
     @property
     def chunk(self):
-        """_summary_."""
+        """Return the chunking size.
+
+        Returns
+        -------
+        list
+            The chunking in x direction and y direction.
+        """
         return self._chunk
 
     @property
     @_BaseIO._check_state
     def dtype(self):
-        """_summary_."""
+        """Return the data types of the field data."""
         if not self._dtype:
             _b = self[1]
             self._dtype = _b.dtype
@@ -1159,7 +1268,13 @@ class GridSource(_BaseIO, _BaseStruct):
     @property
     @_BaseIO._check_state
     def shape(self):
-        """_summary_."""
+        """Return the shape of the grid.
+
+        Returns
+        -------
+        tuple
+            Contains size in x direction and y direction.
+        """
         return (
             self.src.RasterXSize,
             self.src.RasterYSize,
@@ -1174,7 +1289,24 @@ class GridSource(_BaseIO, _BaseStruct):
         type: int,
         options: list = [],
     ):
-        """_summary_."""
+        """Create a new data source.
+
+        Only in write (`'w'`) mode.
+
+        Parameters
+        ----------
+        shape : tuple
+            Shape of the grid. Takes the form of [<x-length>, <y-length>].
+        nb : int
+            The number of bands in the new data source.
+        type : int
+            Data type. The values is an integer which is linked to a data type
+            recognized by GDAL. See [this page]
+            (https://gdal.org/java/org/gdal/gdalconst/
+            gdalconstConstants.html#GDT_Unknown) for more information.
+        options : list
+            Additional arguments.
+        """
         self.src = self._driver.Create(
             str(self.path),
             *shape,
@@ -1190,7 +1322,12 @@ class GridSource(_BaseIO, _BaseStruct):
     def create_band(
         self,
     ):
-        """_summary_."""
+        """Create a new band.
+
+        Only in write (`'w'`) mode.
+
+        This will append the numbers of bands.
+        """
         self.src.AddBand()
         self.count += 1
 
@@ -1198,7 +1335,11 @@ class GridSource(_BaseIO, _BaseStruct):
     def deter_band_names(
         self,
     ):
-        """_summary_."""
+        """Determine the names of the bands.
+
+        If the bands do not have any names of themselves,
+        they will be set to a default.
+        """
         _names = []
         for n in range(self.count):
             name = self.get_band_name(n + 1)
@@ -1211,7 +1352,18 @@ class GridSource(_BaseIO, _BaseStruct):
 
     @_BaseIO._check_state
     def get_band_name(self, n: int):
-        """_summary_."""
+        """Get the name of a specific band.
+
+        Parameters
+        ----------
+        n : int
+            Band number.
+
+        Returns
+        -------
+        str
+            Name of the band.
+        """
         _desc = self[n].src.GetDescription()
         _meta = self[n].src.GetMetadata()
 
@@ -1228,7 +1380,7 @@ class GridSource(_BaseIO, _BaseStruct):
     def get_band_names(
         self,
     ):
-        """_summary_."""
+        """Get the names of all bands."""
         _names = []
         for n in range(self.count):
             _names.append(self.get_band_name(n + 1))
@@ -1237,7 +1389,13 @@ class GridSource(_BaseIO, _BaseStruct):
 
     @_BaseIO._check_state
     def get_bbox(self):
-        """_summary_."""
+        """Return the bounding box of the grid.
+
+        Returns
+        -------
+        tuple
+            The bounding box. Take the form of [left, right, top, bottom].
+        """
         gtf = self.src.GetGeoTransform()
         bbox = (
             gtf[0],
@@ -1251,24 +1409,36 @@ class GridSource(_BaseIO, _BaseStruct):
 
     @_BaseIO._check_state
     def get_geotransform(self):
-        """_summary_."""
+        """Return the geo transform of the grid."""
         return self.src.GetGeoTransform()
 
     @_BaseIO._check_state
     def get_srs(self):
-        """_summary_."""
+        """Return the srs (Spatial Reference System) of the grid."""
         return self.src.GetSpatialRef()
 
     def set_chunk_size(
         self,
         chunk: tuple,
     ):
-        """_summary_."""
+        """Set the chunking size of the grid.
+
+        Parameters
+        ----------
+        chunk : tuple
+            A tuple containing the chunking size in x direction and y direction.
+        """
         self._chunk = chunk
 
     @_BaseIO._check_mode
     def set_geotransform(self, affine: tuple):
-        """_summary_."""
+        """Set the geo transform of the grid.
+
+        Parameters
+        ----------
+        affine : tuple
+            An affine matrix.
+        """
         self.src.SetGeoTransform(affine)
 
     @_BaseIO._check_mode
@@ -1277,12 +1447,22 @@ class GridSource(_BaseIO, _BaseStruct):
         self,
         srs: osr.SpatialReference,
     ):
-        """_summary_."""
+        """Set the srs of the gird.
+
+        Only in write (`'w'`) mode.
+
+        This is the spatial reference system defined by GDAL.
+
+        Parameters
+        ----------
+        srs : osr.SpatialReference
+            The srs.
+        """
         self.src.SetSpatialRef(srs)
 
     @_BaseIO._check_mode
     @_BaseIO._check_state
-    def write_array(
+    def _write_array(
         self,
         array: "array",
         band: int,
@@ -1372,27 +1552,32 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
 
 
 class Table(_Table):
-    """_summary_."""
+    """Create a struct based on tabular data in a file.
+
+    Parameters
+    ----------
+    data : BufferHandler | dict
+        A datastream or a dictionary.
+        The datastream is a connection through which data can pass.
+    index : str | tuple, optional
+        The index column from which the values are taken and used to index the rows.
+    columns : list, optional
+        The column headers of the table.
+        If not supplied, it will be inferred from the file.
+
+    Returns
+    -------
+    object
+        An object containing actively loaded tabular data.
+    """
 
     def __init__(
         self,
-        data: BufferHandler or dict,
-        index: str or tuple = None,
+        data: BufferHandler | dict,
+        index: str | tuple = None,
         columns: list = None,
         **kwargs,
     ) -> object:
-        """_summary_.
-
-        Parameters
-        ----------
-        file : str
-            _description_
-
-        Returns
-        -------
-        object
-            _description_
-        """
         if isinstance(data, BufferHandler):
             self._build_from_stream(
                 data,
@@ -1566,7 +1751,24 @@ class Table(_Table):
 
 
 class TableLazy(_Table):
-    """_summary_."""
+    """A lazy read of tabular data in a file.
+
+    Requires a datastream as input.
+
+    Parameters
+    ----------
+    data : BufferHandler
+        A stream.
+    index : strortuple, optional
+        The index column used as row indices.
+    columns : list, optional
+        The column headers of the table.
+
+    Returns
+    -------
+    object
+        An object containing a connection via a stream to a file.
+    """
 
     def __init__(
         self,
@@ -1575,18 +1777,6 @@ class TableLazy(_Table):
         columns: list = None,
         **kwargs,
     ) -> object:
-        """_summary_.
-
-        Parameters
-        ----------
-        file : str
-            _description_
-
-        Returns
-        -------
-        object
-            _description_
-        """
         self.data = data
 
         # Get internal indexing
@@ -1637,14 +1827,27 @@ class TableLazy(_Table):
         self,
         oid: str,
     ):
-        """_summary_."""
+        """Get a row from the table based on the index.
+
+        Parameters
+        ----------
+        oid : str
+            Row identifier.
+        """
         return self.__getitem__(oid)
 
     def set_index(
         self,
         key: str,
     ):
-        """_summary_."""
+        """Set the index of the table.
+
+        Parameters
+        ----------
+        key : str
+            Column header.
+            View available headers via <object>.columns.
+        """
         if key not in self.headers:
             raise ValueError("")
 
@@ -1670,7 +1873,22 @@ class TableLazy(_Table):
 
 
 class ExposureTable(TableLazy):
-    """_summary_."""
+    """Create a table just for exposure data.
+
+    Parameters
+    ----------
+    data : BufferHandler
+        A stream.
+    index : strortuple, optional
+        The index column used as row indices.
+    columns : list, optional
+        The column headers of the table.
+
+    Returns
+    -------
+    object
+        An object containing a connection via a stream to a file.
+    """
 
     def __init__(
         self,
@@ -1679,17 +1897,6 @@ class ExposureTable(TableLazy):
         columns: list = None,
         **kwargs,
     ):
-        """Create a table just for exposure data.
-
-        Parameters
-        ----------
-        data : BufferHandler
-            _description_
-        index : strortuple, optional
-            _description_, by default None
-        columns : list, optional
-            _description_, by default None
-        """
         TableLazy.__init__(
             self,
             data,
@@ -1722,7 +1929,18 @@ class ExposureTable(TableLazy):
         self._dat_len = len(self._blueprint_columns)
 
     def create_specific_columns(self, name: str):
-        """_summary_."""
+        """Generate new columns for output data.
+
+        Parameters
+        ----------
+        name : str
+            Exposure identifier.
+
+        Returns
+        -------
+        list
+            A list containing new columns.
+        """
         _out = []
         if name:
             name = f"({name})"
@@ -1744,7 +1962,20 @@ class ExposureTable(TableLazy):
         names: list,
         extra: list = None,
     ):
-        """_summary_."""
+        """Append existing columns of exposure database.
+
+        Parameters
+        ----------
+        names : list
+            Exposure identifiers.
+        extra : list, optional
+            Extra specified columns.
+
+        Returns
+        -------
+        list
+            List containing all columns.
+        """
         cols = []
         for n in names:
             cols += self.create_specific_columns(n)
@@ -1755,7 +1986,7 @@ class ExposureTable(TableLazy):
         return cols
 
     def gen_dat_dtypes(self):
-        """_summary_."""
+        """Generate dtypes for the new columns."""
         return ",".join(["float"] * self._dat_len).encode()
 
 

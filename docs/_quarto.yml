@@ -176,7 +176,8 @@ quartodoc:
         - setup_mp_log
         - name: Log
           children: separate
-        - Receiver
+        - name: Receiver
+          children: separate
 
     # Geospatial methods
     - title: GIS

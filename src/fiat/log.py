@@ -540,12 +540,23 @@ class Logmeta(type):
 
 
 class Receiver:
-    """_summary_."""
+    """Create a receiver for multiprocessing logging.
+
+    Essentially a listener.
+
+    Parameters
+    ----------
+    queue : object
+        A queue for putting the messages in. This has to be a designated
+        multiprocessing object.
+    """
 
     _sentinel = None
 
-    def __init__(self, queue):
-        """_summary_."""
+    def __init__(
+        self,
+        queue: object,
+    ):
         self._t = None
         self._handlers = []
         self.count = 0
@@ -572,13 +583,13 @@ class Receiver:
                 break
 
     def close(self):
-        """_summary_."""
+        """Close the receiver."""
         self.q.put_nowait(self._sentinel)
         self._t.join()
         self._t = None
 
     def close_handlers(self):
-        """_summary_."""
+        """Close all associated handlers."""
         for handler in self._handlers:
             handler.close()
             handler = None
@@ -587,24 +598,33 @@ class Receiver:
         self,
         block: bool = True,
     ):
-        """_summary_."""
+        """Get something from the pipeline.
+
+        Parameters
+        ----------
+        block : bool, optional
+            If set to `True`, it will wait until it receives something.
+        """
         return self.q.get(block=block)
 
     def add_handler(
         self,
-        handler,
+        handler: object,
     ):
-        """_summary_.
+        """Add a handler to the receiver.
 
         Parameters
         ----------
-        handler : _type_
-            _description_
+        handler : object
+            A stream of some sorts.
         """
         self._handlers.append(handler)
 
     def start(self):
-        """_summary_."""
+        """Start the receiver.
+
+        This will spawn a thread that manages the receiver.
+        """
         self._t = t = threading.Thread(
             target=self._waiting,
             name="mp_logging_thread",
@@ -616,12 +636,21 @@ class Receiver:
 class Log(metaclass=Logmeta):
     """Generate a logger.
 
+    The list of available logging levels:\n
+    - 1: debug
+    - 2: info
+    - 3: warning
+    - 4: error
+    - 5: dead
+
     Parameters
     ----------
     name : str
-        _description_
+        Logger identifier
     level : int, optional
-        _description_, by default 2
+        Level of the logger. Anything below this level will not be logged.
+        For instance, a logging level of `2` (info) will result in all debug messages
+        being muted.
     """
 
     manager = LogManager()
@@ -681,7 +710,7 @@ class Log(metaclass=Logmeta):
             else:
                 obj = obj.parent
 
-    def handleLog(log_m):
+    def handle_log(log_m):
         """Wrap logging messages."""
 
         def handle(self, *args, **kwargs):
@@ -700,9 +729,9 @@ class Log(metaclass=Logmeta):
         Parameters
         ----------
         level : int, optional
-            _description_, by default 2
+            Logging level.
         name : str, optional
-            _description_, by default None
+            The identifier of the stream handler.
         """
         self._handlers.append(CHandler(level=level, name=name))
 
@@ -717,11 +746,11 @@ class Log(metaclass=Logmeta):
         Parameters
         ----------
         dst : str
-            _description_
+            The destination of the file, i.e. the path.
         level : int, optional
-            _description_, by default 2
+            Logging level.
         filename : str, optional
-            _description_, by default None
+            The name of the file, also the identifier for the steam handler.
         """
         self._handlers.append(FileHandler(dst=dst, level=level, name=filename))
 
@@ -737,34 +766,34 @@ class Log(metaclass=Logmeta):
     ):
         self._level = _Level(val)
 
-    @handleLog
-    def debug(self, msg: str):
-        """_summary_."""
-        return 1, msg
-
-    @handleLog
-    def info(self, msg: str):
-        """_summary_."""
-        return 2, msg
-
-    @handleLog
-    def warning(self, msg: str):
-        """_summary_."""
-        return 3, msg
-
-    @handleLog
-    def error(self, msg: str):
-        """_summary_."""
-        return 4, msg
-
-    @handleLog
-    def dead(self, msg: str):
-        """_summary_."""
-        return 5, msg
-
-    def direct(self, msg):
+    def _direct(self, msg):
         """_summary_."""
         self._log()
+
+    @handle_log
+    def debug(self, msg: str):
+        """Create a debug message."""
+        return 1, msg
+
+    @handle_log
+    def info(self, msg: str):
+        """Create an info message."""
+        return 2, msg
+
+    @handle_log
+    def warning(self, msg: str):
+        """Create a warning message."""
+        return 3, msg
+
+    @handle_log
+    def error(self, msg: str):
+        """Create an error message."""
+        return 4, msg
+
+    @handle_log
+    def dead(self, msg: str):
+        """Create a kernel-deceased message."""
+        return 5, msg
 
 
 def spawn_logger(
@@ -775,12 +804,12 @@ def spawn_logger(
     Parameters
     ----------
     name : str
-        _description_
+        The identifier of the logger.
 
     Returns
     -------
     Log
-        _description_
+        A Log object (for logging).
     """
     return Log(name)
 
@@ -790,21 +819,24 @@ def setup_default_log(
     level: int,
     dst: str,
 ) -> Log:
-    """_summary_.
+    """Set up the base logger of a hierarchy.
+
+    It's advisable to make this a single string that is not concatenated by period.
+    E.g. 'fiat' is correct, 'fiat.logging' is not.
 
     Parameters
     ----------
     name : str
-        _description_
+        Identifier of the logger.
     level : int
-        _description_
+        Logging level.
     dst : str
-        _description_
+        The path to where the logging file will be located.
 
     Returns
     -------
     Log
-        _description_
+        A Log object (for logging, no really..)
     """
     if len(name.split(".")) > 1:
         raise ValueError()
@@ -822,30 +854,32 @@ def setup_default_log(
 
 
 def setup_mp_log(
-    queue: queue.Queue,
+    queue: object,
     name: str,
     level: int,
     dst: str = None,
 ):
-    """_summary_.
+    """Set up logging for multiprocessing.
 
-    _extended_summary_
+    This essentially is a pipe back to the main Python process.
 
     Parameters
     ----------
     queue : queue.Queue
-        _description_
+        A queue where the messages will be put in.
+        N.B. this must be a multiprocessing queue, a normal queue.Queue \
+will not suffice.
     name : str
-        _description_
+        Identifier of the logger.
     level : int
-        _description_
+        Logging level.
     dst : str, optional
-        _description_, by default None
+        Destination of the logging. I.e. the path to the logging file.
 
     Returns
     -------
     Receiver
-        _description_
+        A receiver object. This is the receiver of the pipeline.
     """
     obj = Receiver(queue)
     h = FileHandler(level=level, dst=dst, name=name)
