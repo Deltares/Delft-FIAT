@@ -12,7 +12,7 @@ version = {attr = "fiat.version.__version__"}
 
 ## Project related stuff
 [project]
-name = "fiat"
+name = "delft_fiat"
 dynamic = ['version']
 
 authors = [
@@ -78,13 +78,13 @@ all = [
 ]
 build = [
     "pyinstaller>=6.0.0",
-    "fiat[all]",
+    "delft_fiat[all]",
 ]
 dev = [
     "pre-commit",
     "pyside2",
     "ruff",
-    "fiat[all,docs,extra,test]",
+    "delft_fiat[all,docs,extra,test]",
 ]
 docs = [
     "jupyter",
@@ -92,7 +92,7 @@ docs = [
     "matplotlib",
     "pandas",
     "quartodoc",
-    "fiat[all]",
+    "delft_fiat[all]",
 ]
 extra = [
     "tomli-w",
@@ -103,7 +103,7 @@ test = [
 	"pytest-cov",
     "pytest-mock",
 	"responses",
-    "fiat[all,extra]",
+    "delft_fiat[all,extra]",
 ]
 
 [project.urls]

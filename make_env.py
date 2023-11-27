@@ -72,7 +72,7 @@ if args.channels is not None:
 # parse environment name
 name = args.name
 if name is None:
-    name = project_name
+    name = project_name.split("_")[1]
     if args.profile:
         name += f"_{args.profile}"
 print(f"Environment name: {name}")
