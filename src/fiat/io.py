@@ -7,6 +7,7 @@ import weakref
 from abc import ABCMeta, abstractmethod
 from io import BufferedReader, BufferedWriter, FileIO, TextIOWrapper
 from math import floor, log10
+from multiprocessing import RLock
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,7 @@ from fiat.error import DriverNotFoundError
 from fiat.util import (
     GEOM_DRIVER_MAP,
     GRID_DRIVER_MAP,
+    DummyLock,
     _dtypes_from_string,
     _dtypes_reversed,
     _read_gridsrouce_layers,
@@ -223,18 +225,24 @@ class BufferTextHandler(BufferedWriter):
     def __init__(
         self,
         file: str,
-        buffer_size: int = 100000,
+        buffer_size: int = 524288,  # 512 kB
         mode: str = "wb",
+        lock: RLock = None,
     ):
         self._file_stream = FileIO(file, mode=mode)
         self.path = file
         self._b_size = buffer_size
 
+        # Supercharge with BufferedWriter
         BufferedWriter.__init__(
             self,
             self._file_stream,
             buffer_size=buffer_size,
         )
+
+        self.lock = None
+        if lock is None:
+            self.lock = DummyLock()
 
     def __del__(self):
         self.flush()
@@ -246,6 +254,15 @@ class BufferTextHandler(BufferedWriter):
 
     def __reduce__(self):
         return self.__class__, (self.path, self._b_size, self.mode)
+
+    def flush(self):
+        """_summary_.
+
+        _extended_summary_
+        """
+        self.lock.acquire()
+        BufferedWriter.flush(self)
+        self.lock.release()
 
 
 class GeomMemFileHandler:
@@ -842,6 +859,33 @@ class GeomSource(_BaseIO, _BaseStruct):
         """
         if self.src is not None:
             self.src.FlushCache()
+
+    def reduced_iter(
+        self,
+        si: int,
+        ei: int,
+    ):
+        """Yield items on an interval.
+
+        Creates a python generator.
+
+        Parameters
+        ----------
+        si : int
+            Starting index.
+        ei : int
+            Ending index.
+
+        Yields
+        ------
+        ogr.Feature
+            Features from the vector layer.
+        """
+        _c = 1
+        for ft in self.layer:
+            if si <= _c <= ei:
+                yield ft
+            _c += 1
 
     def reopen(self):
         """Reopen a closed GeomSource."""

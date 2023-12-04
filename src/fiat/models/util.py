@@ -1,6 +1,7 @@
 """The FIAT model workers."""
 
 from math import floor, isnan
+from multiprocessing import RLock
 from pathlib import Path
 
 from numpy import full, ravel, unravel_index, where
@@ -20,6 +21,7 @@ def geom_worker(
     vul: object,
     exp: object,
     exp_geom: dict,
+    lock: RLock = None,
 ):
     """_summary_."""
     # Extract the hazard band as an object

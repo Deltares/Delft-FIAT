@@ -3,7 +3,7 @@
 import os
 import time
 from concurrent.futures import ProcessPoolExecutor, wait
-from multiprocessing import Process
+from multiprocessing import Process, RLock
 from pathlib import Path
 
 from fiat.cfg import ConfigReader
@@ -56,6 +56,7 @@ class GeomModel(BaseModel):
         cfg: ConfigReader | dict,
     ):
         super().__init__(cfg)
+        self.lock = RLock()
 
         self._read_exposure_data()
         self._read_exposure_geoms()

@@ -206,6 +206,28 @@ def create_windows(
         )
 
 
+def create_1d_chunk(
+    length: int,
+    parts: int,
+):
+    """Create chunks for 1d vector data."""
+    part = math.ceil(
+        length / parts,
+    )
+    series = list(
+        range(0, length, part),
+    ) + [length]
+    _series = series.copy()
+    _series.remove(_series[0])
+    series = [_i + 1 for _i in series]
+
+    chunks = tuple(
+        zip(series[:-1], _series),
+    )
+
+    return chunks
+
+
 class DoNotCall(type):
     """_summary_."""
 
@@ -221,6 +243,18 @@ class DoNotCall(type):
 def replace_empty(l: list):
     """_summary_."""
     return ["nan" if not e else e.decode() for e in l]
+
+
+class DummyLock:
+    """Mimic Lock functionality while doing nothing."""
+
+    def acquire(self):
+        """Call dummy acquire."""
+        pass
+
+    def release(self):
+        """Call dummy release."""
+        pass
 
 
 def deter_type(
