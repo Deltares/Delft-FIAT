@@ -229,6 +229,12 @@ class BufferTextHandler(BufferedWriter):
         mode: str = "wb",
         lock: RLock = None,
     ):
+        # Set the lock
+        self.lock = lock
+        if lock is None:
+            self.lock = DummyLock()
+
+        # Create the stream
         self._file_stream = FileIO(file, mode=mode)
         self.path = file
         self._b_size = buffer_size
@@ -239,10 +245,6 @@ class BufferTextHandler(BufferedWriter):
             self._file_stream,
             buffer_size=buffer_size,
         )
-
-        self.lock = None
-        if lock is None:
-            self.lock = DummyLock()
 
     def __del__(self):
         self.flush()

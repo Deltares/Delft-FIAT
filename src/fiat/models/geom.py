@@ -27,8 +27,9 @@ from fiat.log import setup_mp_log, spawn_logger
 from fiat.models.base import BaseModel
 from fiat.models.calc import calc_risk
 from fiat.models.util import geom_worker
-from fiat.util import NEWLINE_CHAR
+from fiat.util import NEWLINE_CHAR, create_1d_chunk
 
+MIN_FEAT_NUM = 20000
 logger = spawn_logger("fiat.model.geom")
 
 
@@ -56,11 +57,11 @@ class GeomModel(BaseModel):
         cfg: ConfigReader | dict,
     ):
         super().__init__(cfg)
-        self.lock = RLock()
 
         self._read_exposure_data()
         self._read_exposure_geoms()
         self._queue = self._mp_manager.Queue(maxsize=10000)
+        self.lock = self._mp_manager.RLock()
 
     def __del__(self):
         BaseModel.__del__(self)
@@ -284,27 +285,33 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         # Start the receiver (which is in a seperate thread)
         _receiver.start()
 
+        # Determine amount of threads
+        num_of_dev = self.exposure_geoms["file1"].count // 50000
+        if num_of_dev == 0: num_of_dev = 1
+        pcount = min(self.max_threads, num_of_dev)
+
         # If there are more than a hazard band in the dataset
         # Use a pool to execute the calculations
-        if self.hazard_grid.count > 1:
-            pcount = min(self.max_threads, self.hazard_grid.count)
+        if pcount > 1:
             futures = []
             with ProcessPoolExecutor(max_workers=pcount) as Pool:
                 _s = time.time()
-                for idx in range(self.hazard_grid.count):
+                for chunk in create_1d_chunk(self.exposure_geoms["file1"].count, num_of_dev):
                     logger.info(
                         f"Submitting a job for the calculations \
-in regards to band: '{_nms[idx]}'"
+in regards to band: '{chunk}'"
                     )
                     fs = Pool.submit(
                         geom_worker,
                         self.cfg,
                         self._queue,
                         self.hazard_grid,
-                        idx + 1,
+                        1,
                         self.vulnerability_data,
                         self.exposure_data,
                         self.exposure_geoms,
+                        self.lock,
+                        chunk,
                     )
                     futures.append(fs)
             logger.info("Busy...")

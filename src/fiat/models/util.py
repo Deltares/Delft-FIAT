@@ -22,6 +22,7 @@ def geom_worker(
     exp: object,
     exp_geom: dict,
     lock: RLock = None,
+    chunk: tuple = None,
 ):
     """_summary_."""
     # Extract the hazard band as an object
@@ -38,6 +39,8 @@ def geom_worker(
     writer = BufferTextHandler(
         Path(cfg.get("output.path.tmp"), f"{idx:03d}.dat"),
         buffer_size=100000,
+        mode="ab",
+        lock=lock,
     )
     header = (
         f"{exp.meta['index_name']},".encode()
@@ -52,7 +55,7 @@ def geom_worker(
     # Loop over all the datasets
     for _, gm in exp_geom.items():
         # Loop over all the geometries
-        for ft in gm:
+        for ft in gm.reduced_iter(*chunk):
             row = b""
 
             # Acquire data from exposure database
