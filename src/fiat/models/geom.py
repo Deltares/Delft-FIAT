@@ -3,7 +3,7 @@
 import os
 import time
 from concurrent.futures import ProcessPoolExecutor, wait
-from multiprocessing import Process, RLock
+from multiprocessing import Process
 from pathlib import Path
 
 from fiat.cfg import ConfigReader
@@ -26,7 +26,7 @@ from fiat.io import (
 from fiat.log import setup_mp_log, spawn_logger
 from fiat.models.base import BaseModel
 from fiat.models.calc import calc_risk
-from fiat.models.util import geom_worker
+from fiat.models.util import geom_temp_file, geom_threads, geom_worker
 from fiat.util import NEWLINE_CHAR, create_1d_chunk
 
 MIN_FEAT_NUM = 20000
@@ -61,7 +61,6 @@ class GeomModel(BaseModel):
         self._read_exposure_data()
         self._read_exposure_geoms()
         self._queue = self._mp_manager.Queue(maxsize=10000)
-        self.lock = self._mp_manager.RLock()
 
     def __del__(self):
         BaseModel.__del__(self)
@@ -272,6 +271,9 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         Generates output in the specified `output.path` directory.
         """
+        # Setup lock list for refs
+        locks = []
+
         # Get band names for logging
         _nms = self.cfg.get("hazard.band_names")
 
@@ -286,39 +288,65 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         _receiver.start()
 
         # Determine amount of threads
-        num_of_dev = self.exposure_geoms["file1"].count // 50000
-        if num_of_dev == 0: num_of_dev = 1
-        pcount = min(self.max_threads, num_of_dev)
+        nchunk = self.exposure_geoms["file1"].count // 250000
+        if nchunk == 0:
+            nchunk = 1
+        nthreads = geom_threads(
+            self.max_threads,
+            self.hazard_grid.count,
+            nchunk,
+        )
+        chunks = create_1d_chunk(
+            self.exposure_geoms["file1"].count,
+            nchunk,
+        )
+
+        logger.info(f"Using number of threads: {nthreads}")
 
         # If there are more than a hazard band in the dataset
         # Use a pool to execute the calculations
-        if pcount > 1:
+        if nthreads > 1:
             futures = []
-            with ProcessPoolExecutor(max_workers=pcount) as Pool:
+            with ProcessPoolExecutor(max_workers=nthreads) as Pool:
                 _s = time.time()
-                for chunk in create_1d_chunk(self.exposure_geoms["file1"].count, num_of_dev):
+                for idx in range(self.hazard_grid.count):
+                    # Create a lock
+                    nlock = self._mp_manager.Lock()
+                    locks.append(nlock)
+
+                    # Log for the current hazard map
                     logger.info(
-                        f"Submitting a job for the calculations \
-in regards to band: '{chunk}'"
+                        f"Submitting jobs for the calculations \
+in regards to band: '{_nms[idx]}'"
                     )
-                    fs = Pool.submit(
-                        geom_worker,
-                        self.cfg,
-                        self._queue,
-                        self.hazard_grid,
-                        1,
-                        self.vulnerability_data,
-                        self.exposure_data,
-                        self.exposure_geoms,
-                        self.lock,
-                        chunk,
+
+                    # Create the temp file plus header
+                    geom_temp_file(
+                        self.cfg["output.path.tmp"],
+                        idx + 1,
+                        self.exposure_data.meta["index_name"],
+                        self.exposure_data.create_specific_columns(_nms[idx]),
                     )
-                    futures.append(fs)
+
+                    # Loop through all the chunks
+                    for chunk in chunks:
+                        fs = Pool.submit(
+                            geom_worker,
+                            self.cfg,
+                            self._queue,
+                            self.hazard_grid,
+                            idx + 1,
+                            self.vulnerability_data,
+                            self.exposure_data,
+                            self.exposure_geoms,
+                            nlock,
+                            chunk,
+                        )
+                        futures.append(fs)
             logger.info("Busy...")
+
             # Wait for the children to finish their calculations
             wait(futures)
-            # for p in p_s:
-            #     p.join()
 
         # If there is only one hazard band present, call Process directly
         # No need for the extra overhead the Pool provides
@@ -335,6 +363,8 @@ in regards to band: '{chunk}'"
                     self.vulnerability_data,
                     self.exposure_data,
                     self.exposure_geoms,
+                    None,
+                    chunks[0],
                 ),
             )
             p.start()

@@ -7,10 +7,45 @@ from pathlib import Path
 from numpy import full, ravel, unravel_index, where
 
 from fiat.gis import geom, overlay
-from fiat.io import BufferTextHandler, GridSource, open_grid
+from fiat.io import BufferedCustom, GridSource, open_grid
 from fiat.log import LogItem, Sender
 from fiat.models.calc import calc_haz, calc_risk
 from fiat.util import NEWLINE_CHAR, create_windows, regex_pattern, replace_empty
+
+
+def geom_temp_file(
+    p: Path | str,
+    idx: int,
+    index_col: str,
+    columns: tuple | list,
+):
+    """_summary_.
+
+    _extended_summary_
+    """
+    header = (
+        f"{index_col},".encode() + ",".join(columns).encode() + NEWLINE_CHAR.encode()
+    )
+    with open(Path(p, f"{idx:03d}.dat"), "wb") as _tw:
+        _tw.write(header)
+
+
+def geom_threads(
+    cpu_count: int,
+    haz_layers: int,
+    chunks: int,
+):
+    """_summary_.
+
+    _extended_summary_
+    """
+    n = 1
+    if chunks == 0:
+        chunks = 1
+    n = max(haz_layers, chunks)
+    n = min(cpu_count, n)
+
+    return n
 
 
 def geom_worker(
@@ -28,7 +63,6 @@ def geom_worker(
     # Extract the hazard band as an object
     band = haz[idx]
     # Setup some metadata
-    _band_name = cfg["hazard.band_names"][idx - 1]
     _pat = regex_pattern(exp.delimiter)
     _ref = cfg.get("hazard.elevation_reference")
     _rnd = cfg.get("vulnerability.round")
@@ -36,25 +70,23 @@ def geom_worker(
     vul_max = max(vul.index)
 
     # Setup the write and write the header
-    writer = BufferTextHandler(
+    writer = BufferedCustom(
         Path(cfg.get("output.path.tmp"), f"{idx:03d}.dat"),
-        buffer_size=100000,
         mode="ab",
+        buffer_size=100000,
         lock=lock,
     )
-    header = (
-        f"{exp.meta['index_name']},".encode()
-        + ",".join(exp.create_specific_columns(_band_name)).encode()
-        + NEWLINE_CHAR.encode()
-    )
-    writer.write(header)
 
     # Setup connection with the main process for missing values:
     _sender = Sender(queue=queue)
 
     # Loop over all the datasets
     for _, gm in exp_geom.items():
-        # Loop over all the geometries
+        # Check if there actually is data for this chunk
+        if chunk[0] > gm.count:
+            continue
+
+        # Loop over all the geometries in a reduced manner
         for ft in gm.reduced_iter(*chunk):
             row = b""
 
@@ -109,7 +141,7 @@ No data found in exposure database",
             writer.write(row)
 
     # Flush the buffer to the drive and close the writer
-    writer.flush()
+    writer.to_drive()
     writer = None
 
 

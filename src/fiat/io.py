@@ -5,9 +5,9 @@ import gc
 import os
 import weakref
 from abc import ABCMeta, abstractmethod
-from io import BufferedReader, BufferedWriter, FileIO, TextIOWrapper
+from io import BufferedReader, BufferedWriter, BytesIO, FileIO, TextIOWrapper
 from math import floor, log10
-from multiprocessing import RLock
+from multiprocessing import Lock
 from pathlib import Path
 from typing import Any
 
@@ -219,6 +219,91 @@ class BufferHandler(_BaseHandler, BufferedReader):
         return self.__class__, (self.path, self.skip)
 
 
+class BufferedCustom(BytesIO):
+    """_summary_."""
+
+    def __init__(
+        self,
+        file: Path | str,
+        mode: str = "wb",
+        buffer_size: int = 524288,  # 512 kB
+        lock: Lock = None,
+    ):
+        # Set the lock
+        self.lock = lock
+        if lock is None:
+            self.lock = DummyLock()
+
+        BytesIO.__init__(self)
+
+        # Set object specific stuff
+        self.stream = FileIO(
+            file=file,
+            mode=mode,
+        )
+        self.max_size = buffer_size
+
+    def close(self):
+        """_summary_."""
+        # Flush on last time
+        self.to_drive()
+        self.stream.close()
+
+        # Close the buffer
+        BytesIO.close(self)
+
+    def to_drive(self):
+        """_summary_."""
+        self.seek(0)
+
+        # Push data to the file
+        self.lock.acquire()
+        self.stream.write(self.read())
+        self.stream.flush()
+        os.fsync(self.stream)
+        self.lock.release()
+
+        # Reset the buffer
+        self.truncate(0)
+        self.seek(0)
+
+    def write(self, b):
+        """_summary_.
+
+        _extended_summary_
+
+        Parameters
+        ----------
+        b : _type_
+            _description_
+        """
+        if self.__sizeof__() + len(b) > self.max_size:
+            self.to_drive()
+        BytesIO.write(self, b)
+
+
+class DummyIO(FileIO):
+    """_summary_."""
+
+    def __init__(self, file, mode, lock):
+        FileIO.__init__(self, file, mode)
+        self.lock = lock
+
+    def flush(self):
+        """_summary_.
+
+        _extended_summary_
+        """
+        self.lock.acquire()
+        FileIO.flush(self)
+        self.lock.release()
+
+    # def write(self, b):
+    #     self.lock.acquire()
+    #     FileIO.write(self, b)
+    #     self.lock.release()
+
+
 class BufferTextHandler(BufferedWriter):
     """_summary_."""
 
@@ -227,7 +312,7 @@ class BufferTextHandler(BufferedWriter):
         file: str,
         buffer_size: int = 524288,  # 512 kB
         mode: str = "wb",
-        lock: RLock = None,
+        lock: Lock = None,
     ):
         # Set the lock
         self.lock = lock
@@ -235,7 +320,7 @@ class BufferTextHandler(BufferedWriter):
             self.lock = DummyLock()
 
         # Create the stream
-        self._file_stream = FileIO(file, mode=mode)
+        self._file_stream = DummyIO(file, mode=mode, lock=lock)
         self.path = file
         self._b_size = buffer_size
 
