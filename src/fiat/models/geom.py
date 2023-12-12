@@ -256,7 +256,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
             geom_writer.dump2drive()
             geom_writer = None
 
-        writer.flush()
+        writer.to_drive()
         writer = None
 
         # Clean up the opened temporary files
@@ -353,6 +353,16 @@ in regards to band: '{_nms[idx]}'"
         else:
             logger.info("Submitting a job for the calculations in a seperate process")
             _s = time.time()
+
+            # Create the temp file plus header
+            geom_temp_file(
+                self.cfg["output.path.tmp"],
+                1,
+                self.exposure_data.meta["index_name"],
+                self.exposure_data.create_specific_columns(_nms[0]),
+            )
+
+            # Start the calculations
             p = Process(
                 target=geom_worker,
                 args=(

@@ -7,7 +7,7 @@ from pathlib import Path
 from numpy import full, ravel, unravel_index, where
 
 from fiat.gis import geom, overlay
-from fiat.io import BufferedCustom, GridSource, open_grid
+from fiat.io import BufferTextHandler, GridSource, open_grid
 from fiat.log import LogItem, Sender
 from fiat.models.calc import calc_haz, calc_risk
 from fiat.util import NEWLINE_CHAR, create_windows, regex_pattern, replace_empty
@@ -70,7 +70,7 @@ def geom_worker(
     vul_max = max(vul.index)
 
     # Setup the write and write the header
-    writer = BufferedCustom(
+    writer = BufferTextHandler(
         Path(cfg.get("output.path.tmp"), f"{idx:03d}.dat"),
         mode="ab",
         buffer_size=100000,

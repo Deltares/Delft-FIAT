@@ -5,7 +5,7 @@ import gc
 import os
 import weakref
 from abc import ABCMeta, abstractmethod
-from io import BufferedReader, BufferedWriter, BytesIO, FileIO, TextIOWrapper
+from io import BufferedReader, BytesIO, FileIO, TextIOWrapper
 from math import floor, log10
 from multiprocessing import Lock
 from pathlib import Path
@@ -219,7 +219,7 @@ class BufferHandler(_BaseHandler, BufferedReader):
         return self.__class__, (self.path, self.skip)
 
 
-class BufferedCustom(BytesIO):
+class BufferTextHandler(BytesIO):
     """_summary_."""
 
     def __init__(
@@ -282,74 +282,52 @@ class BufferedCustom(BytesIO):
         BytesIO.write(self, b)
 
 
-class DummyIO(FileIO):
-    """_summary_."""
+# class BufferTextHandler(BufferedWriter):
+#     """_summary_."""
 
-    def __init__(self, file, mode, lock):
-        FileIO.__init__(self, file, mode)
-        self.lock = lock
+#     def __init__(
+#         self,
+#         file: str,
+#         buffer_size: int = 524288,  # 512 kB
+#         mode: str = "wb",
+#         lock: Lock = None,
+#     ):
+#         # Set the lock
+#         self.lock = lock
+#         if lock is None:
+#             self.lock = DummyLock()
 
-    def flush(self):
-        """_summary_.
+#         # Create the stream
+#         self._file_stream = DummyIO(file, mode=mode, lock=lock)
+#         self.path = file
+#         self._b_size = buffer_size
 
-        _extended_summary_
-        """
-        self.lock.acquire()
-        FileIO.flush(self)
-        self.lock.release()
+#         # Supercharge with BufferedWriter
+#         BufferedWriter.__init__(
+#             self,
+#             self._file_stream,
+#             buffer_size=buffer_size,
+#         )
 
-    # def write(self, b):
-    #     self.lock.acquire()
-    #     FileIO.write(self, b)
-    #     self.lock.release()
+#     def __del__(self):
+#         self.flush()
+#         self.close()
+#         self._file_stream.close()
 
+#     def __repr__(self):
+#         return f"<{self.__class__.__name__} file='{self.path}'>"
 
-class BufferTextHandler(BufferedWriter):
-    """_summary_."""
+#     def __reduce__(self):
+#         return self.__class__, (self.path, self._b_size, self.mode)
 
-    def __init__(
-        self,
-        file: str,
-        buffer_size: int = 524288,  # 512 kB
-        mode: str = "wb",
-        lock: Lock = None,
-    ):
-        # Set the lock
-        self.lock = lock
-        if lock is None:
-            self.lock = DummyLock()
+#     def flush(self):
+#         """_summary_.
 
-        # Create the stream
-        self._file_stream = DummyIO(file, mode=mode, lock=lock)
-        self.path = file
-        self._b_size = buffer_size
-
-        # Supercharge with BufferedWriter
-        BufferedWriter.__init__(
-            self,
-            self._file_stream,
-            buffer_size=buffer_size,
-        )
-
-    def __del__(self):
-        self.flush()
-        self.close()
-        self._file_stream.close()
-
-    def __repr__(self):
-        return f"<{self.__class__.__name__} file='{self.path}'>"
-
-    def __reduce__(self):
-        return self.__class__, (self.path, self._b_size, self.mode)
-
-    def flush(self):
-        """_summary_.
-
-        _extended_summary_
-        """
-        self.lock.acquire()
-        BufferedWriter.flush(self)
-        self.lock.release()
+#         _extended_summary_
+#         """
+#         self.lock.acquire()
+#         BufferedWriter.flush(self)
+#         self.lock.release()
 
 
 class GeomMemFileHandler:
