@@ -1,13 +1,21 @@
 """The FIAT model workers."""
 
+import os
 from math import floor, isnan
-from multiprocessing import RLock
+from multiprocessing import Lock
 from pathlib import Path
 
 from numpy import full, ravel, unravel_index, where
+from osgeo import osr
 
 from fiat.gis import geom, overlay
-from fiat.io import BufferTextHandler, GridSource, open_grid
+from fiat.io import (
+    BufferedGeomWriter,
+    BufferedTextWriter,
+    GridSource,
+    open_csv,
+    open_grid,
+)
 from fiat.log import LogItem, Sender
 from fiat.models.calc import calc_haz, calc_risk
 from fiat.util import NEWLINE_CHAR, create_windows, regex_pattern, replace_empty
@@ -30,6 +38,22 @@ def geom_temp_file(
         _tw.write(header)
 
 
+def geom_def_file(
+    p: Path | str,
+    columns: tuple | list,
+):
+    """_summary_.
+
+    _extended_summary_
+    """
+    header = b""
+    header += ",".join(columns).encode()
+    header += NEWLINE_CHAR.encode()
+
+    with open(p, "wb") as _dw:
+        _dw.write(header)
+
+
 def geom_threads(
     cpu_count: int,
     haz_layers: int,
@@ -48,6 +72,123 @@ def geom_threads(
     return n
 
 
+def geom_resolve(
+    cfg: object,
+    exp: object,
+    exp_geom: dict,
+    chunk: tuple | list,
+    csv_lock: Lock = None,
+    geom_lock: Lock = None,
+):
+    """_summary_."""
+    # pid
+    pid = os.getpid()
+
+    # Numerical stuff
+    risk = cfg.get("hazard.risk")
+    rp_coef = cfg.get("hazard.rp_coefficients")
+    sig_decimals = cfg["vulnerability.round"]
+
+    # Set srs as osr object
+    srs = osr.SpatialReference()
+    srs.SetFromUserInput(cfg.get("global.crs"))
+
+    # Reverse the _rp_coef to let them coincide with the acquired
+    # values from the temporary files
+    if rp_coef:
+        rp_coef.reverse()
+    new_cols = cfg["output.new_columns"]
+
+    # For the temp files
+    _files = {}
+    _paths = Path(cfg.get("output.path.tmp")).glob("*.dat")
+
+    # Open the temporary files lazy
+    for p in sorted(_paths):
+        _d = open_csv(p, index=exp.meta["index_name"], large=True)
+        _files[p.stem] = _d
+        _d = None
+
+    # Open stream to output csv file
+    writer = BufferedTextWriter(
+        Path(cfg["output.path"], cfg["output.csv.name"]),
+        mode="ab",
+        buffer_size=100000,
+        lock=csv_lock,
+    )
+
+    # Loop over all the geometry source files
+    for key, gm in exp_geom.items():
+        # Get output filename
+        _add = key[-1]
+        out_geom = Path(cfg.get(f"output.geom.name{_add}"))
+
+        # Setup the geometry writer
+        geom_writer = BufferedGeomWriter(
+            Path(cfg["output.path.tmp"], f"{out_geom.stem}_{pid}{out_geom.suffix}"),
+            srs,
+            gm.layer.GetLayerDefn(),
+            lock=geom_lock,
+        )
+        geom_writer.create_fields(zip(new_cols, ["float"] * len(new_cols)))
+
+        # Loop again over all the geometries
+        for ft in gm.reduced_iter(*chunk):
+            row = b""
+
+            oid = ft.GetField(0)
+            ft_info = exp[oid]
+
+            # If no data is found in the temporary files, write None values
+            if ft_info is None:
+                geom_writer.add_feature(
+                    ft,
+                    dict(zip(new_cols, [None] * len(new_cols))),
+                )
+                row += f"{oid}".encode()
+                row += b"," * (len(exp.columns) - 1)
+                row += NEWLINE_CHAR.encode()
+                writer.write(row)
+                continue
+
+            row += ft_info.strip()
+            vals = []
+
+            # Loop over all the temporary files (loaded) to
+            # get the damage per object
+            for item in _files.values():
+                row += b","
+                _data = item[oid].strip().split(b",", 1)[1]
+                row += _data
+                _val = [float(num.decode()) for num in _data.split(b",")]
+                vals += _val
+
+            if risk:
+                ead = round(
+                    calc_risk(rp_coef, vals[-1 :: -exp._dat_len]),
+                    sig_decimals,
+                )
+                row += f",{ead}".encode()
+                vals.append(ead)
+            row += NEWLINE_CHAR.encode()
+            writer.write(row)
+            geom_writer.add_feature(
+                ft,
+                dict(zip(new_cols, vals)),
+            )
+
+        geom_writer.to_drive()
+        geom_writer = None
+
+    writer.to_drive()
+    writer = None
+
+    # Clean up the opened temporary files
+    for _d in _files.keys():
+        _files[_d] = None
+    _files = None
+
+
 def geom_worker(
     cfg: object,
     queue: object,
@@ -56,8 +197,8 @@ def geom_worker(
     vul: object,
     exp: object,
     exp_geom: dict,
-    lock: RLock = None,
-    chunk: tuple = None,
+    chunk: tuple | list,
+    lock: Lock = None,
 ):
     """_summary_."""
     # Extract the hazard band as an object
@@ -70,7 +211,7 @@ def geom_worker(
     vul_max = max(vul.index)
 
     # Setup the write and write the header
-    writer = BufferTextHandler(
+    writer = BufferedTextWriter(
         Path(cfg.get("output.path.tmp"), f"{idx:03d}.dat"),
         mode="ab",
         buffer_size=100000,

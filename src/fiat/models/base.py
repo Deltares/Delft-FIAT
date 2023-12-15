@@ -50,6 +50,8 @@ class BaseModel(metaclass=ABCMeta):
         self._keep_temp = False
         self._mp_manager = Manager()
         self._out_meta = {}
+        self.nthreads = 1
+        self.chunks = []
 
         self._set_max_threads()
         self._set_model_srs()
@@ -210,6 +212,8 @@ using a step size of: {self._vul_step_size}"
             self.cfg.filepath.name,
             path.name,
         )
+        # Set crs for later use
+        self.cfg["global.crs"] = get_srs_repr(self.srs)
 
         logger.info(f"Model srs set to: '{get_srs_repr(self.srs)}'")
         # Clean up
