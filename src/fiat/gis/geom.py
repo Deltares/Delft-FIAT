@@ -4,6 +4,7 @@ import gc
 from pathlib import Path
 
 from osgeo import ogr, osr
+from osgeo_utils.ogrmerge import process as ogr_merge
 
 from fiat.io import GeomSource, open_geom
 
@@ -16,6 +17,41 @@ def coor_transform():
 def geom_centroid(ft: ogr.Feature) -> tuple:
     """_summary_."""
     pass
+
+
+def merge_geom_layers(
+    driver: str,
+    out_fn: Path | str,
+    in_fn: Path | str,
+    single_layer: bool = True,
+    out_layer_fn: str = None,
+):
+    """_summary_.
+
+    _extended_summary_
+
+    Parameters
+    ----------
+    driver : str
+        _description_
+    out_fn : Path | str
+        _description_
+    out_layer_fn : str
+        _description_
+    in_fn : Path | str
+        _description_
+    """
+    args = []
+    args += ["-f", driver]
+    if single_layer:
+        args += ["-single"]
+    args += ["-o", str(out_fn)]
+    if out_layer_fn is not None:
+        args += ["-nln", out_layer_fn]
+    args += [str(in_fn)]
+
+    # Execute the merging
+    ogr_merge([*args])
 
 
 def point_in_geom(
