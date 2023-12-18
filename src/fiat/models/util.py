@@ -20,6 +20,9 @@ from fiat.log import LogItem, Sender
 from fiat.models.calc import calc_haz, calc_risk
 from fiat.util import NEWLINE_CHAR, create_windows, regex_pattern, replace_empty
 
+GEOM_MIN_CHUNK = 50000
+GEOM_MIN_WRITE_CHUNK = 20000
+
 
 def geom_temp_file(
     p: Path | str,
@@ -78,7 +81,6 @@ def geom_resolve(
     exp_geom: dict,
     chunk: tuple | list,
     csv_lock: Lock = None,
-    geom_lock: Lock = None,
 ):
     """_summary_."""
     # pid
@@ -128,7 +130,7 @@ def geom_resolve(
             Path(cfg["output.path.tmp"], f"{out_geom.stem}_{pid}{out_geom.suffix}"),
             srs,
             gm.layer.GetLayerDefn(),
-            lock=geom_lock,
+            buffer_size=cfg.get("output.geom.settings.chunk"),
         )
         geom_writer.create_fields(zip(new_cols, ["float"] * len(new_cols)))
 
@@ -182,6 +184,9 @@ def geom_resolve(
 
     writer.to_drive()
     writer = None
+
+    # Clean up gdal objects
+    srs = None
 
     # Clean up the opened temporary files
     for _d in _files.keys():

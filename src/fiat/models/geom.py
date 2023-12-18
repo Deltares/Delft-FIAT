@@ -23,6 +23,8 @@ from fiat.io import (
 from fiat.log import setup_mp_log, spawn_logger
 from fiat.models.base import BaseModel
 from fiat.models.util import (
+    GEOM_MIN_CHUNK,
+    GEOM_MIN_WRITE_CHUNK,
     geom_def_file,
     geom_resolve,
     geom_temp_file,
@@ -59,8 +61,13 @@ class GeomModel(BaseModel):
     ):
         super().__init__(cfg)
 
+        # Declarations:
+        self.chunk = GEOM_MIN_CHUNK
+
         self._read_exposure_data()
         self._read_exposure_geoms()
+        self._set_internal_chunking()
+        self._set_num_threads()
         self._queue = self._mp_manager.Queue(maxsize=10000)
 
     def __del__(self):
@@ -146,6 +153,38 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         # When all is done, add it
         self.exposure_geoms = _d
 
+    def _set_internal_chunking(self):
+        """_summary_."""
+        _chunk = self.cfg.get("global.geom.chunk")
+        if _chunk is not None:
+            self.chunk = _chunk
+
+        _out_chunk = self.cfg.get("output.geom.settings.chunk")
+        if _out_chunk is None:
+            _out_chunk = GEOM_MIN_WRITE_CHUNK
+        self.cfg["output.geom.settings.chunk"] = _out_chunk
+
+    def _set_num_threads(self):
+        """_summary_."""
+        # Determine maximum geometry dataset size
+        max_geom_size = max(
+            [item.count for item in self.exposure_geoms.values()],
+        )
+
+        # Determine amount of threads
+        nchunk = max_geom_size // self.chunk
+        if nchunk == 0:
+            nchunk = 1
+        self.nthreads = geom_threads(
+            self.max_threads,
+            self.hazard_grid.count,
+            nchunk,
+        )
+        self.chunks = create_1d_chunk(
+            self.exposure_geoms["file1"].count,
+            nchunk,
+        )
+
     def resolve(
         self,
     ):
@@ -181,7 +220,6 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
             futures = []
             with ProcessPoolExecutor(max_workers=self.nthreads) as Pool:
                 csv_lock = self._mp_manager.Lock()
-                geom_lock = self._mp_manager.Lock()
                 for chunk in self.chunks:
                     fs = Pool.submit(
                         geom_resolve,
@@ -190,7 +228,6 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
                         self.exposure_geoms,
                         chunk,
                         csv_lock,
-                        geom_lock,
                     )
                     futures.append(fs)
             wait(futures)
@@ -204,23 +241,26 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
                     self.exposure_geoms,
                     self.chunks[0],
                     None,
-                    None,
                 ),
             )
             p.start()
             logger.info("Busy...")
             p.join()
 
+        # Resolve the temp spatial output files to one
         for key in self.exposure_geoms.keys():
             _add = key[-1]
             fname = Path(self.cfg[f"output.geom.name{_add}"])
             _infiles = Path(
                 self.cfg["output.path.tmp"], f"{fname.stem}_*{fname.suffix}"
             )
+
+            # Merge the layers back together.
             geom.merge_geom_layers(
                 "GPKG",
                 Path(self.cfg["output.path"], fname),
                 _infiles,
+                overwrite=True,
                 out_layer_fn=fname.stem,
             )
 
@@ -250,20 +290,6 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # Start the receiver (which is in a seperate thread)
         _receiver.start()
-
-        # Determine amount of threads
-        nchunk = self.exposure_geoms["file1"].count // 50000
-        if nchunk == 0:
-            nchunk = 1
-        self.nthreads = geom_threads(
-            self.max_threads,
-            self.hazard_grid.count,
-            nchunk,
-        )
-        self.chunks = create_1d_chunk(
-            self.exposure_geoms["file1"].count,
-            nchunk,
-        )
 
         logger.info(f"Using number of threads: {self.nthreads}")
 

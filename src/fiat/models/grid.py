@@ -68,6 +68,9 @@ class GridModel(BaseModel):
 
         self.exposure_grid = data
 
+    def _set_num_threads(self):
+        pass
+
     def resolve(self):
         """Create EAD output from the outputs of different return periods.
 
