@@ -24,6 +24,7 @@ def merge_geom_layers(
     out_fn: Path | str,
     in_fn: Path | str,
     single_layer: bool = True,
+    overwrite: bool = True,
     out_layer_fn: str = None,
 ):
     """_summary_.
@@ -43,6 +44,8 @@ def merge_geom_layers(
     """
     args = []
     args += ["-f", driver]
+    if overwrite:
+        args += ["-overwrite_ds"]
     if single_layer:
         args += ["-single"]
     args += ["-o", str(out_fn)]
