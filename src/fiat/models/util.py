@@ -69,7 +69,7 @@ def geom_threads(
     n = 1
     if chunks == 0:
         chunks = 1
-    n = max(haz_layers, chunks)
+    n = chunks * haz_layers
     n = min(cpu_count, n)
 
     return n
