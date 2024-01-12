@@ -4,18 +4,8 @@ name: Build
 on:
   push:
     branches: [ master ]
-    paths:
-      - .build/*
-      - .testdata/*
-      - src/*
-      - pyproject.toml
   pull_request:
     branches: [ master ]
-    paths:
-      - .build/*
-      - .testdata/*
-      - src/*
-      - pyproject.toml
 
 jobs:
   Test:
