@@ -97,7 +97,7 @@ if args.py_version is not None:
 pip_deps = sorted(list(set(pip_deps)))
 
 # Make an exception for the build environment
-if args.profile == "build": 
+if args.profile == "build":
     if platform.system().lower() == "windows":
         py = fnmatch.filter(conda_deps, "python*")
         gd = fnmatch.filter(conda_deps, "gdal*")
