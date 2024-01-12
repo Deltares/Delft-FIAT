@@ -114,7 +114,7 @@ if args.profile == "build":
         )
         pip_deps = sorted(list(set(pip_deps)))
 
-    pip_deps.append("-e .")
+        pip_deps.append("-e .")
 
 # add pip as a conda dependency if we have pip deps
 if len(pip_deps) > 0:
