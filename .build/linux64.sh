@@ -8,6 +8,7 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 # Setting up..
 echo "Locating conda.."
 paths=$(which -a conda)
+echo $paths
 conda_executable=$(echo "$paths" | grep "^$HOME")
 
 if [ -z "$conda_executable" ]
