@@ -103,7 +103,7 @@ if args.profile == "build" and platform.system().lower() == "windows":
     conda_deps.remove(*gd)
     if py:
         conda_deps.remove(*py)
-    py = ["3.11.*"]
+    py = ["python==3.11.*"]
     pip_deps += conda_deps
     conda_deps = []
     if py:
