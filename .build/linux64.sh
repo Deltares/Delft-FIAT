@@ -8,13 +8,17 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 # Setting up..
 echo "Locating conda.."
 paths=$(which -a conda)
-echo $paths
 conda_executable=$(echo "$paths" | grep "^$HOME")
 
 if [ -z "$conda_executable" ]
 then
   # If home_conda is empty, grep with "/home/share"
   conda_executable=$(echo "$paths" | grep "^/usr/share")
+fi
+
+if [ -z "$conda_executable" ]
+then
+  conda_executable="/usr/share/miniconda3/condabin/conda"
 fi
 
 conda_base_dir=$(dirname $(dirname $conda_executable))
