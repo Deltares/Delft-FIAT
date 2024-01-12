@@ -13,7 +13,7 @@ conda_executable=$(echo "$paths" | grep "^$HOME")
 if [ -z "$conda_executable" ]
 then
   # If home_conda is empty, grep with "/home/share"
-  conda_executable=$(echo "$paths" | grep "^/home/share")
+  conda_executable=$(echo "$paths" | grep "^/usr/share")
 fi
 
 conda_base_dir=$(dirname $(dirname $conda_executable))
