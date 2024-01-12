@@ -73,7 +73,6 @@ jobs:
       - name: Install PROJ
         run: |
           sudo apt-get -y install proj-bin
-          projsync --system-directory --all
 
       - name: Build FIAT
         run: |
