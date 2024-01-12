@@ -1,0 +1,12 @@
+[
+	{
+        "name":"dev",
+        "version":"dev",
+        "href":"https://deltares.github.io/Delft-FIAT/dev/"
+    },
+    {
+        "name":"stable",
+        "version":"stable",
+        "href":"https://deltares.github.io/Delft-FIAT/stable/"
+    }
+]
