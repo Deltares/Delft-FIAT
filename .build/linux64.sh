@@ -10,6 +10,7 @@ echo "Locating conda.."
 conda_executable=$(which conda)
 conda_base_dir=$(dirname $(dirname $conda_executable))
 conda init
+source ~/.bashrc
 
 # Do the thing!
 echo "Build stuff.."
