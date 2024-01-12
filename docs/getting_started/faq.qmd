@@ -15,7 +15,7 @@ You can use [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) to bu
 You can manually change parameters (e.g., the Ground Floor Height) in your exposure data in Excel or with Python. You can also use [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) for this.
 
 ### How do I request different output?
-You can change the output data types in the *settings.toml* file, visit the [Settings file](../user_guide/data/settings.qmd) page for more information.
+You can change the output data types in the *settings.toml* file, visit the [Settings file](../user_guide/settings/index.qmd) page for more information.
 
 ### Can I use FIAT for other hazards than flooding?
 Yes! If the damage that hazard causes can be estimated in the same manner as FIAT uses for flooding, other hazard maps can be used in combination with corresponding damage functions.

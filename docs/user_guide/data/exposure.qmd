@@ -2,7 +2,7 @@
 title: "Exposure data"
 ---
 
-The **exposure data** describe the assets within the region of interest. FIAT allows **vector and raster data** inputs. It is recommended to place the exposure data in the 'exposure' folder, see the [folder structure](data.qmd#folder-structure). However, the file name is free to be chosen by the user and must simply be refered to in the [settings.toml](settings.qmd) configuration file.
+The **exposure data** describe the assets within the region of interest. FIAT allows **vector and raster data** inputs. It is recommended to place the exposure data in the 'exposure' folder, see the [folder structure](index.qmd#folder-structure). However, the file name is free to be chosen by the user and must simply be refered to in the [settings.toml](../settings/index.qmd) configuration file.
 
 ::: {.callout-tip}
 You can also create your exposure data with the [**HydroMT-FIAT  model builder**](https://deltares.github.io/hydromt_fiat/latest/#)

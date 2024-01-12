@@ -142,12 +142,12 @@ There you go. FIAT is now installed on your local machine for development purpos
 ## Quick start
 FIAT computes the damage of (a) flood event(s) at a specified geographic location based on a settings file and three main data inputs:
 
-  - [Settings file](data/settings.qmd)
+  - [Settings file](settings/index.qmd)
   - [Hazard data](data/hazard.qmd)
   - [Exposure data](data/exposure.qmd)
   - [Vulnerability data](data/vulnerability.qmd)
 
-The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model data but that is not compulsory. If a user sets up their own FIAT model data, it is recommended to save the data into the same [folder structure](data/data.qmd#folder-structure) that HydroMT-FIAT creates.
+The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model data but that is not compulsory. If a user sets up their own FIAT model data, it is recommended to save the data into the same [folder structure](data/index.qmd#folder-structure) that HydroMT-FIAT creates.
 
 ![FIAT Workflow.The damage of the flood water level in each object is determined by flood depth-damage functions, which relate the water level to the maximum potential damage of an asset, returning a damage fraction. The damage fraction is multiplied with the max. potential damage to obtain a monetary damage per object](/_static/images/FIATScheme.png)
 
@@ -216,12 +216,12 @@ damages per asset
 `risk`: in this case "false" as a single event is assessed.
 
 [**exposure.geom**]
-`csv`: This will create an exposure CSV file within the exposure folder ([folder strucute](data.qmd)) that contains the [required information](exposure.qmd) per asset.
+`csv`: This will create an exposure CSV file within the exposure folder ([folder strucute](index.qmd)) that contains the [required information](exposure.qmd) per asset.
 `crs`: The projection of the exposure vector file.
 `file1`: This will create an exposure vector file within the exposure folder with the assets'geometry and Object ID.
 
 [**vulnerability**]
-`file`: This will create an vulnerability curves CSV file within the vulnerability folder ([folder strucute](data.qmd)) that contains the damage curves.
+`file`: This will create an vulnerability curves CSV file within the vulnerability folder ([folder strucute](index.qmd)) that contains the damage curves.
 
 ::: {.callout-note}
 File paths in the settings can be relative to the settings.toml file or absolute.
@@ -456,7 +456,7 @@ You can use [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) to bu
 You can manually change parameters (e.g., the Ground Floor Height) in your exposure data in Excel or with Python. You can also use [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) for this.
 
 ### How do I request different output?
-You can change the output data types in the *settings.toml* file, visit the [Settings file](../user_guide/data/settings.qmd) page for more information.
+You can change the output data types in the *settings.toml* file, visit the [Settings file](../user_guide/settings/index.qmd) page for more information.
 
 ### Can I use FIAT for other hazards than flooding?
 Yes! If the damage that hazard causes can be estimated in the same manner as FIAT uses for flooding, other hazard maps can be used in combination with corresponding damage functions.
