@@ -7,11 +7,17 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 
 # Setting up..
 echo "Locating conda.."
-conda_executable=$(which conda)
+paths=$(which -a conda)
+conda_executable=$(echo "$paths" | grep "^$HOME")
+
+if [ -z "$conda_executable" ]
+then
+  # If home_conda is empty, grep with "/home/share"
+  conda_executable=$(echo "$paths" | grep "^/home/share")
+fi
+
 conda_base_dir=$(dirname $(dirname $conda_executable))
-conda init
-echo "Reload .bashrc.."
-source /home/runner/.bashrc
+source $conda_base_dir/etc/profile.d/conda.sh
 
 # Do the thing!
 echo "Build stuff.."
