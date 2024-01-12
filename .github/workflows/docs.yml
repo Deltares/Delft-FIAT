@@ -4,8 +4,18 @@ name: Build Documentation
 on:
   push:
     branches: [master]
+    paths:
+      - .testdata/*
+      - docs/*
+      - src/*
+      - pyproject.toml
   pull_request:
     branches: [master]
+    paths:
+      - .testdata/*
+      - docs/*
+      - src/*
+      - pyproject.toml
 
 jobs:
   docs:
