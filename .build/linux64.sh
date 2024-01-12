@@ -8,9 +8,8 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 # Setting up..
 echo "Locating conda.."
 conda_executable=$(which conda)
-echo $conda_executable
 conda_base_dir=$(dirname $(dirname $conda_executable))
-source $conda_base_dir/etc/profile.d/conda.sh
+conda init
 
 # Do the thing!
 echo "Build stuff.."
