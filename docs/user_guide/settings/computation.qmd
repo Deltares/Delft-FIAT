@@ -22,7 +22,7 @@ The inputs give the user a bit more control over the computational aspects of FI
 
 ::: {.callout-warning}
 All settings that are not globally defined (e.g. settings chunk size via `hazard.settings`) are ill-advised. Please use the global chunking settings.
-::: 
+:::
 
 #### [global]
 
@@ -34,11 +34,11 @@ All settings that are not globally defined (e.g. settings chunk size via `hazard
 
 ::: {.callout-tip}
 This input benefits from multiple threads.
-::: 
+:::
 
 ::: {.callout-note}
 This input is only applicable to the [GeomModel]()
-::: 
+:::
 
 #### [global.grid]
 
@@ -46,7 +46,7 @@ This input is only applicable to the [GeomModel]()
 
 ::: {.callout-note}
 This input is only applicable to the [GridModel]()
-::: 
+:::
 
 #### [hazard.settings]
 

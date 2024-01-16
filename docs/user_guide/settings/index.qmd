@@ -1,13 +1,13 @@
 ---
 title: "Settings"
 ---
-The user must set the model settings in the `settings.toml` configuration file. 
+The user must set the model settings in the `settings.toml` configuration file.
 
 Besides the necessary/ required setttings one can set:
 
-- input in regard to the computational side of FIAT (e.g. chunking, number of threads etc), 
+- input in regard to the computational side of FIAT (e.g. chunking, number of threads etc),
     - see this [page](computation.qmd)
-- optional/ additional input that is not necessary or more data specific, 
+- optional/ additional input that is not necessary or more data specific,
     - see this [page](optional.qmd)
 
 ### Basic input
@@ -51,10 +51,10 @@ File paths in the settings can be relative to the settings.toml file or absolute
 
 #### [output.geom]
 
-`name[n]`: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset. 
+`name[n]`: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.
 
 ::: {.callout-warning}
-If provided, the suffix is mandatory. The suffix should match the suffix of the input geometry file for which it is set. 
+If provided, the suffix is mandatory. The suffix should match the suffix of the input geometry file for which it is set.
 :::
 
 #### [output.grid]

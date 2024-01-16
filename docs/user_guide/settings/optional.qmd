@@ -45,4 +45,3 @@ If the user prefers to have more control over their model run or to utilize grid
 | **[vulnerability]**          |                                                                                                                                                                              |                                     |                                                                           |                                           |
 | file                         | File path to vulnerability_curves.csv file, that contains the damage functions.                                                                                              | Yes                                 |                                                                           | 'vulnerability/ vulnerability_curves.csv' |
 : Settings.toml input (required and optional fields) {#tbl-toml .hover .column-page-inset-right}
-

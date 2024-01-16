@@ -23,13 +23,13 @@ function checkPathExists(url) {
 window.onload = function() {
     // Assuming you have a ul element in your HTML like this:
     // <ul id="myDropdown"></ul>
-  
+
     // Fetch the JSON data
     fetch("http://localhost:8008/switcher.json")
       .then(response => response.json())
       .then(data => {
         console.log('Data loaded:', data); // Log the loaded data
-  
+
         const dropdown = document.querySelector('#nav-menu-version').nextElementSibling;
         console.log('Dropdown element:', dropdown); // Log the dropdown element
 
@@ -56,7 +56,7 @@ window.onload = function() {
         });
 
         console.log('Dropdown after adding items:', dropdown); // Log the dropdown after adding items
-        
+
         // Get all dropdown items within the specific dropdown menu
         var dropdownMenu = document.querySelector('#nav-menu-version').nextElementSibling;
 
@@ -68,7 +68,7 @@ window.onload = function() {
         for (var i = 0; i < dropdownItems.length; i++) {
             // Get textcontent
             var textContent = dropdownItems[i].textContent;
-            
+
             // Get the index of the current version
             var index = currentPagePath.indexOf(textContent);
 
@@ -77,7 +77,7 @@ window.onload = function() {
                 for (var j = 0; j < dropdownItems.length; j++) {
                     dropdownItems[j].classList.remove('active-item');
                 }
-                
+
                 dropdownItems[i].classList.add('active-item');
                 break
             }
@@ -91,20 +91,20 @@ window.onload = function() {
             dropdownItems[i].addEventListener('click', function(event) {
                 // Prevent default action
                 event.preventDefault();
-        
+
                 // Get the clicked item's text
                 var itemText = this.textContent;
                 var itemHref = this.getAttribute('href')
-        
+
                 // Loop through each dropdown item again to find a match in the current page's path
                 for (var j = 0; j < dropdownItems.length; j++) {
                     // Get the dropdown item's text
                     var dropdownText = dropdownItems[j].textContent;
                     console.log('Dropdown item:', dropdownText);
-            
+
                     // Find the index of the dropdownText in the current page's path
                     var index = currentPagePath.indexOf(dropdownText);
-            
+
                     // If the dropdownText is found in the current page's path
                     if (index !== -1) {
                         // Construct the new URL relative to the dropdownText and append the itemText
@@ -112,7 +112,7 @@ window.onload = function() {
                         relativePath = '../'.repeat(addElements.length)
                         var newUrl = relativePath + itemText + '/' + addElements.join('/')
                         console.log('Clicked item:', newUrl);
-            
+
                         // Redirect to the new URL
                         checkPathExists(newUrl)
                             .then(exists => {
@@ -122,7 +122,7 @@ window.onload = function() {
                                     console.log('Path does not exist');
                                 }
                             })
-            
+
                         // Exit the loop
                         break;
                     }
@@ -133,4 +133,3 @@ window.onload = function() {
         })
         .catch(error => console.error('Error:', error)); // Log any errors
 }
-  

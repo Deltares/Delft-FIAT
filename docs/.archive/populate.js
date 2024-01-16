@@ -1,13 +1,13 @@
 window.onload = function() {
     // Assuming you have a ul element in your HTML like this:
     // <ul id="myDropdown"></ul>
-  
+
     // Fetch the JSON data
     fetch("http://localhost:8008/switcher.json")
       .then(response => response.json())
       .then(data => {
         console.log('Data loaded:', data); // Log the loaded data
-  
+
         const dropdown = document.querySelector('#nav-menu-version').nextElementSibling;
         console.log('Dropdown element:', dropdown); // Log the dropdown element
 
@@ -37,6 +37,5 @@ window.onload = function() {
         })
         .catch(error => console.error('Error:', error)); // Log any errors
 
-    
+
 }
-  

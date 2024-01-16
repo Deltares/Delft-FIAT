@@ -23,10 +23,10 @@ function checkPathExists(url) {
 document.addEventListener('DOMContentLoaded', function() {
     // Get the specific dropdown menu by its ID
     var dropdownMenu = document.querySelector('#nav-menu-version').nextElementSibling;
-  
+
     // Get all dropdown items within the specific dropdown menu
     var dropdownItems = dropdownMenu.querySelectorAll('.dropdown-item');
-  
+
     // Get the current page's path
     var currentPagePath = window.location.pathname.split('/');
     console.log('current page path', currentPagePath);
@@ -37,20 +37,20 @@ document.addEventListener('DOMContentLoaded', function() {
       dropdownItems[i].addEventListener('click', function(event) {
         // Prevent default action
         event.preventDefault();
-  
+
         // Get the clicked item's text
         var itemText = this.querySelector('.dropdown-text').textContent;
         var itemHref = this.getAttribute('href')
-  
+
         // Loop through each dropdown item again to find a match in the current page's path
         for (var j = 0; j < dropdownItems.length; j++) {
           // Get the dropdown item's text
           var dropdownText = dropdownItems[j].querySelector('.dropdown-text').textContent;
           console.log('Dropdown item:', dropdownText);
-  
+
           // Find the index of the dropdownText in the current page's path
           var index = currentPagePath.indexOf(dropdownText);
-  
+
           // If the dropdownText is found in the current page's path
           if (index !== -1) {
             // Construct the new URL relative to the dropdownText and append the itemText
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
             relativePath = '../'.repeat(addElements.length)
             var newUrl = relativePath + itemText + '/' + addElements.join('/')
             console.log('Clicked item:', newUrl);
-  
+
             // Redirect to the new URL
             checkPathExists(newUrl)
                 .then(exists => {
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log('Path does not exist');
                     }
                 })
-  
+
             // Exit the loop
             break;
           }
@@ -76,4 +76,3 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   });
-  

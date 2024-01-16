@@ -1,7 +1,7 @@
 window.onload = function() {
     // Select corrent dropdown menu
     var dropdownMenu = document.querySelector('#nav-menu-select-version').nextElementSibling;
-  
+
     // Get all dropdown items within the specific dropdown menu
     var dropdownItems = dropdownMenu.querySelectorAll('.dropdown-item');
 
@@ -11,7 +11,7 @@ window.onload = function() {
     for (var i = 0; i < dropdownItems.length; i++) {
         // Get textcontent
         var textContent = dropdownItems[i].querySelector('.dropdown-text').textContent;
-        
+
         // Get the index of the current version
         var index = currentPagePath.indexOf(textContent);
 
@@ -20,7 +20,7 @@ window.onload = function() {
             for (var j = 0; j < dropdownItems.length; j++) {
                 dropdownItems[j].classList.remove('active-item');
             }
-            
+
             dropdownItems[i].classList.add('active-item');
             break
         }
