@@ -1,6 +1,6 @@
 """The FIAT model workers."""
 
-from math import floor, isnan
+from math import floor, isnan, nan
 from pathlib import Path
 
 from numpy import full, ravel, unravel_index, where
@@ -73,6 +73,8 @@ No data found in exposure database",
                 res = overlay.clip(band, haz.get_srs(), haz.get_geotransform(), ft)
             else:
                 res = overlay.pin(band, haz.get_geotransform(), geom.point_in_geom(ft))
+
+            res[res == band.nodata] = nan
 
             # Calculate the inundation
             inun, redf = calc_haz(

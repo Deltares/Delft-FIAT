@@ -97,22 +97,24 @@ if args.py_version is not None:
 pip_deps = sorted(list(set(pip_deps)))
 
 # Make an exception for the build environment
-if args.profile == "build" and platform.system().lower() == "windows":
-    py = fnmatch.filter(conda_deps, "python*")
-    gd = fnmatch.filter(conda_deps, "gdal*")
-    conda_deps.remove(*gd)
-    if py:
-        conda_deps.remove(*py)
-    py = ["3.11.*"]
-    pip_deps += conda_deps
-    conda_deps = []
-    if py:
-        conda_deps += py
-    pip_deps.append(
-        "https://github.com/cgohlke/geospatial-wheels/releases/download/v2023.9.30/GDAL-3.7.2-cp311-cp311-win_amd64.whl",
-    )
-    pip_deps = sorted(list(set(pip_deps)))
-    pip_deps.append("-e .")
+if args.profile == "build":
+    if platform.system().lower() == "windows":
+        py = fnmatch.filter(conda_deps, "python*")
+        gd = fnmatch.filter(conda_deps, "gdal*")
+        conda_deps.remove(*gd)
+        if py:
+            conda_deps.remove(*py)
+        py = ["python==3.11.*"]
+        pip_deps += conda_deps
+        conda_deps = []
+        if py:
+            conda_deps += py
+        pip_deps.append(
+            "https://github.com/cgohlke/geospatial-wheels/releases/download/v2023.9.30/GDAL-3.7.2-cp311-cp311-win_amd64.whl",
+        )
+        pip_deps = sorted(list(set(pip_deps)))
+
+        pip_deps.append("-e .")
 
 # add pip as a conda dependency if we have pip deps
 if len(pip_deps) > 0:
