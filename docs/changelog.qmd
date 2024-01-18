@@ -8,6 +8,8 @@ These are unreleased changes and will be incorperated in the next release.
 ### Added
 
 ### Changed
+- Better build environment creation on linux systems
+- Fixed handling of positive nodata values in geometry calculations
 
 ### Deprecated
 
