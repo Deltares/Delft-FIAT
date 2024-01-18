@@ -76,7 +76,8 @@ website:
       contents:
         - text: Getting started
           file: getting_started/index.qmd
-        - info/models.qmd
+        - text: Model information
+          file: info/models.qmd
         - getting_started/faq.qmd
     - title: "Setup guide"
       collapse-level: 3

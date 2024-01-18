@@ -25,7 +25,7 @@ window.onload = function() {
     // <ul id="myDropdown"></ul>
 
     // Fetch the JSON data
-    fetch("http://localhost:8008/switcher.json")
+    fetch("https://raw.githubusercontent.com/Deltares/Delft-FIAT/gh-pages/switcher.json")
       .then(response => response.json())
       .then(data => {
         console.log('Data loaded:', data); // Log the loaded data
@@ -94,7 +94,7 @@ window.onload = function() {
 
                 // Get the clicked item's text
                 var itemText = this.textContent;
-                var itemHref = this.getAttribute('href')
+                // var itemHref = this.getAttribute('href')
 
                 // Loop through each dropdown item again to find a match in the current page's path
                 for (var j = 0; j < dropdownItems.length; j++) {
@@ -119,7 +119,8 @@ window.onload = function() {
                                 if (exists) {
                                     window.location.href = newUrl;
                                 } else {
-                                    console.log('Path does not exist');
+                                    console.log('Path does not exist, referring to home page');
+                                    window.location.href = relativePath + itemText + '/';
                                 }
                             })
 
