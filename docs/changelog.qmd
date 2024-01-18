@@ -6,12 +6,14 @@ title: "What's new?"
 These are unreleased changes and will be incorperated in the next release.
 
 ### Added
-- Added entries for chunking size in the settings file (`settings.toml`) for `GeomModel` 
+- Added entries for chunking size in the settings file (`settings.toml`) for `GeomModel`
 - Chunking for geometry calculations (`GeomModel`)
 - Chunking for resolving temporary `GeomModel` output
 
 ### Changed
 - Parallelisation of calculations for `GeomModel` (not only in risk mode)
+- Better build environment creation on linux systems
+- Fixed handling of positive nodata values in geometry calculations
 
 ### Deprecated
 

@@ -27,26 +27,42 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Check-out source
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup GDAL
+      - name: Generate env yaml
         run: |
-          chmod +x .build/setup_gdal.sh
-          .build/setup_gdal.sh
+          pip install tomli
+          python make_env.py build
 
-      - name: Setup Miniforge
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Load cache
+        id: cache
+        uses: actions/cache/restore@v3
         with:
-          python-version: ${{ matrix.python-version }}
-          miniforge-variant: Miniforge3
-          miniforge-version: latest
-          use-mamba: true
+          path: |
+            /usr/share/miniconda3
+            ~/pycache
+          # the below two settings mean we'll alway srestore the cache
+          # but the cache hit output can tell us if we have to update afterwards
+          key: build-${{ hashFiles('environment.yml')  }}
+          restore-keys: |
+            build
 
-      - name: Install environment with GDAL and FIAT
+      - name: Cache failed
+        if: steps.cache.outputs.cache-matched-key == ''
         run: |
-          chmod +x .build/linux64_build_env.sh
-          .build/linux64_build_env.sh
+          echo "Failed to restore any cache. exiting..."
+          exit 1
+
+      - name: Update environment
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          mamba env update -n fiat_build -f environment.yml
+
+      - name: Install PROJ
+        run: |
+          sudo apt-get -y install proj-bin
 
       - name: Build FIAT
         run: |
@@ -55,6 +71,8 @@ jobs:
 
       - name: Create Testdata
         run: |
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          source /usr/share/miniconda3/etc/profile.d/conda.sh
           conda activate fiat_build
           pip install tomli-w
           python .testdata/create_test_data.py
