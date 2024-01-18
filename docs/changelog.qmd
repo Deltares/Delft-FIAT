@@ -6,6 +6,7 @@ title: "What's new?"
 These are unreleased changes and will be incorperated in the next release.
 
 ### Added
+- A version switcher for the documentation
 
 ### Changed
 - Better build environment creation on linux systems
@@ -14,6 +15,7 @@ These are unreleased changes and will be incorperated in the next release.
 ### Deprecated
 
 ### Documentation
+- Ability to switch between documentation/ software versions
 - Restructered user settings pages
 - Seperated user settings into: Basic, Computational & Optional
 
