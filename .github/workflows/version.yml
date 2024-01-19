@@ -1,0 +1,34 @@
+---
+name: Build
+
+on:
+  push:
+    branches: [ gh-pages ]
+
+jobs:
+  Versioning:
+    defaults:
+      run:
+        shell: bash -l {0}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest" ] #, "macos-latest", "windows-latest"]
+        python-version: ["3.11"] # fix tests to support older versions
+        include:
+          - os: ubuntu-latest
+            label: linux-64
+
+    name: ${{ matrix.os }} - py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Run versioning script
+        run: |
+          python .scripts/version.py
+    
+      
+
+
+
