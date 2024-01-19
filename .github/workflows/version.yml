@@ -39,6 +39,7 @@ jobs:
           ln -sfn ${{ env.NEW_STABLE_VERSION }} stable
 
       - name: Commit and push changes
+        if: ${{ steps.check.outcome == 'success' }}
         run: |
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
