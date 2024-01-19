@@ -90,7 +90,7 @@ def add(
 
 if __name__ == "__main__":
     res = check()
-    if check is None:
+    if res is None:
         sys.exit(1)
 
     res2 = add(res)
