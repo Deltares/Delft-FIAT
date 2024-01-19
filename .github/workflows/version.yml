@@ -35,7 +35,15 @@ jobs:
       - name: Adjust stable symbolic link
         if: ${{ steps.check.outcome == 'success' }}
         run: |
-          ln -sfn ${{ env.output_name }} stable
+          ln -sfn ${{ env.NEW_STABLE_VERSION }} stable
+
+      - name: Commit and push changes
+        run: |
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add .
+            git commit -m "Added version ${{ env.NEW_STABLE_VERSION }}"
+            git push
     
       
 

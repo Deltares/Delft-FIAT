@@ -97,7 +97,7 @@ if __name__ == "__main__":
     if res2 is None:
         sys.exit(1)
 
-    with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-        print(f'output_name={res2}', file=fh)
+    with open(os.getenv('GITHUB_ENV'), 'a') as fh:
+        print(f'NEW_STABLE_VERSION={res2}', file=fh)
     
     
