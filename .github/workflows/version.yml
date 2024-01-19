@@ -1,5 +1,5 @@
 ---
-name: Build
+name: Versioning
 
 on:
   push:

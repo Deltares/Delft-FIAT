@@ -8,10 +8,5 @@
         "name": "stable",
         "version": "stable",
         "href": "https://deltares.github.io/Delft-FIAT/stable/"
-    },
-    {
-        "name": "v0.1.0rc1",
-        "version": "0.1.0rc1",
-        "href": "https://deltares.github.io/Delft-FIAT/v0.1.0rc1/"
     }
 ]
