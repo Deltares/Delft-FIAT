@@ -24,6 +24,9 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Run versioning script
         run: |
           python .scripts/version.py
