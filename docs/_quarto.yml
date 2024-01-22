@@ -56,18 +56,15 @@ website:
       - text: "Developments"
         file: developments/index.qmd
     right:
-      # - icon: _static/images/deltares-blue.svg
-      #   href: https://www.deltares.nl/en
-      #   aria-label: Deltares-Image
-      - text: Version
-        menu:
-          - text: empty
       - icon: github
         menu:
           - text: Source Code
             url:  https://github.com/Deltares/Delft-FIAT
           - text: Report an Issue
             url:  https://github.com/Deltares/Delft-FIAT/issues/new/choose
+      - text: Version
+        menu:
+          - text: empty
 
   sidebar:
     - title: "Getting started"
