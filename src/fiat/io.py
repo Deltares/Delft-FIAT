@@ -743,8 +743,8 @@ class GeomSource(_BaseIO, _BaseStruct):
     mode : str, optional
         The I/O mode. Either `r` for reading or `w` for writing.
 
-    Usage
-    -----
+    Examples
+    --------
     Index the GeomSource directly to get features.
     ```Python
     # Load a file
@@ -1073,8 +1073,8 @@ multiple variables.
     mode : str, optional
         The I/O mode. Either `r` for reading or `w` for writing.
 
-    Usage
-    -----
+    Examples
+    --------
     Can be indexed directly to get a `Grid` object.
     ```Python
     # Open a file
