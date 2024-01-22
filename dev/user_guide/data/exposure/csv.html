@@ -61,6 +61,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script type="text/javascript" src="../../../_static/version.js"></script>
 
 
 <link rel="stylesheet" href="../../../_static/styles.css">
@@ -125,6 +126,14 @@ ul.task-list li input[type="checkbox"] {
   </li>  
     </ul>
   </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
 </ul>
             <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
@@ -137,7 +146,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../user_guide/data/data.html">Data</a></li><li class="breadcrumb-item"><a href="../../../user_guide/data/exposure.html">Exposure data</a></li><li class="breadcrumb-item"><a href="../../../user_guide/data/exposure/csv.html">CSV</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../user_guide/data/index.html">Data</a></li><li class="breadcrumb-item"><a href="../../../user_guide/data/exposure.html">Exposure data</a></li><li class="breadcrumb-item"><a href="../../../user_guide/data/exposure/csv.html">CSV</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -155,15 +164,32 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">User guide</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../../user_guide/data/settings.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Settings file</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../../user_guide/data/data.html" class="sidebar-item-text sidebar-link">
+            <a href="../../../user_guide/settings/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../user_guide/settings/computation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computational input</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../user_guide/settings/optional.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Optional input</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../../user_guide/data/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -226,20 +252,8 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../../user_guide/models.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Models</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../../../examples/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Examples</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../../user_guide/advanced.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Advanced options</span></a>
   </div>
 </li>
     </ul>
@@ -251,7 +265,7 @@ ul.task-list li input[type="checkbox"] {
         
     </div>
 <!-- main -->
-<main class="content page-columns page-full" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
@@ -284,100 +298,76 @@ Tip
 <p>Users can add as many columns to the exposure CSV as they want, for example, to later identify the most damaged administrative areas. All data field will also be saved in the output of FIAT.</p>
 </div>
 </div>
-<div id="tbl-exposure" class="anchored page-columns page-full">
-<table class="table-striped table-hover column-page-inset-right table">
+<div id="tbl-exposure" class="anchored">
+<table class="table-hover table">
 <caption>Table&nbsp;1: exposure.csv input</caption>
 <thead>
 <tr class="header">
 <th>Field</th>
-<th>Description</th>
 <th>Required</th>
+<th>Multiple</th>
 <th>Example</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td><a href="#object-id">Object ID</a></td>
-<td>Unique numerical identifier of the object</td>
 <td>Yes</td>
+<td>-</td>
 <td>1</td>
 </tr>
 <tr class="even">
 <td><a href="#object-name">Object Name</a></td>
-<td>Unique name of the object</td>
 <td>No</td>
+<td>-</td>
 <td>fp_1</td>
 </tr>
 <tr class="odd">
 <td><a href="#primarysecondary-object-type">Primary Object Type</a></td>
-<td>General object type</td>
 <td>No</td>
+<td>-</td>
 <td>RES1_1SNB</td>
 </tr>
 <tr class="even">
 <td><a href="#primarysecondary-object-type">Secondary Object Type</a></td>
-<td>More specific object type</td>
 <td>No</td>
+<td>-</td>
 <td>Res 1,1 Story no basement</td>
 </tr>
 <tr class="odd">
 <td><a href="#extraction-method">Extraction Method</a></td>
-<td>Method to extract water depth</td>
 <td>Yes</td>
-<td>options: ‘centroid’ or ‘area’</td>
+<td>-</td>
+<td>‘centroid’</td>
 </tr>
 <tr class="even">
-<td><a href="#damage-functions">Damage Function</a>: Structure</td>
-<td>Damage function for the structure</td>
-<td>at least one Damage Function of any kind</td>
+<td><a href="#damage-functions">Damage Function: &lt; ANY &gt;</a></td>
+<td>Yes</td>
+<td>Yes</td>
 <td>struct_2</td>
 </tr>
 <tr class="odd">
-<td>Damage Function: Content</td>
-<td>Damage function for the content</td>
-<td>at least one Damage Function of any kind</td>
-<td>cont_62</td>
-</tr>
-<tr class="even">
-<td>Damage Function: RoadOutages</td>
-<td>Damage function for road outages</td>
-<td>at least one Damage Function of any kind</td>
-<td></td>
-</tr>
-<tr class="odd">
 <td><a href="#ground-floor-height">Ground Floor Height</a></td>
-<td>Elevation of the ground floor above the ground elevation. Units must be coherent with hazard map</td>
 <td>Yes</td>
+<td>-</td>
 <td>4</td>
 </tr>
 <tr class="even">
 <td><a href="#ground-elevation">Ground Elevation</a></td>
-<td>Ground elevation relative to datum at location of the asset. Units must be coherent with hazard map</td>
-<td>Yes, if water level map as hazard input</td>
+<td>No</td>
+<td>-</td>
 <td>10.11</td>
 </tr>
 <tr class="odd">
-<td><a href="#max-potential-damage">Max Potential Damage</a>: Structure</td>
-<td>Maximum potential structural damage (use the same name as the related damage function)</td>
-<td>a Max Potential Damage per damage function</td>
+<td><a href="#max-potential-damage">Max Potential Damage: &lt; ANY &gt;</a></td>
+<td>Yes</td>
+<td>Yes</td>
 <td>193457.00</td>
 </tr>
 <tr class="even">
-<td>Max Potential Damage: Content</td>
-<td>Maximum potential content damage (use the same name as the related damage function)</td>
-<td>a Max Potential Damage per damage function</td>
-<td>386984.00</td>
-</tr>
-<tr class="odd">
-<td>Max Potential Damage: RoadOutages</td>
-<td>Maximum potential other damage (e.g.&nbsp;road outages) (use the same name as the related damage function)</td>
-<td>a Max Potential Damage per damage function</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>&lt;e.g., Census Tract&gt;</td>
-<td>For example, another column to later aggregate damages by, in this case, Census Tract</td>
+<td><a href="#additional-attributes">&lt; Additional attributes &gt;</a></td>
 <td>No</td>
+<td></td>
 <td>1205</td>
 </tr>
 </tbody>

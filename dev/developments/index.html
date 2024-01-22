@@ -61,6 +61,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script type="text/javascript" src="../_static/version.js"></script>
 
 
 <link rel="stylesheet" href="../_static/styles.css">
@@ -125,6 +126,14 @@ ul.task-list li input[type="checkbox"] {
   </li>  
     </ul>
   </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
 </ul>
             <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
@@ -179,7 +188,6 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#roadmap" id="toc-roadmap" class="nav-link active" data-scroll-target="#roadmap">Roadmap</a>
   <ul class="collapse">
-  <li><a href="#q4" id="toc-q4" class="nav-link" data-scroll-target="#q4">2023 - Q4</a></li>
   <li><a href="#q1" id="toc-q1" class="nav-link" data-scroll-target="#q1">2024 - Q1</a></li>
   </ul></li>
   <li><a href="#whats-new" id="toc-whats-new" class="nav-link" data-scroll-target="#whats-new">What’s new…</a></li>
@@ -212,21 +220,15 @@ ul.task-list li input[type="checkbox"] {
 <section id="roadmap" class="level2">
 <h2 class="anchored" data-anchor-id="roadmap">Roadmap</h2>
 <p>What are we up to and what are the goals.</p>
-<section id="q4" class="level3">
-<h3 class="anchored" data-anchor-id="q4">2023 - Q4</h3>
-<p>The biggest priority in this quarter is to go open source and to release a first version of FIAT for both the Vector and Raster models.</p>
-<section id="short-term-fixes" class="level4">
-<h4 class="anchored" data-anchor-id="short-term-fixes">Short term fixes</h4>
-<ul>
-<li>Issues with duplicate Object IDs are handeled in a next release, check <a href="https://github.com/Deltares/Delft-FIAT/issues/85">issue #85</a>.</li>
-<li>The method to calculate the centroid of polygons will be refined in a next release, check <a href="https://github.com/Deltares/Delft-FIAT/issues/77">issue #77</a>.</li>
-</ul>
-</section>
-</section>
 <section id="q1" class="level3">
 <h3 class="anchored" data-anchor-id="q1">2024 - Q1</h3>
-<p>The biggest priority in this quarter is to create a stable version of FIAT for both the Vector and Raster models.</p>
-<p>We welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. Our <a href="../developments/guide.html">developer guide</a> explains how can be contributed in code developments.</p>
+<p>In the first quarter of 2024 we will focus on:</p>
+<ul>
+<li>Stabalizing existing code</li>
+<li>This means moving to version <code>0.1.0</code>!</li>
+<li>Implement better chunking and parallelization</li>
+<li>Improving the documentation.</li>
+</ul>
 </section>
 </section>
 <section id="whats-new" class="level2">
@@ -235,7 +237,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="contribute" class="level2">
 <h2 class="anchored" data-anchor-id="contribute">Contribute?</h2>
-<p>Please check out our <a href="../developments/guide.html">developer guide</a> if you’d like to contribute to FIAT!</p>
+<p>We welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. Our <a href="../developments/guide.html">developer guide</a> explains how one can contribute to Delft-FIAT!</p>
 </section>
 <section id="licencing" class="level2">
 <h2 class="anchored" data-anchor-id="licencing">Licencing</h2>

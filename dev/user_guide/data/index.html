@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Delft FIAT - Settings file</title>
+<title>Delft FIAT - Data</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,40 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -95,6 +61,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script type="text/javascript" src="../../_static/version.js"></script>
 
 
 <link rel="stylesheet" href="../../_static/styles.css">
@@ -159,6 +126,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
     </ul>
   </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
 </ul>
             <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
@@ -171,7 +146,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/data/settings.html">Settings file</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/data/index.html">Data</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -189,15 +164,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">User guide</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/settings.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Settings file</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../user_guide/data/data.html" class="sidebar-item-text sidebar-link">
+            <a href="../../user_guide/settings/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/settings/computation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computational input</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/settings/optional.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Optional input</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../user_guide/data/index.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Data</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -260,20 +252,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../user_guide/models.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Models</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../../examples/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Examples</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/advanced.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Advanced options</span></a>
   </div>
 </li>
     </ul>
@@ -286,17 +266,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#required-input" id="toc-required-input" class="nav-link active" data-scroll-target="#required-input">Required input</a></li>
-  <li><a href="#optional-input" id="toc-optional-input" class="nav-link" data-scroll-target="#optional-input">Optional input</a></li>
+  <li><a href="#types-of-data" id="toc-types-of-data" class="nav-link active" data-scroll-target="#types-of-data">Types of Data</a></li>
+  <li><a href="#folder-structure" id="toc-folder-structure" class="nav-link" data-scroll-target="#folder-structure">Folder structure</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content page-columns page-full" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Settings file</h1>
+<h1 class="title">Data</h1>
 </div>
 
 
@@ -311,345 +291,44 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<p>The user must set the model settings in the <code>settings.toml</code> configuration file. Beyond standard settings FIAT offers the freedom to provide additional setting to have more control over FIAT (<a href="#tbl-toml">Table&nbsp;1</a>). More advanced options are described in the <a href="../../user_guide/advanced.html">advanced options</a> page.</p>
-<section id="required-input" class="level3">
-<h3 class="anchored" data-anchor-id="required-input">Required input</h3>
-<p>For simply running FIAT with most standard settings, the <code>settings.toml</code> configuration file can be kept rather simple (only required fields). An example for running a geometry model is given below:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>[output]</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>path = "output"</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>[output.csv]</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>name = "output.csv"</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>[output.geom]</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>name1 = "spatial.gpkg"</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>[hazard]</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>file = "hazard/SL_10yr_reprojected.tif"</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>crs = "EPSG:4326"</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>elevation_reference = "DEM"</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>risk = false</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>[exposure.geom]</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>file1 = "./exposure/buildings.gpkg"</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>crs = "EPSG:4326"</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>[exposure.csv]</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>file = "./exposure/exposure.csv"</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>[vulnerability]</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>file = "./vulnerability/vulnerability_curves.csv"</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The fields are elaborated below:</p>
-<p><strong>[output]</strong></p>
-<p><code>path</code>: The path to the output folder in the working directory.</p>
-<p><strong>[output.csv]</strong></p>
-<p><code>name</code>: The path to the output CSV file that will be created, that contains the information from the exposure.csv and the damages per asset.</p>
-<p><strong>[output.geom]</strong></p>
-<p><code>name1</code>: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.</p>
-<p><strong>[hazard]</strong></p>
-<p><code>file</code>: The file path to the hazard file, can be a list of files.</p>
-<p><code>crs</code>: The projection of the hazard file. If no global projection is defined, the output will be in the same projection as the hazard map.</p>
-<p><code>elevation_reference</code>: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be “DEM” while in case of a flood-elevation map this should be “datum”.</p>
-<p><code>risk</code>: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.</p>
-<p><strong>[exposure.geom]</strong></p>
-<p><code>file1</code>: The path to the exposure vector file (recommended to be within the <a href="../../user_guide/data/data.html">exposure folder</a>) with the assets’ geometry and Object ID. The user can provide multiple vector files by creating more fields like <code>file2</code>, <code>file3</code>, etc.</p>
-<p><code>crs</code>: The projection of the exposure vector file(s).</p>
-<p><strong>[exposure.csv]</strong></p>
-<p><code>file</code>: The path to the exposure CSV file (recommended to be within the <a href="../../user_guide/data/data.html">exposure folder</a>) that contains the <a href="../../user_guide/data/exposure.html">required information</a> per asset. There can only be one exposure CSV file.</p>
-<p><strong>[vulnerability]</strong></p>
-<p><code>file</code>: The path to the vulnerability curves CSV file within the <a href="../../user_guide/data/data.html">vulnerability folder</a> that contains the <a href="../../user_guide/data/vulnerability.html">damage curves</a>. Only one vulnerability curves file is allowed.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>File paths in the settings can be relative to the settings.toml file or absolute.</p>
-</div>
-</div>
+<p>FIAT is data agnostic; what you put in is what you get out. Please follow the guidelines in this documentation to build your FIAT model and pay close attention to the validation of data together with local experts.</p>
+<section id="types-of-data" class="level2">
+<h2 class="anchored" data-anchor-id="types-of-data">Types of Data</h2>
+<p>Here a quick overview is given of the required data:</p>
+<ul>
+<li><a href="../../user_guide/data/hazard.html">Hazard</a>
+<ul>
+<li>Hazard values in a gridded format</li>
+</ul></li>
+<li><a href="../../user_guide/data/exposure.html">Exposure</a>
+<ul>
+<li>Exposure data either in vector or gridded format</li>
+</ul></li>
+<li><a href="../../user_guide/data/vulnerability.html">Vulnerability</a>
+<ul>
+<li>Data relating the hazard intensity to damage fraction</li>
+</ul></li>
+</ul>
+<p>These are the types of data that FIAT needs in order to run properly.</p>
 </section>
-<section id="optional-input" class="level3 page-columns page-full">
-<h3 class="anchored" data-anchor-id="optional-input">Optional input</h3>
-<p>If the user prefers to have more control over their model run or to utilize grid data instead of vector data, FIAT offers the flexibility to customize settings for each variable (<a href="#tbl-toml">Table&nbsp;1</a>). Advanced FIAT users can find more options in the <a href="../../user_guide/advanced.html">advanced options page</a>.</p>
-<div id="tbl-toml" class="anchored page-columns page-full">
-<table class="table-striped table-hover column-page-inset-right table">
-<caption>Table&nbsp;1: Settings.toml input (required and optional fields)</caption>
-<colgroup>
-<col style="width: 8%">
-<col style="width: 48%">
-<col style="width: 10%">
-<col style="width: 20%">
-<col style="width: 11%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-<th>Required</th>
-<th>Default</th>
-<th>Example</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>[global]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>crs</td>
-<td>Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.</td>
-<td>No</td>
-<td>hazard map projection</td>
-<td>‘EPSG:32617’</td>
-</tr>
-<tr class="odd">
-<td><strong>[global grid]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>chunk</td>
-<td>Divide grid into smaller chunks. Define grid chunk size</td>
-<td>No</td>
-<td></td>
-<td>[1024, 1014]</td>
-</tr>
-<tr class="odd">
-<td><strong>[output]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>path</td>
-<td>Set directory path to save the output</td>
-<td>Yes</td>
-<td></td>
-<td>‘output’</td>
-</tr>
-<tr class="odd">
-<td><strong>[output.csv]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>name</td>
-<td>File name of the output.csv file containing the exposure data incl.&nbsp;the damage per asset.</td>
-<td>Yes</td>
-<td>‘output.csv’</td>
-<td>‘output.csv’</td>
-</tr>
-<tr class="odd">
-<td><strong>[output.geom]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>name1</td>
-<td>File name of the output vector data. Can be various spatial files. Find details about file formats in the data documentation.</td>
-<td>Yes</td>
-<td></td>
-<td>‘spatial.gpkg’</td>
-</tr>
-<tr class="odd">
-<td><strong>[output.grid]</strong></td>
-<td></td>
-<td>optional</td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>name</td>
-<td>File name of the output for the grid model; WARN: not fully implemented yet</td>
-<td>Yes, if working with grid</td>
-<td>‘output.nc’</td>
-<td>‘output.nc’</td>
-</tr>
-<tr class="odd">
-<td><strong>[hazard]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>file</td>
-<td>Directory path to hazard file (raster or netCDF). Can contain one (for events) or multiple (for return periods) bands</td>
-<td>Yes</td>
-<td></td>
-<td>‘hazard/event_map.nc’</td>
-</tr>
-<tr class="odd">
-<td>crs</td>
-<td>Projection of hazard data</td>
-<td>Yes, if crs is unknown in dataset</td>
-<td></td>
-<td>‘EPSG:32617’</td>
-</tr>
-<tr class="even">
-<td>elevation_reference</td>
-<td>Define the elevation reference. Either Digital Elevation Model (Flood depth map) or Datum (Flood elevation map)</td>
-<td>Yes</td>
-<td></td>
-<td>‘dem’</td>
-</tr>
-<tr class="odd">
-<td>risk</td>
-<td>Hazard input is a returning event and multiple flood maps are ingested to compute the risk. True/False If true, risk (EAD) is computed. If false, a single event is computed</td>
-<td>Yes</td>
-<td></td>
-<td>True</td>
-</tr>
-<tr class="even">
-<td>return_periods</td>
-<td>Return periods for hazard calculation when they cannot be inferred from the data itself</td>
-<td>No</td>
-<td></td>
-<td>[2, 5, 10, 25]</td>
-</tr>
-<tr class="odd">
-<td><strong>[hazard.settings]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>subset</td>
-<td>Specific layer from a multilayered netCDF file (GDAL can’t read those properly)</td>
-<td>No</td>
-<td></td>
-<td>‘zs’</td>
-</tr>
-<tr class="odd">
-<td>var_as_band</td>
-<td>True/False Read netCDF subdatasets as raster bands</td>
-<td>No</td>
-<td></td>
-<td>False</td>
-</tr>
-<tr class="even">
-<td><strong>[exposure.geom]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>file1</td>
-<td>File path of exposure vector file with Object ID column to enable linking exposure.csv output to vector file.</td>
-<td>Yes</td>
-<td><strong>buildings</strong>: ‘exposure/buildings.gpkg’ <strong>roads</strong>: ‘exposure/roads.gpkg’</td>
-<td>‘exposure/buildings.gpkg’</td>
-</tr>
-<tr class="even">
-<td>crs</td>
-<td>Projection of exposure data</td>
-<td>Yes, if crs is unknown in dataset</td>
-<td></td>
-<td>‘EPSG:32617’</td>
-</tr>
-<tr class="odd">
-<td>index</td>
-<td>Define the name of the index column of the data to link the exposure CSV file with the exposure vector file.</td>
-<td>No</td>
-<td>‘Object ID’</td>
-<td>‘Object ID’</td>
-</tr>
-<tr class="even">
-<td><strong>[exposure.csv]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>csv</td>
-<td>File path to exposure.csv file, that contains information about e.g.&nbsp;asset type, max. potential damage, aggregation and so forth)</td>
-<td>Yes</td>
-<td>‘exposure/exposure.csv’</td>
-<td>‘exposure/exposure.csv’</td>
-</tr>
-<tr class="even">
-<td><strong>[exposure.csv.settings]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>delimiter</td>
-<td>The delimiter of the CSV file, by default this is a comma (‘,’)</td>
-<td>No</td>
-<td>‘,’</td>
-<td>‘;’</td>
-</tr>
-<tr class="even">
-<td><strong>[exposure.grid]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>file</td>
-<td>File path to exposure.nc grid file, that contains the spatial information and information about the maximum potential damage per cell.</td>
-<td>Yes, if netCDF is provided as input</td>
-<td>‘exposure/raster.nc’</td>
-<td>‘exposure/raster.nc’</td>
-</tr>
-<tr class="even">
-<td>crs</td>
-<td>Output projection</td>
-<td>Yes, if crs is unknown in dataset</td>
-<td></td>
-<td>‘EPSG:32617’</td>
-</tr>
-<tr class="odd">
-<td><strong>[exposure.grid.settings]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>var_as_band</td>
-<td>True/False Read netCDF subdatasets as raster bands</td>
-<td>No</td>
-<td></td>
-<td>True</td>
-</tr>
-<tr class="odd">
-<td><strong>[vulnerability]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>file</td>
-<td>File path to vulnerability_curves.csv file, that contains the damage functions.</td>
-<td>Yes</td>
-<td></td>
-<td>‘vulnerability/ vulnerability_curves.csv’</td>
-</tr>
-</tbody>
-</table>
-</div>
+<section id="folder-structure" class="level2">
+<h2 class="anchored" data-anchor-id="folder-structure">Folder structure</h2>
+<p>It is recommended to set up a folder structure as shown below to ensure that FIAT can find each data file and run smoothly. The files inside the folders are example files and do not need to be of those data types or named as such.</p>
+<pre><code>
+├───📁 FIAT/
+    |
+    ├───📁 hazard/
+    │   └───📄 hazard_map.nc
+    |
+    ├───📁 exposure/
+    │   ├───📄 buildings.gpkg
+    │   └───📄 exposure.csv
+    |
+    ├───📁 vulnerability/
+    │   └───📄 vulnerability_curves.csv
+    |
+    └───📄 settings.toml
+</code></pre>
 
 
 </section>

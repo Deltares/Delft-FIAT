@@ -61,6 +61,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script type="text/javascript" src="../../../_static/version.js"></script>
 
 
 <link rel="stylesheet" href="../../../_static/styles.css">
@@ -125,6 +126,14 @@ ul.task-list li input[type="checkbox"] {
   </li>  
     </ul>
   </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
 </ul>
             <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
@@ -137,7 +146,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../user_guide/data/data.html">Data</a></li><li class="breadcrumb-item"><a href="../../../user_guide/data/exposure.html">Exposure data</a></li><li class="breadcrumb-item"><a href="../../../user_guide/data/exposure/geometries.html">Geometry</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../user_guide/data/index.html">Data</a></li><li class="breadcrumb-item"><a href="../../../user_guide/data/exposure.html">Exposure data</a></li><li class="breadcrumb-item"><a href="../../../user_guide/data/exposure/geometries.html">Geometry</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -155,15 +164,32 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">User guide</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../../user_guide/data/settings.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Settings file</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../../user_guide/data/data.html" class="sidebar-item-text sidebar-link">
+            <a href="../../../user_guide/settings/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../user_guide/settings/computation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computational input</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../user_guide/settings/optional.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Optional input</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../../user_guide/data/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -226,20 +252,8 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../../user_guide/models.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Models</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../../../examples/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Examples</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../../user_guide/advanced.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Advanced options</span></a>
   </div>
 </li>
     </ul>
@@ -270,7 +284,7 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>A user can specify one or multiple <strong>geometry files</strong> in the <a href="../../../user_guide/data/settings.html">settings.toml</a>. It is advisable to give descriptive names to the geometry files, e.g., <em>buildings.gpkg</em> or <em>roads.gpkg</em>. Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page. All geometry files must have an attribute <code>Object ID</code> that holds unique IDs over all geometry files, linking to the <code>Object ID</code> column in the exposure CSV file (see below).</p>
+<p>A user can specify one or multiple <strong>geometry files</strong> in the <a href="../../../user_guide/settings/index.html">settings.toml</a>. It is advisable to give descriptive names to the geometry files, e.g., <em>buildings.gpkg</em> or <em>roads.gpkg</em>. Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page. All geometry files must have an attribute <code>Object ID</code> that holds unique IDs over all geometry files, linking to the <code>Object ID</code> column in the exposure CSV file (see below).</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Example">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">

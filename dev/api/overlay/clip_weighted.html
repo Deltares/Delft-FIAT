@@ -61,6 +61,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script type="text/javascript" src="../../_static/version.js"></script>
 
 
 <link rel="stylesheet" href="../../_static/styles.css">
@@ -124,6 +125,14 @@ ul.task-list li input[type="checkbox"] {
     <a class="dropdown-item" href="https://github.com/Deltares/Delft-FIAT/issues/new/choose" rel="" target="">
  <span class="dropdown-text">Report an Issue</span></a>
   </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
     </ul>
   </li>
 </ul>
@@ -864,7 +873,7 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#fiat.gis.overlay.clip_weighted" id="toc-fiat.gis.overlay.clip_weighted" class="nav-link active" data-scroll-target="#fiat.gis.overlay.clip_weighted">clip_weighted</a>
   <ul class="collapse">
-  <li><a href="#warning" id="toc-warning" class="nav-link" data-scroll-target="#warning">Warning!</a></li>
+  <li><a href="#warnings" id="toc-warnings" class="nav-link" data-scroll-target="#warnings">Warnings</a></li>
   <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
   <li><a href="#returns" id="toc-returns" class="nav-link" data-scroll-target="#returns">Returns</a></li>
   <li><a href="#see-also" id="toc-see-also" class="nav-link" data-scroll-target="#see-also">See Also</a></li>
@@ -882,8 +891,8 @@ ul.task-list li input[type="checkbox"] {
 <p><code>gis.overlay.clip_weighted(band, srs, gtf, ft, upscale=1)</code></p>
 <p>Clip a grid based on a feature (vector), but weighted.</p>
 <p>This method caters to those who wish to have information about the percentages of cells that are touched by the feature.</p>
-<section id="warning" class="level2">
-<h2 class="anchored" data-anchor-id="warning">Warning!</h2>
+<section id="warnings" class="level2">
+<h2 class="anchored" data-anchor-id="warnings">Warnings</h2>
 <p>A high upscale value comes with a calculation penalty!</p>
 </section>
 <section id="parameters" class="level2">

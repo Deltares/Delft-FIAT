@@ -61,6 +61,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script type="text/javascript" src="../_static/version.js"></script>
 <style>figure { padding: 3em 0 3em 0; }</style>
 
 
@@ -126,6 +127,14 @@ ul.task-list li input[type="checkbox"] {
   </li>  
     </ul>
   </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
 </ul>
             <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
@@ -156,21 +165,38 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">User guide</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/settings.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Settings file</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../user_guide/data/data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Data</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
+            <a href="../user_guide/settings/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/settings/computation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computational input</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/settings/optional.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Optional input</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../user_guide/data/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../user_guide/data/hazard.html" class="sidebar-item-text sidebar-link">
@@ -227,20 +253,8 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/models.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Models</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../examples/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Examples</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/advanced.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Advanced options</span></a>
   </div>
 </li>
     </ul>
@@ -353,18 +367,18 @@ ul.task-list li input[type="checkbox"] {
 
 <ul id="index-chooser" class="nav nav-tabs" role="tablist">
   <li class="nav-item" role="presentation">
-    <a class="nav-link" href="../user_guide/data/data.html">
+    <a class="nav-link" href="../user_guide/settings/index.html">
+      <i class="bi bi-person-gear"></i>User Settings
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="../user_guide/data/index.html">
       <i class="bi bi-file-bar-graph"></i>Data
     </a>
   </li>
   <li class="nav-item" role="presentation">
     <a class="nav-link" href="../examples/index.html">
       <i class="bi bi-graph-up"></i>Examples
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="../user_guide/advanced.html">
-      <i class="bi bi-person-gear"></i>Advanced options
     </a>
   </li>
 </ul>
@@ -374,10 +388,10 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="quick-start">Quick start</h2>
 <p>FIAT computes the (economic) damage and risk of flood events at a specified geographic location based on flood inundation data, exposured assets and vulnerability functions. The model can be configured with a settings file and data inputs:</p>
 <ul>
-<li><a href="../user_guide/data/settings.html">Settings file</a></li>
-<li><a href="../user_guide/data/data.html">Data</a></li>
+<li><a href="../user_guide/settings/index.html">Settings file</a></li>
+<li><a href="../user_guide/data/index.html">Data</a></li>
 </ul>
-<p>The HydroMT plugin <a href="https://deltares.github.io/hydromt_fiat/latest">HydroMT-FIAT</a> can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same <a href="../user_guide/data/data.html#folder-structure">folder structure</a> that HydroMT-FIAT creates.</p>
+<p>The HydroMT plugin <a href="https://deltares.github.io/hydromt_fiat/latest">HydroMT-FIAT</a> can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same <a href="../user_guide/data/index.html#folder-structure">folder structure</a> that HydroMT-FIAT creates.</p>
 </section>
 <section id="the-models" class="level2">
 <h2 class="anchored" data-anchor-id="the-models">The models</h2>
@@ -386,7 +400,7 @@ ul.task-list li input[type="checkbox"] {
 <li>GeomModel</li>
 <li>GridModel</li>
 </ul>
-<p>Some more information about the models can be found <a href="../user_guide/models.html">here</a>.</p>
+<p>Some more information about the models can be found <a href="../info/models.html">here</a>.</p>
 </section>
 <section id="general-user-information" class="level2">
 <h2 class="anchored" data-anchor-id="general-user-information">General User Information</h2>

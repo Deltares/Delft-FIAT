@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Delft FIAT - Advanced options</title>
+<title>Delft FIAT - Models</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -61,6 +61,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script type="text/javascript" src="../_static/version.js"></script>
 
 
 <link rel="stylesheet" href="../_static/styles.css">
@@ -87,7 +88,7 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../getting_started/index.html" rel="" target="">
+    <a class="nav-link active" href="../getting_started/index.html" rel="" target="" aria-current="page">
  <span class="menu-text">Getting Started</span></a>
   </li>  
   <li class="nav-item">
@@ -95,7 +96,7 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">Setup guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../user_guide/index.html" rel="" target="" aria-current="page">
+    <a class="nav-link" href="../user_guide/index.html" rel="" target="">
  <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
@@ -125,6 +126,14 @@ ul.task-list li input[type="checkbox"] {
   </li>  
     </ul>
   </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
 </ul>
             <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
@@ -137,7 +146,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../user_guide/advanced.html">Advanced options</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../info/models.html">Model information</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -151,95 +160,20 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">User guide</span></a>
+  <a href="../getting_started/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting started</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/settings.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Settings file</span></a>
-  </div>
-</li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../user_guide/data/data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Data</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../user_guide/data/hazard.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Hazard data</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/hazard_maps.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Types of hazard maps</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../user_guide/data/exposure.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Exposure data</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/exposure/csv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">CSV</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/exposure/geometries.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Geometry</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/vulnerability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Vulnerability data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/supported.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Supported formats</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/models.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Models</span></a>
+  <a href="../info/models.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Model information</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../examples/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Examples</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/advanced.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Advanced options</span></a>
+  <a href="../getting_started/faq.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Frequently asked questions</span></a>
   </div>
 </li>
     </ul>
@@ -248,14 +182,21 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#geommodel" id="toc-geommodel" class="nav-link active" data-scroll-target="#geommodel">GeomModel</a></li>
+  <li><a href="#gridmodel" id="toc-gridmodel" class="nav-link" data-scroll-target="#gridmodel">GridModel</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content page-columns page-full" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Advanced options</h1>
+<h1 class="title">Models</h1>
 </div>
 
 
@@ -270,102 +211,21 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>Advanced FIAT users can use the options as described in <a href="#tbl-toml">Table&nbsp;1</a> for more control over their FIAT model run.</p>
-<div id="tbl-toml" class="anchored page-columns page-full">
-<table class="table-striped table-hover column-page-inset-right table">
-<caption>Table&nbsp;1: Advanced settings.toml input (required and optional fields)</caption>
-<colgroup>
-<col style="width: 16%">
-<col style="width: 56%">
-<col style="width: 5%">
-<col style="width: 13%">
-<col style="width: 7%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-<th>Required</th>
-<th>Default</th>
-<th>Example</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>[global]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>gdal_cache</td>
-<td>Set the GDAL cache in megabytes to restrict the footprint of GDAL</td>
-<td>No</td>
-<td><code>need help to fill in</code></td>
-<td>10</td>
-</tr>
-<tr class="odd">
-<td>keep_temp_files</td>
-<td>True/False</td>
-<td>No</td>
-<td></td>
-<td>False</td>
-</tr>
-<tr class="even">
-<td>thread</td>
-<td>Set the number of threads of the calculations</td>
-<td>No</td>
-<td></td>
-<td>4</td>
-</tr>
-<tr class="odd">
-<td><strong>[hazard.settings]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>chunk</td>
-<td>Divide grid into smaller chunks. Define grid chunk size (Advise to use the setting under global.grid)</td>
-<td>No</td>
-<td></td>
-<td>[1024, 1014]</td>
-</tr>
-<tr class="odd">
-<td><strong>[exposure.grid.settings]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>chunk</td>
-<td>Divide grid into smaller chunks. Define grid chunk size (Advise to use the setting under global.grid)</td>
-<td>No</td>
-<td></td>
-<td>[1024, 1014]</td>
-</tr>
-<tr class="odd">
-<td><strong>[vulnerability]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>step_size</td>
-<td>Interpolation scale for the hazard magnitude to create the vulnerability curves</td>
-<td>No</td>
-<td></td>
-<td>0.1</td>
-</tr>
-</tbody>
-</table>
-</div>
+<p>Within FIAT, two types of models are currently present:</p>
+<ul>
+<li>GeomModel</li>
+<li>GridModel</li>
+</ul>
+<section id="geommodel" class="level2">
+<h2 class="anchored" data-anchor-id="geommodel">GeomModel</h2>
+<p>The <code>GeomModel</code> requires a configuration file that indicates where the exposure geom(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in vector data as exposure assets (e.g., building footprints, road segments, and utility locations) one by one. Each exposure asset gets overlaid with the hazard map and with this data, the corresponding damage fraction is taken from the vulnerability curve and multiplied with the maximum potential damage to get the flood damage. When the user supplies multiple hazard maps with related return periods, they can choose to also calculate risk.</p>
+</section>
+<section id="gridmodel" class="level2">
+<h2 class="anchored" data-anchor-id="gridmodel">GridModel</h2>
+<p>The <code>GridModel</code> requires a configuration file that indicates where the exposure raster(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in raster data as exposure layers (e.g.&nbsp;commercial, residential, industrial) holding the maximum potential damage values, which should be in the same resolution, size, and projection as the hazard map. To calculate damages, the exposure raster and hazard raster are overlaid and per cell, the maximum potential damage is multiplied with the damage fraction corresponding to the hazard value in that cell. Risk can also be calculated with the <code>GridModel</code>, although it must be noted that this functionality has not been thoroughly tested.</p>
 
 
+</section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Delft FIAT - Model options</title>
+<title>Delft FIAT - Computational input</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,40 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -95,12 +61,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script type="text/javascript" src="../../_static/version.js"></script>
 
 
 <link rel="stylesheet" href="../../_static/styles.css">
 </head>
 
-<body class="nav-fixed">
+<body class="nav-sidebar floating nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -129,7 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Setup guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../user_guide/index.html" rel="" target="">
+    <a class="nav-link active" href="../../user_guide/index.html" rel="" target="" aria-current="page">
  <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
@@ -159,6 +126,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
     </ul>
   </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
 </ul>
             <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
@@ -166,27 +141,135 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/settings/index.html">Settings</a></li><li class="breadcrumb-item"><a href="../../user_guide/settings/computation.html">Computational input</a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+    </div>
+  </nav>
 </header>
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">User guide</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../user_guide/settings/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/settings/computation.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Computational input</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/settings/optional.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Optional input</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../user_guide/data/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../user_guide/data/hazard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hazard data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/data/hazard_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Types of hazard maps</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../user_guide/data/exposure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exposure data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/data/exposure/csv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CSV</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/data/exposure/geometries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Geometry</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/data/vulnerability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Vulnerability data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/data/supported.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Supported formats</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../examples/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Examples</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#run-with-warm-states" id="toc-run-with-warm-states" class="nav-link active" data-scroll-target="#run-with-warm-states">Run with warm states</a></li>
-  <li><a href="#request-different-output-files" id="toc-request-different-output-files" class="nav-link" data-scroll-target="#request-different-output-files">Request different output files</a></li>
-  </ul>
-</nav>
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Model options</h1>
+<h1 class="title">Computational input</h1>
 </div>
 
 
@@ -201,13 +284,156 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<section id="run-with-warm-states" class="level1">
-<h1>Run with warm states</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The inputs give the user a bit more control over the computational aspects of FIAT.</p>
+<div id="tbl-toml" class="anchored">
+<table class="table-hover table">
+<caption>Table&nbsp;1: Computational FIAT input settings</caption>
+<thead>
+<tr class="header">
+<th>Entry</th>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>[global]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#global">threads</a></td>
+<td>integer</td>
+<td><cpu count=""></cpu></td>
+</tr>
+<tr class="odd">
+<td><strong>[global.geom]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#global.geom">chunk</a></td>
+<td>integer</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><strong>[global.grid]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#global.grid">chunk</a></td>
+<td>list</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><strong>[hazard.settings]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#hazard.settings">chunk</a></td>
+<td>list</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><strong>[exposure.geom.settings]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#exposure.geom.settings">chunk</a></td>
+<td>integer</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><strong>[exposure.grid.settings]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#exposure.grid.settings">chunk</a></td>
+<td>list</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>All settings that are not globally defined (e.g.&nbsp;settings chunk size via <code>hazard.settings</code>) are ill-advised. Please use the global chunking settings.</p>
+</div>
+</div>
+<section id="global" class="level4">
+<h4 class="anchored" data-anchor-id="global">[global]</h4>
+<p><code>threads</code>: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.</p>
 </section>
-<section id="request-different-output-files" class="level1">
-<h1>Request different output files</h1>
-<div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="global.geom" class="level4">
+<h4 class="anchored" data-anchor-id="global.geom">[global.geom]</h4>
+<p><code>chunk</code>: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This input benefits from multiple threads.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This input is only applicable to the <a href="">GeomModel</a></p>
+</div>
+</div>
+</section>
+<section id="global.grid" class="level4">
+<h4 class="anchored" data-anchor-id="global.grid">[global.grid]</h4>
+<p><code>chunk</code>: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be <code>[1024, 1024,]</code>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This input is only applicable to the <a href="">GridModel</a></p>
+</div>
+</div>
+</section>
+<section id="hazard.settings" class="level4">
+<h4 class="anchored" data-anchor-id="hazard.settings">[hazard.settings]</h4>
+<p><code>chunk</code>: Same as the global setting but for the hazard data.</p>
+</section>
+<section id="exposure.geom.settings" class="level4">
+<h4 class="anchored" data-anchor-id="exposure.geom.settings">[exposure.geom.settings]</h4>
+<p><code>chunk</code>: Same as the global setting but just for the calculations (writing not included).</p>
+</section>
+<section id="exposure.geom.settings-1" class="level4">
+<h4 class="anchored" data-anchor-id="exposure.geom.settings-1">[exposure.geom.settings]</h4>
+<p><code>chunk</code>: Same as the global setting but for the exposure data.</p>
 
 
 </section>

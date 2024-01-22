@@ -95,6 +95,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script type="text/javascript" src="../../_static/version.js"></script>
 
 
 <link rel="stylesheet" href="../../_static/styles.css">
@@ -159,6 +160,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
     </ul>
   </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
 </ul>
             <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
@@ -171,7 +180,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/data/data.html">Data</a></li><li class="breadcrumb-item"><a href="../../user_guide/data/hazard.html">Hazard data</a></li><li class="breadcrumb-item"><a href="../../user_guide/data/hazard_maps.html">Types of hazard maps</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/data/index.html">Data</a></li><li class="breadcrumb-item"><a href="../../user_guide/data/hazard.html">Hazard data</a></li><li class="breadcrumb-item"><a href="../../user_guide/data/hazard_maps.html">Types of hazard maps</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -189,15 +198,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">User guide</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/settings.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Settings file</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../user_guide/data/data.html" class="sidebar-item-text sidebar-link">
+            <a href="../../user_guide/settings/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/settings/computation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computational input</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/settings/optional.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Optional input</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../user_guide/data/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -260,20 +286,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../user_guide/models.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Models</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../../examples/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Examples</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/advanced.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Advanced options</span></a>
   </div>
 </li>
     </ul>
@@ -372,7 +386,7 @@ Metadata:
   lon#units=degrees_east
   NC_GLOBAL#Conventions=CF-1.5
   NC_GLOBAL#GDAL=GDAL 3.8.3, released 2024/01/04
-  NC_GLOBAL#history=Thu Jan 18 09:40:13 2024: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/.testdata/hazard/event_map.nc, ... )
+  NC_GLOBAL#history=Mon Jan 22 14:57:27 2024: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/.testdata/hazard/event_map.nc, ... )
 Corner Coordinates:
 Upper Left  (   4.3500000,  52.0500000) (  4d21' 0.00"E, 52d 3' 0.00"N)
 Lower Left  (   4.3500000,  51.9500000) (  4d21' 0.00"E, 51d57' 0.00"N)
@@ -425,7 +439,7 @@ Size is 512, 512
 Metadata:
   NC_GLOBAL#Conventions=CF-1.5
   NC_GLOBAL#GDAL=GDAL 3.8.3, released 2024/01/04
-  NC_GLOBAL#history=Thu Jan 18 09:40:13 2024: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/.testdata/hazard/risk_map.nc, ... )
+  NC_GLOBAL#history=Mon Jan 22 14:57:27 2024: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/.testdata/hazard/risk_map.nc, ... )
 Subdatasets:
   SUBDATASET_1_NAME=NETCDF:"../../../.testdata/hazard/risk_map.nc":Band1
   SUBDATASET_1_DESC=[10x10] Band1 (32-bit floating-point)
@@ -458,13 +472,13 @@ Note
 <p>Instead of seeing normal metadata, we only get an overview of the available subdatasets.</p>
 </div>
 </div>
-<p>Multiple netCDF variables are normally not recognized as bands by the <a href="https://gdal.org/drivers/raster/netcdf.html">netCDF driver</a> of GDAL. Instead they are interpreted as subdatasets (!). One can set the key <code>var_as_band</code> to <code>true</code> within the <a href="../../user_guide/data/settings.html">settings file</a> to read the subdatasets as bands.</p>
+<p>Multiple netCDF variables are normally not recognized as bands by the <a href="https://gdal.org/drivers/raster/netcdf.html">netCDF driver</a> of GDAL. Instead they are interpreted as subdatasets (!). One can set the key <code>var_as_band</code> to <code>true</code> within the <a href="../../user_guide/settings/index.html">settings file</a> to read the subdatasets as bands.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[</span><span class="dt">hazard</span><span class="kw">]</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="er">&lt;</span><span class="dt">your-file</span><span class="er">&gt;</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">risk</span> <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[</span><span class="dt">hazard</span><span class="kw">.</span><span class="dt">settings</span><span class="kw">]</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">var_as_band</span> <span class="op">=</span> <span class="cn">true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>When supplied in one subdataset (all bands are within that subdataset), the <code>subset</code> variable within the <a href="../../user_guide/data/settings.html">settings file</a> should be set under the header <code>hazard.settings</code>. The value set to <code>subset</code> should be the name of the desired subdataset.</p>
+<p>When supplied in one subdataset (all bands are within that subdataset), the <code>subset</code> variable within the <a href="../../user_guide/settings/index.html">settings file</a> should be set under the header <code>hazard.settings</code>. The value set to <code>subset</code> should be the name of the desired subdataset.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[</span><span class="dt">hazard</span><span class="kw">]</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="er">&lt;</span><span class="dt">your-file</span><span class="er">&gt;</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">risk</span> <span class="op">=</span> <span class="cn">true</span></span>

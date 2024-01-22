@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Delft FIAT - Data</title>
+<title>Delft FIAT - Optional input</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -61,6 +61,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script type="text/javascript" src="../../_static/version.js"></script>
 
 
 <link rel="stylesheet" href="../../_static/styles.css">
@@ -125,6 +126,14 @@ ul.task-list li input[type="checkbox"] {
   </li>  
     </ul>
   </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
 </ul>
             <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
@@ -137,7 +146,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/data/data.html">Data</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/settings/index.html">Settings</a></li><li class="breadcrumb-item"><a href="../../user_guide/settings/optional.html">Optional input</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -155,21 +164,38 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">User guide</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/settings.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Settings file</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../user_guide/data/data.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Data</span></a>
+            <a href="../../user_guide/settings/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/settings/computation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computational input</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/settings/optional.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Optional input</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../user_guide/data/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../../user_guide/data/hazard.html" class="sidebar-item-text sidebar-link">
@@ -226,20 +252,8 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../user_guide/models.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Models</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../../examples/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Examples</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/advanced.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Advanced options</span></a>
   </div>
 </li>
     </ul>
@@ -248,21 +262,14 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#types-of-data" id="toc-types-of-data" class="nav-link active" data-scroll-target="#types-of-data">Types of Data</a></li>
-  <li><a href="#folder-structure" id="toc-folder-structure" class="nav-link" data-scroll-target="#folder-structure">Folder structure</a></li>
-  </ul>
-</nav>
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Data</h1>
+<h1 class="title">Optional input</h1>
 </div>
 
 
@@ -277,44 +284,196 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>FIAT is data agnostic; what you put in is what you get out. Please follow the guidelines in this documentation to build your FIAT model and pay close attention to the validation of data together with local experts.</p>
-<section id="types-of-data" class="level2">
-<h2 class="anchored" data-anchor-id="types-of-data">Types of Data</h2>
-<p>Here a quick overview is given of the required data:</p>
-<ul>
-<li><a href="../../user_guide/data/hazard.html">Hazard</a>
-<ul>
-<li>Hazard values in a gridded format</li>
-</ul></li>
-<li><a href="../../user_guide/data/exposure.html">Exposure</a>
-<ul>
-<li>Exposure data either in vector or gridded format</li>
-</ul></li>
-<li><a href="../../user_guide/data/vulnerability.html">Vulnerability</a>
-<ul>
-<li>Data relating the hazard intensity to damage fraction</li>
-</ul></li>
-</ul>
-<p>These are the types of data that FIAT needs in order to run properly.</p>
+<p>Here we provide an overview of all optional/ non essential settings that the user can provide to FIAT. These are listed in the table (<a href="#tbl-toml">Table&nbsp;1</a>) below.</p>
+<div id="tbl-toml" class="anchored">
+<table class="table-hover table">
+<caption>Table&nbsp;1: Settings.toml input (required and optional fields)</caption>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>[global]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#global">crs</a></td>
+<td>string</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><a href="#global">keep_temp_files</a></td>
+<td>boolean</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td><a href="#global">gdal_cache</a></td>
+<td>int</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><strong>[hazard]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#hazard">crs</a></td>
+<td>string</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><a href="#hazard">return_periods</a></td>
+<td>list</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><strong>[hazard.settings]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><a href="#hazard.settings">subset</a></td>
+<td>string</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td><a href="#hazard.settings">var_as_band</a></td>
+<td>boolean</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><strong>[exposure.csv]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#exposure.csv">index</a></td>
+<td>string</td>
+<td>‘Object ID’</td>
+</tr>
+<tr class="odd">
+<td><strong>[exposure.geom]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#exposure.geom">crs</a></td>
+<td>string</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><strong>[exposure.grid]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#exposure.grid">crs</a></td>
+<td>string</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td><strong>[exposure.grid.settings]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#exposure.grid.settings">var_as_band</a></td>
+<td>boolean</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><strong>[vulnerability]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#vulnerability">step_size</a></td>
+<td>float</td>
+<td>0.01</td>
+</tr>
+<tr class="odd">
+<td><strong>[vulnerability.settings]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#vulnerability.settings">index</a></td>
+<td>string</td>
+<td>‘water depth’</td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="global" class="level4">
+<h4 class="anchored" data-anchor-id="global">[global]</h4>
+<p><code>crs</code>: Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.</p>
+<p><code>keep_temp_files</code>: Permanently save the temporary file outputs. These are produced during the calculations.</p>
+<p><code>gdal_cache</code>: bla</p>
 </section>
-<section id="folder-structure" class="level2">
-<h2 class="anchored" data-anchor-id="folder-structure">Folder structure</h2>
-<p>It is recommended to set up a folder structure as shown below to ensure that FIAT can find each data file and run smoothly. The files inside the folders are example files and do not need to be of those data types or named as such.</p>
-<pre><code>
-├───📁 FIAT/
-    |
-    ├───📁 hazard/
-    │   └───📄 hazard_map.nc
-    |
-    ├───📁 exposure/
-    │   ├───📄 buildings.gpkg
-    │   └───📄 exposure.csv
-    |
-    ├───📁 vulnerability/
-    │   └───📄 vulnerability_curves.csv
-    |
-    └───📄 settings.toml
-</code></pre>
+<section id="hazard" class="level4">
+<h4 class="anchored" data-anchor-id="hazard">[hazard]</h4>
+<p><code>crs</code>: Projection of the hazard data if it cannot be inferred from the dataset itself.</p>
+<p><code>return_periods</code>: Return periods for hazard calculation when they cannot be inferred from the data itself.</p>
+</section>
+<section id="hazard.settings" class="level4">
+<h4 class="anchored" data-anchor-id="hazard.settings">[hazard.settings]</h4>
+<p><code>subset</code>: Select a specific subdataset by supplying it’s ID (name) here.</p>
+<p><code>var_as_band</code>: Whether or not to read the subdatasets as classic raster band.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The entry <code>var_as_band</code> is only applicable to netCDF files.</p>
+</div>
+</div>
+</section>
+<section id="exposure.csv" class="level4">
+<h4 class="anchored" data-anchor-id="exposure.csv">[exposure.csv]</h4>
+<p><code>index</code>: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to ‘Object ID’.</p>
+</section>
+<section id="exposure.geom" class="level4">
+<h4 class="anchored" data-anchor-id="exposure.geom">[exposure.geom]</h4>
+<p><code>crs</code>: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.</p>
+</section>
+<section id="exposure.grid" class="level4">
+<h4 class="anchored" data-anchor-id="exposure.grid">[exposure.grid]</h4>
+<p><code>crs</code>: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.</p>
+</section>
+<section id="exposure.grid.settings" class="level4">
+<h4 class="anchored" data-anchor-id="exposure.grid.settings">[exposure.grid.settings]</h4>
+<p><code>var_as_band</code>: Whether or not to read the subdatasets as classic raster band.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The entry <code>var_as_band</code> is only applicable to netCDF files.</p>
+</div>
+</div>
+</section>
+<section id="vulnerability" class="level4">
+<h4 class="anchored" data-anchor-id="vulnerability">[vulnerability]</h4>
+<p><code>step_size</code>: The internal step size of the vulnerability data. The supplied data is interpolated or averaged depending on the minimal step size of the supplied dataset.</p>
+</section>
+<section id="vulnerability.settings" class="level4">
+<h4 class="anchored" data-anchor-id="vulnerability.settings">[vulnerability.settings]</h4>
+<p><code>index</code>: Set the index column of the csv file. In case of the vulnerability csv, if no entry is provided then FIAT will default to ‘water depth’.</p>
 
 
 </section>

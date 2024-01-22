@@ -21,3 +21,7 @@
 .navbar-right .fa-github {
     font-size: 40px; /* Adjust the value as needed */
 }
+
+.active-item {
+    background-color: #8C8C8C; /* Light mode color */
+}

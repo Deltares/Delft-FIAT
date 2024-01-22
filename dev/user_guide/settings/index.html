@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Delft FIAT - Models</title>
+<title>Delft FIAT - Settings</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,27 +20,61 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../">
-<link href="../_static/logo.png" rel="icon" type="image/png">
-<script src="../site_libs/quarto-html/quarto.js"></script>
-<script src="../site_libs/quarto-html/popper.min.js"></script>
-<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../_static/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -61,9 +95,10 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script type="text/javascript" src="../../_static/version.js"></script>
 
 
-<link rel="stylesheet" href="../_static/styles.css">
+<link rel="stylesheet" href="../../_static/styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed">
@@ -73,10 +108,10 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg navbar-dark ">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
-    <a href="../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../_static/logo.png" alt="" class="navbar-logo">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="../index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Delft FIAT</span>
     </a>
   </div>
@@ -87,23 +122,23 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../getting_started/index.html" rel="" target="">
+    <a class="nav-link" href="../../getting_started/index.html" rel="" target="">
  <span class="menu-text">Getting Started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../setup_guide/index.html" rel="" target="">
+    <a class="nav-link" href="../../setup_guide/index.html" rel="" target="">
  <span class="menu-text">Setup guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../user_guide/index.html" rel="" target="" aria-current="page">
+    <a class="nav-link active" href="../../user_guide/index.html" rel="" target="" aria-current="page">
  <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../api/index.html" rel="" target="">
+    <a class="nav-link" href="../../api/index.html" rel="" target="">
  <span class="menu-text">API Reference</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../developments/index.html" rel="" target="">
+    <a class="nav-link" href="../../developments/index.html" rel="" target="">
  <span class="menu-text">Developments</span></a>
   </li>  
 </ul>
@@ -125,6 +160,14 @@ ul.task-list li input[type="checkbox"] {
   </li>  
     </ul>
   </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-version" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Version</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-version">    
+        <li class="dropdown-header">empty</li>
+    </ul>
+  </li>
 </ul>
             <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
@@ -137,7 +180,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../user_guide/models.html">Models</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/settings/index.html">Settings</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -151,28 +194,45 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/index.html" class="sidebar-item-text sidebar-link">
+  <a href="../../user_guide/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">User guide</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/settings.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Settings file</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../user_guide/data/data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Data</span></a>
+            <a href="../../user_guide/settings/index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Settings</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/settings/computation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computational input</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../user_guide/settings/optional.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Optional input</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../user_guide/data/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../user_guide/data/hazard.html" class="sidebar-item-text sidebar-link">
+            <a href="../../user_guide/data/hazard.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Hazard data</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -181,7 +241,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/hazard_maps.html" class="sidebar-item-text sidebar-link">
+  <a href="../../user_guide/data/hazard_maps.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Types of hazard maps</span></a>
   </div>
 </li>
@@ -189,7 +249,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../user_guide/data/exposure.html" class="sidebar-item-text sidebar-link">
+            <a href="../../user_guide/data/exposure.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Exposure data</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -198,13 +258,13 @@ ul.task-list li input[type="checkbox"] {
       <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/exposure/csv.html" class="sidebar-item-text sidebar-link">
+  <a href="../../user_guide/data/exposure/csv.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">CSV</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/exposure/geometries.html" class="sidebar-item-text sidebar-link">
+  <a href="../../user_guide/data/exposure/geometries.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Geometry</span></a>
   </div>
 </li>
@@ -212,13 +272,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/vulnerability.html" class="sidebar-item-text sidebar-link">
+  <a href="../../user_guide/data/vulnerability.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Vulnerability data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/supported.html" class="sidebar-item-text sidebar-link">
+  <a href="../../user_guide/data/supported.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Supported formats</span></a>
   </div>
 </li>
@@ -226,20 +286,8 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/models.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Models</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../examples/index.html" class="sidebar-item-text sidebar-link">
+  <a href="../../examples/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Examples</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/advanced.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Advanced options</span></a>
   </div>
 </li>
     </ul>
@@ -252,8 +300,8 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#geommodel" id="toc-geommodel" class="nav-link active" data-scroll-target="#geommodel">GeomModel</a></li>
-  <li><a href="#gridmodel" id="toc-gridmodel" class="nav-link" data-scroll-target="#gridmodel">GridModel</a></li>
+  <li><a href="#basic-input" id="toc-basic-input" class="nav-link active" data-scroll-target="#basic-input">Basic input</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
   </ul>
 </nav>
     </div>
@@ -262,7 +310,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Models</h1>
+<h1 class="title">Settings</h1>
 </div>
 
 
@@ -277,18 +325,244 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>Within FIAT, two types of models are currently present:</p>
+<p>The user must set the model settings in the <code>settings.toml</code> configuration file.</p>
+<p>Besides the necessary/ required setttings one can set:</p>
 <ul>
-<li>GeomModel</li>
-<li>GridModel</li>
+<li>input in regard to the computational side of FIAT (e.g.&nbsp;chunking, number of threads etc),
+<ul>
+<li>see this <a href="../../user_guide/settings/computation.html">page</a></li>
+</ul></li>
+<li>optional/ additional input that is not necessary or more data specific,
+<ul>
+<li>see this <a href="../../user_guide/settings/optional.html">page</a></li>
+</ul></li>
 </ul>
-<section id="geommodel" class="level2">
-<h2 class="anchored" data-anchor-id="geommodel">GeomModel</h2>
-<p>The <code>GeomModel</code> requires a configuration file that indicates where the exposure geom(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in vector data as exposure assets (e.g., building footprints, road segments, and utility locations) one by one. Each exposure asset gets overlaid with the hazard map and with this data, the corresponding damage fraction is taken from the vulnerability curve and multiplied with the maximum potential damage to get the flood damage. When the user supplies multiple hazard maps with related return periods, they can choose to also calculate risk.</p>
+<section id="basic-input" class="level3">
+<h3 class="anchored" data-anchor-id="basic-input">Basic input</h3>
+<p>This section pertains to all input that is vital for running a FIAT model.</p>
+<p>These inputs/ entries are listed in the table down below with more detailed information per entry underneath the table.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>File paths in the settings can be relative to the settings.toml file or absolute.</p>
+</div>
+</div>
+<div id="tbl-toml" class="anchored">
+<table class="table-hover table">
+<caption>Table&nbsp;1: Most basic settings file input</caption>
+<thead>
+<tr class="header">
+<th>Entry</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>[output]</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#output">path</a></td>
+<td>string</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><strong>[output.csv]</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#output.csv">name</a></td>
+<td>string</td>
+<td>No</td>
+<td>output.csv</td>
+</tr>
+<tr class="odd">
+<td><strong>[output.geom]</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#output.geom">name[n]</a></td>
+<td>string</td>
+<td>No</td>
+<td>spatial[n].gpkg</td>
+</tr>
+<tr class="odd">
+<td><strong>[output.grid]</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#output.grid">name</a></td>
+<td>string</td>
+<td>No</td>
+<td>ead.nc</td>
+</tr>
+<tr class="odd">
+<td><strong>[hazard]</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#hazard">file</a></td>
+<td>string</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><a href="#hazard">elevation_reference</a></td>
+<td>string</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#hazard">risk</a></td>
+<td>boolean</td>
+<td>No</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td><strong>[exposure.geom]</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#exposure.geom">file[n]</a></td>
+<td>string</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><strong>[exposure.csv]</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#exposure.csv">file</a></td>
+<td>string</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><strong>[vulnerability]</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="#vulnerability">file</a></td>
+<td>string</td>
+<td>Yes</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="output" class="level4">
+<h4 class="anchored" data-anchor-id="output">[output]</h4>
+<p><code>path</code>: The path to the output folder in the working directory.</p>
 </section>
-<section id="gridmodel" class="level2">
-<h2 class="anchored" data-anchor-id="gridmodel">GridModel</h2>
-<p>The <code>GridModel</code> requires a configuration file that indicates where the exposure raster(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in raster data as exposure layers (e.g.&nbsp;commercial, residential, industrial) holding the maximum potential damage values, which should be in the same resolution, size, and projection as the hazard map. To calculate damages, the exposure raster and hazard raster are overlaid and per cell, the maximum potential damage is multiplied with the damage fraction corresponding to the hazard value in that cell. Risk can also be calculated with the <code>GridModel</code>, although it must be noted that this functionality has not been thoroughly tested.</p>
+<section id="output.csv" class="level4">
+<h4 class="anchored" data-anchor-id="output.csv">[output.csv]</h4>
+<p><code>name</code>: The path to the output CSV file that will be created, that contains the information from the exposure.csv and the damages per asset.</p>
+</section>
+<section id="output.geom" class="level4">
+<h4 class="anchored" data-anchor-id="output.geom">[output.geom]</h4>
+<p><code>name[n]</code>: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If provided, the suffix is mandatory. The suffix should match the suffix of the input geometry file for which it is set.</p>
+</div>
+</div>
+</section>
+<section id="output.grid" class="level4">
+<h4 class="anchored" data-anchor-id="output.grid">[output.grid]</h4>
+<p><code>name</code>: This sets the name and location of the output raster file that contains damages per grid cell.</p>
+</section>
+<section id="hazard" class="level4">
+<h4 class="anchored" data-anchor-id="hazard">[hazard]</h4>
+<p><code>file</code>: The file path to the hazard file, can be a list of files.</p>
+<p><code>elevation_reference</code>: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be “DEM” while in case of a flood-elevation map this should be “datum”.</p>
+<p><code>risk</code>: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.</p>
+</section>
+<section id="exposure.geom" class="level4">
+<h4 class="anchored" data-anchor-id="exposure.geom">[exposure.geom]</h4>
+<p><code>file[n]</code>: The path to the exposure vector file (recommended to be within the <a href="../../user_guide/data/index.html">exposure folder</a>) with the assets’ geometry and Object ID. The user can provide multiple vector files. Therefore the ‘[n]’ suffix, as the user can create mulitple entries for vector files (e.g.&nbsp;<code>file1</code>, <code>file2</code> etc.).</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The suffix is mandatory. So if only one file is provided, name it <code>file1</code>.</p>
+</div>
+</div>
+</section>
+<section id="exposure.csv" class="level4">
+<h4 class="anchored" data-anchor-id="exposure.csv">[exposure.csv]</h4>
+<p><code>file</code>: The path to the exposure CSV file (recommended to be within the <a href="../../user_guide/data/index.html">exposure folder</a>) that contains the <a href="../../user_guide/data/exposure.html">required information</a> per asset. There can only be one exposure CSV file.</p>
+</section>
+<section id="vulnerability" class="level4">
+<h4 class="anchored" data-anchor-id="vulnerability">[vulnerability]</h4>
+<p><code>file</code>: The path to the vulnerability curves CSV file within the <a href="../../user_guide/data/index.html">vulnerability folder</a> that contains the <a href="../../user_guide/data/vulnerability.html">damage curves</a>. Only one vulnerability curves file is allowed.</p>
+</section>
+</section>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<p>An example of settings file for running a geometry model is given below:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[</span><span class="dt">output</span><span class="kw">]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"output"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[</span><span class="dt">output</span><span class="kw">.</span><span class="dt">csv</span><span class="kw">]</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"output.csv"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">[</span><span class="dt">output</span><span class="kw">.</span><span class="dt">geom</span><span class="kw">]</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dt">name1</span> <span class="op">=</span> <span class="st">"spatial.gpkg"</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">[</span><span class="dt">hazard</span><span class="kw">]</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"hazard/SL_10yr_reprojected.tif"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">elevation_reference</span> <span class="op">=</span> <span class="st">"DEM"</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="dt">risk</span> <span class="op">=</span> <span class="cn">false</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="kw">[</span><span class="dt">exposure</span><span class="kw">.</span><span class="dt">geom</span><span class="kw">]</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="dt">file1</span> <span class="op">=</span> <span class="st">"./exposure/buildings.gpkg"</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="kw">[</span><span class="dt">exposure</span><span class="kw">.</span><span class="dt">csv</span><span class="kw">]</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"./exposure/exposure.csv"</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="kw">[</span><span class="dt">vulnerability</span><span class="kw">]</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"./vulnerability/vulnerability_curves.csv"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
@@ -645,7 +919,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-    <div class="nav-footer-left">Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></div>   
+    <div class="nav-footer-left">Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></div>   
     <div class="nav-footer-center">
       &nbsp;
     </div>
