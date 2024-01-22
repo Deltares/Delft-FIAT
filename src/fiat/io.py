@@ -2007,7 +2007,7 @@ def open_csv(
     delimiter : str, optional
         Column seperating character, either something like `','` or `';'`.
     header : bool, optional
-        Wether or not to use headers.
+        Whether or not to use headers.
     index : str, optional
         Name of the index column.
     large : bool, optional

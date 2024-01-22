@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Delft-FIAT"
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "0.1.0rc2.dev"
 #define MyAppPublisher "Deltares"
 #define MyAppExeName "fiat.exe"
 #define PathToSelf ExtractFileDir(SourcePath)
@@ -11,15 +11,15 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={7333C41A-2EBF-478B-95DD-0A437BD1F7FC}
+AppId={{7333C41A-2EBF-478B-95DD-0A437BD1F7FC}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-DefaultDirName={pf}\{#MyAppName}
+DefaultDirName={commonpf}\{#MyAppPublisher}\{#MyAppName}\{#MyAppVersion}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-OutputDir="{#PathToSelf}"
+OutputDir="{#PathToSelf}\..\bin"
 OutputBaseFilename={#MyAppName}-{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
@@ -29,15 +29,15 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "dutch"; MessagesFile: "compiler:Languages\Dutch.isl"
 
 [Setup]
-LicenseFile="{#PathToSelf}\LICENSE"
+LicenseFile="{#PathToSelf}\..\LICENSE"
 ArchitecturesInstallIn64BitMode=x64
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "{#PathToSelf}\bin\x64\release\fiat.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#PathToSelf}\bin\x64\release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#PathToSelf}\..\bin\Release\fiat.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#PathToSelf}\..\bin\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
