@@ -28,8 +28,8 @@ def world2pixel(
     tuple
         Row and column indices.
 
-    Example
-    -------
+    Examples
+    --------
     ```Python
     # Load a dataset
     gs = fiat.io.GridSource(<some raster file>)
