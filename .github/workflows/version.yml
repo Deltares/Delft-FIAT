@@ -4,6 +4,8 @@ name: Versioning
 on:
   push:
     branches: [ gh-pages ]
+  repository_dispatch:
+      types: [docs-updated]
 
 jobs:
   Versioning:
