@@ -11,18 +11,18 @@ include-in-header:
 
 <ul id="index-chooser" class="nav nav-tabs" role="tablist">
   <li class="nav-item" role="presentation">
-    <a class="nav-link" href="data/data.qmd">
+    <a class="nav-link" href="settings/index.qmd">
+      <i class="bi bi-person-gear"></i>User Settings
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="data/index.qmd">
       <i class="bi bi-file-bar-graph"></i>Data
     </a>
   </li>
   <li class="nav-item" role="presentation">
     <a class="nav-link" href="../examples/index.qmd">
       <i class="bi bi-graph-up"></i>Examples
-    </a>
-  </li>
-  <li class="nav-item" role="presentation">
-    <a class="nav-link" href="advanced.qmd">
-      <i class="bi bi-person-gear"></i>Advanced options
     </a>
   </li>
 </ul>
@@ -33,10 +33,10 @@ include-in-header:
 ## Quick start
 FIAT computes the (economic) damage and risk of flood events at a specified geographic location based on flood inundation data, exposured assets and vulnerability functions. The model can be configured with a settings file and data inputs:
 
-  - [Settings file](data/settings.qmd)
-  - [Data](data/data.qmd)
+  - [Settings file](settings/index.qmd)
+  - [Data](data/index.qmd)
 
-The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same [folder structure](data/data.qmd#folder-structure) that HydroMT-FIAT creates.
+The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same [folder structure](data/index.qmd#folder-structure) that HydroMT-FIAT creates.
 
 ## The models
 The data is used by either one or both of the following models:
@@ -44,7 +44,7 @@ The data is used by either one or both of the following models:
 - GeomModel
 - GridModel
 
-Some more information about the models can be found [here](models.qmd).
+Some more information about the models can be found [here](../info/models.qmd).
 
 ## General User Information
 

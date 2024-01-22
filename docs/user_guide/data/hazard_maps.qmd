@@ -49,7 +49,7 @@ Instead of seeing normal metadata, we only get an overview of the available subd
 :::
 
 Multiple netCDF variables are normally not recognized as bands by the [netCDF driver](https://gdal.org/drivers/raster/netcdf.html) of GDAL.
-Instead they are interpreted as subdatasets (!). One can set the key `var_as_band` to `true` within the [settings file](settings.qmd)
+Instead they are interpreted as subdatasets (!). One can set the key `var_as_band` to `true` within the [settings file](../settings/index.qmd)
 to read the subdatasets as bands.
 
 ```toml
@@ -61,7 +61,7 @@ var_as_band = true
 ```
 
 When supplied in one subdataset (all bands are within that subdataset),
-the `subset` variable within the [settings file](settings.qmd) should be set under the header `hazard.settings`.
+the `subset` variable within the [settings file](../settings/index.qmd) should be set under the header `hazard.settings`.
 The value set to `subset` should be the name of the desired subdataset.
 
 ```toml

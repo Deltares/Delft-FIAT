@@ -1,7 +1,7 @@
 ---
 title: Geometry
 ---
-A user can specify one or multiple **geometry files** in the [settings.toml](../settings.qmd). It is advisable to give descriptive names to the geometry files, e.g., *buildings.gpkg* or *roads.gpkg*. Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page. All geometry files must have an attribute `Object ID` that holds unique IDs over all geometry files, linking to the `Object ID` column in the exposure CSV file (see below).
+A user can specify one or multiple **geometry files** in the [settings.toml](../../settings/index.qmd). It is advisable to give descriptive names to the geometry files, e.g., *buildings.gpkg* or *roads.gpkg*. Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page. All geometry files must have an attribute `Object ID` that holds unique IDs over all geometry files, linking to the `Object ID` column in the exposure CSV file (see below).
 
 ::: {.callout-tip title="Example"}
 When using a GeoPackage file with roads containing `Object IDs` 1-100, a second GeoPackage file with building footprints should contain `Object ID`s from 101-n. Then, those IDs should link to the corresponding rows and IDs in the exposure CSV file.

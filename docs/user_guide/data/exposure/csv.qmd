@@ -10,23 +10,19 @@ Users can add as many columns to the exposure CSV as they want, for example, to 
 :::
 
 
-| Field                                  | Description                                                                                | Required                                 | Example                    |
-|----------------------------------------|--------------------------------------------------------------------------------------------|------------------------------------------|----------------------------|
-| [Object ID](#object-id)                             | Unique numerical identifier of the object                                                 | Yes                                      | 1                          |
-| [Object Name](#object-name)                            | Unique name of the object                                                                  | No                                       | fp_1                       |
-| [Primary Object Type](#primarysecondary-object-type)                    | General object type                                                                                | No                                       | RES1_1SNB                  |
-| [Secondary Object Type](#primarysecondary-object-type)                  | More specific object type                                                       | No                                       | Res 1,1 Story no basement  |
-| [Extraction Method](#extraction-method)                      | Method to extract water depth                                                              | Yes                                      | options: 'centroid' or 'area' |
-| [Damage Function](#damage-functions): Structure             | Damage function for the structure                                                          | at least one Damage Function of any kind | struct_2                   |
-| Damage Function: Content               | Damage function for the content                                                            | at least one Damage Function of any kind | cont_62                    |
-| Damage Function: RoadOutages                 | Damage function for road outages                                                         | at least one Damage Function of any kind |                            |
-| [Ground Floor Height](#ground-floor-height)                    | Elevation of the ground floor above the ground elevation. Units must be coherent with hazard map | Yes                                      | 4                          |
-| [Ground Elevation](#ground-elevation)                       | Ground elevation relative to datum at location of the asset. Units must be coherent with hazard map             | Yes, if water level map as hazard input  | 10.11                      |
-| [Max Potential Damage](#max-potential-damage): Structure        | Maximum potential structural damage (use the same name as the related damage function)                                                        | a Max Potential Damage per damage function        | 193457.00                  |
-| Max Potential Damage: Content          | Maximum potential content damage (use the same name as the related damage function)                                                           | a Max Potential Damage per damage function        | 386984.00                  |
-| Max Potential Damage: RoadOutages            | Maximum potential other damage (e.g. road outages) (use the same name as the related damage function)                                                | a Max Potential Damage per damage function        |                            |
-| <e.g., Census Tract> | For example, another column to later aggregate damages by, in this case, Census Tract                                                         | No                                       | 1205                       |
-: exposure.csv input {#tbl-exposure .striped .hover .column-page-inset-right}
+| Field                                                  | Required | Multiple | Example                   |
+|--------------------------------------------------------|----------|----------|---------------------------|
+| [Object ID](#object-id)                                | Yes      | -        | 1                         |
+| [Object Name](#object-name)                            | No       | -        | fp_1                      |
+| [Primary Object Type](#primarysecondary-object-type)   | No       | -        | RES1_1SNB                 |
+| [Secondary Object Type](#primarysecondary-object-type) | No       | -        | Res 1,1 Story no basement |
+| [Extraction Method](#extraction-method)                | Yes      | -        | 'centroid'                |
+| [Damage Function: < ANY >](#damage-functions)          | Yes      | Yes      | struct_2                  |
+| [Ground Floor Height](#ground-floor-height)            | Yes      | -        | 4                         |
+| [Ground Elevation](#ground-elevation)                  | No       | -        | 10.11                     |
+| [Max Potential Damage: < ANY >](#max-potential-damage) | Yes      | Yes      | 193457.00                 |
+| [< Additional attributes >](#additional-attributes)    | No       |          | 1205                      |
+: exposure.csv input {#tbl-exposure .hover}
 
 A more detailed description of the data fields in the *exposure.csv* can be found below.
 

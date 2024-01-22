@@ -56,15 +56,15 @@ website:
       - text: "Developments"
         file: developments/index.qmd
     right:
-      # - icon: _static/images/deltares-blue.svg
-      #   href: https://www.deltares.nl/en
-      #   aria-label: Deltares-Image
       - icon: github
         menu:
           - text: Source Code
             url:  https://github.com/Deltares/Delft-FIAT
           - text: Report an Issue
             url:  https://github.com/Deltares/Delft-FIAT/issues/new/choose
+      - text: Version
+        menu:
+          - text: empty
 
   sidebar:
     - title: "Getting started"
@@ -73,6 +73,8 @@ website:
       contents:
         - text: Getting started
           file: getting_started/index.qmd
+        - text: Model information
+          file: info/models.qmd
         - getting_started/faq.qmd
     - title: "Setup guide"
       collapse-level: 3
@@ -87,12 +89,16 @@ website:
             - setup_guide/kernel/application.qmd
             - setup_guide/kernel/linux.qmd
     - title: "User guide"
-      collapse-level: 2
+      collapse-level: 1
       contents:
         - user_guide/index.qmd
-        - user_guide/data/settings.qmd
+        - text: "Settings"
+          file: user_guide/settings/index.qmd
+          contents:
+            - user_guide/settings/computation.qmd
+            - user_guide/settings/optional.qmd
         - text: "Data"
-          file: user_guide/data/data.qmd
+          file: user_guide/data/index.qmd
           contents:
             - text: Hazard data
               file: user_guide/data/hazard.qmd
@@ -105,9 +111,7 @@ website:
                 - user_guide/data/exposure/geometries.qmd
             - user_guide/data/vulnerability.qmd
             - user_guide/data/supported.qmd
-        - user_guide/models.qmd
         - examples/index.qmd
-        - user_guide/advanced.qmd
     - title: "Developments"
       collapse-level: 3
       contents:
@@ -126,6 +130,9 @@ format:
     page-layout: article
     grid:
       content-mode: standard
+    include-in-header:
+      - text: |
+          <script type="text/javascript" src="/_static/version.js"></script>
 
 # bibliography: references.bib
 # citeproc: false

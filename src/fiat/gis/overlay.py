@@ -96,7 +96,7 @@ def clip_weighted(
     This method caters to those who wish to have information about the percentages of \
 cells that are touched by the feature.
 
-    Warning!
+    Warnings
     --------
     A high upscale value comes with a calculation penalty!
 

@@ -95,3 +95,11 @@ jobs:
           destination_dir: ./${{ env.DOC_VERSION }}
           keep_files: false
           full_commit_message: Deploy ${{ env.DOC_VERSION }} to GitHub Pages
+
+      - name: Trigger Dispatch
+        if: ${{ github.event_name != 'pull_request' && !github.event.act }}
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: docs-updated

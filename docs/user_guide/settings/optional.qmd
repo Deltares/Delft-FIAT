@@ -1,0 +1,83 @@
+---
+title: "Optional input"
+---
+
+Here we provide an overview of all optional/ non essential settings that the user can provide to FIAT. These are listed in the table (@tbl-toml) below.
+
+| Field                                  | Type    | Default       |
+|----------------------------------------|---------|---------------|
+| **[global]**                           |         |               |
+| [crs](#global)                         | string  | -             |
+| [keep_temp_files](#global)             | boolean | false         |
+| [gdal_cache](#global)                  | int     | -             |
+| **[hazard]**                           |         |               |
+| [crs](#hazard)                         | string  | -             |
+| [return_periods](#hazard)              | list    | -             |
+| **[hazard.settings]**                  |         |               |
+| [subset](#hazard.settings)             | string  | -             |
+| [var_as_band](#hazard.settings)        | boolean | false         |
+| **[exposure.csv]**                     |         |               |
+| [index](#exposure.csv)                 | string  | 'Object ID'   |
+| **[exposure.geom]**                    |         |               |
+| [crs](#exposure.geom)                  | string  | -             |
+| **[exposure.grid]**                    |         |               |
+| [crs](#exposure.grid)                  | string  | -             |
+| **[exposure.grid.settings]**           |         |               |
+| [var_as_band](#exposure.grid.settings) | boolean | false         |
+| **[vulnerability]**                    |         |               |
+| [step_size](#vulnerability)            | float   | 0.01          |
+| **[vulnerability.settings]**           |         |               |
+| [index](#vulnerability.settings)       | string  | 'water depth' |
+: Settings.toml input (required and optional fields) {#tbl-toml .hover}
+
+#### [global]
+
+`crs`: Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.
+
+`keep_temp_files`: Permanently save the temporary file outputs. These are produced during the calculations.
+
+`gdal_cache`: bla
+
+#### [hazard]
+
+`crs`: Projection of the hazard data if it cannot be inferred from the dataset itself.
+
+`return_periods`: Return periods for hazard calculation when they cannot be inferred from the data itself.
+
+####  [hazard.settings]
+
+`subset`: Select a specific subdataset by supplying it's ID (name) here.
+
+`var_as_band`:	Whether or not to read the subdatasets as classic raster band.
+
+::: {.callout-note}
+The entry `var_as_band` is only applicable to netCDF files.
+:::
+
+#### [exposure.csv]
+
+`index`: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to 'Object ID'.
+
+#### [exposure.geom]
+
+`crs`: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.
+
+#### [exposure.grid]
+
+`crs`: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.
+
+#### [exposure.grid.settings]
+
+`var_as_band`:	Whether or not to read the subdatasets as classic raster band.
+
+::: {.callout-note}
+The entry `var_as_band` is only applicable to netCDF files.
+:::
+
+#### [vulnerability]
+
+`step_size`: The internal step size of the vulnerability data. The supplied data is interpolated or averaged depending on the minimal step size of the supplied dataset.
+
+#### [vulnerability.settings]
+
+`index`: Set the index column of the csv file. In case of the vulnerability csv, if no entry is provided then FIAT will default to 'water depth'.

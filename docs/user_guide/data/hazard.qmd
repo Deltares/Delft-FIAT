@@ -18,7 +18,7 @@ The user is free to run the model with a variety of flood scenarios, e.g., inclu
 
 With FIAT, the user has the option to assess the impact of a single flood event or the flood risk based on a set of events with multiple return periods. To do the latter, the user must provide multiple hazard maps with the same extent and projection.
 
-In each case, some requirements must be met. The hazard files of any map should be made available as a **raster file**, see the acceptable file types at the bottom of this page. It is recommended to place the hazard files in the 'hazard' folder, see the [folder structure](data.qmd#folder-structure). The file name is free to be chosen by the user and must simply be refered to in the [settings.toml](settings.qmd) configuration file.
+In each case, some requirements must be met. The hazard files of any map should be made available as a **raster file**, see the acceptable file types at the bottom of this page. It is recommended to place the hazard files in the 'hazard' folder, see the [folder structure](index.qmd#folder-structure). The file name is free to be chosen by the user and must simply be refered to in the [settings.toml](../settings/index.qmd) configuration file.
 
 ## Types of maps
 FIAT knows two types of hazard maps:
@@ -27,7 +27,7 @@ FIAT knows two types of hazard maps:
 - [Risk maps](hazard_maps.qmd#risk)
 
 Risk maps are mainly used to calculate the EAD (Estimated Annual Damages).
-If `risk` is not set to `true` in the [settings file](settings.qmd), the supplied map will be treated as an event map.
+If `risk` is not set to `true` in the [settings file](../settings/index.qmd), the supplied map will be treated as an event map.
 
 ## Supported formats
 An overview of supported formats is presented [here](supported.qmd#gridded-data-files)
