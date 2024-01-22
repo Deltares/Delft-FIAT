@@ -7,23 +7,20 @@ Welcome to Delft-FIAT. Here we present an overview of what's going on.
 ## Roadmap
 What are we up to and what are the goals.
 
-### 2023 - Q4
-The biggest priority in this quarter is to go open source and to release a first version of FIAT for both the Vector and Raster models.
-
-#### Short term fixes
-- Issues with duplicate Object IDs are handeled in a next release, check [issue #85](https://github.com/Deltares/Delft-FIAT/issues/85).
-- The method to calculate the centroid of polygons will be refined in a next release, check [issue #77](https://github.com/Deltares/Delft-FIAT/issues/77).
-
 ### 2024 - Q1
-The biggest priority in this quarter is to create a stable version of FIAT for both the Vector and Raster models.
+In the first quarter of 2024 we will focus on:
 
-We welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. Our [developer guide](guide.qmd) explains how can be contributed in code developments.
+- Stabalizing existing code
+- This means moving to version `0.1.0`!
+- Implement better chunking and parallelization
+- Improving the documentation.
 
 ## What's new...
 In order to see what has been done and what has been changed, please see the [changelog](../changelog.qmd).
 
 ## Contribute?
-Please check out our [developer guide](guide.qmd) if you'd like to contribute to FIAT!
+We welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas.
+Our [developer guide](guide.qmd) explains how one can contribute to Delft-FIAT!
 
 ## Licencing
 The MIT [license](https://github.com/Deltares/Delft-FIAT/blob/master/LICENSE) applies to all contributions.
