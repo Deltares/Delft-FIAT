@@ -92,11 +92,11 @@ def add(
 if __name__ == "__main__":
     res = check()
     if res is None:
-        sys.exit(1)
+        sys.exit("No new documentation folders found!")
 
     res2 = add(res)
     if res2 is None:
-        sys.exit(1)
+        sys.exit("New documentation folder(s) already existed in 'switcher.json'!")
 
     with open(os.getenv('GITHUB_ENV'), 'a') as fh:
         print(f'NEW_STABLE_VERSION={res2}', file=fh)
