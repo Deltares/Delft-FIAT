@@ -11,11 +11,13 @@ These are unreleased changes and will be incorperated in the next release.
 ### Changed
 - Better build environment creation on linux systems
 - Fixed handling of positive nodata values in geometry calculations
+- Updated the installer creation (exe) on Windows (10/11)
 
 ### Deprecated
 
 ### Documentation
 - Ability to switch between documentation/ software versions
+- Improved/ updated the page regarding exposure csv
 - Restructered user settings pages
 - Seperated user settings into: Basic, Computational & Optional
 
