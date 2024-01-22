@@ -79,7 +79,8 @@ def add(
                 )
 
     if len(sw) != 0:
-        s += sw
+        for _s in reversed(sw):
+            s.insert(2, _s)
         with open(Path(CUR_DIR, "..", "switcher.json"),
             "w",
         ) as _w:
