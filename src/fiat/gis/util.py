@@ -74,8 +74,8 @@ def pixel2world(
     tuple
         Return the x, y coordinates of the upper left corner of the cell.
 
-    Example
-    -------
+    Examples
+    --------
     ```Python
     # Load a dataset
     gs = fiat.io.GridSource(<some raster file>)
