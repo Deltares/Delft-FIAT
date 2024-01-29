@@ -1438,11 +1438,11 @@ multiple variables.
         Returns
         -------
         tuple
-            Contains size in x direction and y direction.
+            Contains size in y direction and x direction.
         """
         return (
-            self.src.RasterXSize,
             self.src.RasterYSize,
+            self.src.RasterXSize,
         )
 
     @_BaseIO._check_mode
