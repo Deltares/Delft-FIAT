@@ -592,8 +592,8 @@ class Grid(
             self.flush()
             raise StopIteration
 
-        w = min(self._chunk[0], self._x - self._l)
-        h = min(self._chunk[1], self._y - self._u)
+        w = min(self._chunk[1], self._x - self._l)
+        h = min(self._chunk[0], self._y - self._u)
 
         window = (
             self._l,
@@ -603,29 +603,12 @@ class Grid(
         )
         chunk = self[window]
 
-        self._l += self._chunk[0]
+        self._l += self._chunk[1]
         if self._l > self._x:
             self._l = 0
-            self._u += self._chunk[1]
+            self._u += self._chunk[0]
 
         return window, chunk
-
-        # for l, u in self._windows:
-        #     s = time.time()
-
-        #     if self._last_chunk is not None:
-        #         self._last_chunk = None
-
-        #     w = min(self._chunk[0], self._x - l)
-        #     h = min(self._chunk[1], self._y - u)
-
-        #     chunk = self[l, u, w, h]
-        #     self._last_chunk = chunk
-
-        #     e = time.time() - s
-        #     print(f"{e} seconds! (iter)")
-
-        # return (l, u, w, h), chunk
 
     def __getitem__(
         self,
@@ -657,6 +640,21 @@ class Grid(
     @property
     def shape(self):
         """Return the shape of the grid.
+
+        According to normal reading, i.e. rows, columns.
+
+        Returns
+        -------
+        tuple
+            Size in y direction, size in x direction
+        """
+        return self._y, self._x
+
+    @property
+    def shape_xy(self):
+        """Return the shape of the grid.
+
+        According to x-direction first.
 
         Returns
         -------
@@ -1270,6 +1268,8 @@ multiple variables.
     def shape(self):
         """Return the shape of the grid.
 
+        According to normal reading, i.e. rows, columns.
+
         Returns
         -------
         tuple
@@ -1278,6 +1278,23 @@ multiple variables.
         return (
             self.src.RasterYSize,
             self.src.RasterXSize,
+        )
+
+    @property
+    @_BaseIO._check_state
+    def shape_xy(self):
+        """Return the shape of the grid.
+
+        According to x-direction first.
+
+        Returns
+        -------
+        tuple
+            Contains size in x direction and y direction.
+        """
+        return (
+            self.src.RasterXSize,
+            self.src.RasterYSize,
         )
 
     @_BaseIO._check_mode
