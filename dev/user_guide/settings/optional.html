@@ -411,19 +411,38 @@ ul.task-list li input[type="checkbox"] {
 </div>
 <section id="global" class="level4">
 <h4 class="anchored" data-anchor-id="global">[global]</h4>
-<p><code>crs</code>: Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.</p>
-<p><code>keep_temp_files</code>: Permanently save the temporary file outputs. These are produced during the calculations.</p>
-<p><code>gdal_cache</code>: bla</p>
+<ul>
+<li><p><code>crs</code>: Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.</p></li>
+<li><p><code>keep_temp_files</code>: Permanently save the temporary file outputs. These are produced during the calculations.</p></li>
+<li><p><code>gdal_cache</code>: Set the cache used by GDAL.</p></li>
+</ul>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The entry <code>gdal_cache</code> performs poorly and will probably be deprecated soon.</p>
+</div>
+</div>
 </section>
 <section id="hazard" class="level4">
 <h4 class="anchored" data-anchor-id="hazard">[hazard]</h4>
-<p><code>crs</code>: Projection of the hazard data if it cannot be inferred from the dataset itself.</p>
-<p><code>return_periods</code>: Return periods for hazard calculation when they cannot be inferred from the data itself.</p>
+<ul>
+<li><p><code>crs</code>: Projection of the hazard data if it cannot be inferred from the dataset itself.</p></li>
+<li><p><code>return_periods</code>: Return periods for hazard calculation when they cannot be inferred from the data itself.</p></li>
+</ul>
 </section>
 <section id="hazard.settings" class="level4">
 <h4 class="anchored" data-anchor-id="hazard.settings">[hazard.settings]</h4>
-<p><code>subset</code>: Select a specific subdataset by supplying it’s ID (name) here.</p>
-<p><code>var_as_band</code>: Whether or not to read the subdatasets as classic raster band.</p>
+<ul>
+<li><p><code>subset</code>: Select a specific subdataset by supplying it’s ID (name) here.</p></li>
+<li><p><code>var_as_band</code>: Whether or not to read the subdatasets as classic raster band.</p></li>
+</ul>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -440,19 +459,27 @@ Note
 </section>
 <section id="exposure.csv" class="level4">
 <h4 class="anchored" data-anchor-id="exposure.csv">[exposure.csv]</h4>
-<p><code>index</code>: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to ‘Object ID’.</p>
+<ul>
+<li><code>index</code>: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to ‘Object ID’.</li>
+</ul>
 </section>
 <section id="exposure.geom" class="level4">
 <h4 class="anchored" data-anchor-id="exposure.geom">[exposure.geom]</h4>
-<p><code>crs</code>: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.</p>
+<ul>
+<li><code>crs</code>: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.</li>
+</ul>
 </section>
 <section id="exposure.grid" class="level4">
 <h4 class="anchored" data-anchor-id="exposure.grid">[exposure.grid]</h4>
-<p><code>crs</code>: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.</p>
+<ul>
+<li><code>crs</code>: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.</li>
+</ul>
 </section>
 <section id="exposure.grid.settings" class="level4">
 <h4 class="anchored" data-anchor-id="exposure.grid.settings">[exposure.grid.settings]</h4>
-<p><code>var_as_band</code>: Whether or not to read the subdatasets as classic raster band.</p>
+<ul>
+<li><code>var_as_band</code>: Whether or not to read the subdatasets as classic raster band.</li>
+</ul>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -469,11 +496,15 @@ Note
 </section>
 <section id="vulnerability" class="level4">
 <h4 class="anchored" data-anchor-id="vulnerability">[vulnerability]</h4>
-<p><code>step_size</code>: The internal step size of the vulnerability data. The supplied data is interpolated or averaged depending on the minimal step size of the supplied dataset.</p>
+<ul>
+<li><code>step_size</code>: The internal step size of the vulnerability data. The supplied data is interpolated or averaged depending on the minimal step size of the supplied dataset.</li>
+</ul>
 </section>
 <section id="vulnerability.settings" class="level4">
 <h4 class="anchored" data-anchor-id="vulnerability.settings">[vulnerability.settings]</h4>
-<p><code>index</code>: Set the index column of the csv file. In case of the vulnerability csv, if no entry is provided then FIAT will default to ‘water depth’.</p>
+<ul>
+<li><code>index</code>: Set the index column of the csv file. In case of the vulnerability csv, if no entry is provided then FIAT will default to ‘water depth’.</li>
+</ul>
 
 
 </section>

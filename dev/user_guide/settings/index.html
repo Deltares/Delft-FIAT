@@ -479,15 +479,21 @@ Note
 </div>
 <section id="output" class="level4">
 <h4 class="anchored" data-anchor-id="output">[output]</h4>
-<p><code>path</code>: The path to the output folder in the working directory.</p>
+<ul>
+<li><code>path</code>: The path to the output folder in the working directory.</li>
+</ul>
 </section>
 <section id="output.csv" class="level4">
 <h4 class="anchored" data-anchor-id="output.csv">[output.csv]</h4>
-<p><code>name</code>: The path to the output CSV file that will be created, that contains the information from the exposure.csv and the damages per asset.</p>
+<ul>
+<li><code>name</code>: The path to the output CSV file that will be created, that contains the information from the exposure.csv and the damages per asset.</li>
+</ul>
 </section>
 <section id="output.geom" class="level4">
 <h4 class="anchored" data-anchor-id="output.geom">[output.geom]</h4>
-<p><code>name[n]</code>: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.</p>
+<ul>
+<li><code>name[n]</code>: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.</li>
+</ul>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -504,17 +510,23 @@ Warning
 </section>
 <section id="output.grid" class="level4">
 <h4 class="anchored" data-anchor-id="output.grid">[output.grid]</h4>
-<p><code>name</code>: This sets the name and location of the output raster file that contains damages per grid cell.</p>
+<ul>
+<li><code>name</code>: This sets the name and location of the output raster file that contains damages per grid cell.</li>
+</ul>
 </section>
 <section id="hazard" class="level4">
 <h4 class="anchored" data-anchor-id="hazard">[hazard]</h4>
-<p><code>file</code>: The file path to the hazard file, can be a list of files.</p>
-<p><code>elevation_reference</code>: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be “DEM” while in case of a flood-elevation map this should be “datum”.</p>
-<p><code>risk</code>: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.</p>
+<ul>
+<li><p><code>file</code>: The file path to the hazard file, can be a list of files.</p></li>
+<li><p><code>elevation_reference</code>: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be “DEM” while in case of a flood-elevation map this should be “datum”.</p></li>
+<li><p><code>risk</code>: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.</p></li>
+</ul>
 </section>
 <section id="exposure.geom" class="level4">
 <h4 class="anchored" data-anchor-id="exposure.geom">[exposure.geom]</h4>
-<p><code>file[n]</code>: The path to the exposure vector file (recommended to be within the <a href="../../user_guide/data/index.html">exposure folder</a>) with the assets’ geometry and Object ID. The user can provide multiple vector files. Therefore the ‘[n]’ suffix, as the user can create mulitple entries for vector files (e.g.&nbsp;<code>file1</code>, <code>file2</code> etc.).</p>
+<ul>
+<li><code>file[n]</code>: The path to the exposure vector file (recommended to be within the <a href="../../user_guide/data/index.html">exposure folder</a>) with the assets’ geometry and Object ID. The user can provide multiple vector files. Therefore the ‘[n]’ suffix, as the user can create mulitple entries for vector files (e.g.&nbsp;<code>file1</code>, <code>file2</code> etc.).</li>
+</ul>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -531,11 +543,15 @@ Warning
 </section>
 <section id="exposure.csv" class="level4">
 <h4 class="anchored" data-anchor-id="exposure.csv">[exposure.csv]</h4>
-<p><code>file</code>: The path to the exposure CSV file (recommended to be within the <a href="../../user_guide/data/index.html">exposure folder</a>) that contains the <a href="../../user_guide/data/exposure.html">required information</a> per asset. There can only be one exposure CSV file.</p>
+<ul>
+<li><code>file</code>: The path to the exposure CSV file (recommended to be within the <a href="../../user_guide/data/index.html">exposure folder</a>) that contains the <a href="../../user_guide/data/exposure.html">required information</a> per asset. There can only be one exposure CSV file.</li>
+</ul>
 </section>
 <section id="vulnerability" class="level4">
 <h4 class="anchored" data-anchor-id="vulnerability">[vulnerability]</h4>
-<p><code>file</code>: The path to the vulnerability curves CSV file within the <a href="../../user_guide/data/index.html">vulnerability folder</a> that contains the <a href="../../user_guide/data/vulnerability.html">damage curves</a>. Only one vulnerability curves file is allowed.</p>
+<ul>
+<li><code>file</code>: The path to the vulnerability curves CSV file within the <a href="../../user_guide/data/index.html">vulnerability folder</a> that contains the <a href="../../user_guide/data/vulnerability.html">damage curves</a>. Only one vulnerability curves file is allowed.</li>
+</ul>
 </section>
 </section>
 <section id="example" class="level3">

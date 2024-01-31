@@ -374,11 +374,15 @@ Warning
 </div>
 <section id="global" class="level4">
 <h4 class="anchored" data-anchor-id="global">[global]</h4>
-<p><code>threads</code>: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.</p>
+<ul>
+<li><code>threads</code>: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.</li>
+</ul>
 </section>
 <section id="global.geom" class="level4">
 <h4 class="anchored" data-anchor-id="global.geom">[global.geom]</h4>
-<p><code>chunk</code>: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.</p>
+<ul>
+<li><code>chunk</code>: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.</li>
+</ul>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -408,7 +412,9 @@ Note
 </section>
 <section id="global.grid" class="level4">
 <h4 class="anchored" data-anchor-id="global.grid">[global.grid]</h4>
-<p><code>chunk</code>: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be <code>[1024, 1024,]</code>.</p>
+<ul>
+<li><code>chunk</code>: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be <code>[1024, 1024,]</code>.</li>
+</ul>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -425,15 +431,21 @@ Note
 </section>
 <section id="hazard.settings" class="level4">
 <h4 class="anchored" data-anchor-id="hazard.settings">[hazard.settings]</h4>
-<p><code>chunk</code>: Same as the global setting but for the hazard data.</p>
+<ul>
+<li><code>chunk</code>: Same as the global setting but for the hazard data.</li>
+</ul>
 </section>
 <section id="exposure.geom.settings" class="level4">
 <h4 class="anchored" data-anchor-id="exposure.geom.settings">[exposure.geom.settings]</h4>
-<p><code>chunk</code>: Same as the global setting but just for the calculations (writing not included).</p>
+<ul>
+<li><code>chunk</code>: Same as the global setting but just for the calculations (writing not included).</li>
+</ul>
 </section>
 <section id="exposure.geom.settings-1" class="level4">
 <h4 class="anchored" data-anchor-id="exposure.geom.settings-1">[exposure.geom.settings]</h4>
-<p><code>chunk</code>: Same as the global setting but for the exposure data.</p>
+<ul>
+<li><code>chunk</code>: Same as the global setting but for the exposure data.</li>
+</ul>
 
 
 </section>
