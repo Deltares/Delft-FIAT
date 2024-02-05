@@ -13,6 +13,7 @@ from typing import Any
 
 from numpy import arange, array, column_stack, interp, ndarray
 from osgeo import gdal, ogr, osr
+from osgeo_utils.ogrmerge import process as ogr_merge
 
 from fiat.error import DriverNotFoundError
 from fiat.util import (
@@ -350,6 +351,154 @@ class BufferedGeomWriter:
             f"{self.n:03d}",
         )
         self.n += 1
+
+        self._reset_buffer()
+
+
+class BufferedVSIGeomWriter:
+    """_summary_."""
+
+    def __init__(
+        self,
+        file: str | Path,
+        srs: osr.SpatialReference,
+        layer_meta: ogr.FeatureDefn,
+        buffer_size: int = 20000,  # geometries
+        lock: Lock = None,
+    ):
+        """_summary_.
+
+        _extended_summary_
+
+        Parameters
+        ----------
+        file : str | Path
+            _description_
+        srs : osr.SpatialReference
+            _description_
+        layer_meta : ogr.FeatureDefn
+            _description_
+        buffer_size : int, optional
+            _description_, by default 20000
+        """
+        # Ensure pathlib.Path
+        file = Path(file)
+        self.file = file
+
+        # Set the lock
+        self.lock = lock
+        if lock is None:
+            self.lock = DummyLock()
+
+        # Set for unique layer id's
+        self.pid = os.getpid()
+
+        # Set for later use
+        self.srs = srs
+        self.in_layer_meta = layer_meta
+        self.flds = {}
+        self.n = 1
+
+        # Create the buffer
+        self.buffer = open_geom(f"/vsimem/{file.stem}.gpkg", "w")
+        self.buffer.create_layer(
+            srs,
+            layer_meta.GetGeomType(),
+        )
+        self.buffer.set_layer_from_defn(
+            layer_meta,
+        )
+        # Set some check vars
+        # TODO: do this based om memory foodprint
+        # Needs some reseach into ogr's memory tracking
+        self.max_size = buffer_size
+        self.size = 0
+
+        # Open the stream
+        self.stream = open_geom(
+            file,
+            mode="w",
+        )
+
+    def __del__(self):
+        self._clear_cache()
+        self.buffer = None
+        self.stream = None
+
+    def __reduce__(self) -> str | tuple[Any, ...]:
+        pass
+
+    def _clear_cache(self):
+        self.buffer.src.DeleteLayer(f"{self.file.stem}")
+        self.buffer._driver.DeleteDataSource(f"/vsimem/{self.file.stem}.gpkg")
+
+    def _reset_buffer(self):
+        # Delete
+        self.buffer.src.DeleteLayer(f"{self.file.stem}")
+
+        # Re-create
+        self.buffer.create_layer(
+            self.srs,
+            self.in_layer_meta.GetGeomType(),
+        )
+        self.buffer.set_layer_from_defn(
+            self.in_layer_meta,
+        )
+        self.create_fields(self.flds)
+
+        # Reset current size
+        self.size = 0
+
+    def add_feature(
+        self,
+        ft: ogr.Feature,
+        fmap: dict,
+    ):
+        """_summary_."""
+        _local_ft = ogr.Feature(self.buffer.layer.GetLayerDefn())
+        _local_ft.SetFID(ft.GetFID())
+        _local_ft.SetGeometry(ft.GetGeometryRef())
+        for num in range(ft.GetFieldCount()):
+            _local_ft.SetField(
+                num,
+                ft.GetField(num),
+            )
+
+        for key, item in fmap.items():
+            _local_ft.SetField(
+                key,
+                item,
+            )
+
+        if self.size + 1 > self.max_size:
+            self.to_drive()
+
+        self.buffer.layer.CreateFeature(_local_ft)
+        self.size += 1
+        _local_ft = None
+
+    def create_fields(
+        self,
+        flds: zip,
+    ):
+        """_summary_."""
+        _new = dict(flds)
+        self.flds.update(_new)
+
+        self.buffer.create_fields(
+            _new,
+        )
+
+    def to_drive(self):
+        """_summary_."""
+        # Block while writing to the drive
+        self.lock.acquire()
+        merge_geom_layers(
+            self.file.as_posix(),
+            f"/vsimem/{self.file.stem}.gpkg",
+            out_layer_name=self.file.stem,
+        )
+        self.lock.release()
 
         self._reset_buffer()
 
@@ -857,6 +1006,8 @@ class GeomSource(_BaseIO, _BaseStruct):
         Path to a file.
     mode : str, optional
         The I/O mode. Either `r` for reading or `w` for writing.
+    overwrite : bool, optional
+        Whether or not to overwrite an existing dataset. 
 
     Examples
     --------
@@ -880,6 +1031,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         cls,
         file: str,
         mode: str = "r",
+        overwrite: bool = False,
     ):
         """_summary_."""
         obj = object.__new__(cls)
@@ -890,6 +1042,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         self,
         file: str,
         mode: str = "r",
+        overwrite: bool = False,
     ):
         _BaseIO.__init__(self, file, mode)
 
@@ -900,12 +1053,12 @@ class GeomSource(_BaseIO, _BaseStruct):
 
         self._driver = ogr.GetDriverByName(driver)
 
-        if self.path.exists():
-            self.src = self._driver.Open(str(self.path), self._mode)
+        if self.path.exists() and not overwrite:
+            self.src = self._driver.Open(self.path.as_posix(), self._mode)
         else:
             if not self._mode:
                 raise OSError("")
-            self.src = self._driver.CreateDataSource(str(self.path))
+            self.src = self._driver.CreateDataSource(self.path.as_posix())
 
         self.count = 0
         self._cur_index = 0
@@ -1295,7 +1448,9 @@ multiple variables.
         self.subset = subset
 
         if subset is not None and not var_as_band:
-            self._path = f"{driver.upper()}:" + f'"{file}"' + f":{subset}"
+            self._path = Path(
+                f"{driver.upper()}:" + f'"{file}"' + f":{subset}",
+            )
 
         if var_as_band:
             _open_options.append("VARIABLES_AS_BANDS=YES")
@@ -1311,7 +1466,7 @@ multiple variables.
         self._cur_index = 1
 
         if not self._mode:
-            self.src = gdal.OpenEx(str(self._path), open_options=_open_options)
+            self.src = gdal.OpenEx(self._path.as_posix(), open_options=_open_options)
             self.count = self.src.RasterCount
 
             if chunk is None:
@@ -1490,7 +1645,7 @@ multiple variables.
             Additional arguments.
         """
         self.src = self._driver.Create(
-            str(self.path),
+            self.path.as_posix(),
             *shape,
             nb,
             type,
@@ -2170,6 +2325,62 @@ class ExposureTable(TableLazy):
     def gen_dat_dtypes(self):
         """Generate dtypes for the new columns."""
         return ",".join(["float"] * self._dat_len).encode()
+
+
+## I/O mutating methods
+def merge_geom_layers(
+    out_fn: Path | str,
+    in_fn: Path | str,
+    driver: str = None,
+    append: bool = True,
+    overwrite: bool = False,
+    single_layer: bool = False,
+    out_layer_name: str = None,
+):
+    """_summary_.
+
+    _extended_summary_
+
+    Parameters
+    ----------
+    out_fn : Path | str
+        _description_
+    in_fn : Path | str
+        _description_
+    driver : str, optional
+        _description_, by default None
+    append : bool, optional
+        _description_, by default True
+    geom_type : int, optional
+        _description_, by default None
+    overwrite : bool, optional
+        _description_, by default False
+    single_layer : bool, optional
+        _description_, by default False
+    out_layer_name : str, optional
+        _description_, by default None
+    """
+    # Create pathlib.Path objects
+    out_fn = Path(out_fn)
+    in_fn = Path(in_fn)
+
+    # Sort the arguments
+    args = []
+    if not append and driver is not None:
+        args += ["-f", driver]
+    if append:
+        args += ["-append"]
+    if overwrite:
+        args += ["-overwrite_ds"]
+    if single_layer:
+        args += ["-single"]
+    args += ["-o", str(out_fn)]
+    if out_layer_name is not None:
+        args += ["-nln", out_layer_name]
+    args += [in_fn.as_posix()]
+
+    # Execute the merging
+    ogr_merge([*args])
 
 
 ## Open

@@ -17,6 +17,7 @@ from fiat.check import (
 from fiat.gis import geom, overlay
 from fiat.gis.crs import get_srs_repr
 from fiat.io import (
+    merge_geom_layers,
     open_exp,
     open_geom,
 )
@@ -256,12 +257,14 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
             )
 
             # Merge the layers back together.
-            geom.merge_geom_layers(
-                "GPKG",
+            merge_geom_layers(
                 Path(self.cfg["output.path"], fname),
                 _infiles,
+                append=False,
+                driver="GPKG",
                 overwrite=True,
-                out_layer_fn=fname.stem,
+                single_layer=True,
+                out_layer_name=fname.stem,
             )
 
             # Unlink the temp files for this vector file
