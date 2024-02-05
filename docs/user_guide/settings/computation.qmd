@@ -26,11 +26,11 @@ All settings that are not globally defined (e.g. settings chunk size via `hazard
 
 #### [global]
 
-`threads`: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.
+- `threads`: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.
 
 #### [global.geom]
 
-`chunk`: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.
+- `chunk`: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.
 
 ::: {.callout-tip}
 This input benefits from multiple threads.
@@ -42,7 +42,7 @@ This input is only applicable to the [GeomModel]()
 
 #### [global.grid]
 
-`chunk`: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be `[1024, 1024,]`.
+- `chunk`: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be `[1024, 1024,]`.
 
 ::: {.callout-note}
 This input is only applicable to the [GridModel]()
@@ -50,12 +50,12 @@ This input is only applicable to the [GridModel]()
 
 #### [hazard.settings]
 
-`chunk`: Same as the global setting but for the hazard data.
+- `chunk`: Same as the global setting but for the hazard data.
 
 #### [exposure.geom.settings]
 
-`chunk`: Same as the global setting but just for the calculations (writing not included).
+- `chunk`: Same as the global setting but just for the calculations (writing not included).
 
 #### [exposure.geom.settings]
 
-`chunk`: Same as the global setting but for the exposure data.
+- `chunk`: Same as the global setting but for the exposure data.

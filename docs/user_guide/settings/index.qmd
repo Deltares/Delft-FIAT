@@ -43,15 +43,15 @@ File paths in the settings can be relative to the settings.toml file or absolute
 
 #### [output]
 
-`path`:  The path to the output folder in the working directory.
+- `path`:  The path to the output folder in the working directory.
 
 #### [output.csv]
 
-`name`: The path to the output CSV file that will be created, that contains the information from the exposure.csv and the damages per asset.
+- `name`: The path to the output CSV file that will be created, that contains the information from the exposure.csv and the damages per asset.
 
 #### [output.geom]
 
-`name[n]`: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.
+- `name[n]`: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.
 
 ::: {.callout-warning}
 If provided, the suffix is mandatory. The suffix should match the suffix of the input geometry file for which it is set.
@@ -59,19 +59,19 @@ If provided, the suffix is mandatory. The suffix should match the suffix of the 
 
 #### [output.grid]
 
-`name`: This sets the name and location of the output raster file that contains damages per grid cell.
+- `name`: This sets the name and location of the output raster file that contains damages per grid cell.
 
 #### [hazard]
 
-`file`: The file path to the hazard file, can be a list of files.
+- `file`: The file path to the hazard file, can be a list of files.
 
-`elevation_reference`: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be "DEM" while in case of a flood-elevation map this should be "datum".
+- `elevation_reference`: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be "DEM" while in case of a flood-elevation map this should be "datum".
 
-`risk`: In case of a risk calculation this must be set to "true", for a single events this must be set to "false".
+- `risk`: In case of a risk calculation this must be set to "true", for a single events this must be set to "false".
 
 #### [exposure.geom]
 
-`file[n]`: The path to the exposure vector file (recommended to be within the [exposure folder](../data/index.qmd)) with the assets' geometry and Object ID. The user can provide multiple vector files. Therefore the '[n]' suffix, as the user can create mulitple entries for vector files (e.g. `file1`, `file2` etc.).
+- `file[n]`: The path to the exposure vector file (recommended to be within the [exposure folder](../data/index.qmd)) with the assets' geometry and Object ID. The user can provide multiple vector files. Therefore the '[n]' suffix, as the user can create mulitple entries for vector files (e.g. `file1`, `file2` etc.).
 
 ::: {.callout-warning}
 The suffix is mandatory. So if only one file is provided, name it `file1`.
@@ -79,11 +79,11 @@ The suffix is mandatory. So if only one file is provided, name it `file1`.
 
 #### [exposure.csv]
 
-`file`: The path to the exposure CSV file (recommended to be within the [exposure folder](../data/index.qmd)) that contains the [required information](../data/exposure.qmd) per asset. There can only be one exposure CSV file.
+- `file`: The path to the exposure CSV file (recommended to be within the [exposure folder](../data/index.qmd)) that contains the [required information](../data/exposure.qmd) per asset. There can only be one exposure CSV file.
 
 #### [vulnerability]
 
-`file`: The path to the vulnerability curves CSV file within the [vulnerability folder](../data/index.qmd) that contains the [damage curves](../data/vulnerability.qmd). Only one vulnerability curves file is allowed.
+- `file`: The path to the vulnerability curves CSV file within the [vulnerability folder](../data/index.qmd) that contains the [damage curves](../data/vulnerability.qmd). Only one vulnerability curves file is allowed.
 
 ### Example
 

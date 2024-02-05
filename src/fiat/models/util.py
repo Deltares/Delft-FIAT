@@ -325,7 +325,7 @@ def grid_worker_exact(
         mode="w",
     )
     out_src.create(
-        exp.shape,
+        exp.shape_xy,
         exp.count,
         exp.dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
@@ -341,7 +341,7 @@ def grid_worker_exact(
         mode="w",
     )
     td_out.create(
-        exp.shape,
+        exp.shape_xy,
         1,
         exp.dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
@@ -473,7 +473,7 @@ def grid_worker_risk(
         mode="w",
     )
     ead_src.create(
-        rp[0].shape,
+        rp[0].shape_xy,
         rp[0].count,
         rp[0].dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
@@ -525,7 +525,7 @@ def grid_worker_risk(
         mode="w",
     )
     td_src.create(
-        td[0].shape,
+        td[0].shape_xy,
         1,
         td[0].dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
