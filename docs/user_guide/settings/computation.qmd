@@ -14,8 +14,6 @@ The inputs give the user a bit more control over the computational aspects of FI
 | [chunk](#global.grid)            | list    | -           |
 | **[hazard.settings]**            |         |             |
 | [chunk](#hazard.settings)        | list    | -           |
-| **[exposure.geom.settings]**     |         |             |
-| [chunk](#exposure.geom.settings) | integer | -           |
 | **[exposure.grid.settings]**     |         |             |
 | [chunk](#exposure.grid.settings) | list    | -           |
 : Computational FIAT input settings {#tbl-toml .hover}
@@ -52,10 +50,6 @@ This input is only applicable to the [GridModel]()
 
 - `chunk`: Same as the global setting but for the hazard data.
 
-#### [exposure.geom.settings]
-
-- `chunk`: Same as the global setting but just for the calculations (writing not included).
-
-#### [exposure.geom.settings]
+#### [exposure.grid.settings]
 
 - `chunk`: Same as the global setting but for the exposure data.

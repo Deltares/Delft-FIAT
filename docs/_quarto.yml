@@ -219,6 +219,7 @@ quartodoc:
       desc: Input/ output bound operations
       package: fiat.io
       contents:
+        - merge_geom_layers
         - open_csv
         - open_geom
         - open_grid

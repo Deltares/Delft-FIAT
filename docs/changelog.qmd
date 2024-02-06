@@ -10,16 +10,20 @@ These are unreleased changes and will be incorperated in the next release.
 - Added entries for chunking size in the settings file (`settings.toml`) for `GeomModel`
 - Chunking for geometry calculations (`GeomModel`)
 - Chunking for resolving temporary `GeomModel` output
+- New method for writing geometries from a buffer: `BufferedGeomWriterVSI`
+- New function for merging vector layers: `merge_geom_layers`
 
 ### Changed
-- Parallelisation of calculations for `GeomModel` (not only in risk mode)
 - Better build environment creation on linux systems
 - Fixed and clarified the shape (w, h) of `GridSource` and `Grid`
 - Fixed handling of positive nodata values in geometry calculations
 - Fixed indexing in `GridModel` calculations
+- Parallelisation of calculations for `GeomModel` (not only in risk mode)
 - Updated the installer creation (exe) on Windows (10/11)
 
 ### Deprecated
+- `get_bbox` method of `GeomSource` and `GridSource`
+- Setting: `chunk` in `exposure.geom.settings`, deprecated in favour of `chunk` in `global.geom`
 
 ### Documentation
 - Ability to switch between documentation/ software versions
