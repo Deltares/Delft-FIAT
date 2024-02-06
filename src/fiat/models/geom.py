@@ -17,7 +17,6 @@ from fiat.check import (
 from fiat.gis import geom, overlay
 from fiat.gis.crs import get_srs_repr
 from fiat.io import (
-    merge_geom_layers,
     open_exp,
     open_geom,
 )
@@ -26,9 +25,9 @@ from fiat.models.base import BaseModel
 from fiat.models.util import (
     GEOM_MIN_CHUNK,
     GEOM_MIN_WRITE_CHUNK,
-    geom_def_file,
+    csv_def_file,
+    csv_temp_file,
     geom_resolve,
-    geom_temp_file,
     geom_threads,
     geom_worker,
 )
@@ -62,9 +61,7 @@ class GeomModel(BaseModel):
     ):
         super().__init__(cfg)
 
-        # Declarations:
-        self.chunk = GEOM_MIN_CHUNK
-
+        # Setup the geometry model
         self._read_exposure_data()
         self._read_exposure_geoms()
         self._set_internal_chunking()
@@ -156,34 +153,39 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
     def _set_internal_chunking(self):
         """_summary_."""
+        # Determine maximum geometry dataset size
+        max_geom_size = max(
+            [item.count for item in self.exposure_geoms.values()],
+        )
+        # Set calculations chunk size
+        self.chunk = max_geom_size
         _chunk = self.cfg.get("global.geom.chunk")
         if _chunk is not None:
-            self.chunk = _chunk
+            self.chunk = max(GEOM_MIN_CHUNK, _chunk)
 
+        # Set cache size for outgoing data
         _out_chunk = self.cfg.get("output.geom.settings.chunk")
         if _out_chunk is None:
             _out_chunk = GEOM_MIN_WRITE_CHUNK
         self.cfg["output.geom.settings.chunk"] = _out_chunk
 
-    def _set_num_threads(self):
-        """_summary_."""
-        # Determine maximum geometry dataset size
-        max_geom_size = max(
-            [item.count for item in self.exposure_geoms.values()],
+        # Determine amount of threads
+        self.nchunk = max_geom_size // self.chunk
+        if self.nchunk == 0:
+            self.nchunk = 1
+
+        # Set the 1D chunks
+        self.chunks = create_1d_chunk(
+            self.exposure_geoms["file1"].count,
+            self.nchunk,
         )
 
-        # Determine amount of threads
-        nchunk = max_geom_size // self.chunk
-        if nchunk == 0:
-            nchunk = 1
+    def _set_num_threads(self):
+        """_summary_."""
         self.nthreads = geom_threads(
             self.max_threads,
             self.hazard_grid.count,
-            nchunk,
-        )
-        self.chunks = create_1d_chunk(
-            self.exposure_geoms["file1"].count,
-            nchunk,
+            self.nchunk,
         )
 
     def resolve(
@@ -203,7 +205,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         self.cfg["output.csv.name"] = out_csv
 
         # Create an empty csv file for the separate thread to till
-        geom_def_file(
+        csv_def_file(
             Path(self.cfg["output.path"], out_csv),
             self.exposure_data.columns + tuple(self.cfg["output.new_columns"]),
         )
@@ -216,12 +218,19 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
             if f"output.geom.name{_add}" in self.cfg:
                 out_geom = self.cfg[f"output.geom.name{_add}"]
             self.cfg[f"output.geom.name{_add}"] = out_geom
+            with open_geom(
+                Path(self.cfg.get("output.path"), out_geom), mode="w", overwrite=True
+            ) as _w:
+                pass
 
+        # If more than one thread, start a pool
         if self.nthreads > 1:
             futures = []
             with ProcessPoolExecutor(max_workers=self.nthreads) as Pool:
                 csv_lock = self._mp_manager.Lock()
+                geom_lock = self._mp_manager.Lock()
                 for chunk in self.chunks:
+                    # Submit the all chunks
                     fs = Pool.submit(
                         geom_resolve,
                         self.cfg,
@@ -229,10 +238,13 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
                         self.exposure_geoms,
                         chunk,
                         csv_lock,
+                        geom_lock,
                     )
                     futures.append(fs)
             wait(futures)
 
+        # When there is only 1 thread neccessary
+        # just use process directly
         else:
             p = Process(
                 target=geom_resolve,
@@ -242,34 +254,35 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
                     self.exposure_geoms,
                     self.chunks[0],
                     None,
+                    None,
                 ),
             )
             p.start()
             logger.info("Busy...")
             p.join()
 
-        # Resolve the temp spatial output files to one
-        for key in self.exposure_geoms.keys():
-            _add = key[-1]
-            fname = Path(self.cfg[f"output.geom.name{_add}"])
-            _infiles = Path(
-                self.cfg["output.path.tmp"], f"{fname.stem}_*{fname.suffix}"
-            )
+        # # Resolve the temp spatial output files to one
+        # for key in self.exposure_geoms.keys():
+        #     _add = key[-1]
+        #     fname = Path(self.cfg[f"output.geom.name{_add}"])
+        #     _infiles = Path(
+        #         self.cfg["output.path.tmp"], f"{fname.stem}_*{fname.suffix}"
+        #     )
 
-            # Merge the layers back together.
-            merge_geom_layers(
-                Path(self.cfg["output.path"], fname),
-                _infiles,
-                append=False,
-                driver="GPKG",
-                overwrite=True,
-                single_layer=True,
-                out_layer_name=fname.stem,
-            )
+        #     # Merge the layers back together.
+        #     merge_geom_layers(
+        #         Path(self.cfg["output.path"], fname),
+        #         _infiles,
+        #         append=False,
+        #         driver="GPKG",
+        #         overwrite=True,
+        #         single_layer=True,
+        #         out_layer_name=fname.stem,
+        #     )
 
-            # Unlink the temp files for this vector file
-            for _f in _infiles.parent.glob(_infiles.name):
-                os.unlink(_f)
+        #     # Unlink the temp files for this vector file
+        #     for _f in _infiles.parent.glob(_infiles.name):
+        #         os.unlink(_f)
 
     def run(
         self,
@@ -314,7 +327,7 @@ in regards to band: '{_nms[idx]}'"
                     )
 
                     # Create the temp file plus header
-                    geom_temp_file(
+                    csv_temp_file(
                         self.cfg["output.path.tmp"],
                         idx + 1,
                         self.exposure_data.meta["index_name"],
@@ -348,7 +361,7 @@ in regards to band: '{_nms[idx]}'"
             _s = time.time()
 
             # Create the temp file plus header
-            geom_temp_file(
+            csv_temp_file(
                 self.cfg["output.path.tmp"],
                 1,
                 self.exposure_data.meta["index_name"],

@@ -56,6 +56,7 @@ class BaseModel(metaclass=ABCMeta):
         self.nthreads = 1
         self.chunk = None
         self.chunks = []
+        self.nchunk = 0
 
         self._set_max_threads()
         self._set_model_srs()
@@ -231,6 +232,8 @@ using a step size of: {self._vul_step_size}"
         raise NotImplementedError("")
 
     @abstractmethod
-    def run():
+    def run(
+        self,
+    ):
         """_summary_."""
-        pass
+        raise NotImplementedError("")

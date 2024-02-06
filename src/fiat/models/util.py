@@ -10,7 +10,7 @@ from osgeo import osr
 
 from fiat.gis import geom, overlay
 from fiat.io import (
-    BufferedGeomWriter,
+    BufferedGeomWriterVSI,
     BufferedTextWriter,
     GridSource,
     open_csv,
@@ -24,7 +24,7 @@ GEOM_MIN_CHUNK = 50000
 GEOM_MIN_WRITE_CHUNK = 20000
 
 
-def geom_temp_file(
+def csv_temp_file(
     p: Path | str,
     idx: int,
     index_col: str,
@@ -41,7 +41,7 @@ def geom_temp_file(
         _tw.write(header)
 
 
-def geom_def_file(
+def csv_def_file(
     p: Path | str,
     columns: tuple | list,
 ):
@@ -81,10 +81,11 @@ def geom_resolve(
     exp_geom: dict,
     chunk: tuple | list,
     csv_lock: Lock = None,
+    geom_lock: Lock = None,
 ):
     """_summary_."""
     # pid
-    pid = os.getpid()
+    os.getpid()
 
     # Numerical stuff
     risk = cfg.get("hazard.risk")
@@ -126,11 +127,12 @@ def geom_resolve(
         out_geom = Path(cfg.get(f"output.geom.name{_add}"))
 
         # Setup the geometry writer
-        geom_writer = BufferedGeomWriter(
-            Path(cfg["output.path.tmp"], f"{out_geom.stem}_{pid}{out_geom.suffix}"),
+        geom_writer = BufferedGeomWriterVSI(
+            Path(cfg["output.path"], out_geom),
             srs,
             gm.layer.GetLayerDefn(),
             buffer_size=cfg.get("output.geom.settings.chunk"),
+            lock=geom_lock,
         )
         geom_writer.create_fields(zip(new_cols, ["float"] * len(new_cols)))
 

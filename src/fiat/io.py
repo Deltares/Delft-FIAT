@@ -271,6 +271,8 @@ class BufferedGeomWriter:
             file,
             mode="w",
         )
+        # If there are already layers there, increase the number
+        self.n += self.stream.src.GetLayerCount()
 
         # Create stream to drive
         self.file = file
@@ -355,7 +357,7 @@ class BufferedGeomWriter:
         self._reset_buffer()
 
 
-class BufferedVSIGeomWriter:
+class BufferedGeomWriterVSI:
     """_summary_."""
 
     def __init__(
@@ -414,16 +416,9 @@ class BufferedVSIGeomWriter:
         self.max_size = buffer_size
         self.size = 0
 
-        # Open the stream
-        self.stream = open_geom(
-            file,
-            mode="w",
-        )
-
     def __del__(self):
         self._clear_cache()
         self.buffer = None
-        self.stream = None
 
     def __reduce__(self) -> str | tuple[Any, ...]:
         pass
@@ -564,54 +559,6 @@ class BufferedTextWriter(BytesIO):
         if self.__sizeof__() + len(b) > self.max_size:
             self.to_drive()
         BytesIO.write(self, b)
-
-
-# class BufferTextHandler(BufferedWriter):
-#     """_summary_."""
-
-#     def __init__(
-#         self,
-#         file: str,
-#         buffer_size: int = 524288,  # 512 kB
-#         mode: str = "wb",
-#         lock: Lock = None,
-#     ):
-#         # Set the lock
-#         self.lock = lock
-#         if lock is None:
-#             self.lock = DummyLock()
-
-#         # Create the stream
-#         self._file_stream = DummyIO(file, mode=mode, lock=lock)
-#         self.path = file
-#         self._b_size = buffer_size
-
-#         # Supercharge with BufferedWriter
-#         BufferedWriter.__init__(
-#             self,
-#             self._file_stream,
-#             buffer_size=buffer_size,
-#         )
-
-#     def __del__(self):
-#         self.flush()
-#         self.close()
-#         self._file_stream.close()
-
-#     def __repr__(self):
-#         return f"<{self.__class__.__name__} file='{self.path}'>"
-
-#     def __reduce__(self):
-#         return self.__class__, (self.path, self._b_size, self.mode)
-
-#     def flush(self):
-#         """_summary_.
-
-#         _extended_summary_
-#         """
-#         self.lock.acquire()
-#         BufferedWriter.flush(self)
-#         self.lock.release()
 
 
 class TextHandler(_BaseHandler, TextIOWrapper):
@@ -1007,7 +954,7 @@ class GeomSource(_BaseIO, _BaseStruct):
     mode : str, optional
         The I/O mode. Either `r` for reading or `w` for writing.
     overwrite : bool, optional
-        Whether or not to overwrite an existing dataset. 
+        Whether or not to overwrite an existing dataset.
 
     Examples
     --------
@@ -1333,13 +1280,6 @@ class GeomSource(_BaseIO, _BaseStruct):
             _description_
         """
         self.layer = self.src.CopyLayer(layer, layer_fn, ["OVERWRITE=YES"])
-
-    def get_bbox(self):
-        """Get the bouding box.
-
-        Call <object>.bounds instead.
-        """
-        return self.layer.GetExtent()
 
     def _get_layer(self, l_id):
         """_summary_."""
@@ -1723,26 +1663,6 @@ multiple variables.
             _names.append(self.get_band_name(n + 1))
 
         return _names
-
-    @_BaseIO._check_state
-    def get_bbox(self):
-        """Return the bounding box of the grid.
-
-        Returns
-        -------
-        tuple
-            The bounding box. Take the form of [left, right, top, bottom].
-        """
-        gtf = self.src.GetGeoTransform()
-        bbox = (
-            gtf[0],
-            gtf[0] + gtf[1] * self.src.RasterXSize,
-            gtf[3] + gtf[5] * self.src.RasterYSize,
-            gtf[3],
-        )
-        gtf = None
-
-        return bbox
 
     @_BaseIO._check_state
     def get_geotransform(self):
@@ -2337,28 +2257,31 @@ def merge_geom_layers(
     single_layer: bool = False,
     out_layer_name: str = None,
 ):
-    """_summary_.
+    """Merge multiple vector layers into one file.
 
-    _extended_summary_
+    Either in one layer or multiple within the new file.
+    Also usefull for appending datasets.
+
+    Essentially a python friendly function of the ogr2ogr merge functionality.
 
     Parameters
     ----------
     out_fn : Path | str
-        _description_
+        The resulting file name/ path.
     in_fn : Path | str
-        _description_
+        The input file(s).
     driver : str, optional
-        _description_, by default None
+        The driver to be used for the resulting file.
     append : bool, optional
-        _description_, by default True
+        Whether to append an existing file.
     geom_type : int, optional
-        _description_, by default None
+        The outgoing geometry type.
     overwrite : bool, optional
-        _description_, by default False
+        Whether to overwrite the resulting dataset.
     single_layer : bool, optional
-        _description_, by default False
+        Output in a single layer.
     out_layer_name : str, optional
-        _description_, by default None
+        The name of the resulting single layer.
     """
     # Create pathlib.Path objects
     out_fn = Path(out_fn)
@@ -2377,7 +2300,9 @@ def merge_geom_layers(
     args += ["-o", str(out_fn)]
     if out_layer_name is not None:
         args += ["-nln", out_layer_name]
-    args += [in_fn.as_posix()]
+    if "vsimem" in str(in_fn):
+        in_fn = in_fn.as_posix()
+    args += [str(in_fn)]
 
     # Execute the merging
     ogr_merge([*args])
@@ -2464,6 +2389,7 @@ def open_exp(
 def open_geom(
     file: Path | str,
     mode: str = "r",
+    overwrite: bool = False,
 ):
     """Open a geometry source file.
 
@@ -2475,6 +2401,8 @@ def open_geom(
         Path to the file.
     mode : str, optional
         Open in `read` or `write` mode.
+    overwrite : bool, optional
+        Whether or not to overwrite an existing dataset.
 
     Returns
     -------
@@ -2484,6 +2412,7 @@ def open_geom(
     return GeomSource(
         file,
         mode,
+        overwrite,
     )
 
 
