@@ -5,7 +5,7 @@ from osgeo import osr
 
 def get_srs_repr(
     srs: osr.SpatialReference,
-):
+) -> str:
     """_summary_."""
     _auth_c = srs.GetAuthorityCode(None)
     _auth_n = srs.GetAuthorityName(None)
