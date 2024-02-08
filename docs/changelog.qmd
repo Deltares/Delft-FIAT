@@ -10,7 +10,7 @@ These are unreleased changes and will be incorperated in the next release.
 - Added entries for chunking size in the settings file (`settings.toml`) for `GeomModel`
 - Chunking for geometry calculations (`GeomModel`)
 - Chunking for resolving temporary `GeomModel` output
-- New method for writing geometries from a buffer: `BufferedGeomWriterVSI`
+- New method for writing geometries from a buffer: `BufferedGeomWriter`
 - New function for merging vector layers: `merge_geom_layers`
 
 ### Changed

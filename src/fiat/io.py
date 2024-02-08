@@ -213,151 +213,151 @@ class BufferHandler(_BaseHandler, BufferedReader):
         return self.__class__, (self.path, self.skip)
 
 
+# class BufferedGeomWriter:
+#     """_summary_."""
+
+#     def __init__(
+#         self,
+#         file: str or Path,
+#         srs: osr.SpatialReference,
+#         layer_meta: ogr.FeatureDefn,
+#         buffer_size: int = 20000,  # geometries
+#         lock: Lock = None,
+#     ):
+#         """_summary_.
+
+#         Parameters
+#         ----------
+#         file : strorPath
+#             _description_
+#         srs : osr.SpatialReference
+#             _description_
+#         layer_meta : ogr.FeatureDefn
+#             _description_
+#         field_meta : dict
+#             _description_
+#         """
+#         # Set the lock
+#         self.lock = lock
+#         if lock is None:
+#             self.lock = DummyLock()
+
+#         # Set for unique layer id's
+#         self.pid = os.getpid()
+
+#         # Set for later use
+#         self.srs = srs
+#         self.in_layer_meta = layer_meta
+#         self.flds = {}
+#         self.n = 1
+
+#         # Create the buffer
+#         self.buffer = open_geom("memset", "w")
+#         self.buffer.create_layer(
+#             srs,
+#             layer_meta.GetGeomType(),
+#         )
+#         self.buffer.set_layer_from_defn(
+#             layer_meta,
+#         )
+#         # Set some check vars
+#         # TODO: do this based om memory foodprint
+#         # Needs some reseach into ogr's memory tracking
+#         self.max_size = buffer_size
+#         self.size = 0
+
+#         # Open the stream
+#         self.stream = open_geom(
+#             file,
+#             mode="w",
+#         )
+#         # If there are already layers there, increase the number
+#         self.n += self.stream.src.GetLayerCount()
+
+#         # Create stream to drive
+#         self.file = file
+
+#     def __del__(self):
+#         self._clear_cache()
+#         self.buffer = None
+#         self.stream = None
+
+#     def __reduce__(self) -> str | tuple[Any, ...]:
+#         pass
+
+#     def _clear_cache(self):
+#         self.buffer.src.DeleteLayer("memset")
+
+#     def _reset_buffer(self):
+#         # Delete
+#         self.buffer.src.DeleteLayer("memset")
+
+#         # Re-create
+#         self.buffer.create_layer(
+#             self.srs,
+#             self.in_layer_meta.GetGeomType(),
+#         )
+#         self.buffer.set_layer_from_defn(
+#             self.in_layer_meta,
+#         )
+#         self.create_fields(self.flds)
+
+#         # Reset current size
+#         self.size = 0
+
+#     def add_feature(
+#         self,
+#         ft: ogr.Feature,
+#         fmap: dict,
+#     ):
+#         """_summary_."""
+#         _local_ft = ogr.Feature(self.buffer.layer.GetLayerDefn())
+#         _local_ft.SetFID(ft.GetFID())
+#         _local_ft.SetGeometry(ft.GetGeometryRef())
+#         for num in range(ft.GetFieldCount()):
+#             _local_ft.SetField(
+#                 num,
+#                 ft.GetField(num),
+#             )
+
+#         for key, item in fmap.items():
+#             _local_ft.SetField(
+#                 key,
+#                 item,
+#             )
+
+#         if self.size + 1 > self.max_size:
+#             self.to_drive()
+
+#         self.buffer.layer.CreateFeature(_local_ft)
+#         self.size += 1
+#         _local_ft = None
+
+#     def create_fields(
+#         self,
+#         flds: zip,
+#     ):
+#         """_summary_."""
+#         _new = dict(flds)
+#         self.flds.update(_new)
+
+#         self.buffer.create_fields(
+#             _new,
+#         )
+
+#     def to_drive(self):
+#         """_summary_."""
+#         # Block while writing to the drive
+#         self.stream.copy_layer(
+#             self.buffer.layer,
+#             f"{self.n:03d}",
+#         )
+#         self.n += 1
+
+#         self._reset_buffer()
+
+
 class BufferedGeomWriter:
-    """_summary_."""
-
-    def __init__(
-        self,
-        file: str or Path,
-        srs: osr.SpatialReference,
-        layer_meta: ogr.FeatureDefn,
-        buffer_size: int = 20000,  # geometries
-        lock: Lock = None,
-    ):
-        """_summary_.
-
-        Parameters
-        ----------
-        file : strorPath
-            _description_
-        srs : osr.SpatialReference
-            _description_
-        layer_meta : ogr.FeatureDefn
-            _description_
-        field_meta : dict
-            _description_
-        """
-        # Set the lock
-        self.lock = lock
-        if lock is None:
-            self.lock = DummyLock()
-
-        # Set for unique layer id's
-        self.pid = os.getpid()
-
-        # Set for later use
-        self.srs = srs
-        self.in_layer_meta = layer_meta
-        self.flds = {}
-        self.n = 1
-
-        # Create the buffer
-        self.buffer = open_geom("memset", "w")
-        self.buffer.create_layer(
-            srs,
-            layer_meta.GetGeomType(),
-        )
-        self.buffer.set_layer_from_defn(
-            layer_meta,
-        )
-        # Set some check vars
-        # TODO: do this based om memory foodprint
-        # Needs some reseach into ogr's memory tracking
-        self.max_size = buffer_size
-        self.size = 0
-
-        # Open the stream
-        self.stream = open_geom(
-            file,
-            mode="w",
-        )
-        # If there are already layers there, increase the number
-        self.n += self.stream.src.GetLayerCount()
-
-        # Create stream to drive
-        self.file = file
-
-    def __del__(self):
-        self._clear_cache()
-        self.buffer = None
-        self.stream = None
-
-    def __reduce__(self) -> str | tuple[Any, ...]:
-        pass
-
-    def _clear_cache(self):
-        self.buffer.src.DeleteLayer("memset")
-
-    def _reset_buffer(self):
-        # Delete
-        self.buffer.src.DeleteLayer("memset")
-
-        # Re-create
-        self.buffer.create_layer(
-            self.srs,
-            self.in_layer_meta.GetGeomType(),
-        )
-        self.buffer.set_layer_from_defn(
-            self.in_layer_meta,
-        )
-        self.create_fields(self.flds)
-
-        # Reset current size
-        self.size = 0
-
-    def add_feature(
-        self,
-        ft: ogr.Feature,
-        fmap: dict,
-    ):
-        """_summary_."""
-        _local_ft = ogr.Feature(self.buffer.layer.GetLayerDefn())
-        _local_ft.SetFID(ft.GetFID())
-        _local_ft.SetGeometry(ft.GetGeometryRef())
-        for num in range(ft.GetFieldCount()):
-            _local_ft.SetField(
-                num,
-                ft.GetField(num),
-            )
-
-        for key, item in fmap.items():
-            _local_ft.SetField(
-                key,
-                item,
-            )
-
-        if self.size + 1 > self.max_size:
-            self.to_drive()
-
-        self.buffer.layer.CreateFeature(_local_ft)
-        self.size += 1
-        _local_ft = None
-
-    def create_fields(
-        self,
-        flds: zip,
-    ):
-        """_summary_."""
-        _new = dict(flds)
-        self.flds.update(_new)
-
-        self.buffer.create_fields(
-            _new,
-        )
-
-    def to_drive(self):
-        """_summary_."""
-        # Block while writing to the drive
-        self.stream.copy_layer(
-            self.buffer.layer,
-            f"{self.n:03d}",
-        )
-        self.n += 1
-
-        self._reset_buffer()
-
-
-class BufferedGeomWriterVSI:
     """_summary_."""
 
     def __init__(
@@ -2274,8 +2274,6 @@ def merge_geom_layers(
         The driver to be used for the resulting file.
     append : bool, optional
         Whether to append an existing file.
-    geom_type : int, optional
-        The outgoing geometry type.
     overwrite : bool, optional
         Whether to overwrite the resulting dataset.
     single_layer : bool, optional

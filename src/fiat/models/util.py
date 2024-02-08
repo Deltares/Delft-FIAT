@@ -10,7 +10,7 @@ from osgeo import osr
 
 from fiat.gis import geom, overlay
 from fiat.io import (
-    BufferedGeomWriterVSI,
+    BufferedGeomWriter,
     BufferedTextWriter,
     GridSource,
     open_csv,
@@ -127,7 +127,7 @@ def geom_resolve(
         out_geom = Path(cfg.get(f"output.geom.name{_add}"))
 
         # Setup the geometry writer
-        geom_writer = BufferedGeomWriterVSI(
+        geom_writer = BufferedGeomWriter(
             Path(cfg["output.path"], out_geom),
             srs,
             gm.layer.GetLayerDefn(),
