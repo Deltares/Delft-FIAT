@@ -2,7 +2,7 @@
 
 import os
 from math import floor, isnan, nan
-from multiprocessing import Lock
+from multiprocessing.synchronize import Lock
 from pathlib import Path
 
 from numpy import full, ravel, unravel_index, where

@@ -261,29 +261,6 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
             logger.info("Busy...")
             p.join()
 
-        # # Resolve the temp spatial output files to one
-        # for key in self.exposure_geoms.keys():
-        #     _add = key[-1]
-        #     fname = Path(self.cfg[f"output.geom.name{_add}"])
-        #     _infiles = Path(
-        #         self.cfg["output.path.tmp"], f"{fname.stem}_*{fname.suffix}"
-        #     )
-
-        #     # Merge the layers back together.
-        #     merge_geom_layers(
-        #         Path(self.cfg["output.path"], fname),
-        #         _infiles,
-        #         append=False,
-        #         driver="GPKG",
-        #         overwrite=True,
-        #         single_layer=True,
-        #         out_layer_name=fname.stem,
-        #     )
-
-        #     # Unlink the temp files for this vector file
-        #     for _f in _infiles.parent.glob(_infiles.name):
-        #         os.unlink(_f)
-
     def run(
         self,
     ):
