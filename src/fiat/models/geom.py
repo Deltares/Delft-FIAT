@@ -64,7 +64,7 @@ class GeomModel(BaseModel):
         # Setup the geometry model
         self._read_exposure_data()
         self._read_exposure_geoms()
-        self._set_internal_chunking()
+        self._set_chunking()
         self._set_num_threads()
         self._queue = self._mp_manager.Queue(maxsize=10000)
 
@@ -151,7 +151,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         # When all is done, add it
         self.exposure_geoms = _d
 
-    def _set_internal_chunking(self):
+    def _set_chunking(self):
         """_summary_."""
         # Determine maximum geometry dataset size
         max_geom_size = max(
@@ -173,10 +173,17 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         self.nchunk = max_geom_size // self.chunk
         if self.nchunk == 0:
             self.nchunk = 1
+        # Constrain by max threads
+        if self.max_threads < self.nchunk:
+            logger.warning(
+                f"Less threads ({self.max_threads}) available than \
+calculated chunks ({self.nchunk})"
+            )
+            self.nchunk = self.max_threads
 
         # Set the 1D chunks
         self.chunks = create_1d_chunk(
-            self.exposure_geoms["file1"].count,
+            max_geom_size,
             self.nchunk,
         )
 
