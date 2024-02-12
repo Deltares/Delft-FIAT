@@ -15,6 +15,7 @@ These are unreleased changes and will be incorperated in the next release.
 
 ### Changed
 - Better build environment creation on linux systems
+- Fixed chunking on a single thread
 - Fixed and clarified the shape (w, h) of `GridSource` and `Grid`
 - Fixed handling of positive nodata values in geometry calculations
 - Fixed indexing in `GridModel` calculations
