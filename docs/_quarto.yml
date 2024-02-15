@@ -111,7 +111,10 @@ website:
                 - user_guide/data/exposure/geometries.qmd
             - user_guide/data/vulnerability.qmd
             - user_guide/data/supported.qmd
-        - examples/index.qmd
+        - title: Examples
+          file: examples/index.qmd
+          contents:
+            - examples/single_event.ipynb
     - title: "Developments"
       collapse-level: 3
       contents:

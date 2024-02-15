@@ -1631,7 +1631,7 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
         self._index = dict(zip(index, index_int))
 
     def __del__(self):
-        super().__del__()
+        pass
 
     def __len__(self):
         return self.meta["nrow"]
