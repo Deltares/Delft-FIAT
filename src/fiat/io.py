@@ -121,7 +121,7 @@ class _BaseIO(metaclass=ABCMeta):
 
     @abstractmethod
     def flush(self):
-        pass
+        raise NotImplementedError("Method needs to be implemented.")
 
 
 class _BaseHandler(metaclass=ABCMeta):
@@ -144,7 +144,7 @@ class _BaseHandler(metaclass=ABCMeta):
 
     @abstractmethod
     def __repr__(self):
-        pass
+        raise NotImplementedError("Dunder method needs to be implemented.")
 
     def __enter__(self):
         return super().__enter__()
@@ -163,7 +163,7 @@ class _BaseStruct(metaclass=ABCMeta):
 
     @abstractmethod
     def __del__(self):
-        pass
+        raise NotImplementedError("Dunder method needs to be implemented.")
 
     def __repr__(self):
         _mem_loc = f"{id(self):#018x}".upper()
@@ -775,7 +775,7 @@ class Grid(
         data : array
             _description_
         """
-        pass
+        raise NotImplementedError("Method not yet implemented")
 
     @_BaseIO._check_mode
     def write_chunk(
@@ -1139,7 +1139,7 @@ class GeomSource(_BaseIO, _BaseStruct):
 
     def _get_layer(self, l_id):
         """_summary_."""
-        pass
+        raise NotImplementedError("Method not yet implemented.")
 
     @_BaseIO._check_state
     def get_srs(self):
@@ -1581,7 +1581,7 @@ multiple variables.
         band: int,
     ):
         """_summary_."""
-        pass
+        raise NotImplementedError("Method not yet implemented.")
 
 
 class _Table(_BaseStruct, metaclass=ABCMeta):
@@ -1631,14 +1631,14 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
         self._index = dict(zip(index, index_int))
 
     def __del__(self):
-        pass
+        super().__del__()
 
     def __len__(self):
         return self.meta["nrow"]
 
     @abstractmethod
     def __getitem__(self):
-        pass
+        raise NotImplementedError("Dunder method needs to be implemented.")
 
     # @abstractmethod
     # def __iter__(self):
@@ -1712,10 +1712,10 @@ class Table(_Table):
         )
 
     def __iter__(self):
-        pass
+        raise NotImplementedError("Dunder method needs to be implemented.")
 
     def __next__(self):
-        pass
+        raise NotImplementedError("Dunder method needs to be implemented.")
 
     def __getitem__(self, keys):
         """_summary_."""
@@ -1733,7 +1733,7 @@ class Table(_Table):
         self.data[key] = value
 
     def __eq__(self):
-        pass
+        raise NotImplementedError("Dunder method needs to be implemented.")
 
     def __str__(self):
         if len(self.columns) > 6:
@@ -1790,7 +1790,8 @@ class Table(_Table):
         self,
         data: dict,
     ):
-        pass
+        """_summary_."""
+        raise NotImplementedError("Method not yet implemented.")
 
     def _build_from_list(
         self,
@@ -1801,11 +1802,11 @@ class Table(_Table):
 
     def mean():
         """_summary_."""
-        pass
+        raise NotImplementedError("Method not yet implemented.")
 
     def max():
         """_summary_."""
-        pass
+        raise NotImplementedError("Method not yet implemented.")
 
     def upscale(
         self,
@@ -1914,10 +1915,10 @@ class TableLazy(_Table):
         )
 
     def __iter__(self):
-        pass
+        raise NotImplementedError("Dunder method needs to be implemented.")
 
     def __next__(self):
-        pass
+        raise NotImplementedError("Dunder method needs to be implemented.")
 
     def __getitem__(
         self,
@@ -1934,7 +1935,7 @@ class TableLazy(_Table):
         return self.data.readline().strip()
 
     def _build_lazy(self):
-        pass
+        raise NotImplementedError("Method not yet implemented.")
 
     def get(
         self,

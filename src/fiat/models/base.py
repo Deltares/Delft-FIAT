@@ -229,11 +229,11 @@ using a step size of: {self._vul_step_size}"
         self,
     ):
         """_summary_."""
-        raise NotImplementedError("")
+        raise NotImplementedError("Method needs to be implemented.")
 
     @abstractmethod
     def run(
         self,
     ):
         """_summary_."""
-        raise NotImplementedError("")
+        raise NotImplementedError("Method needs to be implemented.")
