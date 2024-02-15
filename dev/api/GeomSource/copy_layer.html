@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Delft FIAT – reopen</title>
+<title>Delft FIAT – copy_layer</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -147,7 +147,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item">I/O</li><li class="breadcrumb-item"><a href="../../api/GeomSource.html">Objects</a></li><li class="breadcrumb-item"><a href="../../api/GeomSource.html">GeomSource</a></li><li class="breadcrumb-item"><a href="../../api/GeomSource/reopen.html">reopen</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item">I/O</li><li class="breadcrumb-item"><a href="../../api/GeomSource.html">Objects</a></li><li class="breadcrumb-item"><a href="../../api/GeomSource.html">GeomSource</a></li><li class="breadcrumb-item"><a href="../../api/GeomSource/copy_layer.html">copy_layer</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -557,6 +557,12 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-18" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../api/io/merge_geom_layers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">merge_geom_layers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../api/io/open_csv.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">open_csv</span></a>
   </div>
@@ -613,6 +619,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../api/GeomSource/copy_layer.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">copy_layer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../api/GeomSource/create_field.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">create_field</span></a>
   </div>
@@ -643,26 +655,8 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/GeomSource/get_bbox.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">get_bbox</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../../api/GeomSource/get_srs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">get_srs</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../api/GeomSource/reopen.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">reopen</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../api/GeomSource/set_layer_from_defn.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_layer_from_defn</span></a>
   </div>
 </li>
       </ul>
@@ -716,12 +710,6 @@ ul.task-list li input[type="checkbox"] {
   <div class="sidebar-item-container"> 
   <a href="../../api/GridSource/get_band_names.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">get_band_names</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../api/GridSource/get_bbox.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">get_bbox</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -871,7 +859,10 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#fiat.io.GeomSource.reopen" id="toc-fiat.io.GeomSource.reopen" class="nav-link active" data-scroll-target="#fiat.io.GeomSource.reopen">reopen</a></li>
+  <li><a href="#fiat.io.GeomSource.copy_layer" id="toc-fiat.io.GeomSource.copy_layer" class="nav-link active" data-scroll-target="#fiat.io.GeomSource.copy_layer">copy_layer</a>
+  <ul class="collapse">
+  <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -880,12 +871,40 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<section id="fiat.io.GeomSource.reopen" class="level1">
-<h1>reopen</h1>
-<p><code>io.GeomSource.reopen()</code></p>
-<p>Reopen a closed GeomSource.</p>
+<section id="fiat.io.GeomSource.copy_layer" class="level1">
+<h1>copy_layer</h1>
+<p><code>io.GeomSource.copy_layer(layer, layer_fn)</code></p>
+<p>Copy a layer to an existing dataset.</p>
+<p>Bit of a spoof off of <code>create_layer_from_copy</code>. This method is a bit more forcing and allows to set it’s own variable as layer name. Only in write (<code>'w'</code>) mode.</p>
+<section id="parameters" class="level2">
+<h2 class="anchored" data-anchor-id="parameters">Parameters</h2>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>layer</code></td>
+<td><code>ogr</code>.<code>Layer</code></td>
+<td><em>description</em></td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>layer_fn</code></td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td><em>description</em></td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
 
 
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->

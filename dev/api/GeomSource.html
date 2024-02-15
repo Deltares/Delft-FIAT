@@ -591,6 +591,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-18" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../api/io/merge_geom_layers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">merge_geom_layers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../api/io/open_csv.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">open_csv</span></a>
   </div>
@@ -647,6 +653,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../api/GeomSource/copy_layer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">copy_layer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../api/GeomSource/create_field.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">create_field</span></a>
   </div>
@@ -677,26 +689,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/get_bbox.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">get_bbox</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../api/GeomSource/get_srs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">get_srs</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/reopen.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">reopen</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/set_layer_from_defn.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_layer_from_defn</span></a>
   </div>
 </li>
       </ul>
@@ -750,12 +744,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="../api/GridSource/get_band_names.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">get_band_names</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/get_bbox.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">get_bbox</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -922,7 +910,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="fiat.io.GeomSource" class="level1">
 <h1>GeomSource</h1>
-<p><code>io.GeomSource(self, file, mode='r')</code></p>
+<p><code>io.GeomSource(self, file, mode='r', overwrite=False)</code></p>
 <p>A source object for geospatial vector data.</p>
 <p>Essentially an OGR DataSource wrapper.</p>
 <section id="parameters" class="level2">
@@ -948,6 +936,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
 <td>The I/O mode. Either <code>r</code> for reading or <code>w</code> for writing.</td>
 <td><code>'r'</code></td>
+</tr>
+<tr class="odd">
+<td><code>overwrite</code></td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether or not to overwrite an existing dataset.</td>
+<td><code>False</code></td>
 </tr>
 </tbody>
 </table>
@@ -1005,40 +999,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Close the GeomSouce.</td>
 </tr>
 <tr class="even">
+<td><a href="../api/GeomSource/copy_layer.html#fiat.io.GeomSource.copy_layer">copy_layer</a></td>
+<td>Copy a layer to an existing dataset.</td>
+</tr>
+<tr class="odd">
 <td><a href="../api/GeomSource/create_field.html#fiat.io.GeomSource.create_field">create_field</a></td>
 <td>Add a new field.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="../api/GeomSource/create_fields.html#fiat.io.GeomSource.create_fields">create_fields</a></td>
 <td>Add multiple fields at once.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="../api/GeomSource/create_layer.html#fiat.io.GeomSource.create_layer">create_layer</a></td>
 <td>Create a new vector layer.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="../api/GeomSource/create_layer_from_copy.html#fiat.io.GeomSource.create_layer_from_copy">create_layer_from_copy</a></td>
 <td>Create a new layer by copying another layer.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="../api/GeomSource/flush.html#fiat.io.GeomSource.flush">flush</a></td>
 <td>Flush the data.</td>
-</tr>
-<tr class="odd">
-<td><a href="../api/GeomSource/get_bbox.html#fiat.io.GeomSource.get_bbox">get_bbox</a></td>
-<td>Get the bouding box.</td>
 </tr>
 <tr class="even">
 <td><a href="../api/GeomSource/get_srs.html#fiat.io.GeomSource.get_srs">get_srs</a></td>
 <td>Return the srs (Spatial Reference System).</td>
-</tr>
-<tr class="odd">
-<td><a href="../api/GeomSource/reopen.html#fiat.io.GeomSource.reopen">reopen</a></td>
-<td>Reopen a closed GeomSource.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/GeomSource/set_layer_from_defn.html#fiat.io.GeomSource.set_layer_from_defn">set_layer_from_defn</a></td>
-<td>Set layer meta from another layer’s meta.</td>
 </tr>
 </tbody>
 </table>

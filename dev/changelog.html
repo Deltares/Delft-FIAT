@@ -227,20 +227,31 @@ ul.task-list li input[type="checkbox"] {
 <h3 class="anchored" data-anchor-id="added">Added</h3>
 <ul>
 <li>A version switcher for the documentation</li>
+<li>Added entries for chunking size in the settings file (<code>settings.toml</code>) for <code>GeomModel</code></li>
+<li>Chunking for geometry calculations (<code>GeomModel</code>)</li>
+<li>Chunking for resolving temporary <code>GeomModel</code> output</li>
+<li>New method for writing geometries from a buffer: <code>BufferedGeomWriter</code></li>
+<li>New function for merging vector layers: <code>merge_geom_layers</code></li>
 </ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
 <ul>
 <li>Better build environment creation on linux systems</li>
+<li>Fixed chunking on a single thread</li>
 <li>Fixed and clarified the shape (w, h) of <code>GridSource</code> and <code>Grid</code></li>
 <li>Fixed handling of positive nodata values in geometry calculations</li>
 <li>Fixed indexing in <code>GridModel</code> calculations</li>
+<li>Parallelisation of calculations for <code>GeomModel</code> (not only in risk mode)</li>
 <li>Updated the installer creation (exe) on Windows (10/11)</li>
 </ul>
 </section>
 <section id="deprecated" class="level3">
 <h3 class="anchored" data-anchor-id="deprecated">Deprecated</h3>
+<ul>
+<li><code>get_bbox</code> method of <code>GeomSource</code> and <code>GridSource</code></li>
+<li>Setting: <code>chunk</code> in <code>exposure.geom.settings</code>, deprecated in favour of <code>chunk</code> in <code>global.geom</code></li>
+</ul>
 </section>
 <section id="documentation" class="level3">
 <h3 class="anchored" data-anchor-id="documentation">Documentation</h3>
