@@ -1,10 +1,11 @@
 ---
 name: Code analysis
 on:
-  workflow_run:
-    workflows: ["Test"]
-    types:
-      - completed
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   sonarcloud:
@@ -26,10 +27,38 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore coverage report
-        uses: actions/download-artifact@v2
+      - name: Generate env yaml
+        run: pip install tomli && python make_env.py test -p ${{ matrix.python-version }}.*
+
+      - name: load from cache
+        id: cache
+        uses: actions/cache/restore@v3
         with:
-          name: coverage ${{ matrix.python-version }}
+          path: |
+            /usr/share/miniconda3
+            ~/pycache
+          # the below two settings mean we'll alway srestore the cache
+          # but the cache hit output can tell us if we have to update afterwards
+          key: test-py${{ matrix.python-version }}-${{ hashFiles('environment.yml')  }}
+          restore-keys: |
+            test-py${{ matrix.python-version }}
+
+      - name: Fail on no cache restore
+        if: steps.cache.outputs.cache-matched-key == ''
+        run: |
+          echo "Failed to restore any cache. exiting..."
+          exit 1
+
+      - name: Update environment
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          mamba env update -n fiat_test -f environment.yml
+
+      - name: Generate coverage report
+        run: |
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          mamba run -n fiat_test python -m pytest --verbose --cov=fiat --cov-report xml
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
