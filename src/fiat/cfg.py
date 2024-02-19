@@ -27,20 +27,20 @@ class ConfigReader(dict):
     ----------
     file : Path | str
         Path to the settings file.
-    extra : dict, optional
+    extra_args : dict, optional
         Extra arguments that are not in the settings file.
     """
 
     def __init__(
         self,
         file: Path | str,
-        extra: dict = None,
+        extra_args: dict = None,
     ):
         # container for extra
         self._build = True
-        self._extra = {}
-        if extra is not None:
-            self._extra.update(extra)
+        self._extra_args = {}
+        if extra_args is not None:
+            self._extra_args.update(extra_args)
 
         # Set the root directory
         self.filepath = Path(file)
@@ -92,7 +92,7 @@ class ConfigReader(dict):
         self._build = False
 
         # (Re)set the extra values
-        self.update(self._extra)
+        self.update(self._extra_args)
 
     def __repr__(self):
         return f"<ConfigReader object file='{self.filepath}'>"
@@ -101,12 +101,12 @@ class ConfigReader(dict):
         """_summary_."""
         return self.__class__, (
             self.filepath,
-            self._extra,
+            self._extra_args,
         )
 
     def __setitem__(self, __key: Any, __value: Any):
         if not self._build:
-            self._extra[__key] = __value
+            self._extra_args[__key] = __value
         super().__setitem__(__key, __value)
 
     def _create_output_dir(
