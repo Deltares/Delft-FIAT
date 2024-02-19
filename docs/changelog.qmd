@@ -16,7 +16,7 @@ The second pre-release of Delft-FIAT.
 
 ### Changed
 - Better build environment creation on linux systems
-- Clearified the cli
+- Clarified the cli
 - Fixed chunking on a single thread
 - Fixed and clarified the shape (w, h) of `GridSource` and `Grid`
 - Fixed handling of positive nodata values in geometry calculations
