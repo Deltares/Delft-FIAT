@@ -9,17 +9,11 @@ on:
 
 jobs:
   sonarcloud:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-latest" ] #, "macos-latest", "windows-latest"]
-        python-version: ["3.11"] # fix tests to support older versions
-        include:
-          - os: ubuntu-latest
-            label: linux-64
+    env:
+      PYVERSION: "3.11"
 
     name: SonarCloud
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -28,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Generate env yaml
-        run: pip install tomli && python make_env.py test -p ${{ matrix.python-version }}.*
+        run: pip install tomli && python make_env.py test -p ${{ env.PYVERSION }}.*
 
       - name: load from cache
         id: cache
@@ -39,9 +33,9 @@ jobs:
             ~/pycache
           # the below two settings mean we'll alway srestore the cache
           # but the cache hit output can tell us if we have to update afterwards
-          key: test-py${{ matrix.python-version }}-${{ hashFiles('environment.yml')  }}
+          key: test-py${{ env.PYVERSION }}-${{ hashFiles('environment.yml')  }}
           restore-keys: |
-            test-py${{ matrix.python-version }}
+            test-py${{ env.PYVERSION }}
 
       - name: Fail on no cache restore
         if: steps.cache.outputs.cache-matched-key == ''
@@ -54,6 +48,11 @@ jobs:
         run: |
           export PATH=/usr/share/miniconda3/bin:$PATH
           mamba env update -n fiat_test -f environment.yml
+
+      - name: Create testdata
+        run: |
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          mamba run -n fiat_test python .testdata/create_test_data.py
 
       - name: Generate coverage report
         run: |
