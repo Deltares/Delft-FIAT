@@ -10,7 +10,7 @@ def test_main_cli():
 def test_info_cli():
     p = subprocess.run(["fiat", "info"], check=True, capture_output=True, text=True)
     assert p.returncode == 0
-    assert p.stdout.split("\n")[-2].endswith("GPLv3 license.")
+    assert p.stdout.split("\n")[-2].endswith("MIT license.")
 
 
 def test_run_cli():
