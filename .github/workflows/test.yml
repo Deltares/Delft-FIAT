@@ -76,5 +76,11 @@ jobs:
           export PATH=/usr/share/miniconda3/bin:$PATH
           mamba run -n fiat_test python -m pytest --verbose --cov=fiat --cov-report xml
 
-      - name: Upload code coverage
+      - name: Upload coverage to cache
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage ${{ matrix.python-version }}
+          path: coverage.xml
+
+      - name: Upload coverage to codecov.io
         uses: codecov/codecov-action@v3
