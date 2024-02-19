@@ -3,7 +3,7 @@ name: Code analysis
 on:
   workflow_run:
     workflows: ["Test"]
-    types:  
+    types:
       - completed
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
         include:
           - os: ubuntu-latest
             label: linux-64
-    
+
     name: SonarCloud
     runs-on: ${{ matrix.os }}
 
@@ -30,7 +30,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: coverage ${{ matrix.python-version }}
-      
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
