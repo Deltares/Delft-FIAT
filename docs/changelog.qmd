@@ -12,9 +12,11 @@ These are unreleased changes and will be incorperated in the next release.
 - Chunking for resolving temporary `GeomModel` output
 - New method for writing geometries from a buffer: `BufferedGeomWriter`
 - New function for merging vector layers: `merge_geom_layers`
+- Setting of amount of threads via cli
 
 ### Changed
 - Better build environment creation on linux systems
+- Clearified the cli
 - Fixed chunking on a single thread
 - Fixed and clarified the shape (w, h) of `GridSource` and `Grid`
 - Fixed handling of positive nodata values in geometry calculations
@@ -25,6 +27,8 @@ These are unreleased changes and will be incorperated in the next release.
 ### Deprecated
 - `get_bbox` method of `GeomSource` and `GridSource`
 - Setting: `chunk` in `exposure.geom.settings`, deprecated in favour of `chunk` in `global.geom`
+- Setting: `chunk` in `exposure.grid.settings`, deprecated in favour of `chunk` in `global.grid`
+- Setting: `chunk` in `hazard.settings`, deprecated in favour of `chunk` in `global.grid`
 
 ### Documentation
 - Ability to switch between documentation/ software versions
