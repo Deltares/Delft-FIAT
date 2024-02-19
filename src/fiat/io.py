@@ -649,7 +649,7 @@ class Grid(
         elif len(chunk) == 2:
             self._chunk = chunk
         else:
-            ValueError("")
+            raise ValueError(f"Incorrect chunking set: {chunk}")
 
     def __iter__(self):
         self.flush()
@@ -1270,7 +1270,7 @@ multiple variables.
             elif len(chunk) == 2:
                 self._chunk = chunk
             else:
-                ValueError("")
+                raise ValueError(f"Incorrect chunking set: {chunk}")
 
             if self.count == 0:
                 self.subset_dict = _read_gridsrouce_layers(
@@ -1637,7 +1637,7 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
         return self.meta["nrow"]
 
     @abstractmethod
-    def __getitem__(self):
+    def __getitem__(self, key):
         raise NotImplementedError("Dunder method needs to be implemented.")
 
     # @abstractmethod
@@ -1732,7 +1732,7 @@ class Table(_Table):
     def __setitem__(self, key, value):
         self.data[key] = value
 
-    def __eq__(self):
+    def __eq__(self, other):
         raise NotImplementedError("Dunder method needs to be implemented.")
 
     def __str__(self):
@@ -1800,11 +1800,11 @@ class Table(_Table):
         """_summary_."""
         self.data = array(data, dtype=object)
 
-    def mean():
+    def mean(self):
         """_summary_."""
         raise NotImplementedError("Method not yet implemented.")
 
-    def max():
+    def max(self):
         """_summary_."""
         raise NotImplementedError("Method not yet implemented.")
 
@@ -1968,13 +1968,14 @@ class TableLazy(_Table):
         if key == self.index_col:
             return
 
+        _pat_multi = regex_pattern(self.delim, multi=True)
         idx = self.header_index[key]
         new_index = [None] * self.handler.size
 
         with self.handler as h:
             c = 0
 
-            for _nlines, sd in _text_chunk_gen(h):
+            for _nlines, sd in _text_chunk_gen(h, _pat_multi):
                 new_index[c:_nlines] = [
                     *map(
                         self.dtypes[idx],

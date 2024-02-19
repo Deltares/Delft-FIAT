@@ -7,6 +7,8 @@ def get_srs_repr(
     srs: osr.SpatialReference,
 ) -> str:
     """_summary_."""
+    if srs is None:
+        raise ValueError("SRS can not be None.")
     _auth_c = srs.GetAuthorityCode(None)
     _auth_n = srs.GetAuthorityName(None)
 
@@ -28,7 +30,7 @@ class CRS:
     def __del__(self):
         pass
 
-    def __eq__(self):
+    def __eq__(self, other):
         pass
 
     @classmethod

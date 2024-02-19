@@ -236,11 +236,11 @@ class BaseHandler:
 
     def emit(self):
         """_summary_."""
-        NotImplementedError()
+        NotImplementedError("Method not yet implemented.")
 
     def flush(self):
         """_summary_."""
-        NotImplementedError()
+        NotImplementedError("Method not yet implemented.")
 
     def format(
         self,
@@ -768,7 +768,7 @@ class Log(metaclass=Logmeta):
 
     def _direct(self, msg):
         """_summary_."""
-        self._log()
+        raise NotImplementedError("Method not yet implemented.")
 
     @handle_log
     def debug(self, msg: str):
