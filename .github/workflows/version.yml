@@ -6,6 +6,7 @@ on:
     branches: [ gh-pages ]
   repository_dispatch:
       types: [docs-updated]
+  workflow_dispatch:
 
 jobs:
   Versioning:
