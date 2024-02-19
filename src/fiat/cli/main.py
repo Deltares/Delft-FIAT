@@ -40,7 +40,7 @@ def info(args):
         """This tool is meant for quick impact assessment.
 
 It is open source and meant to be used and implemented as such.
-Therefore it is available under the GPLv3 license.\n"""
+Therefore it is available under the MIT license.\n"""
     )
 
 
@@ -85,6 +85,11 @@ def main():
         help="Increase output verbosity",
         action="count",
         default=0,
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"Delft-FIAT v{__version__}",
     )
 
     subparser = parser.add_subparsers(
