@@ -2,8 +2,8 @@
 title: "What's new?"
 ---
 
-## Unreleased
-These are unreleased changes and will be incorperated in the next release.
+## v0.1.0rc2 (2024-02-19)
+The second pre-release of Delft-FIAT.
 
 ### Added
 - A version switcher for the documentation
@@ -23,6 +23,7 @@ These are unreleased changes and will be incorperated in the next release.
 - Fixed indexing in `GridModel` calculations
 - Parallelisation of calculations for `GeomModel` (not only in risk mode)
 - Updated the installer creation (exe) on Windows (10/11)
+- Various bug fixes
 
 ### Deprecated
 - `get_bbox` method of `GeomSource` and `GridSource`
