@@ -17,8 +17,12 @@ from osgeo_utils.ogrmerge import process as ogr_merge
 
 from fiat.error import DriverNotFoundError
 from fiat.util import (
+    DD_NEED_IMPLEMENTED,
+    DD_NOT_IMPLEMENTED,
     GEOM_DRIVER_MAP,
     GRID_DRIVER_MAP,
+    NEED_IMPLEMENTED,
+    NOT_IMPLEMENTED,
     DummyLock,
     _dtypes_from_string,
     _dtypes_reversed,
@@ -121,7 +125,7 @@ class _BaseIO(metaclass=ABCMeta):
 
     @abstractmethod
     def flush(self):
-        raise NotImplementedError("Method needs to be implemented.")
+        raise NotImplementedError(NEED_IMPLEMENTED)
 
 
 class _BaseHandler(metaclass=ABCMeta):
@@ -144,7 +148,7 @@ class _BaseHandler(metaclass=ABCMeta):
 
     @abstractmethod
     def __repr__(self):
-        raise NotImplementedError("Dunder method needs to be implemented.")
+        raise NotImplementedError(DD_NEED_IMPLEMENTED)
 
     def __enter__(self):
         return super().__enter__()
@@ -163,7 +167,7 @@ class _BaseStruct(metaclass=ABCMeta):
 
     @abstractmethod
     def __del__(self):
-        raise NotImplementedError("Dunder method needs to be implemented.")
+        raise NotImplementedError(DD_NEED_IMPLEMENTED)
 
     def __repr__(self):
         _mem_loc = f"{id(self):#018x}".upper()
@@ -775,7 +779,7 @@ class Grid(
         data : array
             _description_
         """
-        raise NotImplementedError("Method not yet implemented")
+        raise NotImplementedError(NOT_IMPLEMENTED)
 
     @_BaseIO._check_mode
     def write_chunk(
@@ -1139,7 +1143,7 @@ class GeomSource(_BaseIO, _BaseStruct):
 
     def _get_layer(self, l_id):
         """_summary_."""
-        raise NotImplementedError("Method not yet implemented.")
+        raise NotImplementedError(NOT_IMPLEMENTED)
 
     @_BaseIO._check_state
     def get_srs(self):
@@ -1581,7 +1585,7 @@ multiple variables.
         band: int,
     ):
         """_summary_."""
-        raise NotImplementedError("Method not yet implemented.")
+        raise NotImplementedError(NOT_IMPLEMENTED)
 
 
 class _Table(_BaseStruct, metaclass=ABCMeta):
@@ -1638,7 +1642,7 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
 
     @abstractmethod
     def __getitem__(self, key):
-        raise NotImplementedError("Dunder method needs to be implemented.")
+        raise NotImplementedError(DD_NEED_IMPLEMENTED)
 
     # @abstractmethod
     # def __iter__(self):
@@ -1712,10 +1716,10 @@ class Table(_Table):
         )
 
     def __iter__(self):
-        raise NotImplementedError("Dunder method needs to be implemented.")
+        raise NotImplementedError(DD_NOT_IMPLEMENTED)
 
     def __next__(self):
-        raise NotImplementedError("Dunder method needs to be implemented.")
+        raise NotImplementedError(DD_NOT_IMPLEMENTED)
 
     def __getitem__(self, keys):
         """_summary_."""
@@ -1733,7 +1737,7 @@ class Table(_Table):
         self.data[key] = value
 
     def __eq__(self, other):
-        raise NotImplementedError("Dunder method needs to be implemented.")
+        raise NotImplementedError(DD_NOT_IMPLEMENTED)
 
     def __str__(self):
         if len(self.columns) > 6:
@@ -1791,7 +1795,7 @@ class Table(_Table):
         data: dict,
     ):
         """_summary_."""
-        raise NotImplementedError("Method not yet implemented.")
+        raise NotImplementedError(NOT_IMPLEMENTED)
 
     def _build_from_list(
         self,
@@ -1802,11 +1806,11 @@ class Table(_Table):
 
     def mean(self):
         """_summary_."""
-        raise NotImplementedError("Method not yet implemented.")
+        raise NotImplementedError(NOT_IMPLEMENTED)
 
     def max(self):
         """_summary_."""
-        raise NotImplementedError("Method not yet implemented.")
+        raise NotImplementedError(NOT_IMPLEMENTED)
 
     def upscale(
         self,
@@ -1915,10 +1919,10 @@ class TableLazy(_Table):
         )
 
     def __iter__(self):
-        raise NotImplementedError("Dunder method needs to be implemented.")
+        raise NotImplementedError(DD_NOT_IMPLEMENTED)
 
     def __next__(self):
-        raise NotImplementedError("Dunder method needs to be implemented.")
+        raise NotImplementedError(DD_NOT_IMPLEMENTED)
 
     def __getitem__(
         self,
@@ -1935,7 +1939,7 @@ class TableLazy(_Table):
         return self.data.readline().strip()
 
     def _build_lazy(self):
-        raise NotImplementedError("Method not yet implemented.")
+        raise NotImplementedError(NOT_IMPLEMENTED)
 
     def get(
         self,

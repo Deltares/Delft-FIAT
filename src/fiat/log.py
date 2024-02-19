@@ -14,6 +14,8 @@ from enum import Enum
 from string import Formatter as StrFormatter
 from warnings import warn
 
+from fiat.util import NOT_IMPLEMENTED
+
 DEFAULT_FMT = "{asctime:20s}{levelname:8s}{message}"
 DEFAULT_TIME_FMT = "%Y-%m-%d %H:%M:%S"
 STREAM_COUNT = 1
@@ -236,11 +238,11 @@ class BaseHandler:
 
     def emit(self):
         """_summary_."""
-        NotImplementedError("Method not yet implemented.")
+        NotImplementedError(NOT_IMPLEMENTED)
 
     def flush(self):
         """_summary_."""
-        NotImplementedError("Method not yet implemented.")
+        NotImplementedError(NOT_IMPLEMENTED)
 
     def format(
         self,
@@ -768,7 +770,7 @@ class Log(metaclass=Logmeta):
 
     def _direct(self, msg):
         """_summary_."""
-        raise NotImplementedError("Method not yet implemented.")
+        raise NotImplementedError(NOT_IMPLEMENTED)
 
     @handle_log
     def debug(self, msg: str):

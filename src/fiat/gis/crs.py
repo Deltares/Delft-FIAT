@@ -2,13 +2,15 @@
 
 from osgeo import osr
 
+from fiat.util import DD_NOT_IMPLEMENTED
+
 
 def get_srs_repr(
     srs: osr.SpatialReference,
 ) -> str:
     """_summary_."""
     if srs is None:
-        raise ValueError("SRS can not be None.")
+        raise ValueError("'srs' can not be 'None'.")
     _auth_c = srs.GetAuthorityCode(None)
     _auth_n = srs.GetAuthorityName(None)
 
@@ -31,7 +33,7 @@ class CRS:
         pass
 
     def __eq__(self, other):
-        pass
+        raise NotImplementedError(DD_NOT_IMPLEMENTED)
 
     @classmethod
     def from_user_input(

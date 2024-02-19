@@ -16,8 +16,12 @@ import regex
 from osgeo import gdal
 
 BLACKLIST = type, ModuleType, FunctionType
+DD_NEED_IMPLEMENTED = "Dunder method needs to be implemented."
+DD_NOT_IMPLEMENTED = "Dunder method not yet implemented."
 FILE_ATTRIBUTE_HIDDEN = 0x02
 NEWLINE_CHAR = os.linesep
+NEED_IMPLEMENTED = "Method needs to be implemented."
+NOT_IMPLEMENTED = "Method not yet implemented."
 
 
 _dtypes = {

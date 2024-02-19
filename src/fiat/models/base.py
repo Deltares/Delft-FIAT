@@ -20,7 +20,7 @@ from fiat.gis.crs import get_srs_repr
 from fiat.io import open_csv, open_grid
 from fiat.log import spawn_logger
 from fiat.models.calc import calc_rp_coef
-from fiat.util import deter_dec
+from fiat.util import NEED_IMPLEMENTED, deter_dec
 
 logger = spawn_logger("fiat.model")
 
@@ -229,11 +229,11 @@ using a step size of: {self._vul_step_size}"
         self,
     ):
         """_summary_."""
-        raise NotImplementedError("Method needs to be implemented.")
+        raise NotImplementedError(NEED_IMPLEMENTED)
 
     @abstractmethod
     def run(
         self,
     ):
         """_summary_."""
-        raise NotImplementedError("Method needs to be implemented.")
+        raise NotImplementedError(NEED_IMPLEMENTED)
