@@ -1737,7 +1737,7 @@ class Table(_Table):
         self.data[key] = value
 
     def __eq__(self, other):
-        raise NotImplementedError(DD_NOT_IMPLEMENTED)
+        return NotImplemented
 
     def __str__(self):
         if len(self.columns) > 6:

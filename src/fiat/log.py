@@ -238,11 +238,11 @@ class BaseHandler:
 
     def emit(self):
         """_summary_."""
-        NotImplementedError(NOT_IMPLEMENTED)
+        raise NotImplementedError(NOT_IMPLEMENTED)
 
     def flush(self):
         """_summary_."""
-        NotImplementedError(NOT_IMPLEMENTED)
+        raise NotImplementedError(NOT_IMPLEMENTED)
 
     def format(
         self,

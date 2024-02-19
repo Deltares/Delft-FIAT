@@ -2,8 +2,6 @@
 
 from osgeo import osr
 
-from fiat.util import DD_NOT_IMPLEMENTED
-
 
 def get_srs_repr(
     srs: osr.SpatialReference,
@@ -33,7 +31,7 @@ class CRS:
         pass
 
     def __eq__(self, other):
-        raise NotImplementedError(DD_NOT_IMPLEMENTED)
+        return NotImplemented
 
     @classmethod
     def from_user_input(
