@@ -30,6 +30,5 @@ class MainHelpFormatter(HelpFormatter):
 
     def start_section(self, heading):
         """_summary_."""
-        if heading == "options":
-            heading = "Options"
+        heading = heading[0].upper() + heading[1:]
         return super().start_section(heading)

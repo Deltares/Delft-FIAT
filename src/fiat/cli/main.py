@@ -51,6 +51,10 @@ def run(args):
     cfg = file_path_check(args.config)
     cfg = ConfigReader(cfg)
 
+    if args.threads is not None:
+        assert int(args.threads)
+        cfg["global.threads"] = int(args.threads)
+
     # Setup the logger
     logger = setup_default_log(
         "fiat",
@@ -70,26 +74,21 @@ def main():
     """_summary_."""
     parser = argparse.ArgumentParser(
         #    usage="%(prog)s <options> <commands>",
+        add_help=False,
         formatter_class=MainHelpFormatter,
     )
     parser.add_argument(
-        "-q",
-        "--quiet",
-        help="Decrease output verbosity",
-        action="count",
-        default=0,
-    )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        help="Increase output verbosity",
-        action="count",
-        default=0,
+        "-h",
+        "--help", 
+        action='help', 
+        default=argparse.SUPPRESS,
+        help="Show this help message and exit"
     )
     parser.add_argument(
         "--version",
         action="version",
         version=f"Delft-FIAT v{__version__}",
+        help="Show the version number"
     )
 
     subparser = parser.add_subparsers(
@@ -97,7 +96,8 @@ def main():
         dest="command",
         metavar="<commands>",
     )
-
+    
+    # Set everything for the info command
     info_parser = subparser.add_parser(
         name="info",
         help="Information concerning Delft-FIAT",
@@ -105,6 +105,7 @@ def main():
     )
     info_parser.set_defaults(func=info)
 
+    # Set everything for the run command
     run_parser = subparser.add_parser(
         name="run",
         help="Run Delft-FIAT via a settings file",
@@ -114,6 +115,27 @@ def main():
     run_parser.add_argument(
         "config",
         help="Path to the settings file",
+    )
+    run_parser.add_argument(
+        "-t",
+        "--threads",
+        action="store",
+        default=None,
+        help="Set number of threads",
+    )
+    run_parser.add_argument(
+        "-q",
+        "--quiet",
+        help="Decrease output verbosity",
+        action="count",
+        default=0,
+    )
+    run_parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Increase output verbosity",
+        action="count",
+        default=0,
     )
     run_parser.set_defaults(func=run)
     args = parser.parse_args(args=None if sys.argv[1:] else ["--help"])
