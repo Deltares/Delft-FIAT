@@ -79,16 +79,16 @@ def main():
     )
     parser.add_argument(
         "-h",
-        "--help", 
-        action='help', 
+        "--help",
+        action="help",
         default=argparse.SUPPRESS,
-        help="Show this help message and exit"
+        help="Show this help message and exit",
     )
     parser.add_argument(
         "--version",
         action="version",
         version=f"Delft-FIAT v{__version__}",
-        help="Show the version number"
+        help="Show the version number",
     )
 
     subparser = parser.add_subparsers(
@@ -96,7 +96,7 @@ def main():
         dest="command",
         metavar="<commands>",
     )
-    
+
     # Set everything for the info command
     info_parser = subparser.add_parser(
         name="info",
