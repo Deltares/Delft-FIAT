@@ -1,0 +1,1661 @@
+[
+  {
+    "objectID": "examples/single_event.html",
+    "href": "examples/single_event.html",
+    "title": "Single event",
+    "section": "",
+    "text": "This is a an example of running a tiny single event FIAT model.\nFirst of all, let’s make sure that there is some actual testdata.\n\n! python ../../.testdata/create_test_data.py\n\n/usr/share/miniconda3/envs/fiat_docs/lib/python3.11/site-packages/osgeo/osr.py:410: FutureWarning: Neither osr.UseExceptions() nor osr.DontUseExceptions() has been explicitly called. In GDAL 4.0, exceptions will be enabled by default.\n  warnings.warn(\n\n\nNow that we have some testdata, let’s take a look at the settings file.\n\nwith open(\"../../.testdata/settings.toml\", \"r\") as r:\n    settings = r.read()\nprint(settings)\n\n[global]\ncrs = \"EPSG:4326\"\nkeep_temp_files = true\n\n[output]\npath = \"output/event\"\n\n[output.csv]\nname = \"output.csv\"\n\n[output.geom]\nname1 = \"spatial.gpkg\"\n\n[hazard]\nfile = \"hazard/event_map.nc\"\ncrs = \"EPSG:4326\"\nrisk = false\nelevation_reference = \"DEM\"\n\n[exposure.csv]\nfile = \"exposure/spatial.csv\"\n\n[exposure.geom]\nfile1 = \"exposure/spatial.gpkg\"\ncrs = \"EPSG:4326\"\n\n[vulnerability]\nfile = \"vulnerability/vulnerability_curves.csv\"\nstep_size = 0.01\n\n\n\nNow let’s execute the model!\n\n! fiat run ../../.testdata/settings.toml\n\n\n###############################################################\n\n        #########    ##          ##      ##############\n        ##           ##         ####         ######\n        ##           ##         ####           ##\n        ##           ##        ##  ##          ##\n        ######       ##        ##  ##          ##\n        ##           ##       ########         ##\n        ##           ##      ##      ##        ##\n        ##           ##     ##        ##       ##\n        ##           ##    ##          ##      ##\n\n###############################################################\n\n                Fast Impact Assessment Tool\n                © Deltares\n\n2024-02-19 15:02:25 INFO    Delft-Fiat version: 0.1.0rc2\n2024-02-19 15:02:25 INFO    Setting up geom model..\n2024-02-19 15:02:25 INFO    Using settings from '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/settings.toml'\n2024-02-19 15:02:25 INFO    Maximum number of threads: 4\n2024-02-19 15:02:25 INFO    Model srs set to: 'EPSG:4326'\n2024-02-19 15:02:25 INFO    Reading hazard data ('event_map.nc')\n2024-02-19 15:02:25 INFO    Executing hazard checks...\n2024-02-19 15:02:25 INFO    Reading vulnerability curves ('vulnerability_curves.csv')\n2024-02-19 15:02:25 INFO    Executing vulnerability checks...\n2024-02-19 15:02:25 INFO    Upscaling vulnerability curves, using a step size of: 0.01\n2024-02-19 15:02:25 INFO    Reading exposure data ('spatial.csv')\n2024-02-19 15:02:25 INFO    Executing exposure data checks...\n2024-02-19 15:02:25 INFO    Reading exposure geometry 'file1' ('spatial.gpkg')\n2024-02-19 15:02:25 INFO    Executing exposure geometry checks...\n2024-02-19 15:02:25 INFO    Starting the calculations\n2024-02-19 15:02:25 INFO    Using number of threads: 1\n2024-02-19 15:02:25 INFO    Submitting a job for the calculations in a seperate process\n2024-02-19 15:02:25 INFO    Busy...\n2024-02-19 15:02:25 INFO    Calculations time: 0.03 seconds\n2024-02-19 15:02:25 INFO    Producing model output from temporary files\n2024-02-19 15:02:25 INFO    Busy...\n2024-02-19 15:02:25 INFO    Output generated in: '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/output/event'\n2024-02-19 15:02:25 INFO    Geom calculation are done!\n\n\nLet’s take a quick look at the output.\n\n# Import a method\nfrom fiat.io import open_csv\nfrom pathlib import Path\n\n# check the output\nout = open_csv(Path(\"../../.testdata/output/event\", \"output.csv\"), index=\"Object ID\")\nprint(out.columns)\n\n('Extraction Method', 'Ground Floor Height', 'Ground Elevation', 'Damage Function: Structure', 'Max Potential Damage: Structure', 'Inundation Depth', 'Reduction Factor', 'Damage: Structure', 'Total Damage')\n\n\nAssert that the output is what we would expect.\n\nassert float(out[2, \"Total Damage\"]) == 740\nassert float(out[3, \"Total Damage\"]) == 1038\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "user_guide/settings/index.html",
+    "href": "user_guide/settings/index.html",
+    "title": "Settings",
+    "section": "",
+    "text": "The user must set the model settings in the settings.toml configuration file.\nBesides the necessary/ required setttings one can set:\n\ninput in regard to the computational side of FIAT (e.g. chunking, number of threads etc),\n\nsee this page\n\noptional/ additional input that is not necessary or more data specific,\n\nsee this page\n\n\n\nBasic input\nThis section pertains to all input that is vital for running a FIAT model.\nThese inputs/ entries are listed in the table down below with more detailed information per entry underneath the table.\n\n\n\n\n\n\nNote\n\n\n\nFile paths in the settings can be relative to the settings.toml file or absolute.\n\n\n\n\nTable 1: Most basic settings file input\n\n\nEntry\nType\nRequired\nDefault\n\n\n\n\n[output]\n\n\n\n\n\npath\nstring\nYes\n\n\n\n[output.csv]\n\n\n\n\n\nname\nstring\nNo\noutput.csv\n\n\n[output.geom]\n\n\n\n\n\nname[n]\nstring\nNo\nspatial[n].gpkg\n\n\n[output.grid]\n\n\n\n\n\nname\nstring\nNo\nead.nc\n\n\n[hazard]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\nelevation_reference\nstring\nYes\n\n\n\nrisk\nboolean\nNo\nfalse\n\n\n[exposure.geom]\n\n\n\n\n\nfile[n]\nstring\nYes\n\n\n\n[exposure.csv]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\n[vulnerability]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\n\n\n\n[output]\n\npath: The path to the output folder in the working directory.\n\n\n\n[output.csv]\n\nname: The path to the output CSV file that will be created, that contains the information from the exposure.csv and the damages per asset.\n\n\n\n[output.geom]\n\nname[n]: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.\n\n\n\n\n\n\n\nWarning\n\n\n\nIf provided, the suffix is mandatory. The suffix should match the suffix of the input geometry file for which it is set.\n\n\n\n\n[output.grid]\n\nname: This sets the name and location of the output raster file that contains damages per grid cell.\n\n\n\n[hazard]\n\nfile: The file path to the hazard file, can be a list of files.\nelevation_reference: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be “DEM” while in case of a flood-elevation map this should be “datum”.\nrisk: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.\n\n\n\n[exposure.geom]\n\nfile[n]: The path to the exposure vector file (recommended to be within the exposure folder) with the assets’ geometry and Object ID. The user can provide multiple vector files. Therefore the ‘[n]’ suffix, as the user can create mulitple entries for vector files (e.g. file1, file2 etc.).\n\n\n\n\n\n\n\nWarning\n\n\n\nThe suffix is mandatory. So if only one file is provided, name it file1.\n\n\n\n\n[exposure.csv]\n\nfile: The path to the exposure CSV file (recommended to be within the exposure folder) that contains the required information per asset. There can only be one exposure CSV file.\n\n\n\n[vulnerability]\n\nfile: The path to the vulnerability curves CSV file within the vulnerability folder that contains the damage curves. Only one vulnerability curves file is allowed.\n\n\n\n\nExample\nAn example of settings file for running a geometry model is given below:\n[output]\npath = \"output\"\n\n[output.csv]\nname = \"output.csv\"\n\n[output.geom]\nname1 = \"spatial.gpkg\"\n\n[hazard]\nfile = \"hazard/SL_10yr_reprojected.tif\"\nelevation_reference = \"DEM\"\nrisk = false\n\n[exposure.geom]\nfile1 = \"./exposure/buildings.gpkg\"\n\n[exposure.csv]\nfile = \"./exposure/exposure.csv\"\n\n[vulnerability]\nfile = \"./vulnerability/vulnerability_curves.csv\"\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "user_guide/index.html",
+    "href": "user_guide/index.html",
+    "title": "User guide",
+    "section": "",
+    "text": "User Settings\n    \n  \n  \n    \n      Data\n    \n  \n  \n    \n      Examples"
+  },
+  {
+    "objectID": "user_guide/index.html#quick-start",
+    "href": "user_guide/index.html#quick-start",
+    "title": "User guide",
+    "section": "Quick start",
+    "text": "Quick start\nFIAT computes the (economic) damage and risk of flood events at a specified geographic location based on flood inundation data, exposured assets and vulnerability functions. The model can be configured with a settings file and data inputs:\n\nSettings file\nData\n\nThe HydroMT plugin HydroMT-FIAT can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same folder structure that HydroMT-FIAT creates."
+  },
+  {
+    "objectID": "user_guide/index.html#the-models",
+    "href": "user_guide/index.html#the-models",
+    "title": "User guide",
+    "section": "The models",
+    "text": "The models\nThe data is used by either one or both of the following models:\n\nGeomModel\nGridModel\n\nSome more information about the models can be found here."
+  },
+  {
+    "objectID": "user_guide/index.html#general-user-information",
+    "href": "user_guide/index.html#general-user-information",
+    "title": "User guide",
+    "section": "General User Information",
+    "text": "General User Information\nFIAT derives damages and risk at asset-level based on flood maps and additional inputs such as depth-damage functions, asset locations and their maximum potential damages. For each asset specified in the exposure dataset, the water depth or level is sampled from the flood map at the location of the assets.\n\n\n\n\n\n\nNote\n\n\n\nWater elevations are converted to water depths using the ground elevation of each asset.\n\n\nSee Figure 1 for an overview of the FIAT workflow. To obtain the flood inundation level, FIAT extracts the water depth or level at the location of each asset. For line or polygon assets, either the average or maximum water depth or level and the fraction of the asset are extracted from the hazard map. The inundation depth within buildings or on top of for example, roads, is obtained by subtracting the ground floor height from the water depth. FIAT derives the damage fraction for each asset using its inundation depth and interpolating over its depth-damage curve. Thereafter, the damage to the asset is calculated as the product of the maximum potential damage and the damage fraction. In case an asset is only partially flooded, the damages will be reduced by the dry fraction of the building. Instead of single events, the user can also provide return-period flood maps as input. Hence, FIAT calculates and integrates the associated return-period damages to derive the expected annual damages.\n\n\n\nFigure 1: FIAT Workflow. The damage of the flood water level in each object is determined by flood depth-damage functions, which relate the water level to the maximum potential damage of an asset, returning a damage fraction. The damage fraction is multiplied with the max. potential damage to obtain a monetary damage per object."
+  },
+  {
+    "objectID": "user_guide/data/supported.html",
+    "href": "user_guide/data/supported.html",
+    "title": "Supported formats",
+    "section": "",
+    "text": "For the settings file, only one format is supported:\n\ntoml"
+  },
+  {
+    "objectID": "user_guide/data/supported.html#settings-file",
+    "href": "user_guide/data/supported.html#settings-file",
+    "title": "Supported formats",
+    "section": "",
+    "text": "For the settings file, only one format is supported:\n\ntoml"
+  },
+  {
+    "objectID": "user_guide/data/supported.html#comma-seperated-values-csv",
+    "href": "user_guide/data/supported.html#comma-seperated-values-csv",
+    "title": "Supported formats",
+    "section": "Comma seperated values (CSV)",
+    "text": "Comma seperated values (CSV)\nYour run of the mill csv files. As long as one provides the delimiter in the settings file, anything goes. For example:\n\ncomma\nsemicolon\ntab\n\nThe amount of columns are determined by length of the header or the first line of data."
+  },
+  {
+    "objectID": "user_guide/data/supported.html#geometry-files",
+    "href": "user_guide/data/supported.html#geometry-files",
+    "title": "Supported formats",
+    "section": "Geometry files",
+    "text": "Geometry files\nBelow a list is presented of supported drivers in regards to the vector files:\n\n\n\n\n\n\nTable 1: Available drivers for vector data\n\n\nFile extension\nDriver\nLong name\n\n\n\n\n\nMemory\nMemory\n\n\n.000\nS57\nIHO S-57 (ENC)\n\n\n.bag\nBAG\nBathymetry Attributed Grid\n\n\n.csv\nCSV\nComma Separated Value (.csv)\n\n\n.dgn\nDGN\nMicrostation DGN\n\n\n.dwg\nCAD\nAutoCAD Driver\n\n\n.dxf\nDXF\nAutoCAD DXF\n\n\n.fgb\nFlatGeobuf\nFlatGeobuf\n\n\n.fits\nFITS\nFlexible Image Transport System\n\n\n.gdb\nOpenFileGDB\nESRI FileGDB\n\n\n.geojson\nGeoJSON\nGeoJSON\n\n\n.geojsons\nGeoJSONSeq\nGeoJSON Sequence\n\n\n.gml\nGML\nGeography Markup Language (GML)\n\n\n.gmt\nOGR_GMT\nGMT ASCII Vectors (.gmt)\n\n\n.gpkg\nGPKG\nGeoPackage\n\n\n.gpx\nGPX\nGPX\n\n\n.igc\nGPSBabel\nGPSBabel\n\n\n.ili\nInterlis 2\nInterlis 2\n\n\n.jml\nJML\nOpenJUMP JML\n\n\n.json\nJSONFG\nOGC Features and Geometries JSON\n\n\n.kml\nKML\nKeyhole Markup Language (KML)\n\n\n.kmz\nLIBKML\nKeyhole Markup Language (LIBKML)\n\n\n.map\nWAsP\nWAsP .map format\n\n\n.mbtiles\nMBTiles\nMBTiles\n\n\n.mid\nMapInfo File\nMapInfo File\n\n\n.mvt\nMVT\nMapbox Vector Tiles\n\n\n.nc\nnetCDF\nNetwork Common Data Format\n\n\n.ods\nODS\nOpen Document/ LibreOffice / OpenOffice Spreadsheet\n\n\n.pdf\nPDF\nGeospatial PDF\n\n\n.pix\nPCIDSK\nPCIDSK Database File\n\n\n.pmtiles\nPMTiles\nProtoMap Tiles\n\n\n.shp\nESRI Shapefile\nESRI Shapefile\n\n\n.sql\nPGDUMP\nPostgreSQL SQL dump\n\n\n.sqlite\nSQLite\nSQLite / Spatialite\n\n\n.txt\nGeoconcept\nGeoconcept\n\n\n.x10\nVDV\nVDV-451/VDV-452/INTREST Data Format\n\n\n.xlsx\nXLSX\nMS Office Open XML spreadsheet\n\n\n.xml\nPDS4\nNASA Planetary Data System 4"
+  },
+  {
+    "objectID": "user_guide/data/supported.html#gridded-data-files",
+    "href": "user_guide/data/supported.html#gridded-data-files",
+    "title": "Supported formats",
+    "section": "Gridded data files",
+    "text": "Gridded data files\nBelow a list is presented of supported drivers in regards to the raster files:\n\n\n\n\n\n\nTable 2: Available drivers for gridded data\n\n\nFile extension\nDriver\nLong name\n\n\n\n\n\nMEM\nIn Memory Raster\n\n\n.asc\nAAIGrid\nArc/Info ASCII Grid\n\n\n.bag\nBAG\nBathymetry Attributed Grid\n\n\n.bil\nEHdr\nESRI .hdr Labelled\n\n\n.blx\nBLX\nMagellan topo (.blx)\n\n\n.bmp\nBMP\nMS Windows Device Independent Bitmap\n\n\n.bt\nBT\nVTP .bt (Binary Terrain) 1.3 Format\n\n\n.byn\nBYN\nNatural Resources Canada's Geoid\n\n\n.ct1\nCALS\nCALS (Type 1)\n\n\n.cub\nISIS3\nUSGS Astrogeology ISIS cube (Version 3)\n\n\n.dat\nZMap\nZMap Plus Grid\n\n\n.dem\nUSGSDEM\nUSGS Optional ASCII DEM (and CDED)\n\n\n.dt2\nDTED\nDTED Elevation Raster\n\n\n.ers\nERS\nERMapper .ers Labelled\n\n\n.fits\nFITS\nFlexible Image Transport System\n\n\n.gdb\nOpenFileGDB\nESRI FileGDB\n\n\n.gen\nADRG\nARC Digitized Raster Graphics\n\n\n.gif\nGIF\nGraphics Interchange Format (.gif)\n\n\n.gpkg\nGPKG\nGeoPackage\n\n\n.grd\nNWT_GRD\nNorthwood Numeric Grid Format .grd/.tab\n\n\n.grib2\nGRIB\nGRIdded Binary (.grb, .grb2)\n\n\n.gtx\nGTX\nNOAA Vertical Datum .GTX\n\n\n.gvb\nNTv2\nNTv2 Datum Grid Shift\n\n\n.hdr\nMFF\nVexcel MFF Raster\n\n\n.hf2\nHF2\nHF2/HFZ heightfield raster\n\n\n.hgt\nSRTMHGT\nSRTMHGT File Format\n\n\n.img\nHFA\nErdas Imagine Images (.img)\n\n\n.jp2\nJP2OpenJPEG\nJPEG-2000 driver based on OpenJPEG library\n\n\n.jpg\nJPEG\nJPEG JFIF\n\n\n.kea\nKEA\nKEA Image Format (.kea)\n\n\n.kmz\nKMLSUPEROVERLAY\nKml Super Overlay\n\n\n.kro\nKRO\nKOLOR Raw\n\n\n.lcp\nLCP\nFARSITE v.4 Landscape File (.lcp)\n\n\n.map\nPCRaster\nPCRaster Raster File\n\n\n.mbtiles\nMBTiles\nMBTiles\n\n\n.mpl\nILWIS\nILWIS Raster Map\n\n\n.mrf\nMRF\nMeta Raster Format\n\n\n.nc\nnetCDF\nNetwork Common Data Format\n\n\n.ntf\nNITF\nNational Imagery Transmission Format\n\n\n.pdf\nPDF\nGeospatial PDF\n\n\n.pix\nPCIDSK\nPCIDSK Database File\n\n\n.png\nPNG\nPortable Network Graphics\n\n\n.pnm\nPNM\nPortable Pixmap Format (netpbm)\n\n\n.rda\nR\nR Object Data Store\n\n\n.rgb\nSGI\nSGI Image File Format 1.0\n\n\n.rst\nRST\nIdrisi Raster A.1\n\n\n.rsw\nRMF\nRaster Matrix Format\n\n\n.sg-grd-z\nSAGA\nSAGA GIS Binary Grid (.sdat, .sg-grd-z)\n\n\n.sigdem\nSIGDEM\nScaled Integer Gridded DEM .sigdem\n\n\n.sqlite\nRasterlite\nRasterlite\n\n\n.ter\nTerragen\nTerragen heightfield\n\n\n.tif\nGTiff\nGeoTIFF\n\n\n.tiff\nCOG\nCloud optimized GeoTIFF generator\n\n\n.vrt\nVRT\nVirtual Raster\n\n\n.webp\nWEBP\nWEBP\n\n\n.xml\nPDS4\nNASA Planetary Data System 4\n\n\n.xpm\nXPM\nX11 PixMap Format\n\n\n.xyz\nXYZ\nASCII Gridded XYZ"
+  },
+  {
+    "objectID": "user_guide/data/hazard_maps.html",
+    "href": "user_guide/data/hazard_maps.html",
+    "title": "Types of hazard maps",
+    "section": "",
+    "text": "Tip\n\n\n\nThe most advised format for both event and risk is netCDF."
+  },
+  {
+    "objectID": "user_guide/data/hazard_maps.html#event",
+    "href": "user_guide/data/hazard_maps.html#event",
+    "title": "Types of hazard maps",
+    "section": "Event",
+    "text": "Event\nEvent maps are generally supplied in singular fashion (i.e. one band per event map). This band just simply contains the hazard values per cell. Let’s have a quick peek at the data using gdalinfo:\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/event_map.nc\nSize is 10, 10\nCoordinate System is:\nGEOGCRS[\"WGS 84\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    ID[\"EPSG\",4326]]\nData axis to CRS axis mapping: 2,1\nOrigin = (4.350000000000000,52.049999999999997)\nPixel Size = (0.010000000000000,-0.010000000000000)\nMetadata:\n  Band1#grid_mapping=crs\n  Band1#long_name=GDAL Band Number 1\n  Band1#_FillValue=9.96921e+36\n  crs#crs_wkt=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  crs#GeoTransform=4.35 0.01 0 52.05 0 -0.01 \n  crs#grid_mapping_name=latitude_longitude\n  crs#inverse_flattening=298.257223563\n  crs#longitude_of_prime_meridian=0\n  crs#long_name=CRS definition\n  crs#semi_major_axis=6378137\n  crs#spatial_ref=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  lat#long_name=latitude\n  lat#standard_name=latitude\n  lat#units=degrees_north\n  lon#long_name=longitude\n  lon#standard_name=longitude\n  lon#units=degrees_east\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.8.3, released 2024/01/04\n  NC_GLOBAL#history=Mon Feb 19 15:00:21 2024: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/.testdata/hazard/event_map.nc, ... )\nCorner Coordinates:\nUpper Left  (   4.3500000,  52.0500000) (  4d21' 0.00\"E, 52d 3' 0.00\"N)\nLower Left  (   4.3500000,  51.9500000) (  4d21' 0.00\"E, 51d57' 0.00\"N)\nUpper Right (   4.4500000,  52.0500000) (  4d27' 0.00\"E, 52d 3' 0.00\"N)\nLower Right (   4.4500000,  51.9500000) (  4d27' 0.00\"E, 51d57' 0.00\"N)\nCenter      (   4.4000000,  52.0000000) (  4d24' 0.00\"E, 52d 0' 0.00\"N)\nBand 1 Block=10x1 Type=Float32, ColorInterp=Undefined\n  NoData Value=9.96921e+36\n  Metadata:\n    grid_mapping=crs\n    long_name=GDAL Band Number 1\n    NETCDF_VARNAME=Band1\n    _FillValue=9.96921e+36\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nAllthough netCDF is the preferred format, GeoTIFF’s are also very handy for single events.\n\n\nAs one can see, this dataset has only one band (variable).\nWhen created, it is preferred that the event map is compressed to prevent unneccessary data on the hard drive. More information regarding the compression and others settings can be found here."
+  },
+  {
+    "objectID": "user_guide/data/hazard_maps.html#risk",
+    "href": "user_guide/data/hazard_maps.html#risk",
+    "title": "Types of hazard maps",
+    "section": "Risk",
+    "text": "Risk\nRisk maps in gerenal should contain multiple bands.\nThese bands can be either supplied in either one of two ways:\n\nMultiple variables (like normal bands)\nAs a subdataset\n\nLets take a look quick look at the data (again with gdalinfo):\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/risk_map.nc\nSize is 512, 512\nMetadata:\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.8.3, released 2024/01/04\n  NC_GLOBAL#history=Mon Feb 19 15:00:21 2024: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/.testdata/hazard/risk_map.nc, ... )\nSubdatasets:\n  SUBDATASET_1_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band1\n  SUBDATASET_1_DESC=[10x10] Band1 (32-bit floating-point)\n  SUBDATASET_2_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band2\n  SUBDATASET_2_DESC=[10x10] Band2 (32-bit floating-point)\n  SUBDATASET_3_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band3\n  SUBDATASET_3_DESC=[10x10] Band3 (32-bit floating-point)\n  SUBDATASET_4_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band4\n  SUBDATASET_4_DESC=[10x10] Band4 (32-bit floating-point)\nCorner Coordinates:\nUpper Left  (    0.0,    0.0)\nLower Left  (    0.0,  512.0)\nUpper Right (  512.0,    0.0)\nLower Right (  512.0,  512.0)\nCenter      (  256.0,  256.0)\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nInstead of seeing normal metadata, we only get an overview of the available subdatasets.\n\n\nMultiple netCDF variables are normally not recognized as bands by the netCDF driver of GDAL. Instead they are interpreted as subdatasets (!). One can set the key var_as_band to true within the settings file to read the subdatasets as bands.\n[hazard]\nfile = &lt;your-file&gt;\nrisk = true\n[hazard.settings]\nvar_as_band = true\nWhen supplied in one subdataset (all bands are within that subdataset), the subset variable within the settings file should be set under the header hazard.settings. The value set to subset should be the name of the desired subdataset.\n[hazard]\nfile = &lt;your-file&gt;\nrisk = true\n[hazard.settings]\nvar_as_band = false\nsubset = &lt;your-wanted-subdataset&gt;"
+  },
+  {
+    "objectID": "user_guide/data/exposure/geometries.html",
+    "href": "user_guide/data/exposure/geometries.html",
+    "title": "Geometry",
+    "section": "",
+    "text": "A user can specify one or multiple geometry files in the settings.toml. It is advisable to give descriptive names to the geometry files, e.g., buildings.gpkg or roads.gpkg. Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page. All geometry files must have an attribute Object ID that holds unique IDs over all geometry files, linking to the Object ID column in the exposure CSV file (see below).\n\n\n\n\n\n\nExample\n\n\n\nWhen using a GeoPackage file with roads containing Object IDs 1-100, a second GeoPackage file with building footprints should contain Object IDs from 101-n. Then, those IDs should link to the corresponding rows and IDs in the exposure CSV file.\n\n\nWhen providing a polygon or line geometry file, a user can choose to use the area extraction method (‘extraction method’ = ‘area’, see here) for considering water levels or depths over the whole area of the asset. This can be more appropriate than point estimates for example for large buildings.\n\n\n\n\n\n\nWarning\n\n\n\nAssets cannot be partially or fully outside the hazard map extent! FIAT will stop if it detects any.\n\n\n\nSupported data formats\nAn overview of supported formats is presented here\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "user_guide/data/exposure.html",
+    "href": "user_guide/data/exposure.html",
+    "title": "Exposure data",
+    "section": "",
+    "text": "The exposure data describe the assets within the region of interest. FIAT allows vector and raster data inputs. It is recommended to place the exposure data in the ‘exposure’ folder, see the folder structure. However, the file name is free to be chosen by the user and must simply be refered to in the settings.toml configuration file."
+  },
+  {
+    "objectID": "user_guide/data/exposure.html#types-of-data",
+    "href": "user_guide/data/exposure.html#types-of-data",
+    "title": "Exposure data",
+    "section": "Types of Data",
+    "text": "Types of Data\nBecause FIAT consists of two models, the exposure data can be supplied in either a vector format or in raster format\n\nVector data\nFIAT can be used to assess flood damages to buildings, roads, utilities, and other types of structures of which data is available. These type of assets are often spatially represented with vector, or geometry data. Building a FIAT model with geometry exposure data requires two data types:\n\nGeometry file(s)\nCSV file\n\n\n\nRaster Data\n\n\n\n\n\n\nImportant\n\n\n\nThis functionality is in beta phase\n\n\nRaster files must be pre-processed before being ingested into the FIAT model. Raster projection and extent must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a raster file with the max potential damage per cell is required. A damage function must be assigned to each raster file as well, linking with the damage function name in the meta data to the name in the vulnerability curves file."
+  },
+  {
+    "objectID": "setup_guide/kernel/installation.html",
+    "href": "setup_guide/kernel/installation.html",
+    "title": "Installing FIAT",
+    "section": "",
+    "text": "FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.\n\n\nTo create a new environment follow the steps below.\n\nCreate a new environment:\nconda create -n fiat python=3.11.*\nActivate the environment:\nconda activate fiat\nInstall FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use pip install to do so:\npip install git+https://github.com/Deltares/Delft-FIAT.git\n\n\n\n\nIf you want to install FIAT into an existing environment, simply activate the desired environment and run:\npip install git+https://github.com/Deltares/Delft-FIAT.git"
+  },
+  {
+    "objectID": "setup_guide/kernel/installation.html#for-use",
+    "href": "setup_guide/kernel/installation.html#for-use",
+    "title": "Installing FIAT",
+    "section": "",
+    "text": "FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.\n\n\nTo create a new environment follow the steps below.\n\nCreate a new environment:\nconda create -n fiat python=3.11.*\nActivate the environment:\nconda activate fiat\nInstall FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use pip install to do so:\npip install git+https://github.com/Deltares/Delft-FIAT.git\n\n\n\n\nIf you want to install FIAT into an existing environment, simply activate the desired environment and run:\npip install git+https://github.com/Deltares/Delft-FIAT.git"
+  },
+  {
+    "objectID": "setup_guide/kernel/installation.html#for-development",
+    "href": "setup_guide/kernel/installation.html#for-development",
+    "title": "Installing FIAT",
+    "section": "For Development",
+    "text": "For Development\nThis is for those who wish to contribute to the development of FIAT.\n\nFirst, clone the FIAT repository on Github into a local directory of choice:\ncd ~/{your path}\ngit clone https://github.com/Deltares/Delft-FIAT.git fiat\nCreate a new development environment. Make sure you either have tomli or tomllib (build-in with Python 3.11) in your base enviroment. Go into your cloned FIAT repository folder and create the environment file by running the make_env.py script:\ncd ~/{your path}/fiat\npython make_env.py dev\nThen, create and activate the new environment in conda:\nconda env create -f environment.yml\nconda activate fiat_dev\nTo install all the required dependencies, run:\npip install -e .\n\nThere you go. FIAT is now installed on your local machine for development purposes."
+  },
+  {
+    "objectID": "setup_guide/index.html",
+    "href": "setup_guide/index.html",
+    "title": "Setup guide",
+    "section": "",
+    "text": "Installing FIAT\n    \n  \n  \n    \n      Freeze FIAT as an application\n    \n  \n  \n    \n      Linux"
+  },
+  {
+    "objectID": "setup_guide/index.html#overview",
+    "href": "setup_guide/index.html#overview",
+    "title": "Setup guide",
+    "section": "Overview",
+    "text": "Overview\nFIAT requires Python 3.9 or greater, a package manager, and Git to be installed. After that, FIAT can be installed for use or for development, or it can be freezed as an application/executable.\nIt’s possible to run FIAT on Linux but this is currently in the bèta phase."
+  },
+  {
+    "objectID": "info/models.html",
+    "href": "info/models.html",
+    "title": "Models",
+    "section": "",
+    "text": "Within FIAT, two types of models are currently present:"
+  },
+  {
+    "objectID": "info/models.html#geommodel",
+    "href": "info/models.html#geommodel",
+    "title": "Models",
+    "section": "GeomModel",
+    "text": "GeomModel\nThe GeomModel requires a configuration file that indicates where the exposure geom(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in vector data as exposure assets (e.g., building footprints, road segments, and utility locations) one by one. Each exposure asset gets overlaid with the hazard map and with this data, the corresponding damage fraction is taken from the vulnerability curve and multiplied with the maximum potential damage to get the flood damage. When the user supplies multiple hazard maps with related return periods, they can choose to also calculate risk."
+  },
+  {
+    "objectID": "info/models.html#gridmodel",
+    "href": "info/models.html#gridmodel",
+    "title": "Models",
+    "section": "GridModel",
+    "text": "GridModel\nThe GridModel requires a configuration file that indicates where the exposure raster(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in raster data as exposure layers (e.g. commercial, residential, industrial) holding the maximum potential damage values, which should be in the same resolution, size, and projection as the hazard map. To calculate damages, the exposure raster and hazard raster are overlaid and per cell, the maximum potential damage is multiplied with the damage fraction corresponding to the hazard value in that cell. Risk can also be calculated with the GridModel, although it must be noted that this functionality has not been thoroughly tested."
+  },
+  {
+    "objectID": "getting_started/index.html",
+    "href": "getting_started/index.html",
+    "title": "",
+    "section": "",
+    "text": "Setup guide\n    \n  \n  \n    \n      How do I use FIAT?\n    \n  \n  \n    \n      Frequently asked questions\n    \n  \n    \n    \n      Model information\n    \n  \n  \n    \n      API Reference\n    \n  \n\n\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "examples/index.html",
+    "href": "examples/index.html",
+    "title": "Examples",
+    "section": "",
+    "text": "This part of the documentation is under development. In the future, it will show more examples of how to use FIAT. Until that, this minimal example is available:\n\nSingle event example\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "developments/guide.html",
+    "href": "developments/guide.html",
+    "title": "Developer guide",
+    "section": "",
+    "text": "We welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. This guide provided an overview on how to go about it."
+  },
+  {
+    "objectID": "developments/guide.html#development-philosophy",
+    "href": "developments/guide.html#development-philosophy",
+    "title": "Developer guide",
+    "section": "Development philosophy",
+    "text": "Development philosophy\nThe aim of FIAT is to be a lean calculation core, focusing on the main tasks of FIAT of combining exposure, vulnerability and hazard data and calculating damages and risk. Developments related to pre- and post-processing of FIAT data should be done in respectively the HydroMT-FIAT and FIAT Toolbox repositories."
+  },
+  {
+    "objectID": "developments/guide.html#sec-issue-conventions",
+    "href": "developments/guide.html#sec-issue-conventions",
+    "title": "Developer guide",
+    "section": "Issue conventions",
+    "text": "Issue conventions\nFIAT has known and unknown bugs. Improvements through bug reports or feature requests in our issue tracker are welcomed. Please search open and closed existing issues, before creating a new one.\nFor issues related to pre- and post-processing of FIAT data, please refer to respectively the HydroMT-FIAT and FIAT Toolbox repositories."
+  },
+  {
+    "objectID": "developments/guide.html#guidelines",
+    "href": "developments/guide.html#guidelines",
+    "title": "Developer guide",
+    "section": "Guidelines",
+    "text": "Guidelines\nPlease follow the guidelines when contributing to the FIAT development:\n\nCreate an issue if it does not yet exist, when starting contributing. For more information on the issues, see the contributing page.\nFork the repository.\nDevelop on the repository with descriptive commit messages.\nWe work with Ruff linting, so always format the added or changed code with this library.\nFor each newly developed feature we require a pytest test.\nCreate a Pull Request to the master branch stating the developments made and the related issue.\nOnce reviewed and if accepted, Deltares will merge the developments to the master branch.\n\nWe would like to get in touch with those that want to contribute. Do not hesitate to send us an email [email address coming soon]!"
+  },
+  {
+    "objectID": "api/util/world2pixel.html",
+    "href": "api/util/world2pixel.html",
+    "title": "world2pixel",
+    "section": "",
+    "text": "gis.util.world2pixel(gtf, x, y)\nCalculate the pixel location based on coordinates.\n(Thanks to the ogr cookbook!)\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ngtf\ntuple\nThe geotransform of a grid dataset. Can be optained via the get_geotransform method. Has the following shape: (left, xres, xrot, upper, yrot, yres).\nrequired\n\n\nx\nfloat | int\nThe x coordinates of a point\nrequired\n\n\ny\nfloat | int\nThe y coordinates of a point\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\ntuple\nRow and column indices.\n\n\n\n\n\n\n# Load a dataset\ngs = fiat.io.GridSource(&lt;some raster file&gt;)\n# Get the geotransform\ngtf = gs.get_geotransform()\n# Calculate the indices\nrow, col = world2pixel(gtf, &lt;x&gt;, &lt;y&gt;)"
+  },
+  {
+    "objectID": "api/util/world2pixel.html#parameters",
+    "href": "api/util/world2pixel.html#parameters",
+    "title": "world2pixel",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ngtf\ntuple\nThe geotransform of a grid dataset. Can be optained via the get_geotransform method. Has the following shape: (left, xres, xrot, upper, yrot, yres).\nrequired\n\n\nx\nfloat | int\nThe x coordinates of a point\nrequired\n\n\ny\nfloat | int\nThe y coordinates of a point\nrequired"
+  },
+  {
+    "objectID": "api/util/world2pixel.html#returns",
+    "href": "api/util/world2pixel.html#returns",
+    "title": "world2pixel",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\ntuple\nRow and column indices."
+  },
+  {
+    "objectID": "api/util/world2pixel.html#examples",
+    "href": "api/util/world2pixel.html#examples",
+    "title": "world2pixel",
+    "section": "",
+    "text": "# Load a dataset\ngs = fiat.io.GridSource(&lt;some raster file&gt;)\n# Get the geotransform\ngtf = gs.get_geotransform()\n# Calculate the indices\nrow, col = world2pixel(gtf, &lt;x&gt;, &lt;y&gt;)"
+  },
+  {
+    "objectID": "api/spawn_logger.html",
+    "href": "api/spawn_logger.html",
+    "title": "spawn_logger",
+    "section": "",
+    "text": "log.spawn_logger(name)\nSpawn a logger within a hierarchy.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nThe identifier of the logger.\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nLog\nA Log object (for logging)."
+  },
+  {
+    "objectID": "api/spawn_logger.html#parameters",
+    "href": "api/spawn_logger.html#parameters",
+    "title": "spawn_logger",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nThe identifier of the logger.\nrequired"
+  },
+  {
+    "objectID": "api/spawn_logger.html#returns",
+    "href": "api/spawn_logger.html#returns",
+    "title": "spawn_logger",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nLog\nA Log object (for logging)."
+  },
+  {
+    "objectID": "api/setup_default_log.html",
+    "href": "api/setup_default_log.html",
+    "title": "setup_default_log",
+    "section": "",
+    "text": "log.setup_default_log(name, level, dst)\nSet up the base logger of a hierarchy.\nIt’s advisable to make this a single string that is not concatenated by period. E.g. ‘fiat’ is correct, ‘fiat.logging’ is not.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nIdentifier of the logger.\nrequired\n\n\nlevel\nint\nLogging level.\nrequired\n\n\ndst\nstr\nThe path to where the logging file will be located.\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nLog\nA Log object (for logging, no really..)"
+  },
+  {
+    "objectID": "api/setup_default_log.html#parameters",
+    "href": "api/setup_default_log.html#parameters",
+    "title": "setup_default_log",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nIdentifier of the logger.\nrequired\n\n\nlevel\nint\nLogging level.\nrequired\n\n\ndst\nstr\nThe path to where the logging file will be located.\nrequired"
+  },
+  {
+    "objectID": "api/setup_default_log.html#returns",
+    "href": "api/setup_default_log.html#returns",
+    "title": "setup_default_log",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nLog\nA Log object (for logging, no really..)"
+  },
+  {
+    "objectID": "api/overlay/clip_weighted.html",
+    "href": "api/overlay/clip_weighted.html",
+    "title": "clip_weighted",
+    "section": "",
+    "text": "gis.overlay.clip_weighted(band, srs, gtf, ft, upscale=1)\nClip a grid based on a feature (vector), but weighted.\nThis method caters to those who wish to have information about the percentages of cells that are touched by the feature.\n\n\nA high upscale value comes with a calculation penalty!\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nband\nGrid\nAn object that contains a connection the band within the dataset. For further information, see Grid!\nrequired\n\n\nsrs\nosr.SpatialReference\nSpatial reference (Projection) of the Grid object (e.g. WGS84). Can be optained with the get_srs method.\nrequired\n\n\ngtf\ntuple\nThe geotransform of a grid dataset. Can be optained via the get_geotransform method. Has the following shape: (left, xres, xrot, upper, yrot, yres).\nrequired\n\n\nft\nogr.Feature\nA Feature according to the ogr module of osgeo. Can be optained by indexing a GeomSource.\nrequired\n\n\nupscale\nint\nHow much the underlying grid will be upscaled. The higher the value, the higher the accuracy.\n1\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\narray\nA 1D array containing the clipped values.\n\n\n\n\n\n\n\nclip"
+  },
+  {
+    "objectID": "api/overlay/clip_weighted.html#warnings",
+    "href": "api/overlay/clip_weighted.html#warnings",
+    "title": "clip_weighted",
+    "section": "",
+    "text": "A high upscale value comes with a calculation penalty!"
+  },
+  {
+    "objectID": "api/overlay/clip_weighted.html#parameters",
+    "href": "api/overlay/clip_weighted.html#parameters",
+    "title": "clip_weighted",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nband\nGrid\nAn object that contains a connection the band within the dataset. For further information, see Grid!\nrequired\n\n\nsrs\nosr.SpatialReference\nSpatial reference (Projection) of the Grid object (e.g. WGS84). Can be optained with the get_srs method.\nrequired\n\n\ngtf\ntuple\nThe geotransform of a grid dataset. Can be optained via the get_geotransform method. Has the following shape: (left, xres, xrot, upper, yrot, yres).\nrequired\n\n\nft\nogr.Feature\nA Feature according to the ogr module of osgeo. Can be optained by indexing a GeomSource.\nrequired\n\n\nupscale\nint\nHow much the underlying grid will be upscaled. The higher the value, the higher the accuracy.\n1"
+  },
+  {
+    "objectID": "api/overlay/clip_weighted.html#returns",
+    "href": "api/overlay/clip_weighted.html#returns",
+    "title": "clip_weighted",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\narray\nA 1D array containing the clipped values."
+  },
+  {
+    "objectID": "api/overlay/clip_weighted.html#see-also",
+    "href": "api/overlay/clip_weighted.html#see-also",
+    "title": "clip_weighted",
+    "section": "",
+    "text": "clip"
+  },
+  {
+    "objectID": "api/io/open_grid.html",
+    "href": "api/io/open_grid.html",
+    "title": "open_grid",
+    "section": "",
+    "text": "io.open_grid(file, chunk=None, subset=None, var_as_band=False, mode='r')\nOpen a grid source file.\nThis source file is lazily read.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfile\nPath | str\nPath to the file.\nrequired\n\n\nchunk\ntuple\nChunk size in x and y direction.\nNone\n\n\nsubset\nstr\nIn netCDF files, multiple variables are seen as subsets and can therefore not be loaded like normal bands. Specify one if one of those it wanted.\nNone\n\n\nvar_as_band\nbool\nAgain with netCDF files: if all variables have the same dimensions, set this flag to True to look the subsets as bands.\nFalse\n\n\nmode\nstr\nOpen in read or write mode.\n'r'\n\n\n\n\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nGridSource\nObject that holds a connection to the source file."
+  },
+  {
+    "objectID": "api/io/open_grid.html#parameters",
+    "href": "api/io/open_grid.html#parameters",
+    "title": "open_grid",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfile\nPath | str\nPath to the file.\nrequired\n\n\nchunk\ntuple\nChunk size in x and y direction.\nNone\n\n\nsubset\nstr\nIn netCDF files, multiple variables are seen as subsets and can therefore not be loaded like normal bands. Specify one if one of those it wanted.\nNone\n\n\nvar_as_band\nbool\nAgain with netCDF files: if all variables have the same dimensions, set this flag to True to look the subsets as bands.\nFalse\n\n\nmode\nstr\nOpen in read or write mode.\n'r'"
+  },
+  {
+    "objectID": "api/io/open_grid.html#returns",
+    "href": "api/io/open_grid.html#returns",
+    "title": "open_grid",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nGridSource\nObject that holds a connection to the source file."
+  },
+  {
+    "objectID": "api/io/open_csv.html",
+    "href": "api/io/open_csv.html",
+    "title": "open_csv",
+    "section": "",
+    "text": "io.open_csv(file, delimiter=',', header=True, index=None, large=False)\nOpen a csv file.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nPath to the file.\nrequired\n\n\ndelimiter\nstr\nColumn seperating character, either something like ',' or ';'.\n','\n\n\nheader\nbool\nWhether or not to use headers.\nTrue\n\n\nindex\nstr\nName of the index column.\nNone\n\n\nlarge\nbool\nIf True, a lazy read is executed.\nFalse\n\n\n\n\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nTable | TableLazy\nObject holding parsed csv data."
+  },
+  {
+    "objectID": "api/io/open_csv.html#parameters",
+    "href": "api/io/open_csv.html#parameters",
+    "title": "open_csv",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nPath to the file.\nrequired\n\n\ndelimiter\nstr\nColumn seperating character, either something like ',' or ';'.\n','\n\n\nheader\nbool\nWhether or not to use headers.\nTrue\n\n\nindex\nstr\nName of the index column.\nNone\n\n\nlarge\nbool\nIf True, a lazy read is executed.\nFalse"
+  },
+  {
+    "objectID": "api/io/open_csv.html#returns",
+    "href": "api/io/open_csv.html#returns",
+    "title": "open_csv",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nTable | TableLazy\nObject holding parsed csv data."
+  },
+  {
+    "objectID": "api/index.html",
+    "href": "api/index.html",
+    "title": "API Reference",
+    "section": "",
+    "text": "Two main components of working with FIAT.\n\n\n\nFIAT\nMain FIAT Object.\n\n\nConfigReader\nObject holding information from a settings file.\n\n\n\n\n\n\nThe individual models of FIAT.\n\n\n\nGeomModel\nGeometry model.\n\n\nGridModel\nGrid model.\n\n\n\n\n\n\n\nLogging module of FIAT\n\n\n\nspawn_logger\nSpawn a logger within a hierarchy.\n\n\nsetup_default_log\nSet up the base logger of a hierarchy.\n\n\nsetup_mp_log\nSet up logging for multiprocessing.\n\n\nLog\nGenerate a logger.\n\n\nReceiver\nCreate a receiver for multiprocessing logging.\n\n\n\n\n\n\n\n\nGeometry specific methods\n\n\n\npoint_in_geom\nCreate a point within a polygon.\n\n\nreproject\nReproject a geometry layer.\n\n\n\n\n\n\nGrid specific methods\n\n\n\nreproject\nReproject (warp) a grid.\n\n\n\n\n\n\nFor combined vector and raster methods\n\n\n\nclip\nClip a grid based on a feature (vector).\n\n\nclip_weighted\nClip a grid based on a feature (vector), but weighted.\n\n\npin\nPin a the value of a cell based on a coordinate.\n\n\n\n\n\n\nSome utility for the GIS module (basic)\n\n\n\nworld2pixel\nCalculate the pixel location based on coordinates.\n\n\npixel2world\nCalculate coordinates based on pixel location.\n\n\n\n\n\n\n\n\n\nInput/ output bound operations\n\n\n\nmerge_geom_layers\nMerge multiple vector layers into one file.\n\n\nopen_csv\nOpen a csv file.\n\n\nopen_geom\nOpen a geometry source file.\n\n\nopen_grid\nOpen a grid source file.\n\n\n\n\n\n\nObjects constructed from data\n\n\n\nGeomSource\nA source object for geospatial vector data.\n\n\nGridSource\nA source object for geospatial gridded data.\n\n\nGrid\nA source object for a specific raster band.\n\n\nTable\nCreate a struct based on tabular data in a file.\n\n\nTableLazy\nA lazy read of tabular data in a file."
+  },
+  {
+    "objectID": "api/index.html#basics",
+    "href": "api/index.html#basics",
+    "title": "API Reference",
+    "section": "",
+    "text": "Two main components of working with FIAT.\n\n\n\nFIAT\nMain FIAT Object.\n\n\nConfigReader\nObject holding information from a settings file.\n\n\n\n\n\n\nThe individual models of FIAT.\n\n\n\nGeomModel\nGeometry model.\n\n\nGridModel\nGrid model."
+  },
+  {
+    "objectID": "api/index.html#logging",
+    "href": "api/index.html#logging",
+    "title": "API Reference",
+    "section": "",
+    "text": "Logging module of FIAT\n\n\n\nspawn_logger\nSpawn a logger within a hierarchy.\n\n\nsetup_default_log\nSet up the base logger of a hierarchy.\n\n\nsetup_mp_log\nSet up logging for multiprocessing.\n\n\nLog\nGenerate a logger.\n\n\nReceiver\nCreate a receiver for multiprocessing logging."
+  },
+  {
+    "objectID": "api/index.html#gis",
+    "href": "api/index.html#gis",
+    "title": "API Reference",
+    "section": "",
+    "text": "Geometry specific methods\n\n\n\npoint_in_geom\nCreate a point within a polygon.\n\n\nreproject\nReproject a geometry layer.\n\n\n\n\n\n\nGrid specific methods\n\n\n\nreproject\nReproject (warp) a grid.\n\n\n\n\n\n\nFor combined vector and raster methods\n\n\n\nclip\nClip a grid based on a feature (vector).\n\n\nclip_weighted\nClip a grid based on a feature (vector), but weighted.\n\n\npin\nPin a the value of a cell based on a coordinate.\n\n\n\n\n\n\nSome utility for the GIS module (basic)\n\n\n\nworld2pixel\nCalculate the pixel location based on coordinates.\n\n\npixel2world\nCalculate coordinates based on pixel location."
+  },
+  {
+    "objectID": "api/index.html#io",
+    "href": "api/index.html#io",
+    "title": "API Reference",
+    "section": "",
+    "text": "Input/ output bound operations\n\n\n\nmerge_geom_layers\nMerge multiple vector layers into one file.\n\n\nopen_csv\nOpen a csv file.\n\n\nopen_geom\nOpen a geometry source file.\n\n\nopen_grid\nOpen a grid source file.\n\n\n\n\n\n\nObjects constructed from data\n\n\n\nGeomSource\nA source object for geospatial vector data.\n\n\nGridSource\nA source object for geospatial gridded data.\n\n\nGrid\nA source object for a specific raster band.\n\n\nTable\nCreate a struct based on tabular data in a file.\n\n\nTableLazy\nA lazy read of tabular data in a file."
+  },
+  {
+    "objectID": "api/geom/reproject.html",
+    "href": "api/geom/reproject.html",
+    "title": "reproject",
+    "section": "",
+    "text": "gis.geom.reproject(gs, crs, out_dir=None)\nReproject a geometry layer.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ngs\nGeomSource\nInput object.\nrequired\n\n\ncrs\nstr\nCoodinates reference system (projection). An accepted format is: EPSG:3857.\nrequired\n\n\nout_dir\nPath | str\nOutput directory. If not defined, if will be inferred from the input object.\nNone\n\n\n\n\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nGeomSource\nOutput object. A lazy reading of the just creating geometry file."
+  },
+  {
+    "objectID": "api/geom/reproject.html#parameters",
+    "href": "api/geom/reproject.html#parameters",
+    "title": "reproject",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ngs\nGeomSource\nInput object.\nrequired\n\n\ncrs\nstr\nCoodinates reference system (projection). An accepted format is: EPSG:3857.\nrequired\n\n\nout_dir\nPath | str\nOutput directory. If not defined, if will be inferred from the input object.\nNone"
+  },
+  {
+    "objectID": "api/geom/reproject.html#returns",
+    "href": "api/geom/reproject.html#returns",
+    "title": "reproject",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nGeomSource\nOutput object. A lazy reading of the just creating geometry file."
+  },
+  {
+    "objectID": "api/TableLazy/set_index.html",
+    "href": "api/TableLazy/set_index.html",
+    "title": "set_index",
+    "section": "",
+    "text": "io.TableLazy.set_index(key)\nSet the index of the table.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nkey\nstr\nColumn header. View available headers via .columns.\nrequired"
+  },
+  {
+    "objectID": "api/TableLazy/set_index.html#parameters",
+    "href": "api/TableLazy/set_index.html#parameters",
+    "title": "set_index",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nkey\nstr\nColumn header. View available headers via .columns.\nrequired"
+  },
+  {
+    "objectID": "api/TableLazy.html",
+    "href": "api/TableLazy.html",
+    "title": "TableLazy",
+    "section": "",
+    "text": "io.TableLazy(self, data, index=None, columns=None, **kwargs)\nA lazy read of tabular data in a file.\nRequires a datastream as input.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ndata\nBufferHandler\nA stream.\nrequired\n\n\nindex\nstrortuple\nThe index column used as row indices.\nNone\n\n\ncolumns\nlist\nThe column headers of the table.\nNone\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nobject\nAn object containing a connection via a stream to a file.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nget\nGet a row from the table based on the index.\n\n\nset_index\nSet the index of the table."
+  },
+  {
+    "objectID": "api/TableLazy.html#parameters",
+    "href": "api/TableLazy.html#parameters",
+    "title": "TableLazy",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ndata\nBufferHandler\nA stream.\nrequired\n\n\nindex\nstrortuple\nThe index column used as row indices.\nNone\n\n\ncolumns\nlist\nThe column headers of the table.\nNone"
+  },
+  {
+    "objectID": "api/TableLazy.html#returns",
+    "href": "api/TableLazy.html#returns",
+    "title": "TableLazy",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nobject\nAn object containing a connection via a stream to a file."
+  },
+  {
+    "objectID": "api/TableLazy.html#methods",
+    "href": "api/TableLazy.html#methods",
+    "title": "TableLazy",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nget\nGet a row from the table based on the index.\n\n\nset_index\nSet the index of the table."
+  },
+  {
+    "objectID": "api/Table/mean.html",
+    "href": "api/Table/mean.html",
+    "title": "mean",
+    "section": "",
+    "text": "mean\nio.Table.mean()\nsummary.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Table.html",
+    "href": "api/Table.html",
+    "title": "Table",
+    "section": "",
+    "text": "io.Table(self, data, index=None, columns=None, **kwargs)\nCreate a struct based on tabular data in a file.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ndata\nBufferHandler | dict\nA datastream or a dictionary. The datastream is a connection through which data can pass.\nrequired\n\n\nindex\nstr | tuple\nThe index column from which the values are taken and used to index the rows.\nNone\n\n\ncolumns\nlist\nThe column headers of the table. If not supplied, it will be inferred from the file.\nNone\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nobject\nAn object containing actively loaded tabular data.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nmax\nsummary.\n\n\nmean\nsummary.\n\n\nupscale\nsummary."
+  },
+  {
+    "objectID": "api/Table.html#parameters",
+    "href": "api/Table.html#parameters",
+    "title": "Table",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ndata\nBufferHandler | dict\nA datastream or a dictionary. The datastream is a connection through which data can pass.\nrequired\n\n\nindex\nstr | tuple\nThe index column from which the values are taken and used to index the rows.\nNone\n\n\ncolumns\nlist\nThe column headers of the table. If not supplied, it will be inferred from the file.\nNone"
+  },
+  {
+    "objectID": "api/Table.html#returns",
+    "href": "api/Table.html#returns",
+    "title": "Table",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nobject\nAn object containing actively loaded tabular data."
+  },
+  {
+    "objectID": "api/Table.html#methods",
+    "href": "api/Table.html#methods",
+    "title": "Table",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nmax\nsummary.\n\n\nmean\nsummary.\n\n\nupscale\nsummary."
+  },
+  {
+    "objectID": "api/Receiver/get.html",
+    "href": "api/Receiver/get.html",
+    "title": "get",
+    "section": "",
+    "text": "log.Receiver.get(block=True)\nGet something from the pipeline.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nblock\nbool\nIf set to True, it will wait until it receives something.\nTrue"
+  },
+  {
+    "objectID": "api/Receiver/get.html#parameters",
+    "href": "api/Receiver/get.html#parameters",
+    "title": "get",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nblock\nbool\nIf set to True, it will wait until it receives something.\nTrue"
+  },
+  {
+    "objectID": "api/Receiver/close.html",
+    "href": "api/Receiver/close.html",
+    "title": "close",
+    "section": "",
+    "text": "close\nlog.Receiver.close()\nClose the receiver.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Receiver.html",
+    "href": "api/Receiver.html",
+    "title": "Receiver",
+    "section": "",
+    "text": "log.Receiver(self, queue)\nCreate a receiver for multiprocessing logging.\nEssentially a listener.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nqueue\nobject\nA queue for putting the messages in. This has to be a designated multiprocessing object.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nadd_handler\nAdd a handler to the receiver.\n\n\nclose\nClose the receiver.\n\n\nclose_handlers\nClose all associated handlers.\n\n\nget\nGet something from the pipeline.\n\n\nstart\nStart the receiver."
+  },
+  {
+    "objectID": "api/Receiver.html#parameters",
+    "href": "api/Receiver.html#parameters",
+    "title": "Receiver",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nqueue\nobject\nA queue for putting the messages in. This has to be a designated multiprocessing object.\nrequired"
+  },
+  {
+    "objectID": "api/Receiver.html#methods",
+    "href": "api/Receiver.html#methods",
+    "title": "Receiver",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nadd_handler\nAdd a handler to the receiver.\n\n\nclose\nClose the receiver.\n\n\nclose_handlers\nClose all associated handlers.\n\n\nget\nGet something from the pipeline.\n\n\nstart\nStart the receiver."
+  },
+  {
+    "objectID": "api/Log/info.html",
+    "href": "api/Log/info.html",
+    "title": "info",
+    "section": "",
+    "text": "info\nlog.Log.info(msg)\nCreate an info message.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Log/error.html",
+    "href": "api/Log/error.html",
+    "title": "error",
+    "section": "",
+    "text": "error\nlog.Log.error(msg)\nCreate an error message.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Log/dead.html",
+    "href": "api/Log/dead.html",
+    "title": "dead",
+    "section": "",
+    "text": "dead\nlog.Log.dead(msg)\nCreate a kernel-deceased message.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Log/add_c_handler.html",
+    "href": "api/Log/add_c_handler.html",
+    "title": "add_c_handler",
+    "section": "",
+    "text": "log.Log.add_c_handler(level=2, name=None)\nAdd an outlet to the console.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nlevel\nint\nLogging level.\n2\n\n\nname\nstr\nThe identifier of the stream handler.\nNone"
+  },
+  {
+    "objectID": "api/Log/add_c_handler.html#parameters",
+    "href": "api/Log/add_c_handler.html#parameters",
+    "title": "add_c_handler",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nlevel\nint\nLogging level.\n2\n\n\nname\nstr\nThe identifier of the stream handler.\nNone"
+  },
+  {
+    "objectID": "api/GridSource/set_srs.html",
+    "href": "api/GridSource/set_srs.html",
+    "title": "set_srs",
+    "section": "",
+    "text": "io.GridSource.set_srs(srs)\nSet the srs of the gird.\nOnly in write ('w') mode.\nThis is the spatial reference system defined by GDAL.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsrs\nosr.SpatialReference\nThe srs.\nrequired"
+  },
+  {
+    "objectID": "api/GridSource/set_srs.html#parameters",
+    "href": "api/GridSource/set_srs.html#parameters",
+    "title": "set_srs",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsrs\nosr.SpatialReference\nThe srs.\nrequired"
+  },
+  {
+    "objectID": "api/GridSource/set_chunk_size.html",
+    "href": "api/GridSource/set_chunk_size.html",
+    "title": "set_chunk_size",
+    "section": "",
+    "text": "io.GridSource.set_chunk_size(chunk)\nSet the chunking size of the grid.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nchunk\ntuple\nA tuple containing the chunking size in x direction and y direction.\nrequired"
+  },
+  {
+    "objectID": "api/GridSource/set_chunk_size.html#parameters",
+    "href": "api/GridSource/set_chunk_size.html#parameters",
+    "title": "set_chunk_size",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nchunk\ntuple\nA tuple containing the chunking size in x direction and y direction.\nrequired"
+  },
+  {
+    "objectID": "api/GridSource/get_srs.html",
+    "href": "api/GridSource/get_srs.html",
+    "title": "get_srs",
+    "section": "",
+    "text": "get_srs\nio.GridSource.get_srs()\nReturn the srs (Spatial Reference System) of the grid.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GridSource/get_band_names.html",
+    "href": "api/GridSource/get_band_names.html",
+    "title": "get_band_names",
+    "section": "",
+    "text": "get_band_names\nio.GridSource.get_band_names()\nGet the names of all bands.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GridSource/flush.html",
+    "href": "api/GridSource/flush.html",
+    "title": "flush",
+    "section": "",
+    "text": "flush\nio.GridSource.flush()\nFlush the data.\nThis only serves a purpose in write mode (mode = 'w').\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GridSource/create_band.html",
+    "href": "api/GridSource/create_band.html",
+    "title": "create_band",
+    "section": "",
+    "text": "create_band\nio.GridSource.create_band()\nCreate a new band.\nOnly in write ('w') mode.\nThis will append the numbers of bands.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GridSource/close.html",
+    "href": "api/GridSource/close.html",
+    "title": "close",
+    "section": "",
+    "text": "close\nio.GridSource.close()\nClose the GridSource.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GridModel/run.html",
+    "href": "api/GridModel/run.html",
+    "title": "run",
+    "section": "",
+    "text": "run\nmodels.GridModel.run()\nRun the grid model with provided settings.\nGenerates output in the specified output.path directory.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GridModel.html",
+    "href": "api/GridModel.html",
+    "title": "GridModel",
+    "section": "",
+    "text": "models.GridModel(self, cfg)\nGrid model.\nNeeds the following settings in order to be run:\n\nexposure.grid.file\noutput.grid.file\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigReader\nConfigReader object containing the settings.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nresolve\nCreate EAD output from the outputs of different return periods.\n\n\nrun\nRun the grid model with provided settings."
+  },
+  {
+    "objectID": "api/GridModel.html#parameters",
+    "href": "api/GridModel.html#parameters",
+    "title": "GridModel",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigReader\nConfigReader object containing the settings.\nrequired"
+  },
+  {
+    "objectID": "api/GridModel.html#methods",
+    "href": "api/GridModel.html#methods",
+    "title": "GridModel",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nresolve\nCreate EAD output from the outputs of different return periods.\n\n\nrun\nRun the grid model with provided settings."
+  },
+  {
+    "objectID": "api/Grid/set_chunk_size.html",
+    "href": "api/Grid/set_chunk_size.html",
+    "title": "set_chunk_size",
+    "section": "",
+    "text": "io.Grid.set_chunk_size(chunk)\nSet the chunking size.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nchunk\ntuple\nSize in x direction, size in y direction.\nrequired"
+  },
+  {
+    "objectID": "api/Grid/set_chunk_size.html#parameters",
+    "href": "api/Grid/set_chunk_size.html#parameters",
+    "title": "set_chunk_size",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nchunk\ntuple\nSize in x direction, size in y direction.\nrequired"
+  },
+  {
+    "objectID": "api/Grid/flush.html",
+    "href": "api/Grid/flush.html",
+    "title": "flush",
+    "section": "",
+    "text": "flush\nio.Grid.flush()\nFlush the grid object.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Grid.html",
+    "href": "api/Grid.html",
+    "title": "Grid",
+    "section": "",
+    "text": "io.Grid(self, band, chunk=None, mode='r')\nA source object for a specific raster band.\nAcquired by indexing a GridSource object.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nband\ngdal.Band\nA band defined by GDAL.\nrequired\n\n\nchunk\ntuple\nChunk size in x direction and y direction.\nNone\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nchunk\nReturn the chunk size.\n\n\nshape\nReturn the shape of the grid.\n\n\nshape_xy\nReturn the shape of the grid.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nclose\nClose the Grid object.\n\n\nflush\nFlush the grid object.\n\n\nget_metadata_item\nGet specific metadata item.\n\n\nset_chunk_size\nSet the chunking size.\n\n\nwrite_chunk\nWrite a chunk of data to the band."
+  },
+  {
+    "objectID": "api/Grid.html#parameters",
+    "href": "api/Grid.html#parameters",
+    "title": "Grid",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nband\ngdal.Band\nA band defined by GDAL.\nrequired\n\n\nchunk\ntuple\nChunk size in x direction and y direction.\nNone\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'"
+  },
+  {
+    "objectID": "api/Grid.html#attributes",
+    "href": "api/Grid.html#attributes",
+    "title": "Grid",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nchunk\nReturn the chunk size.\n\n\nshape\nReturn the shape of the grid.\n\n\nshape_xy\nReturn the shape of the grid."
+  },
+  {
+    "objectID": "api/Grid.html#methods",
+    "href": "api/Grid.html#methods",
+    "title": "Grid",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nclose\nClose the Grid object.\n\n\nflush\nFlush the grid object.\n\n\nget_metadata_item\nGet specific metadata item.\n\n\nset_chunk_size\nSet the chunking size.\n\n\nwrite_chunk\nWrite a chunk of data to the band."
+  },
+  {
+    "objectID": "api/GeomSource/flush.html",
+    "href": "api/GeomSource/flush.html",
+    "title": "flush",
+    "section": "",
+    "text": "flush\nio.GeomSource.flush()\nFlush the data.\nThis only serves a purpose in write mode (mode = 'w').\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GeomSource/create_layer.html",
+    "href": "api/GeomSource/create_layer.html",
+    "title": "create_layer",
+    "section": "",
+    "text": "io.GeomSource.create_layer(srs, geom_type)\nCreate a new vector layer.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsrs\nosr.SpatialReference\nSpatial Reference System.\nrequired\n\n\ngeom_type\nint\nType of geometry. E.g. ‘POINT’ or ‘POLYGON’. It is supplied as an integer that complies with a specific geometry type according to GDAL.\nrequired"
+  },
+  {
+    "objectID": "api/GeomSource/create_layer.html#parameters",
+    "href": "api/GeomSource/create_layer.html#parameters",
+    "title": "create_layer",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsrs\nosr.SpatialReference\nSpatial Reference System.\nrequired\n\n\ngeom_type\nint\nType of geometry. E.g. ‘POINT’ or ‘POLYGON’. It is supplied as an integer that complies with a specific geometry type according to GDAL.\nrequired"
+  },
+  {
+    "objectID": "api/GeomSource/create_field.html",
+    "href": "api/GeomSource/create_field.html",
+    "title": "create_field",
+    "section": "",
+    "text": "io.GeomSource.create_field(name, type)\nAdd a new field.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nName of the new field.\nrequired\n\n\ntype\nobject\nType of the new field.\nrequired"
+  },
+  {
+    "objectID": "api/GeomSource/create_field.html#parameters",
+    "href": "api/GeomSource/create_field.html#parameters",
+    "title": "create_field",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nName of the new field.\nrequired\n\n\ntype\nobject\nType of the new field.\nrequired"
+  },
+  {
+    "objectID": "api/GeomSource/close.html",
+    "href": "api/GeomSource/close.html",
+    "title": "close",
+    "section": "",
+    "text": "close\nio.GeomSource.close()\nClose the GeomSouce.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GeomSource/add_feature.html",
+    "href": "api/GeomSource/add_feature.html",
+    "title": "add_feature",
+    "section": "",
+    "text": "io.GeomSource.add_feature(ft)\nAdd a feature to the layer.\nOnly in write ('w') mode.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nft\nogr.Feature\nA feature object defined by OGR.\nrequired"
+  },
+  {
+    "objectID": "api/GeomSource/add_feature.html#parameters",
+    "href": "api/GeomSource/add_feature.html#parameters",
+    "title": "add_feature",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nft\nogr.Feature\nA feature object defined by OGR.\nrequired"
+  },
+  {
+    "objectID": "api/GeomModel/run.html",
+    "href": "api/GeomModel/run.html",
+    "title": "run",
+    "section": "",
+    "text": "run\nmodels.GeomModel.run()\nRun the geometry model with provided settings.\nGenerates output in the specified output.path directory.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GeomModel.html",
+    "href": "api/GeomModel.html",
+    "title": "GeomModel",
+    "section": "",
+    "text": "models.GeomModel(self, cfg)\nGeometry model.\nNeeds the following settings in order to be run:\n\nexposure.csv.file\nexposure.geom.file1\noutput.geom.file1\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigReader\nConfigReader object containing the settings.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nresolve\nCreate permanent output.\n\n\nrun\nRun the geometry model with provided settings."
+  },
+  {
+    "objectID": "api/GeomModel.html#parameters",
+    "href": "api/GeomModel.html#parameters",
+    "title": "GeomModel",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigReader\nConfigReader object containing the settings.\nrequired"
+  },
+  {
+    "objectID": "api/GeomModel.html#methods",
+    "href": "api/GeomModel.html#methods",
+    "title": "GeomModel",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nresolve\nCreate permanent output.\n\n\nrun\nRun the geometry model with provided settings."
+  },
+  {
+    "objectID": "api/FIAT/from_path.html",
+    "href": "api/FIAT/from_path.html",
+    "title": "from_path",
+    "section": "",
+    "text": "FIAT.from_path(file)\nCreate a FIAT object from a path to settings file.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfile\nPath | str\nPath to the settings file (e.g. settings.toml).\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nFIAT\nA FIAT object."
+  },
+  {
+    "objectID": "api/FIAT/from_path.html#parameters",
+    "href": "api/FIAT/from_path.html#parameters",
+    "title": "from_path",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfile\nPath | str\nPath to the settings file (e.g. settings.toml).\nrequired"
+  },
+  {
+    "objectID": "api/FIAT/from_path.html#returns",
+    "href": "api/FIAT/from_path.html#returns",
+    "title": "from_path",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nFIAT\nA FIAT object."
+  },
+  {
+    "objectID": "api/ConfigReader/set_output_dir.html",
+    "href": "api/ConfigReader/set_output_dir.html",
+    "title": "set_output_dir",
+    "section": "",
+    "text": "ConfigReader.set_output_dir(path)\nSet the output directory.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nA Path to the new directory.\nrequired"
+  },
+  {
+    "objectID": "api/ConfigReader/set_output_dir.html#parameters",
+    "href": "api/ConfigReader/set_output_dir.html#parameters",
+    "title": "set_output_dir",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nA Path to the new directory.\nrequired"
+  },
+  {
+    "objectID": "api/ConfigReader/get_model_type.html",
+    "href": "api/ConfigReader/get_model_type.html",
+    "title": "get_model_type",
+    "section": "",
+    "text": "ConfigReader.get_model_type()\nGet the types of models.\nInferred by the arguments in the settings file. When enough arguments are present for one type of model, the bool is set to True.\n\n\n\n\n\nType\nDescription\n\n\n\n\ntuple\nTuple containing booleans for each model. Order is (GeomModel, GridModel)."
+  },
+  {
+    "objectID": "api/ConfigReader/get_model_type.html#returns",
+    "href": "api/ConfigReader/get_model_type.html#returns",
+    "title": "get_model_type",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\ntuple\nTuple containing booleans for each model. Order is (GeomModel, GridModel)."
+  },
+  {
+    "objectID": "api/ConfigReader.html",
+    "href": "api/ConfigReader.html",
+    "title": "ConfigReader",
+    "section": "",
+    "text": "ConfigReader(self, file, extra_args=None)\nObject holding information from a settings file.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfile\nPath | str\nPath to the settings file.\nrequired\n\n\nextra_args\ndict\nExtra arguments that are not in the settings file.\nNone\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\ngenerate_kwargs\nGenerate keyword arguments.\n\n\nget_model_type\nGet the types of models.\n\n\nget_path\nGet a Path to a file that is present in the object.\n\n\nset_output_dir\nSet the output directory."
+  },
+  {
+    "objectID": "api/ConfigReader.html#parameters",
+    "href": "api/ConfigReader.html#parameters",
+    "title": "ConfigReader",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfile\nPath | str\nPath to the settings file.\nrequired\n\n\nextra_args\ndict\nExtra arguments that are not in the settings file.\nNone"
+  },
+  {
+    "objectID": "api/ConfigReader.html#methods",
+    "href": "api/ConfigReader.html#methods",
+    "title": "ConfigReader",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\ngenerate_kwargs\nGenerate keyword arguments.\n\n\nget_model_type\nGet the types of models.\n\n\nget_path\nGet a Path to a file that is present in the object.\n\n\nset_output_dir\nSet the output directory."
+  },
+  {
+    "objectID": "api/ConfigReader/generate_kwargs.html",
+    "href": "api/ConfigReader/generate_kwargs.html",
+    "title": "generate_kwargs",
+    "section": "",
+    "text": "ConfigReader.generate_kwargs(base)\nGenerate keyword arguments.\nBased on the base string of certain arguments of the settings file. E.g. hazard.settings for all extra hazard settings.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nbase\nstr\nBase of wanted keys/ values.\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\ndict\nA dictionary containing the keyword arguments."
+  },
+  {
+    "objectID": "api/ConfigReader/generate_kwargs.html#parameters",
+    "href": "api/ConfigReader/generate_kwargs.html#parameters",
+    "title": "generate_kwargs",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nbase\nstr\nBase of wanted keys/ values.\nrequired"
+  },
+  {
+    "objectID": "api/ConfigReader/generate_kwargs.html#returns",
+    "href": "api/ConfigReader/generate_kwargs.html#returns",
+    "title": "generate_kwargs",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\ndict\nA dictionary containing the keyword arguments."
+  },
+  {
+    "objectID": "api/ConfigReader/get_path.html",
+    "href": "api/ConfigReader/get_path.html",
+    "title": "get_path",
+    "section": "",
+    "text": "ConfigReader.get_path(key)\nGet a Path to a file that is present in the object.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nkey\nstr\nKey of the Path. (e.g. exposure.geom.file1)\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nPath\nA path."
+  },
+  {
+    "objectID": "api/ConfigReader/get_path.html#parameters",
+    "href": "api/ConfigReader/get_path.html#parameters",
+    "title": "get_path",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nkey\nstr\nKey of the Path. (e.g. exposure.geom.file1)\nrequired"
+  },
+  {
+    "objectID": "api/ConfigReader/get_path.html#returns",
+    "href": "api/ConfigReader/get_path.html#returns",
+    "title": "get_path",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nPath\nA path."
+  },
+  {
+    "objectID": "api/FIAT.html",
+    "href": "api/FIAT.html",
+    "title": "FIAT",
+    "section": "",
+    "text": "FIAT(self, cfg)\nMain FIAT Object.\nCreate a FIAT object from a loaded settings file.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigReader\nObject containing the information from the setttings file.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nfrom_path\nCreate a FIAT object from a path to settings file.\n\n\nrun\nRun FIAT with provided settings."
+  },
+  {
+    "objectID": "api/FIAT.html#parameters",
+    "href": "api/FIAT.html#parameters",
+    "title": "FIAT",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigReader\nObject containing the information from the setttings file.\nrequired"
+  },
+  {
+    "objectID": "api/FIAT.html#methods",
+    "href": "api/FIAT.html#methods",
+    "title": "FIAT",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nfrom_path\nCreate a FIAT object from a path to settings file.\n\n\nrun\nRun FIAT with provided settings."
+  },
+  {
+    "objectID": "api/FIAT/run.html",
+    "href": "api/FIAT/run.html",
+    "title": "run",
+    "section": "",
+    "text": "run\nFIAT.run()\nRun FIAT with provided settings.\nWill determine which models to run based on input. I.e. if enough input is provioded for the GeomModel, it will be run.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GeomModel/resolve.html",
+    "href": "api/GeomModel/resolve.html",
+    "title": "resolve",
+    "section": "",
+    "text": "resolve\nmodels.GeomModel.resolve()\nCreate permanent output.\nThis is done but reading, loading and sorting the temporary output within the .tmp folder within the output folder.\n\nThis method might become private.\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GeomSource.html",
+    "href": "api/GeomSource.html",
+    "title": "GeomSource",
+    "section": "",
+    "text": "io.GeomSource(self, file, mode='r', overwrite=False)\nA source object for geospatial vector data.\nEssentially an OGR DataSource wrapper.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nPath to a file.\nrequired\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'\n\n\noverwrite\nbool\nWhether or not to overwrite an existing dataset.\nFalse\n\n\n\n\n\n\nIndex the GeomSource directly to get features.\n# Load a file\ngm = GeomSource(&lt; path-to-file &gt;)\n\n# Index it!\nfeature = gm[1]\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nbounds\nReturn the bounds of the GridSource.\n\n\nfields\nReturn the names of the fields.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nadd_feature\nAdd a feature to the layer.\n\n\nadd_feature_from_defn\nAdd a feature to a layer by using properties from another.\n\n\nclose\nClose the GeomSouce.\n\n\ncopy_layer\nCopy a layer to an existing dataset.\n\n\ncreate_field\nAdd a new field.\n\n\ncreate_fields\nAdd multiple fields at once.\n\n\ncreate_layer\nCreate a new vector layer.\n\n\ncreate_layer_from_copy\nCreate a new layer by copying another layer.\n\n\nflush\nFlush the data.\n\n\nget_srs\nReturn the srs (Spatial Reference System)."
+  },
+  {
+    "objectID": "api/GeomSource.html#parameters",
+    "href": "api/GeomSource.html#parameters",
+    "title": "GeomSource",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nPath to a file.\nrequired\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'\n\n\noverwrite\nbool\nWhether or not to overwrite an existing dataset.\nFalse"
+  },
+  {
+    "objectID": "api/GeomSource.html#examples",
+    "href": "api/GeomSource.html#examples",
+    "title": "GeomSource",
+    "section": "",
+    "text": "Index the GeomSource directly to get features.\n# Load a file\ngm = GeomSource(&lt; path-to-file &gt;)\n\n# Index it!\nfeature = gm[1]"
+  },
+  {
+    "objectID": "api/GeomSource.html#attributes",
+    "href": "api/GeomSource.html#attributes",
+    "title": "GeomSource",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nbounds\nReturn the bounds of the GridSource.\n\n\nfields\nReturn the names of the fields."
+  },
+  {
+    "objectID": "api/GeomSource.html#methods",
+    "href": "api/GeomSource.html#methods",
+    "title": "GeomSource",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nadd_feature\nAdd a feature to the layer.\n\n\nadd_feature_from_defn\nAdd a feature to a layer by using properties from another.\n\n\nclose\nClose the GeomSouce.\n\n\ncopy_layer\nCopy a layer to an existing dataset.\n\n\ncreate_field\nAdd a new field.\n\n\ncreate_fields\nAdd multiple fields at once.\n\n\ncreate_layer\nCreate a new vector layer.\n\n\ncreate_layer_from_copy\nCreate a new layer by copying another layer.\n\n\nflush\nFlush the data.\n\n\nget_srs\nReturn the srs (Spatial Reference System)."
+  },
+  {
+    "objectID": "api/GeomSource/add_feature_from_defn.html",
+    "href": "api/GeomSource/add_feature_from_defn.html",
+    "title": "add_feature_from_defn",
+    "section": "",
+    "text": "io.GeomSource.add_feature_from_defn(geom, in_ft, out_ft)\nAdd a feature to a layer by using properties from another.\nOnly in write ('w') mode.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ngeom\nogr.Geometry\nThe geometry of the new feature. Defined by OGR.\nrequired\n\n\nin_ft\nogr.Feature\nThe input feature. The properties and fieldinfo are used from this one to set information on the new feature. Defined by OGR.\nrequired\n\n\nout_ft\nogr.Feature\nNew feature. Empty. Defined by OGR.\nrequired"
+  },
+  {
+    "objectID": "api/GeomSource/add_feature_from_defn.html#parameters",
+    "href": "api/GeomSource/add_feature_from_defn.html#parameters",
+    "title": "add_feature_from_defn",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ngeom\nogr.Geometry\nThe geometry of the new feature. Defined by OGR.\nrequired\n\n\nin_ft\nogr.Feature\nThe input feature. The properties and fieldinfo are used from this one to set information on the new feature. Defined by OGR.\nrequired\n\n\nout_ft\nogr.Feature\nNew feature. Empty. Defined by OGR.\nrequired"
+  },
+  {
+    "objectID": "api/GeomSource/copy_layer.html",
+    "href": "api/GeomSource/copy_layer.html",
+    "title": "copy_layer",
+    "section": "",
+    "text": "io.GeomSource.copy_layer(layer, layer_fn)\nCopy a layer to an existing dataset.\nBit of a spoof off of create_layer_from_copy. This method is a bit more forcing and allows to set it’s own variable as layer name. Only in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\ndescription\nrequired\n\n\nlayer_fn\nstr\ndescription\nrequired"
+  },
+  {
+    "objectID": "api/GeomSource/copy_layer.html#parameters",
+    "href": "api/GeomSource/copy_layer.html#parameters",
+    "title": "copy_layer",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\ndescription\nrequired\n\n\nlayer_fn\nstr\ndescription\nrequired"
+  },
+  {
+    "objectID": "api/GeomSource/create_fields.html",
+    "href": "api/GeomSource/create_fields.html",
+    "title": "create_fields",
+    "section": "",
+    "text": "io.GeomSource.create_fields(fmap)\nAdd multiple fields at once.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfmap\ndict\nA dictionary where the keys are the names of the new fields and the values are the data types of the new field.\nrequired"
+  },
+  {
+    "objectID": "api/GeomSource/create_fields.html#parameters",
+    "href": "api/GeomSource/create_fields.html#parameters",
+    "title": "create_fields",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfmap\ndict\nA dictionary where the keys are the names of the new fields and the values are the data types of the new field.\nrequired"
+  },
+  {
+    "objectID": "api/GeomSource/create_layer_from_copy.html",
+    "href": "api/GeomSource/create_layer_from_copy.html",
+    "title": "create_layer_from_copy",
+    "section": "",
+    "text": "io.GeomSource.create_layer_from_copy(layer, overwrite=True)\nCreate a new layer by copying another layer.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\nA layer defined by OGR.\nrequired\n\n\noverwrite\nbool\nIf set to True, it will overwrite an existing layer.\nTrue"
+  },
+  {
+    "objectID": "api/GeomSource/create_layer_from_copy.html#parameters",
+    "href": "api/GeomSource/create_layer_from_copy.html#parameters",
+    "title": "create_layer_from_copy",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\nA layer defined by OGR.\nrequired\n\n\noverwrite\nbool\nIf set to True, it will overwrite an existing layer.\nTrue"
+  },
+  {
+    "objectID": "api/GeomSource/get_srs.html",
+    "href": "api/GeomSource/get_srs.html",
+    "title": "get_srs",
+    "section": "",
+    "text": "get_srs\nio.GeomSource.get_srs()\nReturn the srs (Spatial Reference System).\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Grid/close.html",
+    "href": "api/Grid/close.html",
+    "title": "close",
+    "section": "",
+    "text": "close\nio.Grid.close()\nClose the Grid object.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Grid/get_metadata_item.html",
+    "href": "api/Grid/get_metadata_item.html",
+    "title": "get_metadata_item",
+    "section": "",
+    "text": "io.Grid.get_metadata_item(entry)\nGet specific metadata item.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nentry\nstr\nIdentifier of item.\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nobject\nInformation is present."
+  },
+  {
+    "objectID": "api/Grid/get_metadata_item.html#parameters",
+    "href": "api/Grid/get_metadata_item.html#parameters",
+    "title": "get_metadata_item",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nentry\nstr\nIdentifier of item.\nrequired"
+  },
+  {
+    "objectID": "api/Grid/get_metadata_item.html#returns",
+    "href": "api/Grid/get_metadata_item.html#returns",
+    "title": "get_metadata_item",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nobject\nInformation is present."
+  },
+  {
+    "objectID": "api/Grid/write_chunk.html",
+    "href": "api/Grid/write_chunk.html",
+    "title": "write_chunk",
+    "section": "",
+    "text": "io.Grid.write_chunk(chunk, upper_left)\nWrite a chunk of data to the band.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nchunk\narray\nArray of data.\nrequired\n\n\nupper_left\ntuple | list\nUpper left corner of the chunk. N.b. these are not coordinates, but indices.\nrequired"
+  },
+  {
+    "objectID": "api/Grid/write_chunk.html#parameters",
+    "href": "api/Grid/write_chunk.html#parameters",
+    "title": "write_chunk",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nchunk\narray\nArray of data.\nrequired\n\n\nupper_left\ntuple | list\nUpper left corner of the chunk. N.b. these are not coordinates, but indices.\nrequired"
+  },
+  {
+    "objectID": "api/GridModel/resolve.html",
+    "href": "api/GridModel/resolve.html",
+    "title": "resolve",
+    "section": "",
+    "text": "resolve\nmodels.GridModel.resolve()\nCreate EAD output from the outputs of different return periods.\nThis is done but reading, loading and iterating over the those files. In contrary to the geometry model, this does not concern temporary data.\n\nThis method might become private.\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GridSource.html",
+    "href": "api/GridSource.html",
+    "title": "GridSource",
+    "section": "",
+    "text": "io.GridSource(self, file, chunk=None, subset=None, var_as_band=False, mode='r')\nA source object for geospatial gridded data.\nEssentially a gdal Dataset wrapper.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nThe path to a file.\nrequired\n\n\nchunk\ntuple\nChunking size of the data.\nNone\n\n\nsubset\nstr\nThe wanted subset of data. This is applicable to netCDF files containing multiple variables.\nNone\n\n\nvar_as_band\nbool\nWhether to interpret the variables as bands. This is applicable to netCDF files containing multiple variables.\nFalse\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'\n\n\n\n\n\n\nCan be indexed directly to get a Grid object.\n# Open a file\ngs = open_grid(&lt; path-to-file &gt;)\n\n# Index it (take the first band)\ngrid = gs[1]\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nbounds\nReturn the bounds of the GridSource.\n\n\nchunk\nReturn the chunking size.\n\n\ndtype\nReturn the data types of the field data.\n\n\nshape\nReturn the shape of the grid.\n\n\nshape_xy\nReturn the shape of the grid.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nclose\nClose the GridSource.\n\n\ncreate\nCreate a new data source.\n\n\ncreate_band\nCreate a new band.\n\n\ndeter_band_names\nDetermine the names of the bands.\n\n\nflush\nFlush the data.\n\n\nget_band_name\nGet the name of a specific band.\n\n\nget_band_names\nGet the names of all bands.\n\n\nget_geotransform\nReturn the geo transform of the grid.\n\n\nget_srs\nReturn the srs (Spatial Reference System) of the grid.\n\n\nreopen\nReopen a closed GridSource.\n\n\nset_chunk_size\nSet the chunking size of the grid.\n\n\nset_geotransform\nSet the geo transform of the grid.\n\n\nset_srs\nSet the srs of the gird."
+  },
+  {
+    "objectID": "api/GridSource.html#parameters",
+    "href": "api/GridSource.html#parameters",
+    "title": "GridSource",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nThe path to a file.\nrequired\n\n\nchunk\ntuple\nChunking size of the data.\nNone\n\n\nsubset\nstr\nThe wanted subset of data. This is applicable to netCDF files containing multiple variables.\nNone\n\n\nvar_as_band\nbool\nWhether to interpret the variables as bands. This is applicable to netCDF files containing multiple variables.\nFalse\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'"
+  },
+  {
+    "objectID": "api/GridSource.html#examples",
+    "href": "api/GridSource.html#examples",
+    "title": "GridSource",
+    "section": "",
+    "text": "Can be indexed directly to get a Grid object.\n# Open a file\ngs = open_grid(&lt; path-to-file &gt;)\n\n# Index it (take the first band)\ngrid = gs[1]"
+  },
+  {
+    "objectID": "api/GridSource.html#attributes",
+    "href": "api/GridSource.html#attributes",
+    "title": "GridSource",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nbounds\nReturn the bounds of the GridSource.\n\n\nchunk\nReturn the chunking size.\n\n\ndtype\nReturn the data types of the field data.\n\n\nshape\nReturn the shape of the grid.\n\n\nshape_xy\nReturn the shape of the grid."
+  },
+  {
+    "objectID": "api/GridSource.html#methods",
+    "href": "api/GridSource.html#methods",
+    "title": "GridSource",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nclose\nClose the GridSource.\n\n\ncreate\nCreate a new data source.\n\n\ncreate_band\nCreate a new band.\n\n\ndeter_band_names\nDetermine the names of the bands.\n\n\nflush\nFlush the data.\n\n\nget_band_name\nGet the name of a specific band.\n\n\nget_band_names\nGet the names of all bands.\n\n\nget_geotransform\nReturn the geo transform of the grid.\n\n\nget_srs\nReturn the srs (Spatial Reference System) of the grid.\n\n\nreopen\nReopen a closed GridSource.\n\n\nset_chunk_size\nSet the chunking size of the grid.\n\n\nset_geotransform\nSet the geo transform of the grid.\n\n\nset_srs\nSet the srs of the gird."
+  },
+  {
+    "objectID": "api/GridSource/create.html",
+    "href": "api/GridSource/create.html",
+    "title": "create",
+    "section": "",
+    "text": "io.GridSource.create(shape, nb, type, options=[])\nCreate a new data source.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nshape\ntuple\nShape of the grid. Takes the form of [, ].\nrequired\n\n\nnb\nint\nThe number of bands in the new data source.\nrequired\n\n\ntype\nint\nData type. The values is an integer which is linked to a data type recognized by GDAL. See [this page] (https://gdal.org/java/org/gdal/gdalconst/ gdalconstConstants.html#GDT_Unknown) for more information.\nrequired\n\n\noptions\nlist\nAdditional arguments.\n[]"
+  },
+  {
+    "objectID": "api/GridSource/create.html#parameters",
+    "href": "api/GridSource/create.html#parameters",
+    "title": "create",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nshape\ntuple\nShape of the grid. Takes the form of [, ].\nrequired\n\n\nnb\nint\nThe number of bands in the new data source.\nrequired\n\n\ntype\nint\nData type. The values is an integer which is linked to a data type recognized by GDAL. See [this page] (https://gdal.org/java/org/gdal/gdalconst/ gdalconstConstants.html#GDT_Unknown) for more information.\nrequired\n\n\noptions\nlist\nAdditional arguments.\n[]"
+  },
+  {
+    "objectID": "api/GridSource/deter_band_names.html",
+    "href": "api/GridSource/deter_band_names.html",
+    "title": "deter_band_names",
+    "section": "",
+    "text": "deter_band_names\nio.GridSource.deter_band_names()\nDetermine the names of the bands.\nIf the bands do not have any names of themselves, they will be set to a default.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GridSource/get_band_name.html",
+    "href": "api/GridSource/get_band_name.html",
+    "title": "get_band_name",
+    "section": "",
+    "text": "io.GridSource.get_band_name(n)\nGet the name of a specific band.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nn\nint\nBand number.\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nstr\nName of the band."
+  },
+  {
+    "objectID": "api/GridSource/get_band_name.html#parameters",
+    "href": "api/GridSource/get_band_name.html#parameters",
+    "title": "get_band_name",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nn\nint\nBand number.\nrequired"
+  },
+  {
+    "objectID": "api/GridSource/get_band_name.html#returns",
+    "href": "api/GridSource/get_band_name.html#returns",
+    "title": "get_band_name",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nstr\nName of the band."
+  },
+  {
+    "objectID": "api/GridSource/get_geotransform.html",
+    "href": "api/GridSource/get_geotransform.html",
+    "title": "get_geotransform",
+    "section": "",
+    "text": "get_geotransform\nio.GridSource.get_geotransform()\nReturn the geo transform of the grid.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GridSource/reopen.html",
+    "href": "api/GridSource/reopen.html",
+    "title": "reopen",
+    "section": "",
+    "text": "reopen\nio.GridSource.reopen()\nReopen a closed GridSource.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/GridSource/set_geotransform.html",
+    "href": "api/GridSource/set_geotransform.html",
+    "title": "set_geotransform",
+    "section": "",
+    "text": "io.GridSource.set_geotransform(affine)\nSet the geo transform of the grid.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\naffine\ntuple\nAn affine matrix.\nrequired"
+  },
+  {
+    "objectID": "api/GridSource/set_geotransform.html#parameters",
+    "href": "api/GridSource/set_geotransform.html#parameters",
+    "title": "set_geotransform",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\naffine\ntuple\nAn affine matrix.\nrequired"
+  },
+  {
+    "objectID": "api/Log.html",
+    "href": "api/Log.html",
+    "title": "Log",
+    "section": "",
+    "text": "log.Log(self, name, level=2)\nGenerate a logger.\nThe list of available logging levels:\n\n1: debug\n2: info\n3: warning\n4: error\n5: dead\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nLogger identifier\nrequired\n\n\nlevel\nint\nLevel of the logger. Anything below this level will not be logged. For instance, a logging level of 2 (info) will result in all debug messages being muted.\n2\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nlevel\nsummary.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nadd_c_handler\nAdd an outlet to the console.\n\n\nadd_file_handler\nAdd an outlet to a file.\n\n\ndead\nCreate a kernel-deceased message.\n\n\ndebug\nCreate a debug message.\n\n\nerror\nCreate an error message.\n\n\nhandle_log\nWrap logging messages.\n\n\ninfo\nCreate an info message.\n\n\nwarning\nCreate a warning message."
+  },
+  {
+    "objectID": "api/Log.html#parameters",
+    "href": "api/Log.html#parameters",
+    "title": "Log",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nLogger identifier\nrequired\n\n\nlevel\nint\nLevel of the logger. Anything below this level will not be logged. For instance, a logging level of 2 (info) will result in all debug messages being muted.\n2"
+  },
+  {
+    "objectID": "api/Log.html#attributes",
+    "href": "api/Log.html#attributes",
+    "title": "Log",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nlevel\nsummary."
+  },
+  {
+    "objectID": "api/Log.html#methods",
+    "href": "api/Log.html#methods",
+    "title": "Log",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nadd_c_handler\nAdd an outlet to the console.\n\n\nadd_file_handler\nAdd an outlet to a file.\n\n\ndead\nCreate a kernel-deceased message.\n\n\ndebug\nCreate a debug message.\n\n\nerror\nCreate an error message.\n\n\nhandle_log\nWrap logging messages.\n\n\ninfo\nCreate an info message.\n\n\nwarning\nCreate a warning message."
+  },
+  {
+    "objectID": "api/Log/add_file_handler.html",
+    "href": "api/Log/add_file_handler.html",
+    "title": "add_file_handler",
+    "section": "",
+    "text": "log.Log.add_file_handler(dst, level=2, filename=None)\nAdd an outlet to a file.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ndst\nstr\nThe destination of the file, i.e. the path.\nrequired\n\n\nlevel\nint\nLogging level.\n2\n\n\nfilename\nstr\nThe name of the file, also the identifier for the steam handler.\nNone"
+  },
+  {
+    "objectID": "api/Log/add_file_handler.html#parameters",
+    "href": "api/Log/add_file_handler.html#parameters",
+    "title": "add_file_handler",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ndst\nstr\nThe destination of the file, i.e. the path.\nrequired\n\n\nlevel\nint\nLogging level.\n2\n\n\nfilename\nstr\nThe name of the file, also the identifier for the steam handler.\nNone"
+  },
+  {
+    "objectID": "api/Log/debug.html",
+    "href": "api/Log/debug.html",
+    "title": "debug",
+    "section": "",
+    "text": "debug\nlog.Log.debug(msg)\nCreate a debug message.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Log/handle_log.html",
+    "href": "api/Log/handle_log.html",
+    "title": "handle_log",
+    "section": "",
+    "text": "handle_log\nlog.Log.handle_log(log_m)\nWrap logging messages.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Log/warning.html",
+    "href": "api/Log/warning.html",
+    "title": "warning",
+    "section": "",
+    "text": "warning\nlog.Log.warning(msg)\nCreate a warning message.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Receiver/add_handler.html",
+    "href": "api/Receiver/add_handler.html",
+    "title": "add_handler",
+    "section": "",
+    "text": "log.Receiver.add_handler(handler)\nAdd a handler to the receiver.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nhandler\nobject\nA stream of some sorts.\nrequired"
+  },
+  {
+    "objectID": "api/Receiver/add_handler.html#parameters",
+    "href": "api/Receiver/add_handler.html#parameters",
+    "title": "add_handler",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nhandler\nobject\nA stream of some sorts.\nrequired"
+  },
+  {
+    "objectID": "api/Receiver/close_handlers.html",
+    "href": "api/Receiver/close_handlers.html",
+    "title": "close_handlers",
+    "section": "",
+    "text": "close_handlers\nlog.Receiver.close_handlers()\nClose all associated handlers.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Receiver/start.html",
+    "href": "api/Receiver/start.html",
+    "title": "start",
+    "section": "",
+    "text": "start\nlog.Receiver.start()\nStart the receiver.\nThis will spawn a thread that manages the receiver.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Table/max.html",
+    "href": "api/Table/max.html",
+    "title": "max",
+    "section": "",
+    "text": "max\nio.Table.max()\nsummary.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "api/Table/upscale.html",
+    "href": "api/Table/upscale.html",
+    "title": "upscale",
+    "section": "",
+    "text": "io.Table.upscale(delta, inplace=False)\nsummary.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ndelta\nfloat\ndescription\nrequired\n\n\ninplace\nbool\ndescription, by default True\nFalse"
+  },
+  {
+    "objectID": "api/Table/upscale.html#parameters",
+    "href": "api/Table/upscale.html#parameters",
+    "title": "upscale",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ndelta\nfloat\ndescription\nrequired\n\n\ninplace\nbool\ndescription, by default True\nFalse"
+  },
+  {
+    "objectID": "api/TableLazy/get.html",
+    "href": "api/TableLazy/get.html",
+    "title": "get",
+    "section": "",
+    "text": "io.TableLazy.get(oid)\nGet a row from the table based on the index.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\noid\nstr\nRow identifier.\nrequired"
+  },
+  {
+    "objectID": "api/TableLazy/get.html#parameters",
+    "href": "api/TableLazy/get.html#parameters",
+    "title": "get",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\noid\nstr\nRow identifier.\nrequired"
+  },
+  {
+    "objectID": "api/geom/point_in_geom.html",
+    "href": "api/geom/point_in_geom.html",
+    "title": "point_in_geom",
+    "section": "",
+    "text": "gis.geom.point_in_geom(ft)\nCreate a point within a polygon.\nThis is in essence a very lazy centroid. Keep in mind though, it can differ quite a bit from the actual centroid.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nft\nogr.Feature\nThe feature (polygon or linestring) in which to create the point.\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\ntuple\nThe x and y coordinate of the created point."
+  },
+  {
+    "objectID": "api/geom/point_in_geom.html#parameters",
+    "href": "api/geom/point_in_geom.html#parameters",
+    "title": "point_in_geom",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nft\nogr.Feature\nThe feature (polygon or linestring) in which to create the point.\nrequired"
+  },
+  {
+    "objectID": "api/geom/point_in_geom.html#returns",
+    "href": "api/geom/point_in_geom.html#returns",
+    "title": "point_in_geom",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\ntuple\nThe x and y coordinate of the created point."
+  },
+  {
+    "objectID": "api/grid/reproject.html",
+    "href": "api/grid/reproject.html",
+    "title": "reproject",
+    "section": "",
+    "text": "gis.grid.reproject(gs, crs, out_dir=None, resample=0)\nReproject (warp) a grid.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ngs\nGridSource\nInput object.\nrequired\n\n\ncrs\nstr\nCoodinates reference system (projection). An accepted format is: EPSG:3857.\nrequired\n\n\nout_dir\nPath | str\nOutput directory. If not defined, if will be inferred from the input object.\nNone\n\n\nresample\nint\nResampling method during warping. Interger corresponds with a resampling method defined by GDAL. For more information: click here.\n0\n\n\n\n\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nGridSource\nOutput object. A lazy reading of the just creating raster file."
+  },
+  {
+    "objectID": "api/grid/reproject.html#parameters",
+    "href": "api/grid/reproject.html#parameters",
+    "title": "reproject",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ngs\nGridSource\nInput object.\nrequired\n\n\ncrs\nstr\nCoodinates reference system (projection). An accepted format is: EPSG:3857.\nrequired\n\n\nout_dir\nPath | str\nOutput directory. If not defined, if will be inferred from the input object.\nNone\n\n\nresample\nint\nResampling method during warping. Interger corresponds with a resampling method defined by GDAL. For more information: click here.\n0"
+  },
+  {
+    "objectID": "api/grid/reproject.html#returns",
+    "href": "api/grid/reproject.html#returns",
+    "title": "reproject",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nGridSource\nOutput object. A lazy reading of the just creating raster file."
+  },
+  {
+    "objectID": "api/io/merge_geom_layers.html",
+    "href": "api/io/merge_geom_layers.html",
+    "title": "merge_geom_layers",
+    "section": "",
+    "text": "io.merge_geom_layers(out_fn, in_fn, driver=None, append=True, overwrite=False, single_layer=False, out_layer_name=None)\nMerge multiple vector layers into one file.\nEither in one layer or multiple within the new file. Also usefull for appending datasets.\nEssentially a python friendly function of the ogr2ogr merge functionality.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nout_fn\nPath | str\nThe resulting file name/ path.\nrequired\n\n\nin_fn\nPath | str\nThe input file(s).\nrequired\n\n\ndriver\nstr\nThe driver to be used for the resulting file.\nNone\n\n\nappend\nbool\nWhether to append an existing file.\nTrue\n\n\noverwrite\nbool\nWhether to overwrite the resulting dataset.\nFalse\n\n\nsingle_layer\nbool\nOutput in a single layer.\nFalse\n\n\nout_layer_name\nstr\nThe name of the resulting single layer.\nNone"
+  },
+  {
+    "objectID": "api/io/merge_geom_layers.html#parameters",
+    "href": "api/io/merge_geom_layers.html#parameters",
+    "title": "merge_geom_layers",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nout_fn\nPath | str\nThe resulting file name/ path.\nrequired\n\n\nin_fn\nPath | str\nThe input file(s).\nrequired\n\n\ndriver\nstr\nThe driver to be used for the resulting file.\nNone\n\n\nappend\nbool\nWhether to append an existing file.\nTrue\n\n\noverwrite\nbool\nWhether to overwrite the resulting dataset.\nFalse\n\n\nsingle_layer\nbool\nOutput in a single layer.\nFalse\n\n\nout_layer_name\nstr\nThe name of the resulting single layer.\nNone"
+  },
+  {
+    "objectID": "api/io/open_geom.html",
+    "href": "api/io/open_geom.html",
+    "title": "open_geom",
+    "section": "",
+    "text": "io.open_geom(file, mode='r', overwrite=False)\nOpen a geometry source file.\nThis source file is lazily read.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nPath to the file.\nrequired\n\n\nmode\nstr\nOpen in read or write mode.\n'r'\n\n\noverwrite\nbool\nWhether or not to overwrite an existing dataset.\nFalse\n\n\n\n\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nGeomSource\nObject that holds a connection to the source file."
+  },
+  {
+    "objectID": "api/io/open_geom.html#parameters",
+    "href": "api/io/open_geom.html#parameters",
+    "title": "open_geom",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nPath to the file.\nrequired\n\n\nmode\nstr\nOpen in read or write mode.\n'r'\n\n\noverwrite\nbool\nWhether or not to overwrite an existing dataset.\nFalse"
+  },
+  {
+    "objectID": "api/io/open_geom.html#returns",
+    "href": "api/io/open_geom.html#returns",
+    "title": "open_geom",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nGeomSource\nObject that holds a connection to the source file."
+  },
+  {
+    "objectID": "api/overlay/clip.html",
+    "href": "api/overlay/clip.html",
+    "title": "clip",
+    "section": "",
+    "text": "gis.overlay.clip(band, srs, gtf, ft)\nClip a grid based on a feature (vector).\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nband\nGrid\nAn object that contains a connection the band within the dataset. For further information, see Grid!\nrequired\n\n\nsrs\nosr.SpatialReference\nSpatial reference (Projection) of the Grid object (e.g. WGS84). Can be optained with the get_srs method.\nrequired\n\n\ngtf\ntuple\nThe geotransform of a grid dataset. Can be optained via the get_geotransform method. Has the following shape: (left, xres, xrot, upper, yrot, yres).\nrequired\n\n\nft\nogr.Feature\nA Feature according to the ogr module of osgeo. Can be optained by indexing a GeomSource.\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\narray\nA 1D array containing the clipped values.\n\n\n\n\n\n\n\nclip_weighted"
+  },
+  {
+    "objectID": "api/overlay/clip.html#parameters",
+    "href": "api/overlay/clip.html#parameters",
+    "title": "clip",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nband\nGrid\nAn object that contains a connection the band within the dataset. For further information, see Grid!\nrequired\n\n\nsrs\nosr.SpatialReference\nSpatial reference (Projection) of the Grid object (e.g. WGS84). Can be optained with the get_srs method.\nrequired\n\n\ngtf\ntuple\nThe geotransform of a grid dataset. Can be optained via the get_geotransform method. Has the following shape: (left, xres, xrot, upper, yrot, yres).\nrequired\n\n\nft\nogr.Feature\nA Feature according to the ogr module of osgeo. Can be optained by indexing a GeomSource.\nrequired"
+  },
+  {
+    "objectID": "api/overlay/clip.html#returns",
+    "href": "api/overlay/clip.html#returns",
+    "title": "clip",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\narray\nA 1D array containing the clipped values."
+  },
+  {
+    "objectID": "api/overlay/clip.html#see-also",
+    "href": "api/overlay/clip.html#see-also",
+    "title": "clip",
+    "section": "",
+    "text": "clip_weighted"
+  },
+  {
+    "objectID": "api/overlay/pin.html",
+    "href": "api/overlay/pin.html",
+    "title": "pin",
+    "section": "",
+    "text": "gis.overlay.pin(band, gtf, point)\nPin a the value of a cell based on a coordinate.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nband\nGrid\nInput object. This holds a connection to the specified band.\nrequired\n\n\ngtf\ntuple\nThe geotransform of a grid dataset. Can be optained via the get_geotransform method. Has the following shape: (left, xres, xrot, upper, yrot, yres).\nrequired\n\n\npoint\ntuple\nx and y coordinate.\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\narray\nA NumPy array containing one value."
+  },
+  {
+    "objectID": "api/overlay/pin.html#parameters",
+    "href": "api/overlay/pin.html#parameters",
+    "title": "pin",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nband\nGrid\nInput object. This holds a connection to the specified band.\nrequired\n\n\ngtf\ntuple\nThe geotransform of a grid dataset. Can be optained via the get_geotransform method. Has the following shape: (left, xres, xrot, upper, yrot, yres).\nrequired\n\n\npoint\ntuple\nx and y coordinate.\nrequired"
+  },
+  {
+    "objectID": "api/overlay/pin.html#returns",
+    "href": "api/overlay/pin.html#returns",
+    "title": "pin",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\narray\nA NumPy array containing one value."
+  },
+  {
+    "objectID": "api/setup_mp_log.html",
+    "href": "api/setup_mp_log.html",
+    "title": "setup_mp_log",
+    "section": "",
+    "text": "log.setup_mp_log(queue, name, level, dst=None)\nSet up logging for multiprocessing.\nThis essentially is a pipe back to the main Python process.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nqueue\nqueue.Queue\nA queue where the messages will be put in. N.B. this must be a multiprocessing queue, a normal queue.Queue will not suffice.\nrequired\n\n\nname\nstr\nIdentifier of the logger.\nrequired\n\n\nlevel\nint\nLogging level.\nrequired\n\n\ndst\nstr\nDestination of the logging. I.e. the path to the logging file.\nNone\n\n\n\n\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\nReceiver\nA receiver object. This is the receiver of the pipeline."
+  },
+  {
+    "objectID": "api/setup_mp_log.html#parameters",
+    "href": "api/setup_mp_log.html#parameters",
+    "title": "setup_mp_log",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nqueue\nqueue.Queue\nA queue where the messages will be put in. N.B. this must be a multiprocessing queue, a normal queue.Queue will not suffice.\nrequired\n\n\nname\nstr\nIdentifier of the logger.\nrequired\n\n\nlevel\nint\nLogging level.\nrequired\n\n\ndst\nstr\nDestination of the logging. I.e. the path to the logging file.\nNone"
+  },
+  {
+    "objectID": "api/setup_mp_log.html#returns",
+    "href": "api/setup_mp_log.html#returns",
+    "title": "setup_mp_log",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\nReceiver\nA receiver object. This is the receiver of the pipeline."
+  },
+  {
+    "objectID": "api/util/pixel2world.html",
+    "href": "api/util/pixel2world.html",
+    "title": "pixel2world",
+    "section": "",
+    "text": "gis.util.pixel2world(gtf, x, y)\nCalculate coordinates based on pixel location.\n(Thanks to the ogr cookbook!)\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ngtf\ntuple\nThe geotransform of a grid dataset. Can be optained via the get_geotransform method. Has the following shape: (left, xres, xrot, upper, yrot, yres).\nrequired\n\n\nx\nint\nColumn number of the pixel\nrequired\n\n\ny\nint\nRow number of the pixel\nrequired\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\ntuple\nReturn the x, y coordinates of the upper left corner of the cell.\n\n\n\n\n\n\n# Load a dataset\ngs = fiat.io.GridSource(&lt;some raster file&gt;)\n# Get the geotransform\ngtf = gs.get_geotransform()\n# Calculate the coordinates\nx, y = pixel2world(gtf, &lt;column&gt;, &lt;row&gt;)"
+  },
+  {
+    "objectID": "api/util/pixel2world.html#parameters",
+    "href": "api/util/pixel2world.html#parameters",
+    "title": "pixel2world",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ngtf\ntuple\nThe geotransform of a grid dataset. Can be optained via the get_geotransform method. Has the following shape: (left, xres, xrot, upper, yrot, yres).\nrequired\n\n\nx\nint\nColumn number of the pixel\nrequired\n\n\ny\nint\nRow number of the pixel\nrequired"
+  },
+  {
+    "objectID": "api/util/pixel2world.html#returns",
+    "href": "api/util/pixel2world.html#returns",
+    "title": "pixel2world",
+    "section": "",
+    "text": "Type\nDescription\n\n\n\n\ntuple\nReturn the x, y coordinates of the upper left corner of the cell."
+  },
+  {
+    "objectID": "api/util/pixel2world.html#examples",
+    "href": "api/util/pixel2world.html#examples",
+    "title": "pixel2world",
+    "section": "",
+    "text": "# Load a dataset\ngs = fiat.io.GridSource(&lt;some raster file&gt;)\n# Get the geotransform\ngtf = gs.get_geotransform()\n# Calculate the coordinates\nx, y = pixel2world(gtf, &lt;column&gt;, &lt;row&gt;)"
+  },
+  {
+    "objectID": "changelog.html",
+    "href": "changelog.html",
+    "title": "What’s new?",
+    "section": "",
+    "text": "The second pre-release of Delft-FIAT.\n\n\n\nA version switcher for the documentation\nAdded entries for chunking size in the settings file (settings.toml) for GeomModel\nChunking for geometry calculations (GeomModel)\nChunking for resolving temporary GeomModel output\nNew method for writing geometries from a buffer: BufferedGeomWriter\nNew function for merging vector layers: merge_geom_layers\nSetting of amount of threads via cli\n\n\n\n\n\nBetter build environment creation on linux systems\nClarified the cli\nFixed chunking on a single thread\nFixed and clarified the shape (w, h) of GridSource and Grid\nFixed handling of positive nodata values in geometry calculations\nFixed indexing in GridModel calculations\nParallelisation of calculations for GeomModel (not only in risk mode)\nUpdated the installer creation (exe) on Windows (10/11)\nVarious bug fixes\n\n\n\n\n\nget_bbox method of GeomSource and GridSource\nSetting: chunk in exposure.geom.settings, deprecated in favour of chunk in global.geom\nSetting: chunk in exposure.grid.settings, deprecated in favour of chunk in global.grid\nSetting: chunk in hazard.settings, deprecated in favour of chunk in global.grid\n\n\n\n\n\nAbility to switch between documentation/ software versions\nImproved/ updated the page regarding exposure csv\nRestructered user settings pages\nSeperated user settings into: Basic, Computational & Optional"
+  },
+  {
+    "objectID": "changelog.html#v0.1.0rc2-2024-02-19",
+    "href": "changelog.html#v0.1.0rc2-2024-02-19",
+    "title": "What’s new?",
+    "section": "",
+    "text": "The second pre-release of Delft-FIAT.\n\n\n\nA version switcher for the documentation\nAdded entries for chunking size in the settings file (settings.toml) for GeomModel\nChunking for geometry calculations (GeomModel)\nChunking for resolving temporary GeomModel output\nNew method for writing geometries from a buffer: BufferedGeomWriter\nNew function for merging vector layers: merge_geom_layers\nSetting of amount of threads via cli\n\n\n\n\n\nBetter build environment creation on linux systems\nClarified the cli\nFixed chunking on a single thread\nFixed and clarified the shape (w, h) of GridSource and Grid\nFixed handling of positive nodata values in geometry calculations\nFixed indexing in GridModel calculations\nParallelisation of calculations for GeomModel (not only in risk mode)\nUpdated the installer creation (exe) on Windows (10/11)\nVarious bug fixes\n\n\n\n\n\nget_bbox method of GeomSource and GridSource\nSetting: chunk in exposure.geom.settings, deprecated in favour of chunk in global.geom\nSetting: chunk in exposure.grid.settings, deprecated in favour of chunk in global.grid\nSetting: chunk in hazard.settings, deprecated in favour of chunk in global.grid\n\n\n\n\n\nAbility to switch between documentation/ software versions\nImproved/ updated the page regarding exposure csv\nRestructered user settings pages\nSeperated user settings into: Basic, Computational & Optional"
+  },
+  {
+    "objectID": "changelog.html#v0.1.0rc1-2023-11-30",
+    "href": "changelog.html#v0.1.0rc1-2023-11-30",
+    "title": "What’s new?",
+    "section": "v0.1.0rc1 (2023-11-30)",
+    "text": "v0.1.0rc1 (2023-11-30)\nThis is the first and pre-release of Delft-FIAT. It aims to have a stable version of the GeomModel for calculating damages and risk for vector exposure data and an experimental version of the GridModel for calculating damages and risk for raster exposure data.\n\nAdded\n\nDocumentation\nCommand line user interface\nMain FIAT object from which it’s run\nGeomModel; the vector based model\nGridModel; the raster based model\nConfigReader; for reading the settings file\nI/O methods and structs\n\nopen_csv which returns e.g. Table\nopen_geom which returns a GeomSource\nopen_grid which returns a GridSource\n\nGIS related operations like:\n\ngeom.reproject to reproject vector files\ngrid.reproject to reproject raster files\noverlay.clip to clip a grid based on a polygon\nand more…\n\nAbility to ‘compile’/ freeze FIAT as an application/ binary\n\nWindows\nLinux (tested on Debian/ Ubuntu)\n\nSome smalller miscellaneous methods and object\n\nIn the API reference"
+  },
+  {
+    "objectID": "developments/index.html",
+    "href": "developments/index.html",
+    "title": "Developments",
+    "section": "",
+    "text": "Welcome to Delft-FIAT. Here we present an overview of what’s going on."
+  },
+  {
+    "objectID": "developments/index.html#roadmap",
+    "href": "developments/index.html#roadmap",
+    "title": "Developments",
+    "section": "Roadmap",
+    "text": "Roadmap\nWhat are we up to and what are the goals.\n\n2024 - Q1\nIn the first quarter of 2024 we will focus on:\n\nStabalizing existing code\nThis means moving to version 0.1.0!\nImplement better chunking and parallelization\nImproving the documentation."
+  },
+  {
+    "objectID": "developments/index.html#whats-new",
+    "href": "developments/index.html#whats-new",
+    "title": "Developments",
+    "section": "What’s new…",
+    "text": "What’s new…\nIn order to see what has been done and what has been changed, please see the changelog."
+  },
+  {
+    "objectID": "developments/index.html#contribute",
+    "href": "developments/index.html#contribute",
+    "title": "Developments",
+    "section": "Contribute?",
+    "text": "Contribute?\nWe welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. Our developer guide explains how one can contribute to Delft-FIAT!"
+  },
+  {
+    "objectID": "developments/index.html#licencing",
+    "href": "developments/index.html#licencing",
+    "title": "Developments",
+    "section": "Licencing",
+    "text": "Licencing\nThe MIT license applies to all contributions."
+  },
+  {
+    "objectID": "getting_started/faq.html",
+    "href": "getting_started/faq.html",
+    "title": "Frequently asked questions",
+    "section": "",
+    "text": "How do I install FIAT?\nVisit the Setup guide, which provides installation instructions for Windows.\n\n\nHow do I report a bug?\nYou can submit a new issue with the Bugs template in the FIAT repository. You can also submit an issue regarding Missing or bad documentation, a Feature request, or you can Ask a question.\n\n\nHow do I build a model?\nYou can use HydroMT-FIAT to build a FIAT model or you can follow the instructions in the User guide.\n\n\nHow do I modify parameters or calibrate my model?\nYou can manually change parameters (e.g., the Ground Floor Height) in your exposure data in Excel or with Python. You can also use HydroMT-FIAT for this.\n\n\nHow do I request different output?\nYou can change the output data types in the settings.toml file, visit the Settings file page for more information.\n\n\nCan I use FIAT for other hazards than flooding?\nYes! If the damage that hazard causes can be estimated in the same manner as FIAT uses for flooding, other hazard maps can be used in combination with corresponding damage functions.\n\n\nWhat does FIAT have to do with the car brand FIAT?\nNothing, it is an acronym for Flood Impact Assessment Tool.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "What is Delft-FIAT?",
+    "section": "",
+    "text": "Delft-FIAT is a free, python-based Fast Impact Assessment Tool, designed and continuously improved by Deltares. It is configured to run quick, consistent, and well-founded flood damage and risk calculations on the basis of flood maps and additional inputs such as depth-damage functions, asset locations, and their maximum potential damages. Delft-FIAT allows rapid assessment of the direct economic and monetary impacts to buildings, utilities, and roads for specified flood events and return periods. Fast impact modeling removes bottlenecks in climate adaptation planning, allowing for large numbers of calculations needed to understand the effectiveness of adaptation strategies and the changes in damage and risk as climate and socio-economic conditions change. In the further documentation, Delft-FIAT will be refered to simply as FIAT.\nFIAT works with an easy format for exposed assets, consisting of information on the location, exposed value, ground floor height, and associated depth-damage functions, which can be modified by the user. A simple configuration file specifies the location of depth-damage functions and flood maps, as well as return periods of flood maps if calculating risk.\nThanks to its flexible character, FIAT integrates with various software applications such as flood adaptation planning tool FloodAdapt or an interTwin digital twin and can be called multiple times to e.g. assess uncertainty in damage estimates, or run for numerous flood scenarios.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nField\nDescription\n\n\n\n\n1\nFlood maps\nHazard input: Selected per damage/risk simulation\n\n\n2\nDamage functions\nVulnerability input: Prepared when setting up the model, coupled to exposure objects\n\n\n3\nExposure data\nExposure input: Prepared when setting up the model, including exposure assets and max potential damages\n\n\n4\nDelft-FIAT\nFlood Impact Assesment Tool\n\n\n5\nFlood impact\nResulting (economic) damages and risk\n\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "setup_guide/general/conda.html",
+    "href": "setup_guide/general/conda.html",
+    "title": "Setup Miniforge3",
+    "section": "",
+    "text": "In order to develop on FIAT locally, the Python package manager Miniforge3 is recommended.\n\nDownload and install Miniforge3\nInitialize conda by running the following in the Miniforge prompt:\nconda init\nDepending on your computer settings, you might also have to run the following in a Powershell terminal as administrator:\nSet-ExecutionPolicy -ExecutionPolicy RemoteSigned\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "setup_guide/kernel/application.html",
+    "href": "setup_guide/kernel/application.html",
+    "title": "Freeze FIAT as an application",
+    "section": "",
+    "text": "To freeze FIAT as an application/executable, it is required to have the FIAT repository cloned on your local machine. A different environment is needed to build the application:\n\nCreate a yml for a seperate build environment:\npython make_env.py build\nCreate the environment with mamba. This time, FIAT will be automatically installed with the environment:\nmamba env create -f environment.yml\nGo to the .build/core directory and execute the pybuild.bat script:\ncd ./.build\nwin64.bat\n\nThat’s it. A FIAT application will be located in the {root}/bin/Release folder.\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "setup_guide/kernel/linux.html",
+    "href": "setup_guide/kernel/linux.html",
+    "title": "FIAT on Linux",
+    "section": "",
+    "text": "It’s possible to run FIAT on Linux but priorities are set on releasing and finalizing other parts of the documentation so this will be filled at a later stage.\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "user_guide/data/exposure/csv.html",
+    "href": "user_guide/data/exposure/csv.html",
+    "title": "CSV",
+    "section": "",
+    "text": "The exposure data CSV file contains information about each asset in the area of interest that is needed for the damage calculation. Each row represents one asset, such as a building, road segment, or utility, and each column represents an attribute of the asset, such as its location, elevation or maximum potential damage value. For users that want to create their own exposure data, or modify existing exposure data, a description of the default fields (columns) in the exposure data CSV can be found in Table 1.\n\n\n\n\n\n\nTip\n\n\n\nUsers can add as many columns to the exposure CSV as they want, for example, to later identify the most damaged administrative areas. All data field will also be saved in the output of FIAT.\n\n\n\n\nTable 1: exposure.csv input\n\n\nField\nRequired\nMultiple\nExample\n\n\n\n\nObject ID\nYes\n-\n1\n\n\nObject Name\nNo\n-\nfp_1\n\n\nPrimary Object Type\nNo\n-\nRES1_1SNB\n\n\nSecondary Object Type\nNo\n-\nRes 1,1 Story no basement\n\n\nExtraction Method\nYes\n-\n‘centroid’\n\n\nDamage Function: &lt; ANY &gt;\nYes\nYes\nstruct_2\n\n\nGround Floor Height\nYes\n-\n4\n\n\nGround Elevation\nNo\n-\n10.11\n\n\nMax Potential Damage: &lt; ANY &gt;\nYes\nYes\n193457.00\n\n\n&lt; Additional attributes &gt;\nNo\n\n1205\n\n\n\n\nA more detailed description of the data fields in the exposure.csv can be found below.\n\nObject ID\nThe object ID is used to link the geometries to the information in the exposure CSV. The object ID must be unique for each object. At the moment of writing, FIAT does not check whether the object IDs are indeed unique and it is the responsibility of the user to ensure this. At a later stage, FIAT will have a built-in check for this.\n\n\nObject name\nThe object name field can be chosen freely and can serve as a field for identifying the damages assets.\n\n\nPrimary/Secondary object type\nThe primary object type describes the occupancy or category of the asset (e.g. residential or commercial). The secondary object type allows for a more detailed profile of the object (e.g. single-story home or grocery store). The developer of the exposure dataset is free to set their own categories of asset types.\n\n\n\n\n\n\nTip\n\n\n\nDefining primary/secondary object types can facilitate the assignment of damage functions to the assets for the user by creating automatic look-up tables.\n\n\n\n\nExtraction Method\nThe extraction method refers to how the water level or water depth is sampled per asset. The options are (1) centroid, which samples the water level or depth at the estimated centroid inside of the asset, or (2) area, which considers the water level or depth over the entire polygon or line and takes either an average or maximum. The user can set the choice for the latter per damage function, in the vulnerability curves file.\n\n\n\n\n\n\nImportant\n\n\n\nIn case the user selects ‘area’ as extraction method for certain assets, the geometries related to those assets should be a line or polygon.\n\n\n\n\nDamage Functions\nThe user can input as many damage functions and related max potential damages as required. However, at least one damage function and related max potential damage must be provides per asset. Damage function column are named as “Damage Function: damage function name”. This name can be chosen freely but it is recommended to give it a descriptive name, such as structure or content, and it is required to use the same name in the max potential damage column. The value that must be entered is the name of the damage function, relating to the names in the corresponding damage functions in the vulnerability curves file. Globally, continental damage functions can be obtained from European Commission’s Joint Research Centre, but it is recommended to use more location-specific functions when available.\n\n\nGround Floor Height\nThe ground floor height column indicates the height of the ground floor of an asset above the ground elevation. For example, when a building is built on poles, the ground floor (finished floor in the US) is lifted off the ground with a certain height. Usually, buildings are at least a certain amount above ground elevation because of the road and sidewalk. This value is used to calculate the water depth inside of the asset, for buildings.\n\n\nGround Elevation\nThe ground elevation is the value of a digital elevation model (DEM) at the location of the asset.\n\n\nMax Potential Damage\nThe maximum potential damage corresponds to the damage functions for each asset. For each damage function type that was assigned, a maximum potential damage must also be assigned. These values represent the maximum damage to, for example, the structure, content, or other (e.g. inventory). There are methods to derive these values, based on building type and area of the building. Globally, maximum damage values per country can be obtained from European Commission’s Joint Research Centre, but it is recommended to use more location-specific damage values. In the US, FEMA Hazus is an industry standard in how to derive these values.\n\n\nAdditional attributes\nAttitional attributes can be added to the exposure CSV file. The added columns can be named freely. The resulting FIAT output contains all data that was put in, therefore they can be used by the FIAT Toolbox to calculate user-specified output metrics. For example, a user could configure the output metrics to always show the number of people affected with a high social vulnerability, per administrative region. The user can add columns to the CSV file manually or with the help of the HydroMT-FIAT model builder, in which the user is free to select a descriptive ‘Label name’ for the additional attributes. If the user wishes to connect the damages per administrative or other aggregation area to a GIS file, the **FIAT Toolbox offers a post-processing tool to do so.\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "user_guide/data/hazard.html",
+    "href": "user_guide/data/hazard.html",
+    "title": "Hazard data",
+    "section": "",
+    "text": "FIAT computes the impact of a flood event or the risk of flooding on a community by using flood maps as hazard input. Flood maps describe the potential flood extent and magnitude in specific geographic areas. Currently, FIAT is only\nThese flood maps can be obtained from various sources. The The Global Flood Database provides an extensive amount of global flood hazard mapping products.\nThe user is free to run the model with a variety of flood scenarios, e.g., including mitigation and adaptation measures over a range of future climate conditions, as long as flood maps are available for those scenarios. The flood maps can be either flood elevation or flood depth maps.\nWith FIAT, the user has the option to assess the impact of a single flood event or the flood risk based on a set of events with multiple return periods. To do the latter, the user must provide multiple hazard maps with the same extent and projection.\nIn each case, some requirements must be met. The hazard files of any map should be made available as a raster file, see the acceptable file types at the bottom of this page. It is recommended to place the hazard files in the ‘hazard’ folder, see the folder structure. The file name is free to be chosen by the user and must simply be refered to in the settings.toml configuration file."
+  },
+  {
+    "objectID": "user_guide/data/hazard.html#types-of-maps",
+    "href": "user_guide/data/hazard.html#types-of-maps",
+    "title": "Hazard data",
+    "section": "Types of maps",
+    "text": "Types of maps\nFIAT knows two types of hazard maps:\n\nEvent maps\nRisk maps\n\nRisk maps are mainly used to calculate the EAD (Estimated Annual Damages). If risk is not set to true in the settings file, the supplied map will be treated as an event map."
+  },
+  {
+    "objectID": "user_guide/data/hazard.html#supported-formats",
+    "href": "user_guide/data/hazard.html#supported-formats",
+    "title": "Hazard data",
+    "section": "Supported formats",
+    "text": "Supported formats\nAn overview of supported formats is presented here"
+  },
+  {
+    "objectID": "user_guide/data/index.html",
+    "href": "user_guide/data/index.html",
+    "title": "Data",
+    "section": "",
+    "text": "FIAT is data agnostic; what you put in is what you get out. Please follow the guidelines in this documentation to build your FIAT model and pay close attention to the validation of data together with local experts."
+  },
+  {
+    "objectID": "user_guide/data/index.html#types-of-data",
+    "href": "user_guide/data/index.html#types-of-data",
+    "title": "Data",
+    "section": "Types of Data",
+    "text": "Types of Data\nHere a quick overview is given of the required data:\n\nHazard\n\nHazard values in a gridded format\n\nExposure\n\nExposure data either in vector or gridded format\n\nVulnerability\n\nData relating the hazard intensity to damage fraction\n\n\nThese are the types of data that FIAT needs in order to run properly."
+  },
+  {
+    "objectID": "user_guide/data/index.html#folder-structure",
+    "href": "user_guide/data/index.html#folder-structure",
+    "title": "Data",
+    "section": "Folder structure",
+    "text": "Folder structure\nIt is recommended to set up a folder structure as shown below to ensure that FIAT can find each data file and run smoothly. The files inside the folders are example files and do not need to be of those data types or named as such.\n\n├───📁 FIAT/\n    |\n    ├───📁 hazard/\n    │   └───📄 hazard_map.nc\n    |\n    ├───📁 exposure/\n    │   ├───📄 buildings.gpkg\n    │   └───📄 exposure.csv\n    |\n    ├───📁 vulnerability/\n    │   └───📄 vulnerability_curves.csv\n    |\n    └───📄 settings.toml"
+  },
+  {
+    "objectID": "user_guide/data/vulnerability.html",
+    "href": "user_guide/data/vulnerability.html",
+    "title": "Vulnerability data",
+    "section": "",
+    "text": "The vulnerability of an asset is determined by its building type (e.g. ‘residential 1-story building’) and the inundation depth, also refered to as water depth, during a flood event. Different assests incur different degrees of damage at varying inundation levels. This vulnerability can be quantified via flood depth-damage functions, see for example Figure 1. The damage function relates the water depth to the maximum potential damage per asset and returns the damage fraction (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. The value of the maximum potential damage differs per asset and must be specified in the exposure data.\n\n\n\n\n\nFigure 1: Damage functions of different assets/structures.\n\n\n\n\nThe damage functions must be given in a CSV file (vulnerability.csv), located in the vulnerability folder, see for example Table 1. The first column contains the water depth, and then each additional column provides the damage fraction for the corresponding damage function. Three header rows are required, describing the unit of the water depth; #UNIT=&lt;unit&gt;, e.g., #UNIT=m. The second row, named #METHOD, must be defined for each damage-curve separately above the damage curve name. The method refers to the way that multiple flood values will be aggregated per asset in case the area method is used for deriving the inundation depth. The damage curve name must coincide with the name of the damage function defined in the exposure data.\n\n\n\n\n\n\nImportant\n\n\n\nWater depth units (e.g. feet or meters) must be consistent with the units of the flood hazard map and the exposure data (i.e., ground elevation, ground floor height).\n\n\n\n\n\n\nTable 1: Vulnerability data CSV file. The water depth must be in the outer left column followed by the damage functions. The user has the freedom to add multiple damage curves.\n\n\n#UNIT=m\n\n\n\n#METHOD\nmean\nmax\n\n\nwater depth\nSTRUCT1\nSTRUCT2\n\n\n\n\n0.00\n0.00\n0.00\n\n\n0.25\n0.00\n0.00\n\n\n0.50\n0.00\n0.00\n\n\n0.75\n0.00\n0.00\n\n\n1.00\n0.00\n0.00\n\n\n1.25\n0.14\n0.20\n\n\n1.50\n0.25\n0.37\n\n\n1.75\n0.35\n0.51\n\n\n2.00\n0.43\n0.63\n\n\n2.25\n0.50\n0.74\n\n\n2.50\n0.57\n0.83\n\n\n2.75\n0.63\n0.92\n\n\n3.00\n0.68\n0.96\n\n\n3.25\n0.73\n0.96\n\n\n3.50\n0.78\n0.96\n\n\n3.75\n0.82\n0.96\n\n\n4.00\n0.86\n0.96\n\n\n4.25\n0.90\n0.96\n\n\n4.50\n0.93\n0.96\n\n\n4.75\n0.96\n0.96\n\n\n5.00\n0.96\n0.96\n\n\n\n\n\n\nWater depths may be negative for assets that incur damage below the ground floor height, and the user is free to choose any water depth increments in the CSV file. The damage functions can have any name. Multiple damage-functions can be described in the vulnerability curves CSV file by simply adding consecutive columns next to one another.\n\n\n\n\n\n\nTip\n\n\n\nYou can also create damage functions with the HydroMT-FIAT model builder\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "user_guide/settings/computation.html",
+    "href": "user_guide/settings/computation.html",
+    "title": "Computational input",
+    "section": "",
+    "text": "The inputs give the user a bit more control over the computational aspects of FIAT.\n\n\nTable 1: Computational FIAT input settings\n\n\nEntry\nType\nDefault\n\n\n\n\n[global]\n\n\n\n\nthreads\ninteger\n\n\n\n[global.geom]\n\n\n\n\nchunk\ninteger\n-\n\n\n[global.grid]\n\n\n\n\nchunk\nlist\n-\n\n\n\n\n\n\n\n\n\n\nWarning\n\n\n\nAll settings that are not globally defined (e.g. settings chunk size via hazard.settings) are ill-advised. Please use the global chunking settings.\n\n\n\n[global]\n\nthreads: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.\n\n\n\n[global.geom]\n\nchunk: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.\n\n\n\n\n\n\n\nTip\n\n\n\nThis input benefits from multiple threads.\n\n\n\n\n\n\n\n\nNote\n\n\n\nThis input is only applicable to the GeomModel\n\n\n\n\n[global.grid]\n\nchunk: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be [1024, 1024,].\n\n\n\n\n\n\n\nNote\n\n\n\nThis input is only applicable to the GridModel\n\n\n\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "user_guide/settings/optional.html",
+    "href": "user_guide/settings/optional.html",
+    "title": "Optional input",
+    "section": "",
+    "text": "Here we provide an overview of all optional/ non essential settings that the user can provide to FIAT. These are listed in the table (Table 1) below.\n\n\nTable 1: Settings.toml input (required and optional fields)\n\n\nField\nType\nDefault\n\n\n\n\n[global]\n\n\n\n\ncrs\nstring\n-\n\n\nkeep_temp_files\nboolean\nfalse\n\n\ngdal_cache\nint\n-\n\n\n[hazard]\n\n\n\n\ncrs\nstring\n-\n\n\nreturn_periods\nlist\n-\n\n\n[hazard.settings]\n\n\n\n\nsubset\nstring\n-\n\n\nvar_as_band\nboolean\nfalse\n\n\n[exposure.csv]\n\n\n\n\nindex\nstring\n‘Object ID’\n\n\n[exposure.geom]\n\n\n\n\ncrs\nstring\n-\n\n\n[exposure.grid]\n\n\n\n\ncrs\nstring\n-\n\n\n[exposure.grid.settings]\n\n\n\n\nvar_as_band\nboolean\nfalse\n\n\n[vulnerability]\n\n\n\n\nstep_size\nfloat\n0.01\n\n\n[vulnerability.settings]\n\n\n\n\nindex\nstring\n‘water depth’\n\n\n\n\n\n[global]\n\ncrs: Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.\nkeep_temp_files: Permanently save the temporary file outputs. These are produced during the calculations.\ngdal_cache: Set the cache used by GDAL.\n\n\n\n\n\n\n\nWarning\n\n\n\nThe entry gdal_cache performs poorly and will probably be deprecated soon.\n\n\n\n\n[hazard]\n\ncrs: Projection of the hazard data if it cannot be inferred from the dataset itself.\nreturn_periods: Return periods for hazard calculation when they cannot be inferred from the data itself.\n\n\n\n[hazard.settings]\n\nsubset: Select a specific subdataset by supplying it’s ID (name) here.\nvar_as_band: Whether or not to read the subdatasets as classic raster band.\n\n\n\n\n\n\n\nNote\n\n\n\nThe entry var_as_band is only applicable to netCDF files.\n\n\n\n\n[exposure.csv]\n\nindex: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to ‘Object ID’.\n\n\n\n[exposure.geom]\n\ncrs: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.\n\n\n\n[exposure.grid]\n\ncrs: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.\n\n\n\n[exposure.grid.settings]\n\nvar_as_band: Whether or not to read the subdatasets as classic raster band.\n\n\n\n\n\n\n\nNote\n\n\n\nThe entry var_as_band is only applicable to netCDF files.\n\n\n\n\n[vulnerability]\n\nstep_size: The internal step size of the vulnerability data. The supplied data is interpolated or averaged depending on the minimal step size of the supplied dataset.\n\n\n\n[vulnerability.settings]\n\nindex: Set the index column of the csv file. In case of the vulnerability csv, if no entry is provided then FIAT will default to ‘water depth’.\n\n\n\n\n\n Back to top"
+  }
+]
