@@ -50,10 +50,10 @@ class GridModel(BaseModel):
         # Set the extra arguments from the settings file
         kw = {}
         kw.update(
-            self.cfg.generate_kwargs("global.grid"),
+            self.cfg.generate_kwargs("exposure.grid.settings"),
         )
         kw.update(
-            self.cfg.generate_kwargs("exposure.grid.settings"),
+            self.cfg.generate_kwargs("global.grid"),
         )
         data = open_grid(file, **kw)
         ## checks

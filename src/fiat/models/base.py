@@ -76,7 +76,7 @@ class BaseModel(metaclass=ABCMeta):
 
     @abstractmethod
     def _clean_up(self):
-        pass
+        raise NotImplementedError(NEED_IMPLEMENTED)
 
     def _read_hazard_grid(self):
         """_summary_."""
@@ -85,10 +85,10 @@ class BaseModel(metaclass=ABCMeta):
         # Set the extra arguments from the settings file
         kw = {}
         kw.update(
-            self.cfg.generate_kwargs("global.grid"),
+            self.cfg.generate_kwargs("hazard.settings"),
         )
         kw.update(
-            self.cfg.generate_kwargs("hazard.settings"),
+            self.cfg.generate_kwargs("global.grid"),
         )
         data = open_grid(path, **kw)
         ## checks
@@ -184,6 +184,11 @@ using a step size of: {self._vul_step_size}"
         self.max_threads = cpu_count()
         _max_threads = self.cfg.get("global.threads")
         if _max_threads is not None:
+            if _max_threads > self.max_threads:
+                logger.warning(
+                    f"Given number of threads ('{_max_threads}') \
+exceeds machine thread count ('{self.max_threads}')"
+                )
             self.max_threads = min(self.max_threads, _max_threads)
 
         logger.info(f"Maximum number of threads: {self.max_threads}")
