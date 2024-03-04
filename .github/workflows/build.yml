@@ -79,4 +79,4 @@ jobs:
           conda deactivate
 
       - name: Test Binary
-        run: ./bin/Release/fiat run .testdata/settings.toml
+        run: ./bin/Release/fiat run .testdata/geom_event.toml
