@@ -1,8 +1,8 @@
-from fiat.io import open_csv
+import copy
 
 
-def test_tabel(cfg_geom_event):
-    tb = open_csv(cfg_geom_event.get("vulnerability.file"))
+def test_tabel(vul_data):
+    tb = copy.deepcopy(vul_data)
     assert len(tb.columns) == 3
     assert len(tb.index) == 21
     assert tb[9, "struct_2"] == 0.74

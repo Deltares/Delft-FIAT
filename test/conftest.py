@@ -2,70 +2,61 @@ from pathlib import Path
 
 import pytest
 from fiat.cfg import ConfigReader
-from fiat.io import open_geom, open_grid
+from fiat.io import open_csv, open_geom, open_grid
 from fiat.log import LogItem
 
-
-@pytest.fixture()
-def settings_toml_event():
-    return Path(Path.cwd(), ".testdata", "settings.toml")
-
-
-@pytest.fixture()
-def settings_toml_grid():
-    return Path(Path.cwd(), ".testdata", "settings_grid.toml")
-
-
-@pytest.fixture()
-def settings_toml_risk():
-    return Path(Path.cwd(), ".testdata", "settings_risk.toml")
+_MODELS = [
+    "geom_event",
+    "geom_event_2g",
+    "geom_event_missing",
+    "geom_risk",
+    "geom_risk_2g",
+    "grid_event",
+    "grid_risk",
+]
 
 
 @pytest.fixture()
-def cfg_geom_event(settings_toml_event):
-    c = ConfigReader(settings_toml_event)
-    return c
+def settings_files():
+    _files = {}
+    for _m in _MODELS:
+        p = Path(Path.cwd(), ".testdata", f"{_m}.toml")
+        p_name = p.stem
+        _files[p_name] = p
+    return _files
 
 
 @pytest.fixture()
-def cfg_geom_event_mis():
-    p = Path(Path.cwd(), ".testdata", "settings_missing.toml")
-    return ConfigReader(p)
+def configs(settings_files):
+    _cfgs = {}
+    for key, item in settings_files.items():
+        _cfgs[key] = ConfigReader(item)
+    return _cfgs
 
 
 @pytest.fixture()
-def cfg_geom_risk(settings_toml_risk):
-    c = ConfigReader(settings_toml_risk)
-    return c
-
-
-@pytest.fixture()
-def cfg_grid_event(settings_toml_grid):
-    c = ConfigReader(settings_toml_grid)
-    return c
-
-
-@pytest.fixture()
-def cfg_grid_risk(settings_toml_grid):
-    p = Path(Path.cwd(), ".testdata", "settings_grid_risk.toml")
-    return ConfigReader(p)
-
-
-@pytest.fixture()
-def gm(cfg_geom_event):
-    d = open_geom(cfg_geom_event.get_path("exposure.geom.file1"))
+def gm():
+    d = open_geom(Path(Path.cwd(), ".testdata", "exposure", "spatial.gpkg"))
     return d
 
 
 @pytest.fixture()
-def gr_event(cfg_geom_event):
-    d = open_grid(cfg_geom_event.get_path("hazard.file"))
+def gr_event():
+    d = open_grid(Path(Path.cwd(), ".testdata", "hazard", "event_map.nc"))
     return d
 
 
 @pytest.fixture()
-def gr_risk(cfg_geom_risk):
-    d = open_grid(cfg_geom_risk.get_path("hazard.file"), var_as_band=True)
+def gr_risk():
+    d = open_grid(Path(Path.cwd(), ".testdata", "hazard", "risk_map.nc"))
+    return d
+
+
+@pytest.fixture()
+def vul_data():
+    d = open_csv(
+        Path(Path.cwd(), ".testdata", "vulnerability", "vulnerability_curves.csv")
+    )
     return d
 
 

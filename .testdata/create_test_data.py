@@ -316,7 +316,7 @@ def create_risk_map():
     dr = None
 
 
-def create_settings():
+def create_settings_geom():
     """_summary_."""
     doc = {
         "global": {
@@ -351,24 +351,47 @@ def create_settings():
         },
     }
 
-    with open(Path(p, "settings.toml"), "wb") as f:
+    # Dump directly as default event toml
+    with open(Path(p, "geom_event.toml"), "wb") as f:
         tomli_w.dump(doc, f)
 
+    # Setup toml with two geometry files
     doc2g = copy.deepcopy(doc)
     doc2g["output"]["path"] = "output/event_2g"
     doc2g["output"]["geom"]["name2"] = "spatial2.gpkg"
     doc2g["exposure"]["geom"]["file2"] = "exposure/spatial2.gpkg"
 
-    with open(Path(p, "settings_2g.toml"), "wb") as f:
+    with open(Path(p, "geom_event_2g.toml"), "wb") as f:
         tomli_w.dump(doc2g, f)
 
+    # Setup toml with missing geometry meta
     doc_m = copy.deepcopy(doc)
     doc_m["output"]["path"] = "output/event_missing"
     doc_m["output"]["geom"]["name1"] = "spatial_missing.gpkg"
     doc_m["exposure"]["geom"]["file1"] = "exposure/spatial_missing.gpkg"
 
-    with open(Path(p, "settings_missing.toml"), "wb") as f:
+    with open(Path(p, "geom_event_missing.toml"), "wb") as f:
         tomli_w.dump(doc_m, f)
+
+    # Setup toml for risk calculation
+    doc_r = copy.deepcopy(doc)
+    doc_r["output"]["path"] = "output/risk"
+    doc_r["hazard"]["file"] = "hazard/risk_map.nc"
+    doc_r["hazard"]["risk"] = True
+    doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
+    doc_r["hazard"]["settings"] = {"var_as_band": True}
+
+    with open(Path(p, "geom_risk.toml"), "wb") as f:
+        tomli_w.dump(doc_r, f)
+
+    # Setup toml for risk calculation with 2 geometries
+    doc_r2g = copy.deepcopy(doc_r)
+    doc_r2g["output"]["path"] = "output/risk_2g"
+    doc_r2g["output"]["geom"]["name2"] = "spatial2.gpkg"
+    doc_r2g["exposure"]["geom"]["file2"] = "exposure/spatial2.gpkg"
+
+    with open(Path(p, "geom_risk_2g.toml"), "wb") as f:
+        tomli_w.dump(doc_r2g, f)
 
 
 def create_settings_grid():
@@ -400,7 +423,7 @@ def create_settings_grid():
         },
     }
 
-    with open(Path(p, "settings_grid.toml"), "wb") as f:
+    with open(Path(p, "grid_event.toml"), "wb") as f:
         tomli_w.dump(doc, f)
 
     doc_r = copy.deepcopy(doc)
@@ -410,59 +433,8 @@ def create_settings_grid():
     doc_r["hazard"]["settings"] = {"var_as_band": True}
     doc_r["hazard"]["risk"] = True
 
-    with open(Path(p, "settings_grid_risk.toml"), "wb") as f:
+    with open(Path(p, "grid_risk.toml"), "wb") as f:
         tomli_w.dump(doc_r, f)
-
-
-def create_settings_risk():
-    """_summary_."""
-    doc = {
-        "global": {
-            "crs": "EPSG:4326",
-            "keep_temp_files": True,
-        },
-        "output": {
-            "path": "output/risk",
-            "csv": {
-                "name": "output.csv",
-            },
-            "geom": {"name1": "spatial.gpkg"},
-        },
-        "hazard": {
-            "file": "hazard/risk_map.nc",
-            "crs": "EPSG:4326",
-            "elevation_reference": "DEM",
-            "risk": True,
-            "return_periods": [2, 5, 10, 25],
-            "settings": {
-                "subset": "",
-                "var_as_band": True,
-            },
-        },
-        "exposure": {
-            "csv": {
-                "file": "exposure/spatial.csv",
-            },
-            "geom": {
-                "file1": "exposure/spatial.gpkg",
-                "crs": "EPSG:4326",
-            },
-        },
-        "vulnerability": {
-            "file": "vulnerability/vulnerability_curves.csv",
-            "step_size": 0.01,
-        },
-    }
-
-    with open(Path(p, "settings_risk.toml"), "wb") as f:
-        tomli_w.dump(doc, f)
-
-    doc["output"]["path"] = "output/risk_2g"
-    doc["output"]["geom"]["name2"] = "spatial2.gpkg"
-    doc["exposure"]["geom"]["file2"] = "exposure/spatial2.gpkg"
-
-    with open(Path(p, "settings_risk_2g.toml"), "wb") as f:
-        tomli_w.dump(doc, f)
 
 
 def create_vulnerability():
@@ -495,9 +467,7 @@ if __name__ == "__main__":
     create_exposure_grid()
     create_hazard_map()
     create_risk_map()
-    create_settings()
+    create_settings_geom()
     create_settings_grid()
-    create_settings_risk()
     create_vulnerability()
     gc.collect()
-    pass
