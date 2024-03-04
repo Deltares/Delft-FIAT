@@ -4,6 +4,7 @@ import pytest
 from fiat.cfg import ConfigReader
 from fiat.io import open_csv, open_geom, open_grid
 from fiat.log import LogItem
+from fiat.models import GeomModel
 
 _MODELS = [
     "geom_event",
@@ -35,19 +36,25 @@ def configs(settings_files):
 
 
 @pytest.fixture()
-def gm():
+def geom_risk(configs):
+    model = GeomModel(configs["geom_risk"])
+    return model
+
+
+@pytest.fixture()
+def geom_data():
     d = open_geom(Path(Path.cwd(), ".testdata", "exposure", "spatial.gpkg"))
     return d
 
 
 @pytest.fixture()
-def gr_event():
+def grid_event_data():
     d = open_grid(Path(Path.cwd(), ".testdata", "hazard", "event_map.nc"))
     return d
 
 
 @pytest.fixture()
-def gr_risk():
+def grid_risk_data():
     d = open_grid(Path(Path.cwd(), ".testdata", "hazard", "risk_map.nc"))
     return d
 

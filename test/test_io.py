@@ -17,12 +17,12 @@ def test_tabel(vul_data):
     assert max(tb.index) == max_idx
 
 
-def test_geomsource(gm):
-    assert gm.count == 4
-    srs = gm.get_srs()
+def test_geomsource(geom_data):
+    assert geom_data.count == 4
+    srs = geom_data.get_srs()
     assert srs.GetAuthorityCode(None) == "4326"
 
 
-def test_gridsource(gr_event):
-    srs = gr_event.get_srs()
+def test_gridsource(grid_event_data):
+    srs = grid_event_data.get_srs()
     assert srs.GetAuthorityCode(None) == "4326"
