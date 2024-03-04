@@ -11,7 +11,7 @@ from fiat.check import (
 from fiat.io import open_grid
 from fiat.log import spawn_logger
 from fiat.models.base import BaseModel
-from fiat.models.util import grid_worker_exact, grid_worker_risk
+from fiat.models.worker import grid_worker_exact, grid_worker_risk
 
 logger = spawn_logger("fiat.model.grid")
 

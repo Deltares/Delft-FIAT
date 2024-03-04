@@ -27,10 +27,9 @@ from fiat.models.util import (
     GEOM_MIN_WRITE_CHUNK,
     csv_def_file,
     csv_temp_file,
-    geom_resolve,
     geom_threads,
-    geom_worker,
 )
+from fiat.models.worker import geom_resolve, geom_worker
 from fiat.util import create_1d_chunk
 
 logger = spawn_logger("fiat.model.geom")
