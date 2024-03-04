@@ -233,12 +233,12 @@ calculated chunks ({self.nchunk})"
         # If more than one thread, start a pool
         if self.nthreads > 1:
             futures = []
-            with ProcessPoolExecutor(max_workers=self.nthreads) as Pool:
+            with ProcessPoolExecutor(max_workers=self.nthreads) as pool:
                 csv_lock = self._mp_manager.Lock()
                 geom_lock = self._mp_manager.Lock()
                 for chunk in self.chunks:
                     # Submit the all chunks
-                    fs = Pool.submit(
+                    fs = pool.submit(
                         geom_resolve,
                         self.cfg,
                         self.exposure_data,
@@ -249,6 +249,7 @@ calculated chunks ({self.nchunk})"
                     )
                     futures.append(fs)
             wait(futures)
+            pool.shutdown()
 
         # When there is only 1 thread neccessary
         # just use process directly
@@ -297,7 +298,7 @@ calculated chunks ({self.nchunk})"
         # Use a pool to execute the calculations
         if self.nthreads > 1:
             futures = []
-            with ProcessPoolExecutor(max_workers=self.nthreads) as Pool:
+            with ProcessPoolExecutor(max_workers=self.nthreads) as pool:
                 _s = time.time()
                 for idx in range(self.hazard_grid.count):
                     # Create a lock
@@ -320,7 +321,7 @@ in regards to band: '{_nms[idx]}'"
 
                     # Loop through all the chunks
                     for chunk in self.chunks:
-                        fs = Pool.submit(
+                        fs = pool.submit(
                             geom_worker,
                             self.cfg,
                             self._queue,
@@ -337,6 +338,7 @@ in regards to band: '{_nms[idx]}'"
 
             # Wait for the children to finish their calculations
             wait(futures)
+            pool.shutdown()
 
         # If there is only one hazard band present, call Process directly
         # No need for the extra overhead the Pool provides
@@ -370,6 +372,7 @@ in regards to band: '{_nms[idx]}'"
             p.start()
             logger.info("Busy...")
             p.join()
+            p.terminate()
         _e = time.time() - _s
 
         logger.info(f"Calculations time: {round(_e, 2)} seconds")
