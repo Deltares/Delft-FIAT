@@ -101,14 +101,14 @@ class GridModel(BaseModel):
         if self.hazard_grid.count > 1:
             pcount = min(self.max_threads, self.hazard_grid.count)
             futures = []
-            with ProcessPoolExecutor(max_workers=pcount) as Pool:
+            with ProcessPoolExecutor(max_workers=pcount) as pool:
                 _s = time.time()
                 for idx in range(self.hazard_grid.count):
                     logger.info(
                         f"Submitting a job for the calculations \
 in regards to band: '{_nms[idx]}'"
                     )
-                    fs = Pool.submit(
+                    fs = pool.submit(
                         grid_worker_exact,
                         self.cfg,
                         self.hazard_grid,
