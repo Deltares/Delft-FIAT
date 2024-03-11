@@ -50,7 +50,7 @@ def geom_resolve(
 
     # For the temp files
     _files = {}
-    _paths = Path(cfg.get("output.path.tmp")).glob("*.dat")
+    _paths = Path(cfg.get("output.tmp.path")).glob("*.dat")
 
     # Open the temporary files lazy
     for p in sorted(_paths):
@@ -165,7 +165,7 @@ def geom_worker(
 
     # Setup the write and write the header
     writer = BufferedTextWriter(
-        Path(cfg.get("output.path.tmp"), f"{idx:03d}.dat"),
+        Path(cfg.get("output.tmp.path"), f"{idx:03d}.dat"),
         mode="ab",
         buffer_size=100000,
         lock=lock,
@@ -265,7 +265,7 @@ def grid_worker_exact(
     # Set the output directory
     _out = cfg.get("output.path")
     if cfg.get("hazard.risk"):
-        _out = cfg.get("output.path.risk")
+        _out = cfg.get("output.damages.path")
 
     # Create the outgoing netcdf containing every exposure damages
     out_src = open_grid(
@@ -399,14 +399,14 @@ def grid_worker_risk(
     for _name in cfg.get("hazard.band_names"):
         td.append(
             open_grid(
-                Path(cfg.get("output.path.risk"), f"total_damages_{_name}.nc"),
+                Path(cfg.get("output.damages.path"), f"total_damages_{_name}.nc"),
                 chunk=_chunk,
                 mode="r",
             )
         )
         rp.append(
             open_grid(
-                Path(cfg.get("output.path.risk"), f"total_damages_{_name}.nc"),
+                Path(cfg.get("output.damages.path"), f"total_damages_{_name}.nc"),
                 chunk=_chunk,
                 mode="r",
             )

@@ -27,7 +27,7 @@ description = "Delft Fast Impact Assessment Tool"
 readme = "README.md"
 license = {text = "MIT"}
 
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 dependencies = [
 "gdal>=3.5",
 "numpy",
@@ -64,8 +64,6 @@ classifiers = [
 # Specify the Python versions you support here. In particular, ensure
 # that you indicate whether you support Python 2, Python 3 or both.
 'Programming Language :: Python :: 3',
-'Programming Language :: Python :: 3.7',
-'Programming Language :: Python :: 3.8',
 'Programming Language :: Python :: 3.9',
 'Programming Language :: Python :: 3.10',
 'Programming Language :: Python :: 3.11',
@@ -101,6 +99,7 @@ test = [
     "black",
 	"pytest>=2.7.3",
 	"pytest-cov",
+    "pytest-dependency",
     "pytest-mock",
 	"responses",
     "delft_fiat[all,extra]",
@@ -116,7 +115,7 @@ fiat = "fiat.cli.main:main"
 
 [tool.make_env]
 channels = ["conda-forge"]
-deps_not_in_conda = ["quartodoc"]
+deps_not_in_conda = ["pytest-dependency", "quartodoc"]
 
 ## Some stuff for pytest and coverage
 [tool.pytest.ini_options]

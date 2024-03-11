@@ -3,13 +3,9 @@ from pathlib import Path
 from fiat import FIAT
 from fiat.io import open_csv
 from osgeo import gdal
-from pytest_cov.embed import cleanup_on_sigterm
 
 
 def run_model(cfg, tmpdir):
-    # For coverage
-    cleanup_on_sigterm()
-
     # Execute
     cfg.set_output_dir(str(tmpdir))
     mod = FIAT(cfg)

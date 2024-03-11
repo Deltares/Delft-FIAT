@@ -35,7 +35,7 @@ class GridModel(BaseModel):
     ):
         super().__init__(cfg)
 
-        self._read_exposure_grid()
+        self.read_exposure_grid()
 
     def __del__(self):
         BaseModel.__del__(self)
@@ -43,7 +43,7 @@ class GridModel(BaseModel):
     def _clean_up(self):
         pass
 
-    def _read_exposure_grid(self):
+    def read_exposure_grid(self):
         """_summary_."""
         file = self.cfg.get("exposure.grid.file")
         logger.info(f"Reading exposure grid ('{file.name}')")
@@ -69,6 +69,9 @@ class GridModel(BaseModel):
         self.exposure_grid = data
 
     def _set_num_threads(self):
+        pass
+
+    def _setup_output_files(self):
         pass
 
     def resolve(self):

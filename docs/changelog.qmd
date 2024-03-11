@@ -6,10 +6,18 @@ title: "What's new?"
 This contains the unreleased changes to Delft-FIAT.
 
 ### Added
+- General method of creating output files in `GeomModel` (`_setup_output_files`)
+- Method `_create_model_dirs` of `ConfigReader` object for creating result directories in one go
+- Method `set` of `ConfigReader` object
 
 ### Changed
+- Made read methods of `BaseModel`, `GeomModel` and `GridModel` public (removed underscore)
+- Testing of workers (not properly caught due to using `multiprocessing`)
+- Testing only based on integers
 
 ### Deprecated
+- Methods `_create_output_dir`, `_create_tmp_dir` and `_create_risk_dir` of the `ConfigReader` object
+- Support of `Python` version under `3.9.0`
 
 ### Documentation
 

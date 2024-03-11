@@ -60,8 +60,8 @@ class BaseModel(metaclass=ABCMeta):
 
         self._set_max_threads()
         self._set_model_srs()
-        self._read_hazard_grid()
-        self._read_vulnerability_data()
+        self.read_hazard_grid()
+        self.read_vulnerability_data()
 
         if "global.keep_temp_files" in self.cfg:
             self._keep_temp = self.cfg.get("global.keep_temp_files")
@@ -78,7 +78,57 @@ class BaseModel(metaclass=ABCMeta):
     def _clean_up(self):
         raise NotImplementedError(NEED_IMPLEMENTED)
 
-    def _read_hazard_grid(self):
+    def _set_model_srs(self):
+        """_summary_."""
+        _srs = self.cfg.get("global.crs")
+        path = self.cfg.get("hazard.file")
+        if _srs is not None:
+            self.srs = osr.SpatialReference()
+            self.srs.SetFromUserInput(_srs)
+        else:
+            # Inferring by 'sniffing'
+            kw = self.cfg.generate_kwargs("hazard.settings")
+
+            gm = open_grid(
+                str(path),
+                **kw,
+            )
+
+            _srs = gm.get_srs()
+            if _srs is None:
+                if "hazard.crs" in self.cfg:
+                    _srs = osr.SpatialReference()
+                    _srs.SetFromUserInput(self.cfg.get("hazard.crs"))
+            self.srs = _srs
+
+        # Simple check to see if it's not None
+        check_global_crs(
+            self.srs,
+            self.cfg.filepath.name,
+            path.name,
+        )
+        # Set crs for later use
+        self.cfg["global.crs"] = get_srs_repr(self.srs)
+
+        logger.info(f"Model srs set to: '{get_srs_repr(self.srs)}'")
+        # Clean up
+        gm = None
+
+    @abstractmethod
+    def _set_num_threads(
+        self,
+    ):
+        """_summary_."""
+        raise NotImplementedError(NEED_IMPLEMENTED)
+
+    @abstractmethod
+    def _setup_output_files(
+        self,
+    ):
+        """_summary_."""
+        raise NotImplementedError(NEED_IMPLEMENTED)
+
+    def read_hazard_grid(self):
         """_summary_."""
         path = self.cfg.get("hazard.file")
         logger.info(f"Reading hazard data ('{path.name}')")
@@ -149,7 +199,8 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         # When all is done, add it
         self.hazard_grid = data
 
-    def _read_vulnerability_data(self):
+    def read_vulnerability_data(self):
+        """_summary_."""
         path = self.cfg.get("vulnerability.file")
         logger.info(f"Reading vulnerability curves ('{path.name}')")
 
@@ -192,49 +243,6 @@ exceeds machine thread count ('{self.max_threads}')"
             self.max_threads = min(self.max_threads, _max_threads)
 
         logger.info(f"Maximum number of threads: {self.max_threads}")
-
-    def _set_model_srs(self):
-        """_summary_."""
-        _srs = self.cfg.get("global.crs")
-        path = self.cfg.get("hazard.file")
-        if _srs is not None:
-            self.srs = osr.SpatialReference()
-            self.srs.SetFromUserInput(_srs)
-        else:
-            # Inferring by 'sniffing'
-            kw = self.cfg.generate_kwargs("hazard.settings")
-
-            gm = open_grid(
-                str(path),
-                **kw,
-            )
-
-            _srs = gm.get_srs()
-            if _srs is None:
-                if "hazard.crs" in self.cfg:
-                    _srs = osr.SpatialReference()
-                    _srs.SetFromUserInput(self.cfg.get("hazard.crs"))
-            self.srs = _srs
-
-        # Simple check to see if it's not None
-        check_global_crs(
-            self.srs,
-            self.cfg.filepath.name,
-            path.name,
-        )
-        # Set crs for later use
-        self.cfg["global.crs"] = get_srs_repr(self.srs)
-
-        logger.info(f"Model srs set to: '{get_srs_repr(self.srs)}'")
-        # Clean up
-        gm = None
-
-    @abstractmethod
-    def _set_num_threads(
-        self,
-    ):
-        """_summary_."""
-        raise NotImplementedError(NEED_IMPLEMENTED)
 
     @abstractmethod
     def run(

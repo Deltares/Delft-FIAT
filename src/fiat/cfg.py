@@ -58,16 +58,6 @@ class ConfigReader(dict):
             self.path,
         )
 
-        # Ensure the output directory is there
-        self._create_output_dir(self["output.path"])
-
-        # Create the hidden temporary folder
-        self._create_temp_dir()
-
-        # Create risk directory if needed
-        if self.get("hazard.risk"):
-            self._create_risk_dir()
-
         # Set the cache size per GDAL object
         _cache_size = self.get("global.gdal_cache")
         if _cache_size is not None:
@@ -89,6 +79,10 @@ class ConfigReader(dict):
                 if isinstance(item, str):
                     self[key] = item.lower()
 
+        # Ensure the output directory is there
+        self._create_model_dirs(self.get("output.path"))
+
+        # Switch the build flag off
         self._build = False
 
         # (Re)set the extra values
@@ -109,32 +103,49 @@ class ConfigReader(dict):
             self._extra_args[__key] = __value
         super().__setitem__(__key, __value)
 
-    def _create_output_dir(
+    def _create_dir(
         self,
+        root: Path | str,
         path: Path | str,
+        hidden: bool = False,
     ):
         """_summary_."""
         _p = Path(path)
         if not _p.is_absolute():
-            _p = Path(self.path, _p)
-        generic_folder_check(_p)
-        self["output.path"] = _p
+            _p = Path(root, _p)
+        if hidden:
+            create_hidden_folder(_p)
+        else:
+            generic_folder_check(_p)
+        return _p
 
-    def _create_risk_dir(
+    def _create_model_dirs(
         self,
+        path: Path | str,
     ):
         """_summary_."""
-        _ph = Path(self["output.path"], "rp_damages")
-        generic_folder_check(_ph)
-        self["output.path.risk"] = _ph
+        # Global output directory
+        _p = self._create_dir(
+            self.path,
+            path,
+        )
+        self.set("output.path", _p)
 
-    def _create_temp_dir(
-        self,
-    ):
-        """_summary_."""
-        _ph = Path(self["output.path"], ".tmp")
-        create_hidden_folder(_ph)
-        self["output.path.tmp"] = _ph
+        # Temporary files directory
+        _p = self._create_dir(
+            self.get("output.path"),
+            ".tmp",
+            hidden=True,
+        )
+        self.set("output.tmp.path", _p)
+
+        # Damage directory for grid risk calculations
+        if self.get("hazard.risk") and check_config_grid(self):
+            _p = self._create_dir(
+                self.get("output.path"),
+                "damages",
+            )
+            self.set("output.damages.path", _p)
 
     def get_model_type(
         self,
@@ -202,6 +213,24 @@ the bool is set to True.
 
         return kw
 
+    def set(
+        self,
+        key: str,
+        value: Any,
+    ):
+        """Set a value in the configuration data.
+
+        _extended_summary_
+
+        Parameters
+        ----------
+        key : str
+            _description_
+        value : Any
+            _description_
+        """
+        self[key] = value
+
     def set_output_dir(
         self,
         path: Path | str,
@@ -213,15 +242,14 @@ the bool is set to True.
         path : Path | str
             A Path to the new directory.
         """
-        _p = Path(path)
-        if not _p.is_absolute():
-            _p = Path(self.path, _p)
+        if self.get("output.damages.path") is not None:
+            if not any(self.get("output.damages.path").iterdir()):
+                os.rmdir(self.get("output.damages.path"))
 
-        if not any(self["output.path.tmp"].iterdir()):
-            os.rmdir(self["output.path.tmp"])
+        if not any(self.get("output.tmp.path").iterdir()):
+            os.rmdir(self.get("output.tmp.path"))
 
-        if not any(self["output.path"].iterdir()):
-            os.rmdir(self["output.path"])
+        if not any(self.get("output.path").iterdir()):
+            os.rmdir(self.get("output.path"))
 
-        self._create_output_dir(_p)
-        self._create_temp_dir()
+        self._create_model_dirs(path)
