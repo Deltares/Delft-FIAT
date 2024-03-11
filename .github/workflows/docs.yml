@@ -69,6 +69,13 @@ jobs:
           chmod +x tmp/quarto.deb
           sudo gdebi -n tmp/quarto.deb
 
+      - name: Install quarto extensions
+        run: |
+          sudo apt install -y expect
+          cd docs
+          chmod u+x add_packages.sh
+          ./add_packages.sh
+
       - name: Setup api & testdata
         run: |
           export PATH=/usr/share/miniconda3/bin:$PATH
