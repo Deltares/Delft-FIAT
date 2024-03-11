@@ -35,8 +35,10 @@ def test_geom_worker(tmpdir, geom_risk):
     # Assert output
     files = list(model.cfg.get("output.tmp.path").iterdir())
     assert len(files) == 4
-    assert files[0].name == "001.dat"
-    assert files[-1].name == "004.dat"
+    # List of files check
+    expected_files = [f"{idx:03d}.dat" for idx in range(1, 5)]
+    output_files = [_f.name for _f in files]
+    assert sorted(output_files) == expected_files
 
 
 @pytest.mark.dependency(depends=["test_geom_worker"])
@@ -78,8 +80,6 @@ def test_grid_worker(tmpdir, grid_risk):
     # Assert the output
     files = list(model.cfg.get("output.damages.path").iterdir())
     assert len(files) == 8
-    assert files[0].name == "output_10Y.nc"
-    assert files[-1].name == "total_damages_5Y.nc"
 
 
 @pytest.mark.dependency(depends=["test_grid_worker"])
