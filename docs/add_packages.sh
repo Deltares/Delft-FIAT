@@ -1,7 +1,7 @@
 #!/usr/bin/expect -f
 
 # Define your list of packages
-set packages {quarto-ext/include-code-files quarto-ext/fontawesome}
+set packages {machow/quartodoc pandoc-ext/section-bibliographies quarto-ext/fontawesome quarto-ext/include-code-files}
 
 # Iterate over the packages
 foreach package $packages {
