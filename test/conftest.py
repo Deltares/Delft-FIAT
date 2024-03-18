@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 from fiat.cfg import ConfigReader
+from fiat.cli.main import args_parser
 from fiat.io import open_csv, open_geom, open_grid
 from fiat.log import LogItem
 from fiat.models import GeomModel, GridModel
@@ -15,6 +16,11 @@ _MODELS = [
     "grid_event",
     "grid_risk",
 ]
+
+
+@pytest.fixture()
+def cli_parser():
+    return args_parser()
 
 
 @pytest.fixture()

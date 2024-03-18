@@ -1,6 +1,27 @@
 import subprocess
 
 
+def test_parse_run(mocker, cli_parser):
+    parser = cli_parser
+    mocker.patch("fiat.cli.main.argparse.ArgumentParser.exit")
+    args = parser.parse_args(
+        args=[
+            "run",
+        ]
+    )
+    assert args.command == "run"
+    assert args.threads is None
+    assert args.quiet == 0
+    assert args.verbose == 0
+
+    args = parser.parse_args(args=["run", "-t", "4"])
+    assert args.threads == 4
+
+    args = parser.parse_args(args=["run", "-qq", "-v"])
+    assert args.quiet == 2
+    assert args.verbose == 1
+
+
 def test_cli_main():
     p = subprocess.run(["fiat"], check=True, capture_output=True, text=True)
     assert p.returncode == 0

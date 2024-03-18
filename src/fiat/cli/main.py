@@ -69,8 +69,8 @@ def run(args):
     obj.run()
 
 
-## Main entry point: parsing gets done here
-def main():
+## Constructing the arguments parser for FIAT.
+def args_parser():
     """_summary_."""
     parser = argparse.ArgumentParser(
         #    usage="%(prog)s <options> <commands>",
@@ -119,9 +119,11 @@ def main():
     run_parser.add_argument(
         "-t",
         "--threads",
+        metavar="<THREADS>",
+        help="Set number of threads",
+        type=int,
         action="store",
         default=None,
-        help="Set number of threads",
     )
     run_parser.add_argument(
         "-q",
@@ -138,7 +140,14 @@ def main():
         default=0,
     )
     run_parser.set_defaults(func=run)
-    args = parser.parse_args(args=None if sys.argv[1:] else ["--help"])
+    return parser
+
+
+## Main entry point: parsing gets done here
+def main(argv=sys.argv[1:]):
+    """_summary_."""
+    parser = args_parser()
+    args = parser.parse_args(args=None if argv else ["--help"])
     args.func(args)
 
 

@@ -22,11 +22,26 @@ class MainHelpFormatter(HelpFormatter):
     #     print(usage)
     #     return super()._format_usage(usage, actions, groups, prefix)
 
+    def _format_action_invocation(self, action):
+        if not action.option_strings:
+            return super()._format_action_invocation(action)
+        else:
+            default = self._get_default_metavar_for_optional(action)
+            metavar = self._format_args(action, default)
+            # help_string = self._get_help_string(action)
+            return ", ".join(action.option_strings) + " " + metavar
+
     def _format_action(self, action):
         parts = super()._format_action(action)
         if action.nargs == PARSER:
             parts = "\n".join(parts.split("\n")[1:])
         return parts
+
+    # def _split_lines(self, text, width):
+    #     return super()._split_lines(text, width)
+
+    # def _fill_text(self, text, width, indent):
+    #     return '    ' + text
 
     def start_section(self, heading):
         """_summary_."""
