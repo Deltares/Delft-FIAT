@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Delft-FIAT"
-#define MyAppVersion "0.1.0rc2.dev"
+#define MyAppVersion "0.1.0.dev"
 #define MyAppPublisher "Deltares"
 #define MyAppExeName "fiat.exe"
 #define PathToSelf ExtractFileDir(SourcePath)
@@ -23,14 +23,41 @@ OutputDir="{#PathToSelf}\..\bin"
 OutputBaseFilename={#MyAppName}-{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
+LicenseFile="{#PathToSelf}\..\res\fiat_agree.rtf"
+ArchitecturesInstallIn64BitMode=x64
+
+[Code]
+var PrintButton: TButton;
+
+procedure PrintButtonClick(Sender: TObject);
+var ResultCode: Integer;
+begin
+  ExtractTemporaryFile('terms_of_agreement.rtf');
+  if not ShellExec('', ExpandConstant('{tmp}\\terms_of_agreement.rtf'), '', '', SW_SHOW, ewNoWait, ResultCode) then
+    MsgBox('Could not open the license file.', mbError, MB_OK);
+end;
+
+procedure InitializeWizard;
+begin
+  PrintButton := TButton.Create(WizardForm);
+  PrintButton.Caption := '&Print...';
+  PrintButton.Anchors := [akLeft, akBottom];
+  PrintButton.Left := WizardForm.OuterNotebook.Left + WizardForm.InnerNotebook.Left;
+  PrintButton.Top := WizardForm.NextButton.Top;
+  PrintButton.Width := WizardForm.NextButton.Width;
+  PrintButton.Height := WizardForm.NextButton.Height;
+  PrintButton.OnClick := @PrintButtonClick;
+  PrintButton.Parent := WizardForm.NextButton.Parent;
+end;
+
+procedure CurPageChanged(CurPage: Integer);
+begin
+  PrintButton.Visible := CurPage = wpLicense;
+end;
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "dutch"; MessagesFile: "compiler:Languages\Dutch.isl"
-
-[Setup]
-LicenseFile="{#PathToSelf}\..\LICENSE"
-ArchitecturesInstallIn64BitMode=x64
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -38,6 +65,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "{#PathToSelf}\..\bin\Release\fiat.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#PathToSelf}\..\bin\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#PathToSelf}\..\res\terms_of_agreement.rtf"; Flags: dontcopy
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
