@@ -324,7 +324,7 @@ def create_settings_geom():
             "keep_temp_files": True,
         },
         "output": {
-            "path": "output/event",
+            "path": "output/geom_event",
             "csv": {
                 "name": "output.csv",
             },
@@ -357,7 +357,7 @@ def create_settings_geom():
 
     # Setup toml with two geometry files
     doc2g = copy.deepcopy(doc)
-    doc2g["output"]["path"] = "output/event_2g"
+    doc2g["output"]["path"] = "output/geom_event_2g"
     doc2g["output"]["geom"]["name2"] = "spatial2.gpkg"
     doc2g["exposure"]["geom"]["file2"] = "exposure/spatial2.gpkg"
 
@@ -366,7 +366,7 @@ def create_settings_geom():
 
     # Setup toml with missing geometry meta
     doc_m = copy.deepcopy(doc)
-    doc_m["output"]["path"] = "output/event_missing"
+    doc_m["output"]["path"] = "output/geom_event_missing"
     doc_m["output"]["geom"]["name1"] = "spatial_missing.gpkg"
     doc_m["exposure"]["geom"]["file1"] = "exposure/spatial_missing.gpkg"
 
@@ -375,7 +375,7 @@ def create_settings_geom():
 
     # Setup toml for risk calculation
     doc_r = copy.deepcopy(doc)
-    doc_r["output"]["path"] = "output/risk"
+    doc_r["output"]["path"] = "output/geom_risk"
     doc_r["hazard"]["file"] = "hazard/risk_map.nc"
     doc_r["hazard"]["risk"] = True
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
@@ -386,7 +386,7 @@ def create_settings_geom():
 
     # Setup toml for risk calculation with 2 geometries
     doc_r2g = copy.deepcopy(doc_r)
-    doc_r2g["output"]["path"] = "output/risk_2g"
+    doc_r2g["output"]["path"] = "output/geom_risk_2g"
     doc_r2g["output"]["geom"]["name2"] = "spatial2.gpkg"
     doc_r2g["exposure"]["geom"]["file2"] = "exposure/spatial2.gpkg"
 
@@ -402,7 +402,7 @@ def create_settings_grid():
             "keep_temp_files": True,
         },
         "output": {
-            "path": "output/event_grid",
+            "path": "output/grid_event",
             "grid": {"name": "output.nc"},
         },
         "hazard": {
@@ -427,7 +427,7 @@ def create_settings_grid():
         tomli_w.dump(doc, f)
 
     doc_r = copy.deepcopy(doc)
-    doc_r["output"]["path"] = "output/risk_grid"
+    doc_r["output"]["path"] = "output/grid_risk"
     doc_r["hazard"]["file"] = "hazard/risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
     doc_r["hazard"]["settings"] = {"var_as_band": True}
