@@ -17,7 +17,7 @@ This contains the unreleased changes to Delft-FIAT.
 
 ### Deprecated
 - Methods `_create_output_dir`, `_create_tmp_dir` and `_create_risk_dir` of the `ConfigReader` object
-- Support of `Python` version under `3.9.0`
+- Support of `Python` version unders `3.9.0`
 
 ### Documentation
 
