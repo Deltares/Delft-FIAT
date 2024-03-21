@@ -81,7 +81,7 @@ class GeomModel(BaseModel):
         """_summary_."""
         # Determine maximum geometry dataset size
         max_geom_size = max(
-            [item.count for item in self.exposure_geoms.values()],
+            [item.size for item in self.exposure_geoms.values()],
         )
         # Set calculations chunk size
         self.chunk = max_geom_size

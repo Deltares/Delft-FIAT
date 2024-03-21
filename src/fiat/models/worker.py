@@ -177,7 +177,7 @@ def geom_worker(
     # Loop over all the datasets
     for _, gm in exp_geom.items():
         # Check if there actually is data for this chunk
-        if chunk[0] > gm.count:
+        if chunk[0] > gm._count:
             continue
 
         # Loop over all the geometries in a reduced manner

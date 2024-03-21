@@ -304,6 +304,12 @@ class BufferedGeomWriter:
         # Reset current size
         self.size = 0
 
+    def close(self):
+        """_summary_."""
+        # Flush on last time
+        self.to_drive()
+        self.buffer.close()
+
     def add_feature(
         self,
         ft: ogr.Feature,
@@ -864,15 +870,15 @@ class GeomSource(_BaseIO, _BaseStruct):
             self.src = self._driver.Open(self.path.as_posix(), self._mode)
         else:
             if not self._mode:
-                raise OSError("")
+                raise OSError(f"Cannot create {self.path} in 'read' mode.")
             self.src = self._driver.CreateDataSource(self.path.as_posix())
 
-        self.count = 0
+        self._count = 0
         self._cur_index = 0
 
         self.layer = self.src.GetLayer()
         if self.layer is not None:
-            self.count = self.layer.GetFeatureCount()
+            self._count = self.layer.GetFeatureCount()
 
     def __iter__(self):
         self.layer.ResetReading()
@@ -880,7 +886,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         return self
 
     def __next__(self):
-        if self._cur_index < self.count:
+        if self._cur_index < self._count:
             r = self.layer.GetNextFeature()
             self._cur_index += 1
             return r
@@ -977,6 +983,17 @@ class GeomSource(_BaseIO, _BaseStruct):
             ]
             _flds = None
             return fh
+
+    @property
+    @_BaseIO._check_state
+    def size(
+        self,
+    ):
+        """_summary_."""
+        if self.layer is not None:
+            count = self.layer.GetFeatureCount()
+            self._count = count
+        return self._count
 
     @_BaseIO._check_mode
     @_BaseIO._check_state
