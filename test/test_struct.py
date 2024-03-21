@@ -2,7 +2,7 @@ import copy
 
 
 def test_geomsource(geom_data):
-    assert geom_data.count == 4
+    assert geom_data.size == 4
     srs = geom_data.get_srs()
     assert srs.GetAuthorityCode(None) == "4326"
 
