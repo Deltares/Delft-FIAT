@@ -232,12 +232,27 @@ ul.task-list li input[type="checkbox"] {
 <p>This contains the unreleased changes to Delft-FIAT.</p>
 <section id="added" class="level3">
 <h3 class="anchored" data-anchor-id="added">Added</h3>
+<ul>
+<li>General method of creating output files in <code>GeomModel</code> (<code>_setup_output_files</code>)</li>
+<li>Method <code>_create_model_dirs</code> of <code>ConfigReader</code> object for creating result directories in one go</li>
+<li>Method <code>set</code> of <code>ConfigReader</code> object</li>
+<li>Method <code>size</code> of <code>GeomSource</code> object for in situ size return; <code>count</code> becomes private</li>
+</ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
+<ul>
+<li>Made read methods of <code>BaseModel</code>, <code>GeomModel</code> and <code>GridModel</code> public (removed underscore)</li>
+<li>Testing of workers (not properly caught due to using <code>multiprocessing</code>)</li>
+<li>Testing only based on integers</li>
+</ul>
 </section>
 <section id="deprecated" class="level3">
 <h3 class="anchored" data-anchor-id="deprecated">Deprecated</h3>
+<ul>
+<li>Methods <code>_create_output_dir</code>, <code>_create_tmp_dir</code> and <code>_create_risk_dir</code> of the <code>ConfigReader</code> object</li>
+<li>Support of <code>Python</code> version unders <code>3.9.0</code></li>
+</ul>
 </section>
 <section id="documentation" class="level3">
 <h3 class="anchored" data-anchor-id="documentation">Documentation</h3>
