@@ -9,6 +9,7 @@ This contains the unreleased changes to Delft-FIAT.
 - General method of creating output files in `GeomModel` (`_setup_output_files`)
 - Method `_create_model_dirs` of `ConfigReader` object for creating result directories in one go
 - Method `set` of `ConfigReader` object
+- Method `size` of `GeomSource` object for in situ size return; `count` becomes private
 
 ### Changed
 - Made read methods of `BaseModel`, `GeomModel` and `GridModel` public (removed underscore)
