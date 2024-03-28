@@ -2,7 +2,6 @@
 
 import os
 import time
-from multiprocessing import Pool, Process
 from pathlib import Path
 
 from fiat.cfg import ConfigReader
@@ -26,6 +25,8 @@ from fiat.models.util import (
     GEOM_MIN_WRITE_CHUNK,
     csv_def_file,
     csv_temp_file,
+    execute_pool,
+    generate_jobs,
     geom_threads,
 )
 from fiat.models.worker import geom_resolve, geom_worker
@@ -240,46 +241,29 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         - This method might become private.
         """
-        # If more than one thread, start a pool
-        if self.nthreads > 1:
-            processes = []
-            with Pool(processes=self.nthreads) as pool:
-                csv_lock = self._mp_manager.Lock()
-                geom_lock = self._mp_manager.Lock()
-                for chunk in self.chunks:
-                    # Submit the all chunks
-                    pr = pool.apply_async(
-                        func=geom_resolve,
-                        args=(
-                            self.cfg,
-                            self.exposure_data,
-                            self.exposure_geoms,
-                            chunk,
-                            csv_lock,
-                            geom_lock,
-                        ),
-                    )
-                    processes.append(pr)
-            for pr in processes:
-                pr.get()
+        # Setup the locks for the worker
+        csv_lock = self._mp_manager.Lock()
+        geom_lock = self._mp_manager.Lock()
 
-        # When there is only 1 thread neccessary
-        # just use process directly
-        else:
-            p = Process(
-                target=geom_resolve,
-                args=(
-                    self.cfg,
-                    self.exposure_data,
-                    self.exposure_geoms,
-                    self.chunks[0],
-                    None,
-                    None,
-                ),
-            )
-            p.start()
-            logger.info("Busy...")
-            p.join()
+        # Setting up the jobs for resolving
+        jobs = generate_jobs(
+            {
+                "cfg": self.cfg,
+                "exp": self.exposure_data,
+                "exp_geom": self.exposure_geoms,
+                "chunk": self.chunks,
+                "csv_lock": csv_lock,
+                "geom_lock": geom_lock,
+            },
+        )
+
+        # Execute the jobs
+        logger.info("Busy...")
+        execute_pool(
+            func=geom_resolve,
+            jobs=jobs,
+            threads=self.nthreads,
+        )
 
     def run(
         self,
@@ -291,9 +275,6 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         # Create the output files
         self._setup_output_files()
 
-        # Setup lock list for refs
-        locks = []
-
         # Get band names for logging
         _nms = self.cfg.get("hazard.band_names")
 
@@ -301,79 +282,39 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         _receiver = setup_mp_log(
             self._queue, "missing", level=2, dst=self.cfg.get("output.path")
         )
-
         logger.info("Starting the calculations")
 
         # Start the receiver (which is in a seperate thread)
         _receiver.start()
 
+        # Setup the jobs
+        # First setup the locks
+        locks = [self._mp_manager.Lock() for _ in range(self.hazard_grid.count)]
+        jobs = generate_jobs(
+            {
+                "cfg": self.cfg,
+                "queue": self._queue,
+                "haz": self.hazard_grid,
+                "idx": range(1, self.hazard_grid.count + 1),
+                "vul": self.vulnerability_data,
+                "exp": self.exposure_data,
+                "exp_geom": self.exposure_geoms,
+                "chunk": self.chunks,
+                "lock": locks,
+            },
+            tied=["idx", "lock"],
+        )
+
         logger.info(f"Using number of threads: {self.nthreads}")
 
-        # If there are more than a hazard band in the dataset
-        # Use a pool to execute the calculations
-        if self.nthreads > 1:
-            processes = []
-            with Pool(processes=self.nthreads) as pool:
-                _s = time.time()
-                for idx in range(self.hazard_grid.count):
-                    # Create a lock
-                    nlock = self._mp_manager.Lock()
-                    locks.append(nlock)
-
-                    # Log for the current hazard map
-                    logger.info(
-                        f"Submitting jobs for the calculations \
-in regards to band: '{_nms[idx]}'"
-                    )
-
-                    # Loop through all the chunks
-                    for chunk in self.chunks:
-                        pr = pool.apply_async(
-                            func=geom_worker,
-                            args=(
-                                self.cfg,
-                                self._queue,
-                                self.hazard_grid,
-                                idx + 1,
-                                self.vulnerability_data,
-                                self.exposure_data,
-                                self.exposure_geoms,
-                                chunk,
-                                nlock,
-                            ),
-                        )
-                        processes.append(pr)
-                for pr in processes:
-                    pr.get()
-            logger.info("Busy...")
-
-            # Wait for the children to finish their calculations
-
-        # If there is only one hazard band present, call Process directly
-        # No need for the extra overhead the Pool provides
-        else:
-            logger.info("Submitting a job for the calculations in a seperate process")
-            _s = time.time()
-
-            # Start the calculations
-            p = Process(
-                target=geom_worker,
-                args=(
-                    self.cfg,
-                    self._queue,
-                    self.hazard_grid,
-                    1,
-                    self.vulnerability_data,
-                    self.exposure_data,
-                    self.exposure_geoms,
-                    self.chunks[0],
-                    None,
-                ),
-            )
-            p.start()
-            logger.info("Busy...")
-            p.join()
-            p.terminate()
+        # Execute the jobs in a multiprocessing pool
+        _s = time.time()
+        logger.info("Busy...")
+        execute_pool(
+            func=geom_worker,
+            jobs=jobs,
+            threads=self.nthreads,
+        )
         _e = time.time() - _s
 
         logger.info(f"Calculations time: {round(_e, 2)} seconds")

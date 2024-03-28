@@ -6,6 +6,8 @@ title: "What's new?"
 This contains the unreleased changes to Delft-FIAT.
 
 ### Added
+- Function (`generate_jobs`) to generate jobs for parallelization
+- Function (`execute_pool`) to execute code in parallel using `multiprocessing`
 - General method of creating output files in `GeomModel` (`_setup_output_files`)
 - Method `_create_model_dirs` of `ConfigReader` object for creating result directories in one go
 - Method `set` of `ConfigReader` object
@@ -13,6 +15,7 @@ This contains the unreleased changes to Delft-FIAT.
 
 ### Changed
 - Made read methods of `BaseModel`, `GeomModel` and `GridModel` public (removed underscore)
+- Parallelization now depends solely on `multiprocessing` instead of on `concurrent.futures`
 - Testing of workers (not properly caught due to using `multiprocessing`)
 - Testing only based on integers
 
