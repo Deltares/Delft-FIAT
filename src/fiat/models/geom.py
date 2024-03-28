@@ -2,8 +2,7 @@
 
 import os
 import time
-from concurrent.futures import ProcessPoolExecutor, wait
-from multiprocessing import Process
+from multiprocessing import Pool, Process
 from pathlib import Path
 
 from fiat.cfg import ConfigReader
@@ -243,24 +242,26 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         """
         # If more than one thread, start a pool
         if self.nthreads > 1:
-            futures = []
-            with ProcessPoolExecutor(max_workers=self.nthreads) as pool:
+            processes = []
+            with Pool(processes=self.nthreads) as pool:
                 csv_lock = self._mp_manager.Lock()
                 geom_lock = self._mp_manager.Lock()
                 for chunk in self.chunks:
                     # Submit the all chunks
-                    fs = pool.submit(
-                        geom_resolve,
-                        self.cfg,
-                        self.exposure_data,
-                        self.exposure_geoms,
-                        chunk,
-                        csv_lock,
-                        geom_lock,
+                    pr = pool.apply_async(
+                        func=geom_resolve,
+                        args=(
+                            self.cfg,
+                            self.exposure_data,
+                            self.exposure_geoms,
+                            chunk,
+                            csv_lock,
+                            geom_lock,
+                        ),
                     )
-                    futures.append(fs)
-            wait(futures)
-            pool.shutdown()
+                    processes.append(pr)
+            for pr in processes:
+                pr.get()
 
         # When there is only 1 thread neccessary
         # just use process directly
@@ -311,8 +312,8 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         # If there are more than a hazard band in the dataset
         # Use a pool to execute the calculations
         if self.nthreads > 1:
-            futures = []
-            with ProcessPoolExecutor(max_workers=self.nthreads) as pool:
+            processes = []
+            with Pool(processes=self.nthreads) as pool:
                 _s = time.time()
                 for idx in range(self.hazard_grid.count):
                     # Create a lock
@@ -327,24 +328,26 @@ in regards to band: '{_nms[idx]}'"
 
                     # Loop through all the chunks
                     for chunk in self.chunks:
-                        fs = pool.submit(
-                            geom_worker,
-                            self.cfg,
-                            self._queue,
-                            self.hazard_grid,
-                            idx + 1,
-                            self.vulnerability_data,
-                            self.exposure_data,
-                            self.exposure_geoms,
-                            chunk,
-                            nlock,
+                        pr = pool.apply_async(
+                            func=geom_worker,
+                            args=(
+                                self.cfg,
+                                self._queue,
+                                self.hazard_grid,
+                                idx + 1,
+                                self.vulnerability_data,
+                                self.exposure_data,
+                                self.exposure_geoms,
+                                chunk,
+                                nlock,
+                            ),
                         )
-                        futures.append(fs)
+                        processes.append(pr)
+                for pr in processes:
+                    pr.get()
             logger.info("Busy...")
 
             # Wait for the children to finish their calculations
-            wait(futures)
-            pool.shutdown()
 
         # If there is only one hazard band present, call Process directly
         # No need for the extra overhead the Pool provides

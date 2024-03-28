@@ -57,3 +57,8 @@ def geom_threads(
     n = min(cpu_count, n)
 
     return n
+
+
+def execute():
+    """_summary_."""
+    pass
