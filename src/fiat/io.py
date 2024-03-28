@@ -277,7 +277,6 @@ class BufferedGeomWriter:
         self.size = 0
 
     def __del__(self):
-        self._clear_cache()
         self.buffer = None
 
     def __reduce__(self) -> str | tuple[Any, ...]:
@@ -308,6 +307,7 @@ class BufferedGeomWriter:
         """_summary_."""
         # Flush on last time
         self.to_drive()
+        self._clear_cache()
         self.buffer.close()
 
     def add_feature(

@@ -1,8 +1,6 @@
 """The FIAT grid model."""
 
 import time
-from concurrent.futures import ProcessPoolExecutor, wait
-from multiprocessing import Process
 
 from fiat.check import (
     check_exp_grid_dmfs,
@@ -11,6 +9,7 @@ from fiat.check import (
 from fiat.io import open_grid
 from fiat.log import spawn_logger
 from fiat.models.base import BaseModel
+from fiat.models.util import execute_pool, generate_jobs
 from fiat.models.worker import grid_worker_exact, grid_worker_risk
 
 logger = spawn_logger("fiat.model.grid")
@@ -100,46 +99,27 @@ class GridModel(BaseModel):
         Generates output in the specified `output.path` directory.
         """
         _nms = self.cfg.get("hazard.band_names")
+        # Setup the jobs
+        jobs = generate_jobs(
+            {
+                "cfg": self.cfg,
+                "haz": self.hazard_grid,
+                "idx": range(1, self.hazard_grid.count + 1),
+                "vul": self.vulnerability_data,
+                "exp": self.exposure_grid,
+            }
+        )
 
-        if self.hazard_grid.count > 1:
-            pcount = min(self.max_threads, self.hazard_grid.count)
-            futures = []
-            with ProcessPoolExecutor(max_workers=pcount) as pool:
-                _s = time.time()
-                for idx in range(self.hazard_grid.count):
-                    logger.info(
-                        f"Submitting a job for the calculations \
-in regards to band: '{_nms[idx]}'"
-                    )
-                    fs = pool.submit(
-                        grid_worker_exact,
-                        self.cfg,
-                        self.hazard_grid,
-                        idx + 1,
-                        self.vulnerability_data,
-                        self.exposure_grid,
-                    )
-                    futures.append(fs)
-            logger.info("Busy...")
-            # Wait for the children to finish their calculations
-            wait(futures)
+        # Execute the jobs
+        _s = time.time()
+        pcount = min(self.max_threads, self.hazard_grid.count)
+        execute_pool(
+            func=grid_worker_exact,
+            jobs=jobs,
+            threads=pcount,
+        )
 
-        else:
-            logger.info("Submitting a job for the calculations in a seperate process")
-            _s = time.time()
-            p = Process(
-                target=grid_worker_exact,
-                args=(
-                    self.cfg,
-                    self.hazard_grid,
-                    1,
-                    self.vulnerability_data,
-                    self.exposure_grid,
-                ),
-            )
-            p.start()
-            logger.info("Busy...")
-            p.join()
+        # Last logging messages
         _e = time.time() - _s
         logger.info(f"Calculations time: {round(_e, 2)} seconds")
         self.resolve()

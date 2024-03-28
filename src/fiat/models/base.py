@@ -242,7 +242,7 @@ exceeds machine thread count ('{self.max_threads}')"
                 )
             self.max_threads = min(self.max_threads, _max_threads)
 
-        logger.info(f"Maximum number of threads: {self.max_threads}")
+        logger.info(f"Available number of threads: {self.max_threads}")
 
     @abstractmethod
     def run(
