@@ -60,10 +60,6 @@ jobs:
           export PATH=/usr/share/miniconda3/bin:$PATH
           mamba env update -n fiat_build -f environment.yml
 
-      - name: Install PROJ
-        run: |
-          sudo apt-get -y install proj-bin
-
       - name: Build FIAT
         run: |
           chmod +x .build/linux64.sh

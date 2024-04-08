@@ -27,6 +27,6 @@ source $conda_base_dir/etc/profile.d/conda.sh
 # Do the thing!
 echo "Build stuff.."
 conda activate fiat_build
-export PROJ_LIB=/usr/share/proj
+export PROJ_LIB=$conda_base_dir/envs/fiat_build/share/proj
 pip install -e "$SCRIPTPATH/.."
 pyinstaller "$SCRIPTPATH/build.spec" --distpath $SCRIPTPATH/../bin --workpath $SCRIPTPATH/../bin/intermediates
