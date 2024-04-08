@@ -10,9 +10,16 @@ Thumbs.db
 ._*
 .idea/
 
-###################
+################
+# Master branch#
+################
+.testdata/
+docs/
+
+
+##########
 # python #
-###################
+##########
 *.py[cod]
 
 # C extensions
