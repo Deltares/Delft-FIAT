@@ -19,7 +19,7 @@ def test_geom_worker(tmpdir, geom_risk):
     model._setup_output_files()
 
     # Invoke the worker directly
-    for idx in range(model.hazard_grid.count):
+    for idx in range(model.hazard_grid.size):
         geom_worker(
             model.cfg,
             None,
@@ -68,7 +68,7 @@ def test_grid_worker(tmpdir, grid_risk):
     model = grid_risk
     model.cfg.set_output_dir(Path(str(tmpdir), "..", "worker_grid"))
 
-    for idx in range(model.hazard_grid.count):
+    for idx in range(model.hazard_grid.size):
         grid_worker_exact(
             model.cfg,
             model.hazard_grid,

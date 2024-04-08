@@ -298,6 +298,8 @@ def create_risk_map():
     src.SetSpatialRef(srs)
     src.SetGeoTransform(gtf)
 
+    # Set return periods values
+    rps = [2, 5, 10, 25]
     for idx, fc in enumerate((1.5, 1.8, 1.9, 1.95)):
         band = src.GetRasterBand(idx + 1)
         data = zeros((10, 10))
@@ -306,6 +308,7 @@ def create_risk_map():
             data[x, y] = 3.6 - ((x + y) * 0.2)
         data *= fc
         band.WriteArray(data)
+        band.SetMetadataItem("return_period", f"{rps[idx]}")
         band.FlushCache()
         band = None
 

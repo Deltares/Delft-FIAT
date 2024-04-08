@@ -104,7 +104,7 @@ class GridModel(BaseModel):
             {
                 "cfg": self.cfg,
                 "haz": self.hazard_grid,
-                "idx": range(1, self.hazard_grid.count + 1),
+                "idx": range(1, self.hazard_grid.size + 1),
                 "vul": self.vulnerability_data,
                 "exp": self.exposure_grid,
             }
@@ -112,7 +112,7 @@ class GridModel(BaseModel):
 
         # Execute the jobs
         _s = time.time()
-        pcount = min(self.max_threads, self.hazard_grid.count)
+        pcount = min(self.max_threads, self.hazard_grid.size)
         execute_pool(
             func=grid_worker_exact,
             jobs=jobs,

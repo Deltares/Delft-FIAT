@@ -38,8 +38,8 @@ def test_geom_risk(tmpdir, configs):
 
     # Check the output for this specific case
     out = open_csv(Path(str(tmpdir), "output.csv"), index="Object ID")
-    assert int(float(out[2, "Damage: Structure (5Y)"])) == 1804
-    assert int(float(out[4, "Total Damage (10Y)"])) == 3840
+    assert int(float(out[2, "Damage: Structure (5.0Y)"])) == 1804
+    assert int(float(out[4, "Total Damage (10.0Y)"])) == 3840
     assert int(float(out[3, "Risk (EAD)"]) * 100) == 102247
 
 

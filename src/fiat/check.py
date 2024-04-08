@@ -211,29 +211,29 @@ def check_hazard_band_names(
     return bnames
 
 
-def check_hazard_rp_iden(
-    bnames: list,
+def check_hazard_rp(
+    rp_bands: list,
     rp_cfg: list,
     path: Path,
 ):
     """_summary_."""
-    l = len(bnames)
+    l = len(rp_bands)
 
-    bn_str = "\n".join(bnames).encode()
+    bn_str = "\n".join(rp_bands).encode()
     if deter_type(bn_str, l - 1) != 3:
-        return [float(n) for n in bnames]
+        return [float(n) for n in rp_bands]
 
     if rp_cfg is not None:
-        if len(rp_cfg) == len(bnames):
+        if len(rp_cfg) == len(rp_bands):
             rp_str = "\n".join([str(n) for n in rp_cfg]).encode()
             if deter_type(rp_str, l - 1) != 3:
-                return rp_cfg
+                return [float(n) for n in rp_cfg]
 
     logger.error(
         f"'{path.name}': cannot determine the return periods for the risk calculation"
     )
     logger.error(
-        f"Names of the bands are: {bnames}, \
+        f"Return periods specified with the bands are: {rp_bands}, \
 return periods in settings toml are: {rp_cfg}"
     )
     logger.info("Specify either one them correctly")

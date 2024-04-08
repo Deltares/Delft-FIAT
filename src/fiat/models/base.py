@@ -10,7 +10,7 @@ from fiat.check import (
     check_duplicate_columns,
     check_global_crs,
     check_hazard_band_names,
-    check_hazard_rp_iden,
+    check_hazard_rp,
     check_hazard_subsets,
     check_internal_srs,
     check_vs_srs,
@@ -177,22 +177,26 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # check risk return periods
         if self.cfg["hazard.risk"]:
-            rp = check_hazard_rp_iden(
-                data.get_band_names(),
+            band_rps = [
+                data[idx + 1].get_metadata_item("return_period")
+                for idx in range(data.size)
+            ]
+            rp = check_hazard_rp(
+                band_rps,
                 self.cfg.get("hazard.return_periods"),
                 path,
             )
-            self.cfg["hazard.return_periods"] = rp
+            self.cfg.set("hazard.return_periods", rp)
             # Directly calculate the coefficients
             rp_coef = calc_rp_coef(rp)
-            self.cfg["hazard.rp_coefficients"] = rp_coef
+            self.cfg.set("hazard.rp_coefficients", rp_coef)
 
         # Information for output
         ns = check_hazard_band_names(
             data.deter_band_names(),
             self.cfg.get("hazard.risk"),
             self.cfg.get("hazard.return_periods"),
-            data.count,
+            data.size,
         )
         self.cfg["hazard.band_names"] = ns
 

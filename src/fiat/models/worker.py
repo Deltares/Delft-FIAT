@@ -257,7 +257,7 @@ def grid_worker_exact(
     band_n = ""
 
     # Check the band names
-    if haz.count > 1:
+    if haz.size > 1:
         band_n = "_" + cfg.get("hazard.band_names")[idx - 1]
 
     # Extract the hazard band as an object
@@ -274,7 +274,7 @@ def grid_worker_exact(
     )
     out_src.create(
         exp.shape_xy,
-        exp.count,
+        exp.size,
         exp.dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
@@ -302,7 +302,7 @@ def grid_worker_exact(
     td_band.src.SetNoDataValue(td_noval)
 
     # Prepare some stuff for looping
-    for idx in range(exp.count):
+    for idx in range(exp.size):
         exp_bands.append(exp[idx + 1])
         write_bands.append(out_src[idx + 1])
         exp_nds.append(exp_bands[idx].nodata)
@@ -422,7 +422,7 @@ def grid_worker_risk(
     )
     ead_src.create(
         rp[0].shape_xy,
-        rp[0].count,
+        rp[0].size,
         rp[0].dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
@@ -430,7 +430,7 @@ def grid_worker_risk(
     ead_src.set_geotransform(rp[0].get_geotransform())
 
     # Gather and set information before looping through windows.
-    for idx in range(rp[0].count):
+    for idx in range(rp[0].size):
         exp_bands[idx] = [obj[idx + 1] for obj in rp]
         write_bands.append(ead_src[idx + 1])
         exp_nds.append(rp[0][idx + 1].nodata)

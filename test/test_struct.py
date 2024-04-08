@@ -25,7 +25,7 @@ def test_geomsource(geom_data):
 
 def test_gridsource(grid_event_data):
     # Do attribute checks
-    assert grid_event_data.count == 1
+    assert grid_event_data.size == 1
 
     bounds = grid_event_data.bounds
     bounds = [math.ceil(item * 10000) for item in bounds]

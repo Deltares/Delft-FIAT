@@ -117,7 +117,7 @@ calculated chunks ({self.nchunk})"
         """_summary_."""
         self.nthreads = geom_threads(
             self.max_threads,
-            self.hazard_grid.count,
+            self.hazard_grid.size,
             self.nchunk,
         )
 
@@ -289,13 +289,13 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # Setup the jobs
         # First setup the locks
-        locks = [self._mp_manager.Lock() for _ in range(self.hazard_grid.count)]
+        locks = [self._mp_manager.Lock() for _ in range(self.hazard_grid.size)]
         jobs = generate_jobs(
             {
                 "cfg": self.cfg,
                 "queue": self._queue,
                 "haz": self.hazard_grid,
-                "idx": range(1, self.hazard_grid.count + 1),
+                "idx": range(1, self.hazard_grid.size + 1),
                 "vul": self.vulnerability_data,
                 "exp": self.exposure_data,
                 "exp_geom": self.exposure_geoms,

@@ -12,6 +12,8 @@ This contains the unreleased changes to Delft-FIAT.
 - Method `_create_model_dirs` of `ConfigReader` object for creating result directories in one go
 - Method `set` of `ConfigReader` object
 - Method `size` of `GeomSource` object for in situ size return; `count` becomes private
+- Method `size` of `GridSource` object for in situ size return; `count` becomes private
+- Setting return period as a variable in hazard map bands (risk)
 
 ### Changed
 - Made read methods of `BaseModel`, `GeomModel` and `GridModel` public (removed underscore)
@@ -21,6 +23,7 @@ This contains the unreleased changes to Delft-FIAT.
 
 ### Deprecated
 - Methods `_create_output_dir`, `_create_tmp_dir` and `_create_risk_dir` of the `ConfigReader` object
+- Setting return period via the name of the hazard band (risk)
 - Support of `Python` versions under `3.9.0`
 
 ### Documentation

@@ -758,7 +758,8 @@ class Grid(
         object
             Information is present.
         """
-        return self.src.GetMetadataItem(entry)
+        res = str(self.src.GetMetadataItem(entry))
+        return res
 
     def set_chunk_size(
         self,
@@ -1279,12 +1280,12 @@ multiple variables.
         self._chunk = None
         self._dtype = None
         self.subset_dict = None
-        self.count = 0
+        self._count = 0
         self._cur_index = 1
 
         if not self._mode:
             self.src = gdal.OpenEx(self._path.as_posix(), open_options=_open_options)
-            self.count = self.src.RasterCount
+            self._count = self.src.RasterCount
 
             if chunk is None:
                 self._chunk = self.shape
@@ -1293,7 +1294,7 @@ multiple variables.
             else:
                 raise ValueError(f"Incorrect chunking set: {chunk}")
 
-            if self.count == 0:
+            if self._count == 0:
                 self.subset_dict = _read_gridsrouce_layers(
                     self.src,
                 )
@@ -1303,7 +1304,7 @@ multiple variables.
         return self
 
     def __next__(self):
-        if self._cur_index < self.count + 1:
+        if self._cur_index < self._count + 1:
             r = self[self._cur_index]
             self._cur_index += 1
             return r
@@ -1434,6 +1435,17 @@ multiple variables.
             self.src.RasterYSize,
         )
 
+    @property
+    @_BaseIO._check_state
+    def size(self):
+        """_summary_.
+
+        _extended_summary_
+        """
+        count = self.src.RasterCount
+        self._count = count
+        return self._count
+
     @_BaseIO._check_mode
     @_BaseIO._check_state
     def create(
@@ -1469,7 +1481,7 @@ multiple variables.
             options=options,
         )
 
-        self.count = nb
+        self._count = nb
 
     @_BaseIO._check_mode
     @_BaseIO._check_state
@@ -1483,7 +1495,7 @@ multiple variables.
         This will append the numbers of bands.
         """
         self.src.AddBand()
-        self.count += 1
+        self._count += 1
 
     @_BaseIO._check_state
     def deter_band_names(
@@ -1495,7 +1507,7 @@ multiple variables.
         they will be set to a default.
         """
         _names = []
-        for n in range(self.count):
+        for n in range(self.size):
             name = self.get_band_name(n + 1)
             if not name:
                 _names.append(f"Band{n+1}")
@@ -1536,7 +1548,7 @@ multiple variables.
     ):
         """Get the names of all bands."""
         _names = []
-        for n in range(self.count):
+        for n in range(self.size):
             _names.append(self.get_band_name(n + 1))
 
         return _names
