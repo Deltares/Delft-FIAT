@@ -71,7 +71,6 @@ classifiers = [
 
 [project.optional-dependencies] # Optional
 all = [
-    "cython",
     "setuptools>=61.0.0",
 ]
 build = [
@@ -79,6 +78,7 @@ build = [
     "delft_fiat[all]",
 ]
 dev = [
+    "cython",
     "pre-commit",
     "pyside2",
     "ruff",
