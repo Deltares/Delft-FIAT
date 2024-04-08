@@ -5,7 +5,7 @@ import gc
 import os
 import weakref
 from abc import ABCMeta, abstractmethod
-from io import BufferedReader, BytesIO, FileIO, TextIOWrapper
+from io import BufferedReader, BytesIO, FileIO
 from math import floor, log10
 from multiprocessing.synchronize import Lock
 from pathlib import Path
@@ -187,34 +187,59 @@ class _BaseStruct(metaclass=ABCMeta):
 
 
 ## Handlers
-class BufferHandler(_BaseHandler, BufferedReader):
-    """_summary_."""
+class BufferHandler:
+    """Handler for buffers."""
 
     def __init__(
         self,
-        file: str,
+        path: Path,
         skip: int = 0,
-    ) -> "BufferHandler":
-        """_summary_.
+    ):
+        self.path = path
+        self.size = None
+        self.skip = skip
+        self.stream = None
 
-        Parameters
-        ----------
-        file : str
-            _description_
-
-        Returns
-        -------
-        BufferHandler
-            _description_
-        """
-        BufferedReader.__init__(self, FileIO(file))
-        _BaseHandler.__init__(self, file, skip)
+        if self.stream is None:
+            self.setup_stream()
 
     def __repr__(self):
         return f"<{self.__class__.__name__} file='{self.path}' encoding=''>"
 
-    def __reduce__(self):
-        return self.__class__, (self.path, self.skip)
+    def __getstate__(self):
+        if self.stream is not None:
+            self.close_stream()
+        return self.__dict__
+
+    def __setstate__(self, d):
+        self.__dict__ = d
+        self.setup_stream()
+
+    def __enter__(self):
+        return self.stream.__enter__()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stream.flush()
+        self.stream.seek(self.skip)
+        return False
+
+    def close(self):
+        """_summary_."""
+        if self.stream is not None:
+            self.stream.flush()
+            self.close_stream()
+
+    def close_stream(self):
+        """_summary_."""
+        self.stream.close()
+        self.stream = None
+        self.size = None
+
+    def setup_stream(self):
+        """_summary_."""
+        self.stream = BufferedReader(FileIO(self.path))
+        self.size = self.stream.read().count(os.linesep.encode())
+        self.stream.seek(self.skip)
 
 
 class BufferedGeomWriter:
@@ -427,32 +452,6 @@ class BufferedTextWriter(BytesIO):
         BytesIO.write(self, b)
 
 
-class TextHandler(_BaseHandler, TextIOWrapper):
-    """_summary_."""
-
-    def __init__(
-        self,
-        file: str,
-    ) -> "TextHandler":
-        """_summary_.
-
-        Parameters
-        ----------
-        file : str
-            _description_
-
-        Returns
-        -------
-        TextHandler
-            _description_
-        """
-        TextIOWrapper.__init__(self, FileIO(file))
-        _BaseHandler.__init__()
-
-    def __repr__(self):
-        return f"<{self.__class__.__name__} file='{self.path}'>"
-
-
 ## Parsing
 class CSVParser:
     """_summary_."""
@@ -536,12 +535,12 @@ class CSVParser:
     ):
         """_summary_."""
         _pat = regex_pattern(self.delim)
-        self.data.seek(0)
+        self.data.stream.seek(0)
 
         while True:
             self._nrow -= 1
-            cur_pos = self.data.tell()
-            line = self.data.readline().decode("utf-8-sig")
+            cur_pos = self.data.stream.tell()
+            line = self.data.stream.readline().decode("utf-8-sig")
 
             if line.startswith("#"):
                 t = line.strip().split("=")
@@ -566,7 +565,7 @@ class CSVParser:
             if not header:
                 self.columns = None
                 self._ncol = len(_pat.split(line.encode("utf-8-sig")))
-                self.data.seek(cur_pos)
+                self.data.stream.seek(cur_pos)
                 self._nrow += 1
                 break
 
@@ -575,7 +574,7 @@ class CSVParser:
             self._ncol = len(self.columns)
             break
 
-        self.data.skip = self.data.tell()
+        self.data.skip = self.data.stream.tell()
         self.meta["ncol"] = self._ncol
         self.meta["nrow"] = self._nrow
 
@@ -1963,9 +1962,9 @@ class TableLazy(_Table):
         except Exception:
             return None
 
-        self.data.seek(idx)
+        self.data.stream.seek(idx)
 
-        return self.data.readline().strip()
+        return self.data.stream.readline().strip()
 
     def _build_lazy(self):
         raise NotImplementedError(NOT_IMPLEMENTED)
