@@ -72,3 +72,25 @@ risk = true
 var_as_band = false
 subset = <your-wanted-subdataset>
 ```
+
+### Return periods
+
+The return periods can be set in the [settings file](../settings/optional.qmd#hazard) by supplying a list via
+the `hazard.return_periods` entry. However, the return periods can also be set via the hazard bands directly
+from the `return_period` attribute of the bands. This attribute is simply set using either [xarray](https://docs.xarray.dev/en/stable/),
+ [gdal](https://gdal.org/api/python/raster_api.html) or [hydromt](https://deltares.github.io/hydromt/latest/).
+
+When present in all bands, this attribute will be preferred over the return periods specified in the settings file.
+The reason being that the return period is directly linked to the corresponding band, whereas it is inferred in the
+case of setting it via the settings file.
+
+Let's have a quick peek at the data using [gdalinfo](https://gdal.org/programs/gdalinfo.html) (it will be at the bottom):
+
+:::: {.columns}
+::: {style="height: 400px; overflow: auto;"}
+```{python}
+#| echo: false
+!gdalinfo -sd 1 -norat -nogcp ../../../.testdata/hazard/risk_map.nc
+```
+:::
+::::
