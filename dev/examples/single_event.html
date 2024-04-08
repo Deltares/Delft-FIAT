@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Delft FIAT - What’s new?</title>
+<title>Delft FIAT - Single event</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,27 +20,61 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<link href="./_static/logo.png" rel="icon" type="image/png">
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../_static/logo.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -61,10 +95,10 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script type="text/javascript" src="./_static/version.js"></script>
+<script type="text/javascript" src="../_static/version.js"></script>
 
 
-<link rel="stylesheet" href="_static/styles.css">
+<link rel="stylesheet" href="../_static/styles.css">
 </head>
 
 <body class="nav-sidebar floating nav-fixed">
@@ -74,10 +108,10 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg navbar-dark ">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
-    <img src="./_static/logo.png" alt="" class="navbar-logo">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_static/logo.png" alt="" class="navbar-logo">
     </a>
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Delft FIAT</span>
     </a>
   </div>
@@ -88,23 +122,23 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./getting_started/index.html" rel="" target="">
+    <a class="nav-link" href="../getting_started/index.html" rel="" target="">
  <span class="menu-text">Getting Started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./setup_guide/index.html" rel="" target="">
+    <a class="nav-link" href="../setup_guide/index.html" rel="" target="">
  <span class="menu-text">Setup guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./user_guide/index.html" rel="" target="">
+    <a class="nav-link active" href="../user_guide/index.html" rel="" target="" aria-current="page">
  <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./api/index.html" rel="" target="">
+    <a class="nav-link" href="../api/index.html" rel="" target="">
  <span class="menu-text">API Reference</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./developments/index.html" rel="" target="" aria-current="page">
+    <a class="nav-link" href="../developments/index.html" rel="" target="">
  <span class="menu-text">Developments</span></a>
   </li>  
 </ul>
@@ -146,7 +180,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./changelog.html">What’s new?</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../examples/index.html">Examples</a></li><li class="breadcrumb-item"><a href="../examples/single_event.html">Single event</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -160,59 +194,127 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./developments/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Developments</span></a>
+  <a href="../user_guide/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">User guide</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../user_guide/settings/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./changelog.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">What’s new?</span></a>
+  <a href="../user_guide/settings/computation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computational input</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./developments/guide.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Developer guide</span></a>
+  <a href="../user_guide/settings/optional.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Optional input</span></a>
   </div>
 </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../user_guide/data/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../user_guide/data/hazard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hazard data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/data/hazard_maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Types of hazard maps</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../user_guide/data/exposure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exposure data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/data/exposure/csv.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CSV</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/data/exposure/geometries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Geometry</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/data/vulnerability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Vulnerability data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../user_guide/data/supported.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Supported formats</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../examples/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Examples</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../examples/single_event.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Single event</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
     </ul>
     </div>
 </nav>
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#unreleased" id="toc-unreleased" class="nav-link active" data-scroll-target="#unreleased">Unreleased</a>
-  <ul class="collapse">
-  <li><a href="#added" id="toc-added" class="nav-link" data-scroll-target="#added">Added</a></li>
-  <li><a href="#changed" id="toc-changed" class="nav-link" data-scroll-target="#changed">Changed</a></li>
-  <li><a href="#deprecated" id="toc-deprecated" class="nav-link" data-scroll-target="#deprecated">Deprecated</a></li>
-  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation">Documentation</a></li>
-  </ul></li>
-  <li><a href="#v0.1.0rc2-2024-02-19" id="toc-v0.1.0rc2-2024-02-19" class="nav-link" data-scroll-target="#v0.1.0rc2-2024-02-19">v0.1.0rc2 (2024-02-19)</a>
-  <ul class="collapse">
-  <li><a href="#added-1" id="toc-added-1" class="nav-link" data-scroll-target="#added-1">Added</a></li>
-  <li><a href="#changed-1" id="toc-changed-1" class="nav-link" data-scroll-target="#changed-1">Changed</a></li>
-  <li><a href="#deprecated-1" id="toc-deprecated-1" class="nav-link" data-scroll-target="#deprecated-1">Deprecated</a></li>
-  <li><a href="#documentation-1" id="toc-documentation-1" class="nav-link" data-scroll-target="#documentation-1">Documentation</a></li>
-  </ul></li>
-  <li><a href="#v0.1.0rc1-2023-11-30" id="toc-v0.1.0rc1-2023-11-30" class="nav-link" data-scroll-target="#v0.1.0rc1-2023-11-30">v0.1.0rc1 (2023-11-30)</a>
-  <ul class="collapse">
-  <li><a href="#added-2" id="toc-added-2" class="nav-link" data-scroll-target="#added-2">Added</a></li>
-  </ul></li>
-  </ul>
-</nav>
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">What’s new?</h1>
+<h1 class="title">Single event</h1>
 </div>
 
 
@@ -227,130 +329,119 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<section id="unreleased" class="level2">
-<h2 class="anchored" data-anchor-id="unreleased">Unreleased</h2>
-<p>This contains the unreleased changes to Delft-FIAT.</p>
-<section id="added" class="level3">
-<h3 class="anchored" data-anchor-id="added">Added</h3>
-<ul>
-<li>Function (<code>generate_jobs</code>) to generate jobs for parallelization</li>
-<li>Function (<code>execute_pool</code>) to execute code in parallel using <code>multiprocessing</code></li>
-<li>General method of creating output files in <code>GeomModel</code> (<code>_setup_output_files</code>)</li>
-<li>Method <code>_create_model_dirs</code> of <code>ConfigReader</code> object for creating result directories in one go</li>
-<li>Method <code>set</code> of <code>ConfigReader</code> object</li>
-<li>Method <code>size</code> of <code>GeomSource</code> object for in situ size return; <code>count</code> becomes private</li>
-<li>Method <code>size</code> of <code>GridSource</code> object for in situ size return; <code>count</code> becomes private</li>
-<li>Setting return period as a variable in hazard map bands (risk)</li>
-</ul>
-</section>
-<section id="changed" class="level3">
-<h3 class="anchored" data-anchor-id="changed">Changed</h3>
-<ul>
-<li>Made read methods of <code>BaseModel</code>, <code>GeomModel</code> and <code>GridModel</code> public (removed underscore)</li>
-<li>Parallelization now depends solely on <code>multiprocessing</code> instead of on <code>concurrent.futures</code></li>
-<li>Testing of workers (not properly caught due to using <code>multiprocessing</code>)</li>
-<li>Testing only based on integers</li>
-</ul>
-</section>
-<section id="deprecated" class="level3">
-<h3 class="anchored" data-anchor-id="deprecated">Deprecated</h3>
-<ul>
-<li>Methods <code>_create_output_dir</code>, <code>_create_tmp_dir</code> and <code>_create_risk_dir</code> of the <code>ConfigReader</code> object</li>
-<li>Setting return period via the name of the hazard band (risk)</li>
-<li>Support of <code>Python</code> versions under <code>3.9.0</code></li>
-</ul>
-</section>
-<section id="documentation" class="level3">
-<h3 class="anchored" data-anchor-id="documentation">Documentation</h3>
-</section>
-</section>
-<section id="v0.1.0rc2-2024-02-19" class="level2">
-<h2 class="anchored" data-anchor-id="v0.1.0rc2-2024-02-19">v0.1.0rc2 (2024-02-19)</h2>
-<p>The second pre-release of Delft-FIAT.</p>
-<section id="added-1" class="level3">
-<h3 class="anchored" data-anchor-id="added-1">Added</h3>
-<ul>
-<li>A version switcher for the documentation</li>
-<li>Added entries for chunking size in the settings file (<code>settings.toml</code>) for <code>GeomModel</code></li>
-<li>Chunking for geometry calculations (<code>GeomModel</code>)</li>
-<li>Chunking for resolving temporary <code>GeomModel</code> output</li>
-<li>New method for writing geometries from a buffer: <code>BufferedGeomWriter</code></li>
-<li>New function for merging vector layers: <code>merge_geom_layers</code></li>
-<li>Setting of amount of threads via cli</li>
-</ul>
-</section>
-<section id="changed-1" class="level3">
-<h3 class="anchored" data-anchor-id="changed-1">Changed</h3>
-<ul>
-<li>Better build environment creation on linux systems</li>
-<li>Clarified the cli</li>
-<li>Fixed chunking on a single thread</li>
-<li>Fixed and clarified the shape (w, h) of <code>GridSource</code> and <code>Grid</code></li>
-<li>Fixed handling of positive nodata values in geometry calculations</li>
-<li>Fixed indexing in <code>GridModel</code> calculations</li>
-<li>Parallelisation of calculations for <code>GeomModel</code> (not only in risk mode)</li>
-<li>Updated the installer creation (exe) on Windows (10/11)</li>
-<li>Various bug fixes</li>
-</ul>
-</section>
-<section id="deprecated-1" class="level3">
-<h3 class="anchored" data-anchor-id="deprecated-1">Deprecated</h3>
-<ul>
-<li><code>get_bbox</code> method of <code>GeomSource</code> and <code>GridSource</code></li>
-<li>Setting: <code>chunk</code> in <code>exposure.geom.settings</code>, deprecated in favour of <code>chunk</code> in <code>global.geom</code></li>
-<li>Setting: <code>chunk</code> in <code>exposure.grid.settings</code>, deprecated in favour of <code>chunk</code> in <code>global.grid</code></li>
-<li>Setting: <code>chunk</code> in <code>hazard.settings</code>, deprecated in favour of <code>chunk</code> in <code>global.grid</code></li>
-</ul>
-</section>
-<section id="documentation-1" class="level3">
-<h3 class="anchored" data-anchor-id="documentation-1">Documentation</h3>
-<ul>
-<li>Ability to switch between documentation/ software versions</li>
-<li>Improved/ updated the page regarding exposure csv</li>
-<li>Restructered user settings pages</li>
-<li>Seperated user settings into: Basic, Computational &amp; Optional</li>
-</ul>
-</section>
-</section>
-<section id="v0.1.0rc1-2023-11-30" class="level2">
-<h2 class="anchored" data-anchor-id="v0.1.0rc1-2023-11-30">v0.1.0rc1 (2023-11-30)</h2>
-<p>This is the first and pre-release of Delft-FIAT. It aims to have a stable version of the <code>GeomModel</code> for calculating damages and risk for vector exposure data and an experimental version of the <code>GridModel</code> for calculating damages and risk for raster exposure data.</p>
-<section id="added-2" class="level3">
-<h3 class="anchored" data-anchor-id="added-2">Added</h3>
-<ul>
-<li>Documentation</li>
-<li>Command line user interface</li>
-<li>Main <code>FIAT</code> object from which it’s run</li>
-<li><code>GeomModel</code>; the vector based model</li>
-<li><code>GridModel</code>; the raster based model</li>
-<li><code>ConfigReader</code>; for reading the settings file</li>
-<li>I/O methods and structs
-<ul>
-<li><code>open_csv</code> which returns e.g.&nbsp;<code>Table</code></li>
-<li><code>open_geom</code> which returns a <code>GeomSource</code></li>
-<li><code>open_grid</code> which returns a <code>GridSource</code></li>
-</ul></li>
-<li>GIS related operations like:
-<ul>
-<li><code>geom.reproject</code> to reproject vector files</li>
-<li><code>grid.reproject</code> to reproject raster files</li>
-<li><code>overlay.clip</code> to clip a grid based on a polygon</li>
-<li>and more…</li>
-</ul></li>
-<li>Ability to ‘compile’/ freeze FIAT as an application/ binary
-<ul>
-<li>Windows</li>
-<li>Linux (tested on <a href="https://www.debian.org/">Debian</a>/ <a href="https://ubuntu.com/">Ubuntu</a>)</li>
-</ul></li>
-<li>Some smalller miscellaneous methods and object
-<ul>
-<li>In the <a href="./api/index.html">API reference</a></li>
-</ul></li>
-</ul>
+<p>This is a an example of running a tiny single event FIAT model.</p>
+<p>First of all, let’s make sure that there is some actual testdata.</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span> python ..<span class="op">/</span>..<span class="op">/</span>.testdata<span class="op">/</span>create_test_data.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>/usr/share/miniconda3/envs/fiat_docs/lib/python3.11/site-packages/osgeo/osr.py:410: FutureWarning: Neither osr.UseExceptions() nor osr.DontUseExceptions() has been explicitly called. In GDAL 4.0, exceptions will be enabled by default.
+  warnings.warn(</code></pre>
+</div>
+</div>
+<p>Now that we have some testdata, let’s take a look at the settings file.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"../../.testdata/geom_event.toml"</span>, <span class="st">"r"</span>) <span class="im">as</span> r:</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    settings <span class="op">=</span> r.read()</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(settings)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[global]
+crs = "EPSG:4326"
+keep_temp_files = true
+
+[output]
+path = "output/geom_event"
+
+[output.csv]
+name = "output.csv"
+
+[output.geom]
+name1 = "spatial.gpkg"
+
+[hazard]
+file = "hazard/event_map.nc"
+crs = "EPSG:4326"
+risk = false
+elevation_reference = "DEM"
+
+[exposure.csv]
+file = "exposure/spatial.csv"
+
+[exposure.geom]
+file1 = "exposure/spatial.gpkg"
+crs = "EPSG:4326"
+
+[vulnerability]
+file = "vulnerability/vulnerability_curves.csv"
+step_size = 0.01
+</code></pre>
+</div>
+</div>
+<p>Now let’s execute the model!</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span> fiat run ..<span class="op">/</span>..<span class="op">/</span>.testdata<span class="op">/</span>geom_event.toml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+###############################################################
+
+        #########    ##          ##      ##############
+        ##           ##         ####         ######
+        ##           ##         ####           ##
+        ##           ##        ##  ##          ##
+        ######       ##        ##  ##          ##
+        ##           ##       ########         ##
+        ##           ##      ##      ##        ##
+        ##           ##     ##        ##       ##
+        ##           ##    ##          ##      ##
+
+###############################################################
+
+                Fast Impact Assessment Tool
+                © Deltares
+
+2024-04-08 13:05:37 INFO    Delft-Fiat version: 0.1.0.dev
+2024-04-08 13:05:37 INFO    Setting up geom model..
+2024-04-08 13:05:37 INFO    Using settings from '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/geom_event.toml'
+2024-04-08 13:05:37 INFO    Available number of threads: 4
+2024-04-08 13:05:37 INFO    Model srs set to: 'EPSG:4326'
+2024-04-08 13:05:37 INFO    Reading hazard data ('event_map.nc')
+2024-04-08 13:05:37 INFO    Executing hazard checks...
+2024-04-08 13:05:37 INFO    Reading vulnerability curves ('vulnerability_curves.csv')
+2024-04-08 13:05:37 INFO    Executing vulnerability checks...
+2024-04-08 13:05:37 INFO    Upscaling vulnerability curves, using a step size of: 0.01
+2024-04-08 13:05:37 INFO    Reading exposure data ('spatial.csv')
+2024-04-08 13:05:37 INFO    Executing exposure data checks...
+2024-04-08 13:05:37 INFO    Reading exposure geometry 'file1' ('spatial.gpkg')
+2024-04-08 13:05:37 INFO    Executing exposure geometry checks...
+2024-04-08 13:05:37 INFO    Starting the calculations
+2024-04-08 13:05:37 INFO    Using number of threads: 1
+2024-04-08 13:05:37 INFO    Busy...
+2024-04-08 13:05:37 INFO    Calculations time: 0.01 seconds
+2024-04-08 13:05:37 INFO    Producing model output from temporary files
+2024-04-08 13:05:37 INFO    Busy...
+2024-04-08 13:05:37 INFO    Output generated in: '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/output/geom_event'
+2024-04-08 13:05:37 INFO    Geom calculation are done!</code></pre>
+</div>
+</div>
+<p>Let’s take a quick look at the output.</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import a method</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fiat.io <span class="im">import</span> open_csv</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># check the output</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>out <span class="op">=</span> open_csv(Path(<span class="st">"../../.testdata/output/geom_event"</span>, <span class="st">"output.csv"</span>), index<span class="op">=</span><span class="st">"Object ID"</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(out.columns)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>('Extraction Method', 'Ground Floor Height', 'Ground Elevation', 'Damage Function: Structure', 'Max Potential Damage: Structure', 'Inundation Depth', 'Reduction Factor', 'Damage: Structure', 'Total Damage')</code></pre>
+</div>
+</div>
+<p>Assert that the output is what we would expect.</p>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">float</span>(out[<span class="dv">2</span>, <span class="st">"Total Damage"</span>]) <span class="op">==</span> <span class="dv">740</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">float</span>(out[<span class="dv">3</span>, <span class="st">"Total Damage"</span>]) <span class="op">==</span> <span class="dv">1038</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 
-</section>
-</section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -704,7 +795,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">
-    <div class="nav-footer-left">Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="./_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></div>   
+    <div class="nav-footer-left">Made possible by: <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener"> <img src="../_static/images/deltares-blue.svg" alt="Deltares" style="height: 40px;"> </a></div>   
     <div class="nav-footer-center">
       &nbsp;
     </div>
