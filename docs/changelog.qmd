@@ -17,15 +17,18 @@ This contains the unreleased changes to Delft-FIAT.
 - Setting return period as a variable in hazard map bands (risk)
 
 ### Changed
+- Better version of `BufferHandler`
 - Made read methods of `BaseModel`, `GeomModel` and `GridModel` public (removed underscore)
 - Parallelization now depends solely on `multiprocessing` instead of on `concurrent.futures`
 - Testing of workers (not properly caught due to using `multiprocessing`)
 - Testing only based on integers
 
 ### Deprecated
+- Base object `_BaseHandler`; incompatible with Python 3.12
 - Methods `_create_output_dir`, `_create_tmp_dir` and `_create_risk_dir` of the `ConfigReader` object
 - Setting return period via the name of the hazard band (risk)
 - Support of `Python` versions under `3.9.0`
+- `TextHandler` object; unused
 
 ### Documentation
 
