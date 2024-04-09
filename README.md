@@ -1,5 +1,5 @@
 # Delft-FIAT: Fast Impact Assessment Tool
-[![PyPI Latest Release](https://img.shields.io/pypi/v/delft_fiat.svg)](https://pypi.org/project/Delft-FIAT/) [![Conda Latest Release](https://anaconda.org/conda-forge/delft_fiat/badges/version.svg)](https://anaconda.org/conda-forge/delft_fiat) [![Coverage](https://codecov.io/github/Deltares/Delft-FIAT/coverage.svg?branch=master)](https://codecov.io/github/Deltares/Delft-FIAT)
+[![PyPI Latest Release](https://img.shields.io/pypi/v/delft_fiat.svg)](https://pypi.org/project/Delft-FIAT/) [![Conda Latest Release](https://anaconda.org/conda-forge/delft_fiat/badges/version.svg)](https://anaconda.org/conda-forge/delft_fiat) [![Coverage](https://codecov.io/github/Deltares/Delft-FIAT/coverage.svg?branch=master)](https://codecov.io/github/Deltares/Delft-FIAT) ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Deltares/Delft-FIAT/build.yml)
 
 Combined assessment for spatial (raster) and object (vector).
 
