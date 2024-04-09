@@ -128,37 +128,6 @@ class _BaseIO(metaclass=ABCMeta):
         raise NotImplementedError(NEED_IMPLEMENTED)
 
 
-class _BaseHandler(metaclass=ABCMeta):
-    def __init__(
-        self,
-        file: str,
-        skip: int = 0,
-    ) -> "_BaseHandler":
-        """_summary_."""
-        self.path = Path(file)
-
-        self.skip = skip
-        self.size = self.read().count(os.linesep.encode())
-
-        self.seek(self.skip)
-
-    def __del__(self):
-        self.flush()
-        self.close()
-
-    @abstractmethod
-    def __repr__(self):
-        raise NotImplementedError(DD_NEED_IMPLEMENTED)
-
-    def __enter__(self):
-        return super().__enter__()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.flush()
-        self.seek(self.skip)
-        return False
-
-
 class _BaseStruct(metaclass=ABCMeta):
     """A struct container."""
 
