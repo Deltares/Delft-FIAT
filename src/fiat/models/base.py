@@ -1,7 +1,7 @@
 """Base model of FIAT."""
 
 from abc import ABCMeta, abstractmethod
-from multiprocessing import Manager
+from multiprocessing import Manager, get_context
 from os import cpu_count
 
 from osgeo import osr
@@ -51,6 +51,7 @@ class BaseModel(metaclass=ABCMeta):
         # Temporay files
         self._keep_temp = False
         # Threading stuff
+        self._mp_ctx = get_context("spawn")
         self._mp_manager = Manager()
         self.max_threads = 1
         self.nthreads = 1

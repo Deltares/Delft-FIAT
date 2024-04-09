@@ -1,7 +1,7 @@
 """The FIAT model workers."""
 
 from itertools import product
-from multiprocessing import get_context
+from multiprocessing.context import SpawnContext
 from pathlib import Path
 from typing import Callable, Generator
 
@@ -91,6 +91,7 @@ def generate_jobs(
 
 
 def execute_pool(
+    ctx: SpawnContext,
     func: Callable,
     jobs: Generator,
     threads: int,
@@ -105,7 +106,6 @@ def execute_pool(
     # If there are more threads needed however
     processes = []
     # Setup the multiprocessing pool
-    ctx = get_context("spawn")
     pool = ctx.Pool(processes=threads)
 
     # Go through all the jobs

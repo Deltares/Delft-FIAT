@@ -260,6 +260,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         # Execute the jobs
         logger.info("Busy...")
         execute_pool(
+            ctx=self._mp_ctx,
             func=geom_resolve,
             jobs=jobs,
             threads=self.nthreads,
@@ -311,6 +312,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         _s = time.time()
         logger.info("Busy...")
         execute_pool(
+            ctx=self._mp_ctx,
             func=geom_worker,
             jobs=jobs,
             threads=self.nthreads,

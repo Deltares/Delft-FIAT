@@ -110,10 +110,14 @@ class GridModel(BaseModel):
             }
         )
 
+        logger.info(f"Using number of threads: {self.nthreads}")
+
         # Execute the jobs
         _s = time.time()
+        logger.info("Busy...")
         pcount = min(self.max_threads, self.hazard_grid.size)
         execute_pool(
+            ctx=self._mp_ctx,
             func=grid_worker_exact,
             jobs=jobs,
             threads=pcount,
