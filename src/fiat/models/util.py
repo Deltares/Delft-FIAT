@@ -1,5 +1,6 @@
 """The FIAT model workers."""
 
+from concurrent.futures import ProcessPoolExecutor, wait
 from itertools import product
 from multiprocessing.context import SpawnContext
 from pathlib import Path
@@ -106,19 +107,20 @@ def execute_pool(
     # If there are more threads needed however
     processes = []
     # Setup the multiprocessing pool
-    pool = ctx.Pool(processes=threads)
+    pool = ProcessPoolExecutor(
+        max_workers=threads,
+        mp_context=ctx,
+    )
 
     # Go through all the jobs
     for job in jobs:
-        pr = pool.apply_async(
-            func=func,
-            kwds=job,
+        pr = pool.submit(
+            func,
+            **job,
         )
         processes.append(pr)
 
     # wait for all jobs to conclude
-    for pr in processes:
-        pr.get()
+    wait(processes)
 
-    pool.close()
-    pool.join()
+    pool.shutdown(wait=False)
