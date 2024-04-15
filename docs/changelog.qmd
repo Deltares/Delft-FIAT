@@ -19,7 +19,6 @@ This contains the unreleased changes to Delft-FIAT.
 ### Changed
 - Better version of `BufferHandler`
 - Made read methods of `BaseModel`, `GeomModel` and `GridModel` public (removed underscore)
-- Parallelization now depends solely on `multiprocessing` instead of on `concurrent.futures`
 - Testing of workers (not properly caught due to using `multiprocessing`)
 - Testing only based on integers
 
