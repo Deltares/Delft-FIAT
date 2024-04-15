@@ -30,10 +30,10 @@ jobs:
     # note absence of cucurrency, this one should only be run one at a time
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Miniforge
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
             python-version: ${{ matrix.python-version }}
             miniforge-variant: Miniforge3
@@ -54,7 +54,7 @@ jobs:
           PYTHONPYCACHEPREFIX=~/pycache mamba run -n fiat_test python -m pytest --verbose --cov --cov-report xml
 
       - name: Upload cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: |
@@ -82,10 +82,10 @@ jobs:
 
     steps:
       - name: checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Miniforge3
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
             python-version: ${{ matrix.python-version }}
             miniforge-variant: Miniforge3
@@ -104,7 +104,7 @@ jobs:
     #     run: PYTHONPYCACHEPREFIX=~/pycache mamba run -n hydromt sphinx-build -M html ./docs ./docs/_build
 
       - name: Upload cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: |
@@ -132,10 +132,10 @@ jobs:
 
     steps:
       - name: checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Miniforge3
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
             python-version: ${{ matrix.python-version }}
             miniforge-variant: Miniforge3
@@ -149,7 +149,7 @@ jobs:
           mamba env create -f environment.yml
 
       - name: Upload cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: |
@@ -177,10 +177,10 @@ jobs:
 
     steps:
       - name: checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Miniforge3
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
             python-version: ${{ matrix.python-version }}
             miniforge-variant: Miniforge3
@@ -194,7 +194,7 @@ jobs:
           mamba env create -f environment.yml
 
       - name: Upload cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: |
