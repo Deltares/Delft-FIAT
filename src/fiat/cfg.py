@@ -67,9 +67,7 @@ class ConfigReader(dict):
 
         # Do some checking concerning the file paths in the settings file
         for key, item in self.items():
-            if key.endswith(("file", "csv")) or key.rsplit(".", 1)[1].startswith(
-                "file"
-            ):
+            if key.endswith(("file",)) or key.rsplit(".", 1)[1].startswith("file"):
                 path = generic_path_check(
                     item,
                     self.path,

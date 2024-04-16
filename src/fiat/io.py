@@ -132,7 +132,9 @@ class _BaseStruct(metaclass=ABCMeta):
     """A struct container."""
 
     def __init__(self):
+        self._columns = {}
         self._kwargs = {}
+        self._index = {}
 
     @abstractmethod
     def __del__(self):
@@ -826,6 +828,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         mode: str = "r",
         overwrite: bool = False,
     ):
+        _BaseStruct.__init__(self)
         _BaseIO.__init__(self, file, mode)
 
         if self.path.suffix not in GEOM_DRIVER_MAP:
@@ -848,6 +851,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         self.layer = self.src.GetLayer()
         if self.layer is not None:
             self._count = self.layer.GetFeatureCount()
+            self._retrieve_columns()
 
     def __iter__(self):
         self.layer.ResetReading()
@@ -870,6 +874,15 @@ class GeomSource(_BaseIO, _BaseStruct):
             self.path,
             self._mode_str,
         )
+
+    def _retrieve_columns(self):
+        """Get the column headers from the swig object."""
+        # Reset the columns to an empty dict
+        self._columns = {}
+
+        # Loop through the fields
+        for idx, n in enumerate(self.fields):
+            self._columns[n] = idx
 
     def close(self):
         """Close the GeomSouce."""
@@ -940,6 +953,20 @@ class GeomSource(_BaseIO, _BaseStruct):
 [left, right, top, bottom]
         """
         return self.layer.GetExtent()
+
+    @property
+    @_BaseIO._check_state
+    def columns(self):
+        """Return the columns header of the attribute tabel.
+
+        (Same as field, but determined from internal _columns attribute)
+
+        Returns
+        -------
+        tuple
+            Attribute table headers
+        """
+        return tuple(self._columns.keys())
 
     @property
     @_BaseIO._check_state
@@ -1034,6 +1061,7 @@ class GeomSource(_BaseIO, _BaseStruct):
                 GeomSource._type_map[type],
             )
         )
+        self._retrieve_columns()
 
     @_BaseIO._check_mode
     @_BaseIO._check_state
@@ -1057,6 +1085,7 @@ class GeomSource(_BaseIO, _BaseStruct):
                 for key, item in fmap.items()
             ]
         )
+        self._retrieve_columns()
 
     @_BaseIO._check_mode
     @_BaseIO._check_state

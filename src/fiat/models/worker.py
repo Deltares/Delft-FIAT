@@ -241,6 +241,20 @@ No data found in exposure database",
     writer = None
 
 
+def geom_worker_no_csv(
+    cfg: object,
+    queue: object,
+    haz: GridSource,
+    idx: int,
+    vul: object,
+    exp: dict,
+    chunk: tuple | list,
+    lock: Lock,
+):
+    """_summary_."""
+    pass
+
+
 def grid_worker_exact(
     cfg: object,
     haz: GridSource,
