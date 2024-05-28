@@ -47,7 +47,7 @@ class BaseModel(metaclass=ABCMeta):
         # Vulnerability data
         self._vul_step_size = 0.01
         self._rounding = 2
-        self.cfg["vulnerability.round"] = self._rounding
+        self.cfg.set("vulnerability.round", self._rounding)
         # Temporay files
         self._keep_temp = False
         # Threading stuff
@@ -109,7 +109,7 @@ class BaseModel(metaclass=ABCMeta):
             path.name,
         )
         # Set crs for later use
-        self.cfg["global.crs"] = get_srs_repr(self.srs)
+        self.cfg.set("global.crs", get_srs_repr(self.srs))
 
         logger.info(f"Model srs set to: '{get_srs_repr(self.srs)}'")
         # Clean up
@@ -177,7 +177,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             data = grid.reproject(data, self.srs.ExportToWkt(), _resalg)
 
         # check risk return periods
-        if self.cfg["hazard.risk"]:
+        if self.cfg.get("hazard.risk"):
             band_rps = [
                 data[idx + 1].get_metadata_item("return_period")
                 for idx in range(data.size)
@@ -199,7 +199,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             self.cfg.get("hazard.return_periods"),
             data.size,
         )
-        self.cfg["hazard.band_names"] = ns
+        self.cfg.set("hazard.band_names", ns)
 
         # When all is done, add it
         self.hazard_grid = data
@@ -225,7 +225,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         if "vulnerability.step_size" in self.cfg:
             self._vul_step_size = self.cfg.get("vulnerability.step_size")
             self._rounding = deter_dec(self._vul_step_size)
-            self.cfg["vulnerability.round"] = self._rounding
+            self.cfg.set("vulnerability.round", self._rounding)
 
         logger.info(
             f"Upscaling vulnerability curves, \

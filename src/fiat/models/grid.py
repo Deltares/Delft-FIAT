@@ -127,5 +127,5 @@ class GridModel(BaseModel):
         _e = time.time() - _s
         logger.info(f"Calculations time: {round(_e, 2)} seconds")
         self.resolve()
-        logger.info(f"Output generated in: '{self.cfg['output.path']}'")
+        logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
         logger.info("Grid calculation are done!")

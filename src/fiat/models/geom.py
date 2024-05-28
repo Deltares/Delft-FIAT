@@ -93,7 +93,7 @@ class GeomModel(BaseModel):
         _out_chunk = self.cfg.get("output.geom.settings.chunk")
         if _out_chunk is None:
             _out_chunk = GEOM_MIN_WRITE_CHUNK
-        self.cfg["output.geom.settings.chunk"] = _out_chunk
+        self.cfg.set("output.geom.settings.chunk", _out_chunk)
 
         # Determine amount of threads
         self.nchunk = max_geom_size // self.chunk
@@ -127,7 +127,7 @@ calculated chunks ({self.nchunk})"
         _nms = self.cfg.get("hazard.band_names")
         for idx, _ in enumerate(_nms):
             csv_temp_file(
-                self.cfg["output.tmp.path"],
+                self.cfg.get("output.tmp.path"),
                 idx + 1,
                 self.exposure_data.meta["index_name"],
                 self.exposure_data.create_specific_columns(_nms[idx]),
@@ -136,13 +136,13 @@ calculated chunks ({self.nchunk})"
         # Define the outgoing file
         out_csv = "output.csv"
         if "output.csv.name" in self.cfg:
-            out_csv = self.cfg["output.csv.name"]
-        self.cfg["output.csv.name"] = out_csv
+            out_csv = self.cfg.get("output.csv.name")
+        self.cfg.set("output.csv.name", out_csv)
 
         # Create an empty csv file for the separate thread to till
         csv_def_file(
-            Path(self.cfg["output.path"], out_csv),
-            self.exposure_data.columns + tuple(self.cfg["output.new_columns"]),
+            Path(self.cfg.get("output.path"), out_csv),
+            self.exposure_data.columns + tuple(self.cfg.get("output.new_columns")),
         )
 
         # Do the same for the geometry files
@@ -151,8 +151,8 @@ calculated chunks ({self.nchunk})"
             # Define outgoing dataset
             out_geom = f"spatial{_add}.gpkg"
             if f"output.geom.name{_add}" in self.cfg:
-                out_geom = self.cfg[f"output.geom.name{_add}"]
-            self.cfg[f"output.geom.name{_add}"] = out_geom
+                out_geom = self.cfg.get(f"output.geom.name{_add}")
+            self.cfg.set(f"output.geom.name{_add}", out_geom)
             with open_geom(
                 Path(self.cfg.get("output.path"), out_geom), mode="w", overwrite=True
             ) as _w:
@@ -336,7 +336,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         logger.info("Producing model output from temporary files")
         # Patch output from the seperate processes back together
         self.resolve()
-        logger.info(f"Output generated in: '{self.cfg['output.path']}'")
+        logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
 
         if not self._keep_temp:
             logger.info("Deleting temporary files...")

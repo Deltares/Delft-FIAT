@@ -53,7 +53,7 @@ def run(args):
 
     if args.threads is not None:
         assert int(args.threads)
-        cfg["global.threads"] = int(args.threads)
+        cfg.set("global.threads", int(args.threads))
 
     # Setup the logger
     logger = setup_default_log(

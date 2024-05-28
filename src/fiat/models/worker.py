@@ -36,7 +36,7 @@ def geom_resolve(
     # Numerical stuff
     risk = cfg.get("hazard.risk")
     rp_coef = cfg.get("hazard.rp_coefficients")
-    sig_decimals = cfg["vulnerability.round"]
+    sig_decimals = cfg.get("vulnerability.round")
 
     # Set srs as osr object
     srs = osr.SpatialReference()
@@ -46,7 +46,7 @@ def geom_resolve(
     # values from the temporary files
     if rp_coef:
         rp_coef.reverse()
-    new_cols = cfg["output.new_columns"]
+    new_cols = cfg.get("output.new_columns")
 
     # For the temp files
     _files = {}
@@ -60,7 +60,7 @@ def geom_resolve(
 
     # Open stream to output csv file
     writer = BufferedTextWriter(
-        Path(cfg["output.path"], cfg["output.csv.name"]),
+        Path(cfg.get("output.path"), cfg.get("output.csv.name")),
         mode="ab",
         buffer_size=100000,
         lock=csv_lock,
@@ -74,7 +74,7 @@ def geom_resolve(
 
         # Setup the geometry writer
         geom_writer = BufferedGeomWriter(
-            Path(cfg["output.path"], out_geom),
+            Path(cfg.get("output.path"), out_geom),
             srs,
             gm.layer.GetLayerDefn(),
             buffer_size=cfg.get("output.geom.settings.chunk"),
@@ -252,7 +252,9 @@ def geom_worker_no_csv(
     lock: Lock,
 ):
     """_summary_."""
-    pass
+    for _, gm in exp.items():
+        for ft in gm.reduced_iter(*chunk):
+            pass
 
 
 def grid_worker_exact(
