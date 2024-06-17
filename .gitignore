@@ -24,6 +24,10 @@ __pycache__/
 tmp/
 whl/
 
+# pixi environments
+.pixi
+*.egg-info
+
 # C extensions
 *.so
 
