@@ -81,7 +81,6 @@ build = [
 dev = [
     "cython",
     "pre-commit",
-    "pyside2",
     "ruff",
     "delft_fiat[all,docs,extra,test]",
 ]
@@ -97,7 +96,6 @@ extra = [
     "tomli-w",
 ]
 test = [
-    "black",
 	"pytest>=2.7.3",
 	"pytest-cov",
     "pytest-dependency",
