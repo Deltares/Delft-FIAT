@@ -27,6 +27,7 @@ docs-quick = { depends-on = ["interlink-docs", "quarto-quick"] }
 docs-slim = { depends-on = ["interlink-docs", "quarto-render"] }
 generate-api = { cmd = ["python", "docs/api.py", "docs/_quarto.yml"] }
 interlink-docs = { cmd = ["python", "docs/inv.py", "interlinks", "docs/_quarto.yml"] }
+quarto = { cmd = ["quarto", "render"] }
 quarto-quick = { cmd = ["quarto", "render", "docs"] }
 quarto-render = { cmd = ["quarto", "render", "docs", "--execute"] }
 serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_site"] }
