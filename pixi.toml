@@ -1,3 +1,4 @@
+## Global stuff
 [project]
 name = "delft_fiat"
 version = "0.1.0"
@@ -6,54 +7,48 @@ authors = ["B.W. Dalmijn <brencodeert@outlook.com>"]
 channels = ["conda-forge"]
 platforms = ["linux-64", "win-64"]
 
-[tasks]
 
+## The different tasks of this project
+[tasks]
+# Installation
 install = { depends_on = ["install-fiat", "install-pre-commit"] }
 install-fiat = "pip install --no-deps --editable ."
 install-pre-commit = "pre-commit install"
 
+# Repo related tasks
 lint = { cmd = ["pre-commit", "run", "--all"] }
 
+# Docker related stuff (expand in future)
 docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 
+# Documentation generation
+docs = { depends_on = ["generate-api", "interlink-docs", "quarto-render"] }
+docs-slim = { depends-on = ["interlink-docs", "quarto-render"] }
 generate-api = { cmd = ["python", "docs/api.py", "docs/_quarto.yml"] }
-interlink-docs = { cmd = ["python", "docs/inv.py", "docs/_quarto.yml"] }
+interlink-docs = { cmd = ["python", "docs/inv.py", "interlinks", "docs/_quarto.yml"] }
 quarto-render = { cmd = ["quarto", "render", "docs", "--execute"] }
-docs = { depends_on = [] }
-docs-slim = { depends-on = ["interlinks-docs", "quarto-render"] }
 serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_site"] }
 
-# clean
-clean = { depends_on = [
-  "clean-env-files",
-  "clean-dist",
-  "clean-docs-generated",
-  "clean-docs-build",
-  "clean-docs-exmaples",
-] }
-clean-env-files = { cmd = ["rm", "-f", "*environment.yml"] }
-clean-dist = { cmd = ["rm", "-rf", "dist"] }
-clean-docs-generated = { cmd = ["rm", "-rf", "docs/_generated"] }
-clean-docs-build = { cmd = ["rm", "-rf", "docs/_build"] }
-clean-docs-exmaples = { cmd = ["rm", "-rf", "docs/examples"] }
-
+# Testing
 test = { cmd = ["pytest"] }
 test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
-test-cov = { cmd = [
-  "pytest",
-  "--verbose",
-  "--cov=fiat",
-  "--cov-report",
-  "xml",
-] }
-test-cov-local = { cmd = [
-  "pytest",
-  "--verbose",
-  "--cov",
-  "--cov-report",
-  "html",
-] }
+test-cov = { cmd = ["pytest", "--verbose", "--cov=fiat", "--cov-report", "xml"] }
+test-cov-local = { cmd = ["pytest", "--verbose", "--cov", "--cov-report", "html",] }
 
+# Clean up (some of) the temporary files
+clean = { depends_on = [
+  "clean-env-files",
+  "clean-bin",
+  "clean-dist",
+  "clean-docs",
+] }
+clean-env-files = { cmd = ["rm", "-f", "*environment.yml"] }
+clean-bin = { cmd = ["rm", "-rf", "bin"] }
+clean-dist = {cmd = ["rm", "-rf", "dist"] }
+clean-docs = { cmd = ["rm", "-rf", "docs/_site"] }
+
+
+## Dependencies
 [dependencies]
 gdal = ">=3.5"
 numpy = "*"
@@ -99,8 +94,11 @@ pytest-dependency = "*"
 pytest-mock = "*"
 responses = "*"
 
+
+## Define the environments
 [environments]
 build = { features = ["py312", "all", "build"], solve-group = "py312"}
+default = { features = ["py312"], solve-group = "py312"}
 dev = { features = ["py312", "all", "dev", "docs", "extra", "test"], solve-group = "py312" }
 fiat = { features = ["py312"], solve-group = "py312"}
 min = { features = ["py312"], solve-group = "py312"}
