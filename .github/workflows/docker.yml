@@ -40,6 +40,7 @@ jobs:
           image: fiat:latest
           run: |
             pixi run python -m pip install tomli-w
+            chmod u+x data/
             pixi run python data/create_test_data.py
             fiat run data/geom_event.toml
             exit
