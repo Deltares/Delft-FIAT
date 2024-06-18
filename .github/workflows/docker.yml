@@ -33,9 +33,13 @@ jobs:
           docker build -f Dockerfile --build-arg="PIXIENV=default" -t fiat .
 
       - name: Execute docker container
-        run: |
-          docker run -it -v $PWD/.testdata:/home/deltares/data --name fiat fiat:latest bash
-          pixi run python -m pip install tomli-w
-          pixi run python data/create_test_data.py
-          fiat run data/geom_event.toml
-          exit
+        uses: addnab/docker-run-action@v3
+        with:
+          options: -v ${{ github.workspace }}/.testdata:/home/deltares/data
+          shell: bash
+          image: fiat:latest
+          run: |
+            pixi run python -m pip install tomli-w
+            pixi run python data/create_test_data.py
+            fiat run data/geom_event.toml
+            exit
