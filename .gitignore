@@ -26,6 +26,7 @@ whl/
 
 # pixi environments
 .pixi
+pixi.toml
 *.egg-info
 
 # C extensions
