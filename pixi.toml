@@ -16,12 +16,12 @@ lint = { cmd = ["pre-commit", "run", "--all"] }
 
 docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 
-generate-api = { cmd = [] }
-interlink-docs = { cmd = [] }
-quarto-render = { cmd = ["sphinx-build", "-M", "html", "docs", "docs/_build", "-W"] }
-docs = { depends_on = ["html"] }
-docs-slim = { depends-on = [] }
-serve = { cmd = ["python", "-m", "http.server", "-d", "docs/_build/html"] }
+generate-api = { cmd = ["python", "docs/api.py", "docs/_quarto.yml"] }
+interlink-docs = { cmd = ["python", "docs/inv.py", "docs/_quarto.yml"] }
+quarto-render = { cmd = ["quarto", "render", "docs", "--execute"] }
+docs = { depends_on = [] }
+docs-slim = { depends-on = ["interlinks-docs", "quarto-render"] }
+serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_site"] }
 
 # clean
 clean = { depends_on = [
@@ -49,7 +49,7 @@ test-cov = { cmd = [
 test-cov-local = { cmd = [
   "pytest",
   "--verbose",
-  "--cov=fiat",
+  "--cov",
   "--cov-report",
   "html",
 ] }
@@ -102,6 +102,7 @@ responses = "*"
 [environments]
 build = { features = ["py312", "all", "build"], solve-group = "py312"}
 dev = { features = ["py312", "all", "dev", "docs", "extra", "test"], solve-group = "py312" }
+fiat = { features = ["py312"], solve-group = "py312"}
 min = { features = ["py312"], solve-group = "py312"}
 test-py312 = {features = ["py312", "all", "extra", "test"], solve-group = "py312"}
 test-py311 = {features = ["py311", "all", "extra", "test"], solve-group = "py311"}
