@@ -23,7 +23,7 @@ jobs:
         include:
         - os: ubuntu-latest
           label: linux-64
-          prefix: /usr/share/miniconda3
+          prefix: /home/runner/miniconda3
 
     name: py ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
@@ -58,7 +58,7 @@ jobs:
         if: always()
         with:
           path: |
-            /usr/share/miniconda3
+            /home/runner/miniconda3
             ~/pycache
           key: test-py${{ matrix.python-version }}-${{ hashFiles('environment.yml')  }}
         id: test-cache
@@ -76,7 +76,7 @@ jobs:
           include:
           - os: ubuntu-latest
             label: linux-64
-            prefix: /usr/share/miniconda3
+            prefix: /home/runner/miniconda3
 
     runs-on: ${{ matrix.os }}
 
@@ -108,7 +108,7 @@ jobs:
         if: always()
         with:
           path: |
-            /usr/share/miniconda3
+            /home/runner/miniconda3
             ~/pycache
           key: docs-${{ hashFiles('environment.yml')  }}
         id: docs-cache
@@ -126,7 +126,7 @@ jobs:
           include:
           - os: ubuntu-latest
             label: linux-64
-            prefix: /usr/share/miniconda3
+            prefix: /home/runner/miniconda3
 
     runs-on: ${{ matrix.os }}
 
@@ -153,7 +153,7 @@ jobs:
         if: always()
         with:
           path: |
-            /usr/share/miniconda3
+            /home/runner/miniconda3
             ~/pycache
           key: min-${{ hashFiles('environment.yml')  }}
         id: min-cache
@@ -171,7 +171,7 @@ jobs:
           include:
           - os: ubuntu-latest
             label: linux-64
-            prefix: /usr/share/miniconda3
+            prefix: /home/runner/miniconda3
 
     runs-on: ${{ matrix.os }}
 
@@ -198,7 +198,7 @@ jobs:
         if: always()
         with:
           path: |
-            /usr/share/miniconda3
+            /home/runner/miniconda3
             ~/pycache
           key: build-${{ hashFiles('environment.yml')  }}
         id: build-cache
