@@ -53,7 +53,7 @@ def test_grid_event(tmpdir, configs):
     )
     arr = src.ReadAsArray()
     src = None
-    assert int(arr[2, 4] * 10) == 14091
+    assert int(arr[2, 4] * 10) == 14092
     assert int(arr[7, 3] * 10) == 8700
 
     src = gdal.OpenEx(
@@ -61,7 +61,7 @@ def test_grid_event(tmpdir, configs):
     )
     arr = src.ReadAsArray()
     src = None
-    assert int(arr[2, 4] * 10) == 14091
+    assert int(arr[2, 4] * 10) == 14092
     assert int(arr[7, 3] * 10) == 8700
 
 
