@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y curl
 RUN useradd deltares
 USER deltares
 WORKDIR /home/deltares
+RUN usermod -u 1001 deltares
 
 RUN curl -fsSL https://pixi.sh/install.sh | bash
 ENV PATH=/home/deltares/.pixi/bin:$PATH
