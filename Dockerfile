@@ -1,9 +1,10 @@
 FROM debian:bookworm-slim as base
 ARG PIXIENV
+ARG UID=1000
 RUN apt-get update && apt-get install -y curl
 
 RUN useradd deltares
-RUN usermod -u 1001 deltares
+RUN usermod -u ${UID} deltares
 USER deltares
 WORKDIR /home/deltares
 
