@@ -4,12 +4,16 @@ title: "Setup Miniforge3"
 
 In order to develop on **FIAT** locally, the Python package manager **Miniforge3** is recommended.
 
-- Download and install [Miniforge3](https://github.com/conda-forge/miniforge#mambaforge)
+Download and install [Miniforge3](https://github.com/conda-forge/miniforge#mambaforge)
 
-- Initialize conda by running the following in the Miniforge prompt:
+Initialize conda by running the following in the Miniforge prompt:
 
-    `conda init`
+```bash
+conda init
+```
 
-- Depending on your computer settings, you might also have to run the following in a Powershell terminal as administrator:
+Depending on your computer settings, you might also have to run the following in a Powershell terminal as administrator:
 
-    `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned`
+```bash
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+```

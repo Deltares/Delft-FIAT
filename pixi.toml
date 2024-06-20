@@ -16,6 +16,7 @@ install-fiat = "pip install --no-deps --editable ."
 install-pre-commit = "pre-commit install"
 
 # Repo related tasks
+generate-data = { cmd = ["python", ".testdata/create_test_data.py"] }
 lint = { cmd = ["pre-commit", "run", "--all"] }
 
 # Docker related stuff (expand in future)
@@ -103,6 +104,7 @@ responses = "*"
 build = { features = ["py312", "all", "build"], solve-group = "py312"}
 default = { features = ["py312"], solve-group = "py312"}
 dev = { features = ["py312", "all", "dev", "docs", "extra", "test"], solve-group = "py312" }
+docs = { features = ["py312", "all", "docs"], solve-group = "py312"}
 min = { features = ["py312"], solve-group = "py312"}
 test-py312 = {features = ["py312", "all", "extra", "test"], solve-group = "py312"}
 test-py311 = {features = ["py311", "all", "extra", "test"], solve-group = "py311"}
