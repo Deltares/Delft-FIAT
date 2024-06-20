@@ -1,0 +1,31 @@
+---
+title: Setup Docker
+---
+
+A docker file is present within the repository of Delft-FIAT. This docker file can
+be found [here](https://github.com/Deltares/Delft-FIAT/blob/master/Dockerfile).
+
+From this docker file a docker image can be produced. In the creation process of the
+docker image, pixi is used. [Pixi](https://pixi.sh/latest/) is a fast(er) alternative of creating and
+installing python environments compared to mamba (conda). Creating a docker image can
+be done with the following command:
+
+::: {.callout-note}
+Note: Set the current directory to the directory of the cloned repository.
+:::
+
+```bash
+docker build -f Dockerfile --build-arg="PIXIENV=default" -t fiat .
+```
+
+However, as an alternative, it can be build directly from the docker file in the github
+remote repository:
+
+```bash
+docker build -f https://raw.githubusercontent.com/Deltares/Delft-FIAT/master/Dockerfile --build-arg="PIXIENV=default" -t fiat .
+```
+
+::: {.callout-note}
+The build argument `PIXIENV` is used to define which python enviroment to use. Using the `default` environment is recommended.
+An overview of all the environments can be found in the [pixi toml file](https://github.com/Deltares/Delft-FIAT/blob/master/pixi.toml).
+:::
