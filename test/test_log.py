@@ -16,13 +16,13 @@ def test_stream(log1, log2):
     assert stream.readline().strip() == "Hello!"
 
 
-def test_log(tmpdir):
+def test_log(tmp_path):
     log = Log("test_log", level=2)
     log.add_c_handler(
         level=2,
     )
     log.add_file_handler(
-        str(tmpdir),
+        str(tmp_path),
         filename="test_log",
     )
     child_log = spawn_logger("test_log.child")
@@ -39,6 +39,6 @@ def test_log(tmpdir):
     del child_log
     del log
 
-    fh = open(Path(str(tmpdir), "test_log.log"), mode="r")
+    fh = open(Path(str(tmp_path), "test_log.log"), mode="r")
 
     assert sum(1 for _ in fh) == 5
