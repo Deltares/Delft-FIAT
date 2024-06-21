@@ -213,11 +213,15 @@ def create_tree(
     # Also write the index to the hard drive
     b.write_index(bp)
 
+    # Return the directory
+    return Path(p, rel_dir)
+
 
 def run(args):
     """Dummy run method."""
     yml = file_path_check(args.config)
-    create_tree(yml.as_posix())
+    p = create_tree(yml.as_posix())
+    sys.stdout.write(f"Written api docs to {p.as_posix()}\n")
 
 
 def args_parser():
@@ -252,6 +256,7 @@ def main(argv=sys.argv[1:]):
     parser = args_parser()
     args = parser.parse_args(args=None if argv else ["--help"])
     args.func(args)
+
 
 if __name__ == "__main__":
     main()
