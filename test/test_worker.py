@@ -83,7 +83,7 @@ def test_grid_worker(tmp_path, grid_risk):
 
 
 @pytest.mark.dependency(depends=["test_grid_worker"])
-def test_grid_risk(tmp_path, grid_risk):
+def test_grid_risk_worker(tmp_path, grid_risk):
     # Set model output directory
     model = grid_risk
     model.cfg.set_output_dir(Path(str(tmp_path), "..", "worker_grid"))
