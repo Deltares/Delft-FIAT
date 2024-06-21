@@ -13,6 +13,7 @@ This contains the unreleased changes to Delft-FIAT.
 - Method `set` of `ConfigReader` object
 - Method `size` of `GeomSource` object for in situ size return; `count` becomes private
 - Method `size` of `GridSource` object for in situ size return; `count` becomes private
+- Numpy >= 2.0.0 support
 - Python 3.12 support
 - Setting return period as a variable in hazard map bands (risk)
 
