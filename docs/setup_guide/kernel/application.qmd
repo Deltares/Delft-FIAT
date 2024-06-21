@@ -6,17 +6,23 @@ To freeze FIAT as an application/executable, it is required to have the FIAT rep
 
 - Create a yml for a seperate **build** environment:
 
-    `python make_env.py build`
+```bash
+python make_env.py build
+```
 
 - Create the environment with mamba. This time, FIAT will be automatically installed with the environment:
 
-    `mamba env create -f environment.yml`
+```bash
+mamba env create -f environment.yml
+```
 
 - Go to the .build/core directory and execute the pybuild.bat script:
 
-    `cd ./.build`
+```bash
+cd ./.build
 
-    `win64.bat`
+win64.bat
+```
 
 That's it.
 A FIAT application will be located in the `{root}/bin/Release` folder.

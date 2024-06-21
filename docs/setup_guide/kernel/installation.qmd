@@ -10,45 +10,59 @@ To create a new environment follow the steps below.
 
 - Create a new environment:
 
-    `conda create -n fiat python=3.11.*`
-
+```bash
+conda create -n fiat python=3.11.*
+```
 - Activate the environment:
 
-    `conda activate fiat`
+```bash
+conda activate fiat`
+```
 
 - Install FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use **pip install** to do so:
 
-    `pip install git+https://github.com/Deltares/Delft-FIAT.git`
+```bash
+pip install git+https://github.com/Deltares/Delft-FIAT.git
+```
 
 ### Existing environment
 If you want to install FIAT into an existing environment, simply activate the desired environment and run:
 
-`pip install git+https://github.com/Deltares/Delft-FIAT.git`
-
+```bash
+pip install git+https://github.com/Deltares/Delft-FIAT.git
+```
 
 ## For Development
 This is for those who wish to contribute to the development of FIAT.
 
 - First, clone the FIAT repository on Github into a local directory of choice:
 
-    `cd ~/{your path}`
+```bash
+cd ~/{your path}
 
-    `git clone https://github.com/Deltares/Delft-FIAT.git fiat`
+git clone https://github.com/Deltares/Delft-FIAT.git fiat
+```
 
 - Create a new development environment. Make sure you either have tomli or tomllib (build-in with Python 3.11) in your base enviroment. Go into your cloned FIAT repository folder and create the environment file by running the *make_env.py* script:
 
-    `cd ~/{your path}/fiat`
+```bash
+cd ~/{your path}/fiat
 
-    `python make_env.py dev`
+python make_env.py dev
+```
 
 - Then, create and activate the new environment in conda:
 
-    `conda env create -f environment.yml`
+```bash
+conda env create -f environment.yml
 
-    `conda activate fiat_dev`
+conda activate fiat_dev
+```
 
 - To install all the required dependencies, run:
 
-    `pip install -e . `
+```bash
+pip install -e .
+```
 
 There you go. FIAT is now installed on your local machine for development purposes.

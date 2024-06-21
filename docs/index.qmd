@@ -1,5 +1,6 @@
 ---
 title: "Delft-FIAT"
+toc: false
 include-in-header:
   - text: |
       <style>figure { padding: 3em 0 0em 0; }</style>
@@ -14,7 +15,7 @@ A fast impact assessment tool.
 ## Quick overview
 
 ::: column-page-inset-right
-{{< include /_static/listing_code.html >}}
+{{< include /_static/listing_code_medium.html >}}
 ```{=html}
 
 <ul id="index-chooser" class="nav nav-tabs" role="tablist">
