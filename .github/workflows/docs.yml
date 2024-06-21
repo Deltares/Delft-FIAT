@@ -73,17 +73,16 @@ jobs:
         run: |
           sudo apt install -y expect
           cd docs
-          chmod u+x add_packages.sh
-          ./add_packages.sh
+          chmod u+x _scripts/add_packages.sh
+          _scripts/add_packages.sh
 
       - name: Setup api & testdata
         run: |
           export PATH=/home/runner/miniconda3/bin:$PATH
           mamba run -n fiat_docs python -m pip install tomli-w
           mamba run -n fiat_docs python .testdata/create_test_data.py
-          cd docs
-          mamba run -n fiat_docs python api.py
-          mamba run -n fiat_docs python -m quartodoc interlinks
+          mamba run -n fiat_docs python docs/_scripts/api.py docs/_quarto.yml
+          mamba run -n fiat_docs python docs/_scripts/inv.py interlinks docs/_quarto.yml
 
       - name: Generate docs
         run: |
