@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Delft FIAT - What is Delft-FIAT?</title>
+<title>Delft FIAT - Delft-FIAT</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -89,8 +89,8 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./getting_started/index.html" rel="" target="">
- <span class="menu-text">Getting Started</span></a>
+    <a class="nav-link" href="./info/index.html" rel="" target="">
+ <span class="menu-text">Information</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./setup_guide/index.html" rel="" target="">
@@ -147,15 +147,13 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
-    </div>
+    
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">What is Delft-FIAT?</h1>
+<h1 class="title">Delft-FIAT</h1>
 </div>
 
 
@@ -170,64 +168,127 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p><strong>Delft-FIAT</strong> is a free, python-based <strong>Fast Impact Assessment Tool</strong>, designed and continuously improved by Deltares. It is configured to run quick, consistent, and well-founded <strong>flood damage</strong> and <strong>risk calculations</strong> on the basis of flood maps and additional inputs such as depth-damage functions, asset locations, and their maximum potential damages. Delft-FIAT allows rapid assessment of the direct <strong>economic</strong> and <strong>monetary impacts</strong> to buildings, utilities, and roads for specified flood events and return periods. Fast impact modeling removes bottlenecks in <strong>climate adaptation planning</strong>, allowing for large numbers of calculations needed to understand the effectiveness of adaptation strategies and the changes in damage and risk as climate and socio-economic conditions change. In the further documentation, Delft-FIAT will be refered to simply as <strong>FIAT</strong>.</p>
-<p><strong>FIAT</strong> works with an easy format for exposed assets, consisting of information on the location, exposed value, ground floor height, and associated depth-damage functions, which can be modified by the user. A simple configuration file specifies the location of depth-damage functions and flood maps, as well as return periods of flood maps if calculating risk.</p>
-<p>Thanks to its flexible character, FIAT <strong>integrates</strong> with various software applications such as flood adaptation planning tool <a href="https://www.deltares.nl/en/software-and-data/products/floodadapt">FloodAdapt</a> or an <a href="https://www.intertwin.eu/intertwin-use-case-deploying-floodadapt-a-digital-twin-for-flood-impact-modelling-anywhere-on-earth/">interTwin digital twin</a> and can be called multiple times to e.g.&nbsp;assess uncertainty in damage estimates, or run for numerous flood scenarios.</p>
+<p>A fast impact assessment tool.</p>
+<p><a href="https://pypi.org/project/Delft-FIAT/"><img src="https://img.shields.io/pypi/v/delft_fiat.svg" class="img-fluid" alt="PyPI Latest Release"></a> <a href="https://anaconda.org/conda-forge/delft_fiat"><img src="https://anaconda.org/conda-forge/delft_fiat/badges/version.svg" class="img-fluid" alt="Conda Latest Release"></a> <a href="https://codecov.io/github/Deltares/Delft-FIAT"><img src="https://codecov.io/github/Deltares/Delft-FIAT/coverage.svg?branch=master" class="img-fluid" alt="Coverage"></a> <img src="https://img.shields.io/github/actions/workflow/status/Deltares/Delft-FIAT/build.yml" class="img-fluid" alt="GitHub Actions Workflow Status"></p>
+<section id="quick-overview" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="quick-overview">Quick overview</h2>
+<div class="column-page-inset-right">
+<style type="text/css">
+    .nav-tabs {
+        margin-top: 0.5rem;
+        border-bottom: none;
+    }
+
+    .callout {
+        margin-top: 0;
+    }
+
+    .nav-tabs .nav-link {
+        text-align: center;
+        margin-right: 15px;
+        margin-top: 10px;
+        width: 260px;
+        height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        /* font-size: 0.8em;
+        font-weight: 600; */
+    }
+
+    .custom-icon {
+    font-size: 1.5rem; /* Adjust the size as needed */
+    }
+
+    .nav-tabs .nav-link,
+    .nav-tabs .nav-link.active,
+    .nav-tabs .nav-item.show .nav-link {
+        /* background-color: rgb(8, 12, 128); */
+        border: 1px solid rgb(222, 226, 230);
+        border-radius: 10px;
+        /* color: rgb(8, 12, 128); */
+        /* color text */
+    }
+
+    .nav-tabs .nav-link:hover {
+        background-color: rgb(222, 226, 230);
+        /* opacity: 0.1; */
+        border-color: #080c80;
+        border: 1px solid #080c80;
+    }
+
+    /* .nav-tabs .nav-link:hover { */
+    /* border-color: rgb(8, 12, 128); */
+    /* border-width: 1px; */
+    /* } */
+
+    /* .nav-tabs .nav-link.active,
+    .nav-tabs .nav-item.show .nav-link {
+        color: rgb(8, 12, 128);
+        border-width: 2px;
+    } */
 
 
-<meta charset="utf-8">
+    .nav-tabs .nav-link i {
+        display: block;
+        font-size: 3rem;
+        /* color: rgb(8, 12, 128); */
+        /* color icon */
+        margin-bottom: 5px;
+    }
 
+    /* .quarto-listing {
+        margin-top: 2em;
+    } */
 
-<div class="mxgraph" style="max-width:100%;padding:3em 0 18em 0;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;xml&quot;:&quot;<mxfile host=\&quot;app.diagrams.net\&quot; modified=\&quot;2023-10-25T06:59:31.803Z\&quot; agent=\&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.46\&quot; etag=\&quot;QpuXOlBkvi8B3uUODvBo\&quot; version=\&quot;22.0.7\&quot; type=\&quot;device\&quot;><diagram name=\&quot;Page-1\&quot; id=\&quot;aSg1EHzWzZEX-zshLOQz\&quot;><mxGraphModel dx=\&quot;746\&quot; dy=\&quot;479\&quot; grid=\&quot;1\&quot; gridSize=\&quot;10\&quot; guides=\&quot;1\&quot; tooltips=\&quot;1\&quot; connect=\&quot;1\&quot; arrows=\&quot;1\&quot; fold=\&quot;1\&quot; page=\&quot;1\&quot; pageScale=\&quot;1\&quot; pageWidth=\&quot;850\&quot; pageHeight=\&quot;1100\&quot; math=\&quot;0\&quot; shadow=\&quot;0\&quot;><root><mxCell id=\&quot;0\&quot;/><mxCell id=\&quot;1\&quot; parent=\&quot;0\&quot;/><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-1\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b&amp;gt;Flood maps&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry x=\&quot;50\&quot; y=\&quot;100\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-3\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b&amp;gt;&amp;amp;nbsp; &amp;amp;nbsp; &amp;amp;nbsp; &amp;amp;nbsp; Damage functions&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry x=\&quot;50\&quot; y=\&quot;190\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-4\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 15px;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b&amp;gt;Exposure&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry x=\&quot;50\&quot; y=\&quot;290\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-7\&quot; value=\&quot;&amp;lt;font size=&amp;quot;1&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;amp;nbsp; &amp;amp;nbsp; Flood Impact&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry x=\&quot;540\&quot; y=\&quot;191\&quot; width=\&quot;200\&quot; height=\&quot;60\&quot; as=\&quot;geometry\&quot;/></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-8\&quot; value=\&quot;\&quot; style=\&quot;rounded=0;whiteSpace=wrap;html=1;rotation=90;fillColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry x=\&quot;280\&quot; y=\&quot;150\&quot; width=\&quot;255\&quot; height=\&quot;165\&quot; as=\&quot;geometry\&quot;/></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-9\&quot; value=\&quot;&amp;lt;font size=&amp;quot;1&amp;quot; style=&amp;quot;&amp;quot; color=&amp;quot;#ffffff&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;font-size: 28px;&amp;quot;&amp;gt;Delft-FIAT&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=0;fillColor=#080c80ff;strokeColor=#080c80ff;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry x=\&quot;328.13\&quot; y=\&quot;150\&quot; width=\&quot;158.75\&quot; height=\&quot;158.75\&quot; as=\&quot;geometry\&quot;/></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-14\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;YvDSmxeZs--AiFGO8erU-1\&quot;><mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;><mxPoint x=\&quot;242\&quot; y=\&quot;131.5\&quot; as=\&quot;sourcePoint\&quot;/><mxPoint x=\&quot;330\&quot; y=\&quot;130\&quot; as=\&quot;targetPoint\&quot;/></mxGeometry></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-15\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;><mxPoint x=\&quot;240.13\&quot; y=\&quot;219.5\&quot; as=\&quot;sourcePoint\&quot;/><mxPoint x=\&quot;330.13\&quot; y=\&quot;219.5\&quot; as=\&quot;targetPoint\&quot;/></mxGeometry></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-16\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;><mxPoint x=\&quot;240.13\&quot; y=\&quot;319.5\&quot; as=\&quot;sourcePoint\&quot;/><mxPoint x=\&quot;330.13\&quot; y=\&quot;319.5\&quot; as=\&quot;targetPoint\&quot;/></mxGeometry></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-17\&quot; value=\&quot;\&quot; style=\&quot;endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#666666;\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry width=\&quot;50\&quot; height=\&quot;50\&quot; relative=\&quot;1\&quot; as=\&quot;geometry\&quot;><mxPoint x=\&quot;491.88\&quot; y=\&quot;220.5\&quot; as=\&quot;sourcePoint\&quot;/><mxPoint x=\&quot;551.1004778278927\&quot; y=\&quot;220.6985665163221\&quot; as=\&quot;targetPoint\&quot;/></mxGeometry></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-22\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;4&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry x=\&quot;333\&quot; y=\&quot;112\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-23\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;1&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry x=\&quot;70\&quot; y=\&quot;117.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-24\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;2&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry x=\&quot;70\&quot; y=\&quot;207.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-25\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;3&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry x=\&quot;70\&quot; y=\&quot;307.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/></mxCell><mxCell id=\&quot;YvDSmxeZs--AiFGO8erU-26\&quot; value=\&quot;&amp;lt;font color=&amp;quot;#080c80&amp;quot; style=&amp;quot;font-size: 15px;&amp;quot;&amp;gt;&amp;lt;b style=&amp;quot;&amp;quot;&amp;gt;5&amp;lt;/b&amp;gt;&amp;lt;/font&amp;gt;\&quot; style=\&quot;ellipse;whiteSpace=wrap;html=1;aspect=fixed;\&quot; vertex=\&quot;1\&quot; parent=\&quot;1\&quot;><mxGeometry x=\&quot;562\&quot; y=\&quot;208.5\&quot; width=\&quot;25\&quot; height=\&quot;25\&quot; as=\&quot;geometry\&quot;/></mxCell></root></mxGraphModel></diagram></mxfile>&quot;}">
+    /* .quarto-listing .listing-name,
+    .quarto-listing .listing-author {
+        white-space: nowrap;
+    }
+
+    .quarto-listing .listing-actions-group h3 {
+        margin-top: 0;
+    } */
+</style>
+
+<ul id="index-chooser" class="nav nav-tabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="info/index.html">
+      <i class="bi bi-info-circle"></i>Information
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="setup_guide/index.html">
+      <i class="bi bi-gear"></i>Setup guide
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="user_guide/index.html">
+      <i class="bi bi-code-slash"></i>How do I use FIAT?
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="examples/index.html">
+      <i class="bi bi-graph-up"></i>Examples
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="api/index.html">
+      <i class="bi bi-list-ul"></i>API Reference
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" href="info/faq.html">
+      <i class="bi bi-question-octagon"></i>Frequently asked questions
+    </a>
+  </li>
+</ul>
 
 </div>
-<script type="text/javascript" src="https://app.diagrams.net/js/viewer-static.min.js"></script>
 
 
-<table class="table-striped table-hover table">
-<caption></caption>
-<colgroup>
-<col style="width: 3%">
-<col style="width: 18%">
-<col style="width: 78%">
-</colgroup>
-<thead>
-<tr class="header">
-<th></th>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>1</td>
-<td>Flood maps</td>
-<td>Hazard input: Selected per damage/risk simulation</td>
-</tr>
-<tr class="even">
-<td>2</td>
-<td>Damage functions</td>
-<td>Vulnerability input: Prepared when setting up the model, coupled to exposure objects</td>
-</tr>
-<tr class="odd">
-<td>3</td>
-<td>Exposure data</td>
-<td>Exposure input: Prepared when setting up the model, including exposure assets and max potential damages</td>
-</tr>
-<tr class="even">
-<td>4</td>
-<td>Delft-FIAT</td>
-<td>Flood Impact Assesment Tool</td>
-</tr>
-<tr class="odd">
-<td>5</td>
-<td>Flood impact</td>
-<td>Resulting (economic) damages and risk</td>
-</tr>
-</tbody>
-</table>
-
-
+</section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

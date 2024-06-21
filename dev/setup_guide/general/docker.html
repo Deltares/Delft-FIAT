@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Delft FIAT - Vulnerability data</title>
+<title>Delft FIAT - Setup Docker</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -61,9 +95,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <script type="text/javascript" src="../../_static/version.js"></script>
 
 
@@ -95,11 +126,11 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">Information</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../setup_guide/index.html" rel="" target="">
+    <a class="nav-link active" href="../../setup_guide/index.html" rel="" target="" aria-current="page">
  <span class="menu-text">Setup guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../../user_guide/index.html" rel="" target="" aria-current="page">
+    <a class="nav-link" href="../../user_guide/index.html" rel="" target="">
  <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
@@ -149,7 +180,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/data/index.html">Data</a></li><li class="breadcrumb-item"><a href="../../user_guide/data/vulnerability.html">Vulnerability data</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../setup_guide/general/conda.html">General setup</a></li><li class="breadcrumb-item"><a href="../../setup_guide/general/docker.html">Setup Docker</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -163,109 +194,58 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../user_guide/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">User guide</span></a>
+  <a href="../../setup_guide/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Setup guide</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../user_guide/settings/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Settings</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text">General setup</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../user_guide/settings/computation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Computational input</span></a>
+  <a href="../../setup_guide/general/conda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Setup Miniforge3</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../user_guide/settings/optional.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Optional input</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../user_guide/data/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Data</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../user_guide/data/hazard.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Hazard data</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/hazard_maps.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Types of hazard maps</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../user_guide/data/exposure.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Exposure data</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/exposure/csv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">CSV</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/exposure/geometries.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Geometry</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/vulnerability.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Vulnerability data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/supported.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Supported formats</span></a>
+  <a href="../../setup_guide/general/docker.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Setup Docker</span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../examples/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Examples</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" aria-expanded="false" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+ <span class="menu-text">FIAT package</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../examples/single_event.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Single event</span></a>
+  <a href="../../setup_guide/kernel/installation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Installing FIAT</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../setup_guide/kernel/application.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Freeze FIAT as an application</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../setup_guide/kernel/linux.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FIAT on Linux</span></a>
   </div>
 </li>
       </ul>
@@ -283,7 +263,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Vulnerability data</h1>
+<h1 class="title">Setup Docker</h1>
 </div>
 
 
@@ -298,18 +278,8 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>The <strong>vulnerability</strong> of an asset is determined by its building type (e.g.&nbsp;‘residential 1-story building’) and the inundation depth, also refered to as water depth, during a flood event. Different assests incur different degrees of damage at varying inundation levels. This <strong>vulnerability</strong> can be quantified via <strong>flood depth-damage</strong> functions, see for example <a href="#fig-damagefunction">Figure&nbsp;1</a>. The damage function relates the water depth to the maximum potential damage per asset and returns the damage fraction (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. The value of the maximum potential damage differs per asset and must be specified in the <a href="../../user_guide/data/exposure.html">exposure data</a>.</p>
-<div class="cell" data-execution_count="1">
-<div class="cell-output cell-output-display">
-<div id="fig-damagefunction" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="vulnerability_files/figure-html/fig-damagefunction-output-1.png" width="589" height="432" class="figure-img"></p>
-<figcaption class="figure-caption">Figure&nbsp;1: Damage functions of different assets/structures.</figcaption>
-</figure>
-</div>
-</div>
-</div>
-<p>The damage functions must be given in a CSV file (<code>vulnerability.csv</code>), located in the <a href="../../user_guide/data/index.html">vulnerability folder</a>, see for example <a href="#tbl-damage-curve">Table&nbsp;1</a>. The first column contains the water depth, and then each additional column provides the damage fraction for the corresponding damage function. Three header rows are required, describing the unit of the water depth; <code>#UNIT=&lt;unit&gt;</code>, e.g., <code>#UNIT=m</code>. The second row, named <code>#METHOD</code>, must be defined for each damage-curve separately above the damage curve name. The method refers to the way that multiple flood values will be aggregated per asset in case the <em>area</em> method is used for deriving the inundation depth. The damage curve name must coincide with the name of the damage function defined in the <a href="../../user_guide/data/exposure.html">exposure data</a>.</p>
+<p>A docker file is present within the repository of Delft-FIAT. This docker file can be found <a href="https://github.com/Deltares/Delft-FIAT/blob/master/Dockerfile">here</a>.</p>
+<p>From this docker file a docker image can be produced. In the creation process of the docker image, pixi is used. <a href="https://pixi.sh/latest/">Pixi</a> is a fast(er) alternative of creating and installing python environments compared to mamba (conda). Creating a docker image can be done with the following command:</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -320,142 +290,25 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Water depth units (e.g.&nbsp;feet or meters) must be consistent with the units of the flood hazard map and the exposure data (i.e., ground elevation, ground floor height).</p>
+<p>The OS running used in the docker/ container image will be Debian.</p>
 </div>
 </div>
-<div class="cell" data-execution_count="2">
-<div class="cell-output cell-output-display" data-execution_count="2">
-<div id="tbl-damage-curve" class="anchored">
-<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
-<caption>Table&nbsp;1: Vulnerability data CSV file. The water depth must be in the outer left column followed by the damage functions. The user has the freedom to add multiple damage curves.</caption>
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th">#UNIT=m</th>
-<th colspan="2" data-quarto-table-cell-role="th" data-halign="left"></th>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">#METHOD</th>
-<th data-quarto-table-cell-role="th">mean</th>
-<th data-quarto-table-cell-role="th">max</th>
-</tr>
-<tr class="header">
-<th data-quarto-table-cell-role="th">water depth</th>
-<th data-quarto-table-cell-role="th">STRUCT1</th>
-<th data-quarto-table-cell-role="th">STRUCT2</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>0.00</td>
-<td>0.00</td>
-<td>0.00</td>
-</tr>
-<tr class="even">
-<td>0.25</td>
-<td>0.00</td>
-<td>0.00</td>
-</tr>
-<tr class="odd">
-<td>0.50</td>
-<td>0.00</td>
-<td>0.00</td>
-</tr>
-<tr class="even">
-<td>0.75</td>
-<td>0.00</td>
-<td>0.00</td>
-</tr>
-<tr class="odd">
-<td>1.00</td>
-<td>0.00</td>
-<td>0.00</td>
-</tr>
-<tr class="even">
-<td>1.25</td>
-<td>0.14</td>
-<td>0.20</td>
-</tr>
-<tr class="odd">
-<td>1.50</td>
-<td>0.25</td>
-<td>0.37</td>
-</tr>
-<tr class="even">
-<td>1.75</td>
-<td>0.35</td>
-<td>0.51</td>
-</tr>
-<tr class="odd">
-<td>2.00</td>
-<td>0.43</td>
-<td>0.63</td>
-</tr>
-<tr class="even">
-<td>2.25</td>
-<td>0.50</td>
-<td>0.74</td>
-</tr>
-<tr class="odd">
-<td>2.50</td>
-<td>0.57</td>
-<td>0.83</td>
-</tr>
-<tr class="even">
-<td>2.75</td>
-<td>0.63</td>
-<td>0.92</td>
-</tr>
-<tr class="odd">
-<td>3.00</td>
-<td>0.68</td>
-<td>0.96</td>
-</tr>
-<tr class="even">
-<td>3.25</td>
-<td>0.73</td>
-<td>0.96</td>
-</tr>
-<tr class="odd">
-<td>3.50</td>
-<td>0.78</td>
-<td>0.96</td>
-</tr>
-<tr class="even">
-<td>3.75</td>
-<td>0.82</td>
-<td>0.96</td>
-</tr>
-<tr class="odd">
-<td>4.00</td>
-<td>0.86</td>
-<td>0.96</td>
-</tr>
-<tr class="even">
-<td>4.25</td>
-<td>0.90</td>
-<td>0.96</td>
-</tr>
-<tr class="odd">
-<td>4.50</td>
-<td>0.93</td>
-<td>0.96</td>
-</tr>
-<tr class="even">
-<td>4.75</td>
-<td>0.96</td>
-<td>0.96</td>
-</tr>
-<tr class="odd">
-<td>5.00</td>
-<td>0.96</td>
-<td>0.96</td>
-</tr>
-</tbody>
-</table>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
 </div>
 </div>
+<div class="callout-body-container callout-body">
+<p>Note: Set the current directory to the directory of the cloned repository.</p>
 </div>
-<p>Water depths may be negative for assets that incur damage below the ground floor height, and the user is free to choose any water depth increments in the CSV file. The damage functions can have any name. Multiple damage-functions can be described in the vulnerability curves CSV file by simply adding consecutive columns next to one another.</p>
+</div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> build <span class="at">-f</span> Dockerfile <span class="at">--build-arg</span><span class="op">=</span><span class="st">"PIXIENV=default"</span> <span class="at">-t</span> fiat .</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>However, as an alternative, it can be build directly from the docker file in the github remote repository:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> build <span class="at">-f</span> https://raw.githubusercontent.com/Deltares/Delft-FIAT/master/Dockerfile <span class="at">--build-arg</span><span class="op">=</span><span class="st">"PIXIENV=default"</span> <span class="at">-t</span> fiat .</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -466,9 +319,27 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>You can also create damage functions with the <a href="https://deltares.github.io/hydromt_fiat/latest/#"><strong>HydroMT-FIAT model builder</strong></a></p>
+<p>The build argument <code>PIXIENV</code> is used to define which python enviroment to use. Using the <code>default</code> environment is recommended. An overview of all the environments can be found in the <a href="https://github.com/Deltares/Delft-FIAT/blob/master/pixi.toml">pixi toml file</a>.</p>
 </div>
 </div>
+<p>After setting up the docker image, a docker container can be spawned from this docker image. The docker container will contain all the necessary components to run Delft-FIAT.</p>
+<p>To run/ start a docker container from the previously created docker image:</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <code>-v</code> argument sets a mount, i.e.&nbsp;connection from a directory on the host machine to the docker container.</p>
+</div>
+</div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-it</span>  <span class="at">-v</span> <span class="va">$PWD</span>/data:/home/deltares/data <span class="at">--name</span> fiat fiat:latest bash</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>When inside the docker container one can simply call FIAT:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">fiat</span> run <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 
