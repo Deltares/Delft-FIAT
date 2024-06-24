@@ -27,7 +27,7 @@ number-sections: false
 
 website:
   title: "Delft FIAT"
-  favicon: _static/logo.png
+  favicon: _static/fiat.svg
   search:
     location: navbar
     limit: 5
@@ -44,7 +44,7 @@ website:
           />
         </a>
   navbar:
-    logo: _static/logo.png
+    logo: _static/fiat.svg
     search: true
     pinned: true
     left:
