@@ -10,10 +10,10 @@ from fiat.models.worker import (
 
 
 @pytest.mark.dependency()
-def test_geom_worker(tmpdir, geom_risk):
+def test_geom_worker(tmp_path, geom_risk):
     # Set model output directory
     model = geom_risk
-    model.cfg.set_output_dir(Path(str(tmpdir), "..", "worker_geom"))
+    model.cfg.set_output_dir(Path(str(tmp_path), "..", "worker_geom"))
 
     # Create the files:
     model._setup_output_files()
@@ -42,10 +42,10 @@ def test_geom_worker(tmpdir, geom_risk):
 
 
 @pytest.mark.dependency(depends=["test_geom_worker"])
-def test_geom_resolve(tmpdir, geom_risk):
+def test_geom_resolve(tmp_path, geom_risk):
     # Set model output directory
     model = geom_risk
-    model.cfg.set_output_dir(Path(str(tmpdir), "..", "worker_geom"))
+    model.cfg.set_output_dir(Path(str(tmp_path), "..", "worker_geom"))
 
     # Invoke the worker directly
     geom_resolve(
@@ -63,10 +63,10 @@ def test_geom_resolve(tmpdir, geom_risk):
 
 
 @pytest.mark.dependency()
-def test_grid_worker(tmpdir, grid_risk):
+def test_grid_worker(tmp_path, grid_risk):
     # Set model output directory
     model = grid_risk
-    model.cfg.set_output_dir(Path(str(tmpdir), "..", "worker_grid"))
+    model.cfg.set_output_dir(Path(str(tmp_path), "..", "worker_grid"))
 
     for idx in range(model.hazard_grid.size):
         grid_worker_exact(
@@ -83,10 +83,10 @@ def test_grid_worker(tmpdir, grid_risk):
 
 
 @pytest.mark.dependency(depends=["test_grid_worker"])
-def test_grid_risk(tmpdir, grid_risk):
+def test_grid_risk_worker(tmp_path, grid_risk):
     # Set model output directory
     model = grid_risk
-    model.cfg.set_output_dir(Path(str(tmpdir), "..", "worker_grid"))
+    model.cfg.set_output_dir(Path(str(tmp_path), "..", "worker_grid"))
 
     grid_worker_risk(
         model.cfg,

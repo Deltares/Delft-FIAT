@@ -5,73 +5,73 @@ from fiat.io import open_csv
 from osgeo import gdal
 
 
-def run_model(cfg, tmpdir):
+def run_model(cfg, p):
     # Execute
-    cfg.set_output_dir(str(tmpdir))
+    cfg.set_output_dir(str(p))
     mod = FIAT(cfg)
     mod.run()
 
 
-def test_geom_event(tmpdir, configs):
+def test_geom_event(tmp_path, configs):
     # run the model
-    run_model(configs["geom_event"], tmpdir)
+    run_model(configs["geom_event"], tmp_path)
 
     # Check the output for this specific case
-    out = open_csv(Path(str(tmpdir), "output.csv"), index="Object ID")
+    out = open_csv(Path(str(tmp_path), "output.csv"), index="Object ID")
     assert int(float(out[2, "Total Damage"])) == 740
     assert int(float(out[3, "Total Damage"])) == 1038
 
 
-def test_geom_missing(tmpdir, configs):
+def test_geom_missing(tmp_path, configs):
     # run the model
-    run_model(configs["geom_event_missing"], tmpdir)
+    run_model(configs["geom_event_missing"], tmp_path)
 
     # Check the output for this specific case
-    assert Path(str(tmpdir), "missing.log").exists()
-    missing = open(Path(str(tmpdir), "missing.log"), "r")
+    assert Path(str(tmp_path), "missing.log").exists()
+    missing = open(Path(str(tmp_path), "missing.log"), "r")
     assert sum(1 for _ in missing) == 1
 
 
-def test_geom_risk(tmpdir, configs):
+def test_geom_risk(tmp_path, configs):
     # run the model
-    run_model(configs["geom_risk"], tmpdir)
+    run_model(configs["geom_risk"], tmp_path)
 
     # Check the output for this specific case
-    out = open_csv(Path(str(tmpdir), "output.csv"), index="Object ID")
+    out = open_csv(Path(str(tmp_path), "output.csv"), index="Object ID")
     assert int(float(out[2, "Damage: Structure (5.0Y)"])) == 1804
     assert int(float(out[4, "Total Damage (10.0Y)"])) == 3840
     assert int(float(out[3, "Risk (EAD)"]) * 100) == 102247
 
 
-def test_grid_event(tmpdir, configs):
+def test_grid_event(tmp_path, configs):
     # run the model
-    run_model(configs["grid_event"], tmpdir)
+    run_model(configs["grid_event"], tmp_path)
 
     # Check the output for this specific case
     src = gdal.OpenEx(
-        str(Path(str(tmpdir), "output.nc")),
+        str(Path(str(tmp_path), "output.nc")),
     )
     arr = src.ReadAsArray()
     src = None
-    assert int(arr[2, 4] * 10) == 14091
+    assert int(arr[2, 4] * 10) == 14092
     assert int(arr[7, 3] * 10) == 8700
 
     src = gdal.OpenEx(
-        str(Path(str(tmpdir), "total_damages.nc")),
+        str(Path(str(tmp_path), "total_damages.nc")),
     )
     arr = src.ReadAsArray()
     src = None
-    assert int(arr[2, 4] * 10) == 14091
+    assert int(arr[2, 4] * 10) == 14092
     assert int(arr[7, 3] * 10) == 8700
 
 
-def test_grid_risk(tmpdir, configs):
+def test_grid_risk(tmp_path, configs):
     # run the model
-    run_model(configs["grid_risk"], tmpdir)
+    run_model(configs["grid_risk"], tmp_path)
 
     # Check the output for this specific case
     src = gdal.OpenEx(
-        str(Path(str(tmpdir), "ead.nc")),
+        str(Path(str(tmp_path), "ead.nc")),
     )
     arr = src.ReadAsArray()
     src = None
@@ -79,7 +79,7 @@ def test_grid_risk(tmpdir, configs):
     assert int(arr[5, 6] * 10) == 8468
 
     src = gdal.OpenEx(
-        str(Path(str(tmpdir), "ead_total.nc")),
+        str(Path(str(tmp_path), "ead_total.nc")),
     )
     arr = src.ReadAsArray()
     src = None

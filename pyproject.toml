@@ -27,7 +27,7 @@ description = "Delft Fast Impact Assessment Tool"
 readme = "README.md"
 license = {text = "MIT"}
 
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
 "gdal>=3.5",
 "numpy",
@@ -64,7 +64,6 @@ classifiers = [
 # Specify the Python versions you support here. In particular, ensure
 # that you indicate whether you support Python 2, Python 3 or both.
 'Programming Language :: Python :: 3',
-'Programming Language :: Python :: 3.9',
 'Programming Language :: Python :: 3.10',
 'Programming Language :: Python :: 3.11',
 'Programming Language :: Python :: 3.12',
@@ -81,7 +80,6 @@ build = [
 dev = [
     "cython",
     "pre-commit",
-    "pyside2",
     "ruff",
     "delft_fiat[all,docs,extra,test]",
 ]
@@ -97,7 +95,6 @@ extra = [
     "tomli-w",
 ]
 test = [
-    "black",
 	"pytest>=2.7.3",
 	"pytest-cov",
     "pytest-dependency",

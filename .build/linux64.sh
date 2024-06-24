@@ -18,7 +18,7 @@ fi
 
 if [ -z "$conda_executable" ]
 then
-  conda_executable="/usr/share/miniconda3/condabin/conda"
+  conda_executable="/home/runner/miniconda3/condabin/conda"
 fi
 
 conda_base_dir=$(dirname $(dirname $conda_executable))

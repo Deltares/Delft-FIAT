@@ -1858,8 +1858,11 @@ class Table(_Table):
         _rnd = abs(floor(log10(delta)))
 
         _x = tuple(
-            arange(min(self.index), max(self.index) + delta / 2, delta).round(_rnd)
+            arange(min(self.index), max(self.index) + delta / 2, delta)
+            .round(_rnd)
+            .tolist()
         )
+
         _x = list(set(_x + self.index))
         _x.sort()
 

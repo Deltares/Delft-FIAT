@@ -209,7 +209,7 @@ No data found in exposure database",
 
             # Calculate the inundation
             inun, redf = calc_haz(
-                res,
+                res.tolist(),
                 _ref,
                 ft_info[exp._columns["Ground Floor Height"]],
                 ft_info[exp._columns["Ground Elevation"]],

@@ -3,8 +3,8 @@ from pathlib import Path
 from fiat.io import BufferedGeomWriter, BufferedTextWriter
 
 
-def test_bufferedgeom(tmpdir, geom_data):
-    out_path = Path(str(tmpdir))
+def test_bufferedgeom(tmp_path, geom_data):
+    out_path = Path(str(tmp_path))
     writer = BufferedGeomWriter(
         Path(out_path, "bufferedgeoms.gpkg"),
         geom_data.get_srs(),
@@ -35,8 +35,8 @@ def test_bufferedgeom(tmpdir, geom_data):
     pass
 
 
-def test_bufferedtext(tmpdir):
-    out_path = Path(str(tmpdir))
+def test_bufferedtext(tmp_path):
+    out_path = Path(str(tmp_path))
     writer = BufferedTextWriter(
         Path(out_path, "bufferedtext.txt"),
         mode="wb",

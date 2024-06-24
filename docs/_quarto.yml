@@ -48,8 +48,8 @@ website:
     search: true
     pinned: true
     left:
-      - text: Getting Started
-        file: getting_started/index.qmd
+      - text: Information
+        file: info/index.qmd
       - setup_guide/index.qmd
       - user_guide/index.qmd
       - api/index.qmd
@@ -67,15 +67,15 @@ website:
           - text: empty
 
   sidebar:
-    - title: "Getting started"
+    - title: "Information"
       border: true
       collapse-level: 3
       contents:
-        - text: Getting started
-          file: getting_started/index.qmd
+        - text: Information
+          file: info/index.qmd
         - text: Model information
           file: info/models.qmd
-        - getting_started/faq.qmd
+        - info/faq.qmd
     - title: "Setup guide"
       collapse-level: 3
       contents:
@@ -83,6 +83,7 @@ website:
         - section: "General setup"
           contents:
             - "setup_guide/general/conda.qmd"
+            - "setup_guide/general/docker.qmd"
         - section: "FIAT package"
           contents:
             - setup_guide/kernel/installation.qmd

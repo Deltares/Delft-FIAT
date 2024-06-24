@@ -1,0 +1,55 @@
+---
+title: Setup Docker
+---
+
+A docker file is present within the repository of Delft-FIAT. This docker file can
+be found [here](https://github.com/Deltares/Delft-FIAT/blob/master/Dockerfile).
+
+From this docker file a docker image can be produced. In the creation process of the
+docker image, pixi is used. [Pixi](https://pixi.sh/latest/) is a fast(er) alternative of creating and
+installing python environments compared to mamba (conda). Creating a docker image can
+be done with the following command:
+
+::: {.callout-important}
+The OS running used in the docker/ container image will be Debian.
+:::
+
+::: {.callout-note}
+Note: Set the current directory to the directory of the cloned repository.
+:::
+
+```bash
+docker build -f Dockerfile --build-arg="PIXIENV=default" -t fiat .
+```
+
+However, as an alternative, it can be build directly from the docker file in the github
+remote repository:
+
+```bash
+docker build -f https://raw.githubusercontent.com/Deltares/Delft-FIAT/master/Dockerfile --build-arg="PIXIENV=default" -t fiat .
+```
+
+::: {.callout-tip}
+The build argument `PIXIENV` is used to define which python enviroment to use. Using the `default` environment is recommended.
+An overview of all the environments can be found in the [pixi toml file](https://github.com/Deltares/Delft-FIAT/blob/master/pixi.toml).
+:::
+
+After setting up the docker image, a docker container can be spawned from this docker
+image. The docker container will contain all the necessary components to run
+Delft-FIAT.
+
+To run/ start a docker container from the previously created docker image:
+
+::: {.callout-tip}
+The `-v` argument sets a mount, i.e. connection from a directory on the host machine to the docker container.
+:::
+
+```bash
+docker run -it  -v $PWD/data:/home/deltares/data --name fiat fiat:latest bash
+```
+
+When inside the docker container one can simply call FIAT:
+
+```bash
+fiat run --help
+```

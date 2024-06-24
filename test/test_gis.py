@@ -28,19 +28,19 @@ def test_pin(geom_data, grid_event_data):
     assert int(round(hazard[0] * 100, 0)) == 160
 
 
-def test_reproject(tmpdir, geom_data, grid_event_data):
+def test_reproject(tmp_path, geom_data, grid_event_data):
     dst_crs = "EPSG:3857"
 
     new_gm = geom.reproject(
         geom_data,
         dst_crs,
-        str(tmpdir),
+        str(tmp_path),
     )
 
     new_gr = grid.reproject(
         grid_event_data,
         dst_crs,
-        str(tmpdir),
+        str(tmp_path),
     )
 
     assert new_gm.get_srs().GetAuthorityCode(None) == "3857"

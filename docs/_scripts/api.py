@@ -1,5 +1,7 @@
 """Creating the API Reference for Delft-FIAT with the help of quartodoc."""
+import argparse
 import yaml
+import sys
 from pathlib import Path
 
 from quartodoc import (
@@ -8,6 +10,9 @@ from quartodoc import (
     collect,
 )
 from quartodoc.layout import DocAttribute, Page, Section
+
+from fiat.cli.util import file_path_check
+from fiat.cli.formatter import MainHelpFormatter
 
 
 def parse_content(
@@ -158,7 +163,7 @@ def create_tree(
         _description_
     """
     # set some meta info
-    p = Path(__file__).parent
+    p = Path(file).parent
 
     # Setup the builder and global blueprint
     b = Builder.from_quarto_config(file)
@@ -208,9 +213,50 @@ def create_tree(
     # Also write the index to the hard drive
     b.write_index(bp)
 
+    # Return the directory
+    return Path(p, rel_dir)
+
+
+def run(args):
+    """Dummy run method."""
+    yml = file_path_check(args.config)
+    p = create_tree(yml.as_posix())
+    sys.stdout.write(f"Written api docs to {p.as_posix()}\n")
+
+
+def args_parser():
+    """A simple parser."""
+    parser = argparse.ArgumentParser(
+        #    usage="%(prog)s <options> <commands>",
+        add_help=False,
+        formatter_class=MainHelpFormatter,
+    )
+    # Simple help option
+    parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        default=argparse.SUPPRESS,
+        help="Show this help message and exit",
+    )
+
+    # Add the quarto config file
+    parser.add_argument(
+        "config",
+        help="Path to the _quarto.yml settings file.",
+    )
+    # Set the default behaviour
+    parser.set_defaults(func=run)
+
+    # Return the parser
+    return parser
+
+
+def main(argv=sys.argv[1:]):
+    parser = args_parser()
+    args = parser.parse_args(args=None if argv else ["--help"])
+    args.func(args)
+
 
 if __name__ == "__main__":
-    p = Path(__file__).parent
-    yml = Path(p, "_quarto.yml").as_posix()
-
-    create_tree(yml)
+    main()

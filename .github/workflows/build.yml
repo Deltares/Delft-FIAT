@@ -21,7 +21,7 @@ jobs:
         include:
           - os: ubuntu-latest
             label: linux-64
-            prefix: /usr/share/miniconda3/envs/fiat_test
+            prefix: /home/runner/miniconda3/envs/fiat_test
 
     name: ${{ matrix.os }} - py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
@@ -40,7 +40,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
-            /usr/share/miniconda3
+            /home/runner/miniconda3
             ~/pycache
           # the below two settings mean we'll alway srestore the cache
           # but the cache hit output can tell us if we have to update afterwards
@@ -57,7 +57,7 @@ jobs:
       - name: Update environment
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          export PATH=/usr/share/miniconda3/bin:$PATH
+          export PATH=/home/runner/miniconda3/bin:$PATH
           mamba env update -n fiat_build -f environment.yml
 
       - name: Build FIAT
@@ -67,8 +67,8 @@ jobs:
 
       - name: Create Testdata
         run: |
-          export PATH=/usr/share/miniconda3/bin:$PATH
-          source /usr/share/miniconda3/etc/profile.d/conda.sh
+          export PATH=/home/runner/miniconda3/bin:$PATH
+          source /home/runner/miniconda3/etc/profile.d/conda.sh
           conda activate fiat_build
           pip install tomli-w
           python .testdata/create_test_data.py
