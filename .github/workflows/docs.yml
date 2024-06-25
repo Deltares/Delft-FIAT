@@ -4,8 +4,20 @@ name: Build Documentation
 on:
   push:
     branches: [master]
+    paths:
+      - docs/*
+      - src/fiat/*
+      - .testdata/*
+      - pyproject.toml
+      - .github/workflows/docs.yml
   pull_request:
     branches: [master]
+    paths:
+      - docs/*
+      - src/fiat/*
+      - .testdata/*
+      - pyproject.toml
+      - .github/workflows/docs.yml
 
 jobs:
   docs:

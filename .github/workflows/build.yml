@@ -4,8 +4,18 @@ name: Build
 on:
   push:
     branches: [ master ]
+    paths:
+      - .build/*
+      - src/fiat/*
+      - pyproject.toml
+      - .github/workflows/build.yml
   pull_request:
     branches: [ master ]
+    paths:
+      - .build/*
+      - src/fiat/*
+      - pyproject.toml
+      - .github/workflows/build.yml
 
 jobs:
   Test:
