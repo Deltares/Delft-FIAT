@@ -1,6 +1,7 @@
 """Base FIAT utility."""
 
 import ctypes
+import fnmatch
 import math
 import os
 import platform
@@ -152,9 +153,26 @@ def flatten_dict(d: MutableMapping, parent_key: str = "", sep: str = "."):
 
 
 # Exposure specific utility
-def gen_new_columns():
+def deter_columns(
+    columns: list | tuple,
+    type: str,
+):
     """_summary_."""
-    pass
+    # Filter the current columns
+    dmg = fnmatch.filter(columns, f"fn_{type}_*")
+    dmg_suffix = [item.split("_")[-1].strip() for item in dmg]
+    mpd = fnmatch.filter(columns, f"max_{type}_*")
+    mpd_suffix = [item.split("_")[-1].strip() for item in mpd]
+
+    # Check the overlap
+    _check = [item in mpd_suffix for item in dmg_suffix]
+
+    # Determine the missing values
+    _missing = [item for item, b in zip(dmg_suffix, _check) if not b]
+    for item in _missing:
+        dmg_suffix.remove(item)
+
+    return dmg_suffix, _missing
 
 
 # GIS related utility

@@ -1623,7 +1623,7 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
     ) -> object:
         """_summary_."""
         # Declarations
-        self._dup_cols = None
+        self.columns_raw = None
         self.dtypes = ()
         self.meta = kwargs
         self.index_col = -1
@@ -1647,11 +1647,7 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
             columns = [f"col_{num}" for num in range(kwargs["ncol"])]
 
         # Some checking in regards to duplicates in column headers
-        if len(set(columns)) != len(columns):
-            _set = list(set(columns))
-            _counts = [columns.count(elem) for elem in _set]
-            _dup = [elem for _i, elem in enumerate(_set) if _counts[_i] > 1]
-            self._dup_cols = _dup
+        self.columns_raw = columns
 
         # Create the column indexing
         self._columns = dict(zip(columns, range(kwargs["ncol"])))
@@ -1681,6 +1677,13 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
     @property
     def columns(self):
         return tuple(self._columns.keys())
+
+    @property
+    def duplicate_columns(self):
+        _set = list(set(self.columns_raw))
+        _counts = [self.columns_raw.count(elem) for elem in _set]
+        _dup = [elem for _i, elem in enumerate(_set) if _counts[_i] > 1]
+        return _dup
 
     @property
     def index(self):
@@ -2053,15 +2056,14 @@ class ExposureTable(TableLazy):
             **kwargs,
         )
 
-        _dc_cols = ["Damage Function:", "Max Potential Damage"]
+        _dc_cols = ["fn_damage", "max_damage"]
 
         for req in _dc_cols:
-            req_s = req.strip(":").lower().replace(" ", "_")
             self.__setattr__(
-                req_s,
+                req,
                 dict(
                     [
-                        (item.split(":")[1].strip(), self._columns[item])
+                        (item.split("_")[-1].strip(), self._columns[item])
                         for item in self.columns
                         if item.startswith(req)
                     ]
@@ -2069,9 +2071,9 @@ class ExposureTable(TableLazy):
             )
 
         self._blueprint_columns = (
-            ["Inundation Depth", "Reduction Factor"]
-            + [f"Damage: {item}" for item in self.damage_function.keys()]
-            + ["Total Damage"]
+            ["inun_depth", "reduc_fact"]
+            + [f"damage_{item.lower()}" for item in self.fn_damage.keys()]
+            + ["total_damage"]
         )
 
         self._dat_len = len(self._blueprint_columns)
@@ -2090,17 +2092,8 @@ class ExposureTable(TableLazy):
             A list containing new columns.
         """
         _out = []
-        if name:
-            name = f"({name})"
         for bp in self._blueprint_columns:
-            # _parts = bp.split(":")
-
-            # if len(_parts) == 1:
-            #     bp += f" {name}"
-            #     _out.append(bp)
-            #     continue
-
-            bp += f" {name}"
+            bp += f"_{name}"
             _out.append(bp.strip())
 
         return _out

@@ -158,13 +158,17 @@ calculated chunks ({self.nchunk})"
             ) as _w:
                 pass
 
+    def check_exposure_data(self):
+        """_summary_."""
+        pass
+
     def read_exposure_data(self):
         """_summary_."""
         path = self.cfg.get("exposure.csv.file")
         logger.info(f"Reading exposure data ('{path.name}')")
 
         # Setting the keyword arguments from settings file
-        kw = {"index": "Object ID"}
+        kw = {"index": "object_id"}
         kw.update(
             self.cfg.generate_kwargs("exposure.csv.settings"),
         )
@@ -181,7 +185,7 @@ calculated chunks ({self.nchunk})"
         ## Information for output
         _ex = None
         if self.cfg.get("hazard.risk"):
-            _ex = ["Risk (EAD)"]
+            _ex = ["ead"]
         cols = data.create_all_columns(
             self.cfg.get("hazard.band_names"),
             _ex,

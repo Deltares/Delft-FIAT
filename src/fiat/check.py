@@ -203,7 +203,7 @@ def check_hazard_band_names(
 ):
     """_summary_."""
     if risk:
-        return [f"{n}Y" for n in rp]
+        return [f"{n}y" for n in rp]
 
     if count == 1:
         return [""]
@@ -261,9 +261,9 @@ def check_exp_columns(
 ):
     """_summary_."""
     _man_columns = [
-        "Object ID",
-        "Ground Elevation",
-        "Ground Floor Height",
+        "object_id",
+        "ground_elevtn",
+        "ground_flht",
     ]
 
     _check = [item in columns for item in _man_columns]
@@ -272,10 +272,10 @@ def check_exp_columns(
         logger.error(f"Missing mandatory exposure columns: {_missing}")
         sys.exit()
 
-    dmg = fnmatch.filter(columns, "Damage Function: *")
-    dmg_suffix = [item.split(":")[1].strip() for item in dmg]
-    mpd = fnmatch.filter(columns, "Max Potential Damage: *")
-    mpd_suffix = [item.split(":")[1].strip() for item in mpd]
+    dmg = fnmatch.filter(columns, "fn_damage_*")
+    dmg_suffix = [item.split("_")[-1].strip() for item in dmg]
+    mpd = fnmatch.filter(columns, "max_damage_*")
+    mpd_suffix = [item.split("_")[-1].strip() for item in mpd]
 
     if not dmg:
         logger.error("No damage function were given in ")
@@ -304,7 +304,7 @@ def check_exp_grid_dmfs(
     dmfs: tuple | list,
 ):
     """_summary_."""
-    _ef = [_i.get_metadata_item("damage_function") for _i in exp]
+    _ef = [_i.get_metadata_item("damage_fn") for _i in exp]
     _i = None
 
     _check = [item in dmfs for item in _ef]

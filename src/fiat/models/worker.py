@@ -200,7 +200,7 @@ No data found in exposure database",
             row += f"{ft_info[exp.index_col]}".encode()
 
             # Get the hazard data from the exposure geometrie
-            if ft_info[exp._columns["Extraction Method"]].lower() == "area":
+            if ft_info[exp._columns["extract_method"]].lower() == "area":
                 res = overlay.clip(band, haz.get_srs(), haz.get_geotransform(), ft)
             else:
                 res = overlay.pin(band, haz.get_geotransform(), geom.point_in_geom(ft))
@@ -211,20 +211,20 @@ No data found in exposure database",
             inun, redf = calc_haz(
                 res.tolist(),
                 _ref,
-                ft_info[exp._columns["Ground Floor Height"]],
-                ft_info[exp._columns["Ground Elevation"]],
+                ft_info[exp._columns["ground_flht"]],
+                ft_info[exp._columns["ground_elevtn"]],
             )
             row += f",{round(inun, 2)},{round(redf, 2)}".encode()
 
             # Calculate the damage per catagory, and in total (_td)
             _td = 0
-            for key, col in exp.damage_function.items():
+            for key, col in exp.fn_damage.items():
                 if isnan(inun) or str(ft_info[col]) == "nan":
                     _d = "nan"
                 else:
                     inun = max(min(vul_max, inun), vul_min)
                     _df = vul[round(inun, _rnd), ft_info[col]]
-                    _d = _df * ft_info[exp.max_potential_damage[key]] * redf
+                    _d = _df * ft_info[exp.max_damage[key]] * redf
                     _d = round(_d, 2)
                     _td += _d
 
@@ -323,7 +323,7 @@ def grid_worker_exact(
         write_bands.append(out_src[idx + 1])
         exp_nds.append(exp_bands[idx].nodata)
         write_bands[idx].src.SetNoDataValue(exp_nds[idx])
-        dmfs.append(exp_bands[idx].get_metadata_item("damage_function"))
+        dmfs.append(exp_bands[idx].get_metadata_item("damage_fn"))
 
     # Going trough the chunks
     for _w, h_ch in haz_band:
