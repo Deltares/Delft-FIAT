@@ -29,6 +29,7 @@ from fiat.util import (
     _read_gridsrouce_layers,
     _text_chunk_gen,
     deter_type,
+    find_duplicates,
     regex_pattern,
     replace_empty,
 )
@@ -441,6 +442,7 @@ class CSVParser:
         self.meta["index_col"] = -1
         self.meta["index_name"] = None
         self.meta["delimiter"] = delimiter
+        self.meta["dup_cols"] = None
         self.index = None
         self.columns = None
         self._nrow = self.data.size
@@ -541,6 +543,7 @@ class CSVParser:
                 break
 
             self.columns = [item.strip() for item in line.split(self.delim)]
+            self.meta["dup_cols"] = find_duplicates(self.columns)
             self._resolve_column_headers()
             self._ncol = len(self.columns)
             break
@@ -552,6 +555,17 @@ class CSVParser:
     def _resolve_column_headers(self):
         """_summary_."""
         _cols = self.columns
+        dup = self.meta["dup_cols"]
+        if dup is None:
+            dup = []
+        # Solve duplicate values first
+        count = dict(zip(dup, [0] * len(dup)))
+        for idx, item in enumerate(_cols):
+            if item in dup:
+                _cols[idx] += f"_{count[item]}"
+                count[item] += 1
+
+        # Solve unnamed column headers
         _cols = [_col if _col else f"Unnamed_{_i+1}" for _i, _col in enumerate(_cols)]
         self.columns = _cols
 
@@ -1623,7 +1637,6 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
     ) -> object:
         """_summary_."""
         # Declarations
-        self.columns_raw = None
         self.dtypes = ()
         self.meta = kwargs
         self.index_col = -1
@@ -1677,13 +1690,6 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
     @property
     def columns(self):
         return tuple(self._columns.keys())
-
-    @property
-    def duplicate_columns(self):
-        _set = list(set(self.columns_raw))
-        _counts = [self.columns_raw.count(elem) for elem in _set]
-        _dup = [elem for _i, elem in enumerate(_set) if _counts[_i] > 1]
-        return _dup
 
     @property
     def index(self):
