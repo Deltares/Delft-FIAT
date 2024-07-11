@@ -1,6 +1,5 @@
 """Checks for the data of FIAT."""
 
-import fnmatch
 import sys
 from pathlib import Path
 
@@ -258,13 +257,12 @@ multiple datasets (subsets)"""
 ## Exposure
 def check_exp_columns(
     columns: tuple | list,
+    specific_columns: tuple | list = [],
 ):
     """_summary_."""
     _man_columns = [
         "object_id",
-        "ground_elevtn",
-        "ground_flht",
-    ]
+    ] + specific_columns
 
     _check = [item in columns for item in _man_columns]
     if not all(_check):
@@ -272,30 +270,26 @@ def check_exp_columns(
         logger.error(f"Missing mandatory exposure columns: {_missing}")
         sys.exit()
 
-    dmg = fnmatch.filter(columns, "fn_damage_*")
-    dmg_suffix = [item.split("_")[-1].strip() for item in dmg]
-    mpd = fnmatch.filter(columns, "max_damage_*")
-    mpd_suffix = [item.split("_")[-1].strip() for item in mpd]
 
-    if not dmg:
-        logger.error("No damage function were given in ")
-        sys.exit()
-
-    if not mpd:
-        logger.error("No maximum potential damages were given in ")
-        sys.exit()
-
-    _check = [item in mpd_suffix for item in dmg_suffix]
-    if not any(_check):
+def check_exp_derived_types(
+    type: str,
+    found: tuple | list,
+    missing: tuple | list,
+):
+    """_summary_."""
+    # Error when no columns are found for vulnerability type
+    if not found:
         logger.error(
-            "Damage function and maximum potential damage do not have a single match"
+            f"For type: '{type}' no matching columns where found for \
+fn_{type}_* and max_{type}_* columns."
         )
         sys.exit()
-    if not all(_check):
-        _missing = [item for item, b in zip(dmg_suffix, _check) if not b]
+
+    # Log when combination of fn and max is missing
+    if missing:
         logger.warning(
             f"No every damage function has a corresponding \
-maximum potential damage: {_missing}"
+    maximum potential damage: {missing}"
         )
 
 
