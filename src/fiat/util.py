@@ -153,26 +153,38 @@ def flatten_dict(d: MutableMapping, parent_key: str = "", sep: str = "."):
 
 
 # Exposure specific utility
-def deter_columns(
-    columns: list | tuple,
+def discover_exp_columns(
+    columns: dict,
     type: str,
 ):
     """_summary_."""
+    dmg_idx = {}
+
+    # Get column values
+    column_vals = list(columns.keys())
+
     # Filter the current columns
-    dmg = fnmatch.filter(columns, f"fn_{type}_*")
+    dmg = fnmatch.filter(column_vals, f"fn_{type}_*")
     dmg_suffix = [item.split("_")[-1].strip() for item in dmg]
-    mpd = fnmatch.filter(columns, f"max_{type}_*")
+    mpd = fnmatch.filter(column_vals, f"max_{type}_*")
     mpd_suffix = [item.split("_")[-1].strip() for item in mpd]
 
     # Check the overlap
     _check = [item in mpd_suffix for item in dmg_suffix]
 
     # Determine the missing values
-    _missing = [item for item, b in zip(dmg_suffix, _check) if not b]
-    for item in _missing:
+    missing = [item for item, b in zip(dmg_suffix, _check) if not b]
+    for item in missing:
         dmg_suffix.remove(item)
 
-    return dmg_suffix, _missing
+    fn = {}
+    maxv = {}
+    for val in dmg_suffix:
+        fn.update({val: columns[f"fn_{type}_{val}"]})
+        maxv.update({val: columns[f"max_{type}_{val}"]})
+    dmg_idx.update({"fn": fn, "max": maxv})
+
+    return dmg_suffix, dmg_idx, missing
 
 
 # GIS related utility
@@ -358,6 +370,16 @@ def generic_path_check(
 
 
 # Misc.
+def find_duplicates(elements: tuple | list):
+    """Find duplicate elements in an iterable object."""
+    uni = list(set(elements))
+    counts = [elements.count(elem) for elem in uni]
+    dup = [elem for _i, elem in enumerate(uni) if counts[_i] > 1]
+    if not dup:
+        return None
+    return dup
+
+
 def object_size(obj):
     """Calculate the actual size of an object (bit overestimated).
 
