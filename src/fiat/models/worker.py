@@ -1,7 +1,8 @@
 """Workers of Delft-FIAT."""
 
+import importlib
 import os
-from math import floor, isnan, nan
+from math import floor, nan
 from multiprocessing.synchronize import Lock
 from pathlib import Path
 
@@ -17,7 +18,7 @@ from fiat.io import (
     open_grid,
 )
 from fiat.log import LogItem, Sender
-from fiat.models.calc import calc_haz, calc_risk
+from fiat.models.calc import calc_risk
 from fiat.util import NEWLINE_CHAR, create_windows, regex_pattern, replace_empty
 
 
@@ -154,6 +155,10 @@ def geom_worker(
     lock: Lock = None,
 ):
     """_summary_."""
+    # Setup the module
+    module = importlib.import_module(f"fiat.calc.{cfg.get('global.type')}")
+    func = getattr(module, "calculate_wcsv")
+
     # Extract the hazard band as an object
     band = haz[idx]
     # Setup some metadata
@@ -207,30 +212,21 @@ No data found in exposure database",
 
             res[res == band.nodata] = nan
 
-            # Calculate the inundation
-            inun, redf = calc_haz(
-                res.tolist(),
-                _ref,
-                ft_info[exp._columns["ground_flht"]],
-                ft_info[exp._columns["ground_elevtn"]],
+            out = func(
+                res,
+                ft_info,
+                exp.fn_damage,
+                exp.max_damage,
+                vul,
+                vul_min,
+                vul_max,
+                _rnd,
+                reference=_ref,
+                ground_elevtn=ft_info[exp._columns["ground_elevtn"]],
+                ground_flht=ft_info[exp._columns["ground_flht"]],
             )
-            row += f",{round(inun, 2)},{round(redf, 2)}".encode()
 
-            # Calculate the damage per catagory, and in total (_td)
-            _td = 0
-            for key, col in exp.fn_damage.items():
-                if isnan(inun) or str(ft_info[col]) == "nan":
-                    _d = "nan"
-                else:
-                    inun = max(min(vul_max, inun), vul_min)
-                    _df = vul[round(inun, _rnd), ft_info[col]]
-                    _d = _df * ft_info[exp.max_damage[key]] * redf
-                    _d = round(_d, 2)
-                    _td += _d
-
-                row += f",{_d}".encode()
-
-            row += f",{round(_td, 2)}".encode()
+            row += ("," + "{}," * len(out)).format(*out).rstrip(",").encode()
 
             # Write this to the buffer
             row += NEWLINE_CHAR.encode()

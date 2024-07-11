@@ -1,11 +1,13 @@
 """Base model of FIAT."""
 
+import importlib
 from abc import ABCMeta, abstractmethod
 from multiprocessing import Manager, get_context
 from os import cpu_count
 
 from osgeo import osr
 
+from fiat.calc.ead import risk_density
 from fiat.check import (
     check_duplicate_columns,
     check_global_crs,
@@ -19,7 +21,6 @@ from fiat.gis import grid
 from fiat.gis.crs import get_srs_repr
 from fiat.io import open_csv, open_grid
 from fiat.log import spawn_logger
-from fiat.models.calc import calc_rp_coef
 from fiat.util import NEED_IMPLEMENTED, deter_dec
 
 logger = spawn_logger("fiat.model")
@@ -44,6 +45,10 @@ class BaseModel(metaclass=ABCMeta):
         self.exposure_grid = None
         self.hazard_grid = None
         self.vulnerability_data = None
+        # Type of calculations
+        self.type = self.cfg.get("global.type", "flood")
+        self.module = importlib.import_module(f"fiat.calc.{self.type}")
+        self.cfg.set("global.type", self.type)
         # Vulnerability data
         self._vul_step_size = 0.01
         self._rounding = 2
@@ -78,6 +83,20 @@ class BaseModel(metaclass=ABCMeta):
     @abstractmethod
     def _clean_up(self):
         raise NotImplementedError(NEED_IMPLEMENTED)
+
+    def _set_max_threads(self):
+        """_summary_."""
+        self.max_threads = cpu_count()
+        _max_threads = self.cfg.get("global.threads")
+        if _max_threads is not None:
+            if _max_threads > self.max_threads:
+                logger.warning(
+                    f"Given number of threads ('{_max_threads}') \
+exceeds machine thread count ('{self.max_threads}')"
+                )
+            self.max_threads = min(self.max_threads, _max_threads)
+
+        logger.info(f"Available number of threads: {self.max_threads}")
 
     def _set_model_srs(self):
         """_summary_."""
@@ -189,7 +208,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             )
             self.cfg.set("hazard.return_periods", rp)
             # Directly calculate the coefficients
-            rp_coef = calc_rp_coef(rp)
+            rp_coef = risk_density(rp)
             self.cfg.set("hazard.rp_coefficients", rp_coef)
 
         # Information for output
@@ -219,7 +238,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         logger.info("Executing vulnerability checks...")
 
         # Column check
-        check_duplicate_columns(data._dup_cols)
+        check_duplicate_columns(data.meta["dup_cols"])
 
         # upscale the data (can be done after the checks)
         if "vulnerability.step_size" in self.cfg:
@@ -234,20 +253,6 @@ using a step size of: {self._vul_step_size}"
         data.upscale(self._vul_step_size, inplace=True)
         # When all is done, add it
         self.vulnerability_data = data
-
-    def _set_max_threads(self):
-        """_summary_."""
-        self.max_threads = cpu_count()
-        _max_threads = self.cfg.get("global.threads")
-        if _max_threads is not None:
-            if _max_threads > self.max_threads:
-                logger.warning(
-                    f"Given number of threads ('{_max_threads}') \
-exceeds machine thread count ('{self.max_threads}')"
-                )
-            self.max_threads = min(self.max_threads, _max_threads)
-
-        logger.info(f"Available number of threads: {self.max_threads}")
 
     @abstractmethod
     def run(

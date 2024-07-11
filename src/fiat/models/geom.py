@@ -8,6 +8,7 @@ from fiat.cfg import ConfigReader
 from fiat.check import (
     check_duplicate_columns,
     check_exp_columns,
+    check_exp_derived_types,
     check_geom_extent,
     check_internal_srs,
     check_vs_srs,
@@ -30,7 +31,7 @@ from fiat.models.util import (
     geom_threads,
 )
 from fiat.models.worker import geom_resolve, geom_worker
-from fiat.util import create_1d_chunk
+from fiat.util import create_1d_chunk, discover_exp_columns
 
 logger = spawn_logger("fiat.model.geom")
 
@@ -60,9 +61,14 @@ class GeomModel(BaseModel):
     ):
         super().__init__(cfg)
 
+        self.csv = self.cfg.get("exposure.use_csv", False)
+        self.exposure_types = self.cfg.get("exposure.types", ["damage"])
+
         # Setup the geometry model
-        self.read_exposure_data()
         self.read_exposure_geoms()
+        if self.csv:
+            self.read_exposure_data()
+        self.check_exposure_types()
         self._set_chunking()
         self._set_num_threads()
         self._queue = self._mp_manager.Queue(maxsize=10000)
@@ -158,9 +164,38 @@ calculated chunks ({self.nchunk})"
             ) as _w:
                 pass
 
-    def check_exposure_data(self):
+    def check_exposure_types(self):
         """_summary_."""
-        pass
+        # Get the relevant column headers
+        columns = self.exposure_geoms["file1"]._columns
+        if self.csv:
+            columns = self.exposure_data._columns
+
+        # Check the exposure column headers
+        check_exp_columns(
+            list(columns.keys()),
+            specific_columns=getattr(self.module, "MANDATORY_COLUMNS"),
+        )
+
+        # Check the found columns
+        types = {}
+        for t in self.exposure_types:
+            types[t] = {}
+            found, found_idx, missing = discover_exp_columns(columns, type=t)
+            check_exp_derived_types(t, found, missing)
+            types[t] = found_idx
+
+        self.cfg.set("exposure.types_expanded", types)
+
+        ## Information for output
+        _ex = None
+        if self.cfg.get("hazard.risk"):
+            _ex = ["ead"]
+        cols = self.exposure_data.create_all_columns(
+            self.cfg.get("hazard.band_names"),
+            _ex,
+        )
+        self.cfg.set("output.new_columns", cols)
 
     def read_exposure_data(self):
         """_summary_."""
@@ -176,21 +211,8 @@ calculated chunks ({self.nchunk})"
         ##checks
         logger.info("Executing exposure data checks...")
 
-        # Check for mandatory columns
-        check_exp_columns(data.columns)
-
         # Check for duplicate columns
-        check_duplicate_columns(data._dup_cols)
-
-        ## Information for output
-        _ex = None
-        if self.cfg.get("hazard.risk"):
-            _ex = ["ead"]
-        cols = data.create_all_columns(
-            self.cfg.get("hazard.band_names"),
-            _ex,
-        )
-        self.cfg.set("output.new_columns", cols)
+        check_duplicate_columns(data.meta["dup_cols"])
 
         ## When all is done, add it
         self.exposure_data = data
