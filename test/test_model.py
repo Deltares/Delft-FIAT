@@ -17,9 +17,9 @@ def test_geom_event(tmp_path, configs):
     run_model(configs["geom_event"], tmp_path)
 
     # Check the output for this specific case
-    out = open_csv(Path(str(tmp_path), "output.csv"), index="Object ID")
-    assert int(float(out[2, "Total Damage"])) == 740
-    assert int(float(out[3, "Total Damage"])) == 1038
+    out = open_csv(Path(str(tmp_path), "output.csv"), index="object_id")
+    assert int(float(out[2, "total_damage"])) == 740
+    assert int(float(out[3, "total_damage"])) == 1038
 
 
 def test_geom_missing(tmp_path, configs):
@@ -37,10 +37,10 @@ def test_geom_risk(tmp_path, configs):
     run_model(configs["geom_risk"], tmp_path)
 
     # Check the output for this specific case
-    out = open_csv(Path(str(tmp_path), "output.csv"), index="Object ID")
-    assert int(float(out[2, "Damage: Structure (5.0Y)"])) == 1804
-    assert int(float(out[4, "Total Damage (10.0Y)"])) == 3840
-    assert int(float(out[3, "Risk (EAD)"]) * 100) == 102247
+    out = open_csv(Path(str(tmp_path), "output.csv"), index="object_id")
+    assert int(float(out[2, "damage_structure_5.0y"])) == 1804
+    assert int(float(out[4, "total_damage_10.0y"])) == 3840
+    assert int(float(out[3, "ead_damage"]) * 100) == 102247
 
 
 def test_grid_event(tmp_path, configs):

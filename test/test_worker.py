@@ -1,11 +1,9 @@
 from pathlib import Path
 
 import pytest
-from fiat.models.worker import (
-    geom_resolve,
-    geom_worker,
-    grid_worker_exact,
-    grid_worker_risk,
+from fiat.models import (
+    worker_csv,
+    worker_grid,
 )
 
 
@@ -20,7 +18,7 @@ def test_geom_worker(tmp_path, geom_risk):
 
     # Invoke the worker directly
     for idx in range(model.hazard_grid.size):
-        geom_worker(
+        worker_csv.worker(
             model.cfg,
             None,
             model.hazard_grid,
@@ -48,7 +46,7 @@ def test_geom_resolve(tmp_path, geom_risk):
     model.cfg.set_output_dir(Path(str(tmp_path), "..", "worker_geom"))
 
     # Invoke the worker directly
-    geom_resolve(
+    worker_csv.worker_ead(
         model.cfg,
         model.exposure_data,
         model.exposure_geoms,
@@ -69,7 +67,7 @@ def test_grid_worker(tmp_path, grid_risk):
     model.cfg.set_output_dir(Path(str(tmp_path), "..", "worker_grid"))
 
     for idx in range(model.hazard_grid.size):
-        grid_worker_exact(
+        worker_grid.worker(
             model.cfg,
             model.hazard_grid,
             idx + 1,
@@ -88,7 +86,7 @@ def test_grid_risk_worker(tmp_path, grid_risk):
     model = grid_risk
     model.cfg.set_output_dir(Path(str(tmp_path), "..", "worker_grid"))
 
-    grid_worker_risk(
+    worker_grid.worker_ead(
         model.cfg,
         model.exposure_grid.chunk,
     )

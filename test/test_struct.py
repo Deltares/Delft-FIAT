@@ -11,7 +11,7 @@ def test_geomsource(geom_data):
     bounds = [round(item * 10000) for item in bounds]
     assert bounds == [43550, 44400, 519600, 520450]
 
-    assert geom_data.fields == ["Object ID", "ObjectName"]
+    assert geom_data.fields == ["object_id", "object_name"]
 
     srs = geom_data.get_srs()
     assert srs.GetAuthorityCode(None) == "4326"
