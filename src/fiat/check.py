@@ -280,7 +280,7 @@ def check_exp_derived_types(
     # Error when no columns are found for vulnerability type
     if not found:
         logger.error(
-            f"For type: '{type}' no matching columns where found for \
+            f"For type: '{type}' no matching columns were found for \
 fn_{type}_* and max_{type}_* columns."
         )
         sys.exit()
@@ -298,7 +298,7 @@ def check_exp_grid_dmfs(
     dmfs: tuple | list,
 ):
     """_summary_."""
-    _ef = [_i.get_metadata_item("damage_fn") for _i in exp]
+    _ef = [_i.get_metadata_item("fn_damage") for _i in exp]
     _i = None
 
     _check = [item in dmfs for item in _ef]

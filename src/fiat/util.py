@@ -187,6 +187,37 @@ def discover_exp_columns(
     return dmg_suffix, dmg_idx, missing
 
 
+def generate_output_columns(
+    specific_columns: tuple | list,
+    exposure_types: dict,
+    extra: tuple | list = [],
+    suffix: tuple | list = [""],
+):
+    """_summary_."""
+    default = specific_columns + ["red_fact"]
+    total_idx = []
+
+    # Loop over the exposure types
+    for key, value in exposure_types.items():
+        default += [f"{key}_{item}" for item in value["fn"].keys()]
+        total_idx.append(len(default))
+        default += [f"total_{key}"]
+
+    total_idx = [item - len(default) for item in total_idx]
+
+    out = []
+    if len(suffix) == 1 and not suffix[0]:
+        out = default
+    else:
+        for name in suffix:
+            add = [f"{item}_{name}" for item in default]
+            out += add
+
+    out += [f"{x}_{y}" for x, y in product(extra, exposure_types.keys())]
+
+    return out, len(default), total_idx
+
+
 # GIS related utility
 def _read_gridsource_info(
     gr: gdal.Dataset,

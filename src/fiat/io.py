@@ -589,15 +589,6 @@ class CSVParser:
             **self.meta,
         )
 
-    def read_exp(self):
-        """_summary_."""
-        return ExposureTable(
-            data=self.data,
-            index=self.index,
-            columns=self.columns,
-            **self.meta,
-        )
-
 
 ## Structs
 class Grid(
@@ -2029,114 +2020,6 @@ class TableLazy(_Table):
         self.data = dict(zip(new_index, self.data.values()))
 
 
-class ExposureTable(TableLazy):
-    """Create a table just for exposure data.
-
-    Parameters
-    ----------
-    data : BufferHandler
-        A stream.
-    index : strortuple, optional
-        The index column used as row indices.
-    columns : list, optional
-        The column headers of the table.
-
-    Returns
-    -------
-    object
-        An object containing a connection via a stream to a file.
-    """
-
-    def __init__(
-        self,
-        data: BufferHandler,
-        index: str | tuple = None,
-        columns: list = None,
-        **kwargs,
-    ):
-        TableLazy.__init__(
-            self,
-            data,
-            index,
-            columns,
-            **kwargs,
-        )
-
-        _dc_cols = ["fn_damage", "max_damage"]
-
-        for req in _dc_cols:
-            self.__setattr__(
-                req,
-                dict(
-                    [
-                        (item.split("_")[-1].strip(), self._columns[item])
-                        for item in self.columns
-                        if item.startswith(req)
-                    ]
-                ),
-            )
-
-        self._blueprint_columns = (
-            ["inun_depth", "reduc_fact"]
-            + [f"damage_{item.lower()}" for item in self.fn_damage.keys()]
-            + ["total_damage"]
-        )
-
-        self._dat_len = len(self._blueprint_columns)
-
-    def create_specific_columns(self, name: str):
-        """Generate new columns for output data.
-
-        Parameters
-        ----------
-        name : str
-            Exposure identifier.
-
-        Returns
-        -------
-        list
-            A list containing new columns.
-        """
-        _out = []
-        for bp in self._blueprint_columns:
-            bp += f"_{name}"
-            _out.append(bp.strip())
-
-        return _out
-
-    def create_all_columns(
-        self,
-        names: list,
-        extra: list = None,
-    ):
-        """Append existing columns of exposure database.
-
-        Parameters
-        ----------
-        names : list
-            Exposure identifiers.
-        extra : list, optional
-            Extra specified columns.
-
-        Returns
-        -------
-        list
-            List containing all columns.
-        """
-        cols = []
-        for n in names:
-            cols += self.create_specific_columns(n)
-
-        if extra is not None:
-            cols += extra
-
-        return cols
-
-    def gen_dat_dtypes(self):
-        """Generate dtypes for the new columns."""
-        return ",".join(["float"] * self._dat_len).encode()
-
-
 ## I/O mutating methods
 def merge_geom_layers(
     out_fn: Path | str,
@@ -2236,42 +2119,6 @@ def open_csv(
     return parser.read(
         large=large,
     )
-
-
-def open_exp(
-    file: Path | str,
-    delimiter: str = ",",
-    header: bool = True,
-    index: str = None,
-):
-    """_summary_.
-
-    _extended_summary_
-
-    Parameters
-    ----------
-    file : str
-        _description_
-    header : bool, optional
-        _description_, by default True
-    index : str, optional
-        _description_, by default None
-
-    Returns
-    -------
-    _type_
-        _description_
-    """
-    _handler = BufferHandler(file)
-
-    parser = CSVParser(
-        _handler,
-        delimiter,
-        header,
-        index,
-    )
-
-    return parser.read_exp()
 
 
 def open_geom(
