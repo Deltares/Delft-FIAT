@@ -113,7 +113,7 @@ fiat = "fiat.cli.main:main"
 
 [tool.make_env]
 channels = ["conda-forge"]
-deps_not_in_conda = ["pytest-dependency", "quartodoc"]
+deps_not_in_conda = ["pytest-dependency"]
 
 ## Some stuff for pytest and coverage
 [tool.pytest.ini_options]
@@ -169,9 +169,8 @@ exclude = ["docs"]
 "test/conftest.py" = ["E402"]
 "src/fiat/__init__.py" = ["E402", "F401", "F403"]
 "src/fiat/cli/__init__.py" = ["F403"]
-"src/fiat/cy/__init__.py" = ["F403"]
 "src/fiat/gis/__init__.py" = ["F403"]
-"src/fiat/gui/__init__.py" = ["F403"]
+"src/fiat/math/__init__.py" = ["F403"]
 "src/fiat/models/__init__.py" = ["F403"]
 
 [tool.ruff.pydocstyle]
