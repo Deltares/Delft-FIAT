@@ -18,6 +18,7 @@ folders = (
     "hazard",
     "vulnerability",
 )
+osr.UseExceptions()
 
 
 def create_dbase_stucture():
@@ -225,7 +226,7 @@ def create_exposure_grid():
     for x, y in product(oneD, oneD):
         data[x, y] = 2000 + ((x + y) * 100)
     band.WriteArray(data)
-    band.SetMetadataItem("damage_fn", "struct_1")
+    band.SetMetadataItem("fn_damage", "struct_1")
 
     band.FlushCache()
     src.FlushCache()
@@ -340,6 +341,7 @@ def create_settings_geom():
             "elevation_reference": "DEM",
         },
         "exposure": {
+            "use_csv": True,
             "csv": {
                 "file": "exposure/spatial.csv",
             },
