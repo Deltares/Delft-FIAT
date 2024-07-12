@@ -3,8 +3,8 @@ import math
 
 from numpy import isnan, ndarray
 
-from fiat.calc.util import AREA_METHODS
 from fiat.io import Table
+from fiat.math.util import AREA_METHODS
 
 MANDATORY_COLUMNS = ["ground_elevtn", "ground_flht"]
 MANDATORY_ENTRIES = {"ref": "hazard.elevation_reference"}

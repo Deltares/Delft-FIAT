@@ -156,7 +156,7 @@ def geom_worker(
 ):
     """_summary_."""
     # Setup the module
-    module = importlib.import_module(f"fiat.calc.{cfg.get('global.type')}")
+    module = importlib.import_module(f"fiat.math.{cfg.get('global.type')}")
     func = getattr(module, "calculate_wcsv")
 
     # Extract the hazard band as an object

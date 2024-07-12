@@ -7,7 +7,6 @@ from os import cpu_count
 
 from osgeo import osr
 
-from fiat.calc.ead import risk_density
 from fiat.check import (
     check_duplicate_columns,
     check_global_crs,
@@ -21,6 +20,7 @@ from fiat.gis import grid
 from fiat.gis.crs import get_srs_repr
 from fiat.io import open_csv, open_grid
 from fiat.log import spawn_logger
+from fiat.math.ead import risk_density
 from fiat.util import NEED_IMPLEMENTED, deter_dec
 
 logger = spawn_logger("fiat.model")
@@ -47,7 +47,7 @@ class BaseModel(metaclass=ABCMeta):
         self.vulnerability_data = None
         # Type of calculations
         self.type = self.cfg.get("global.type", "flood")
-        self.module = importlib.import_module(f"fiat.calc.{self.type}")
+        self.module = importlib.import_module(f"fiat.math.{self.type}")
         self.cfg.set("global.type", self.type)
         # Vulnerability data
         self._vul_step_size = 0.01
