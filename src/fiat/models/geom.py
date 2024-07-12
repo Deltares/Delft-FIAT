@@ -16,10 +16,11 @@ from fiat.check import (
 from fiat.gis import geom, overlay
 from fiat.gis.crs import get_srs_repr
 from fiat.io import (
-    open_exp,
+    open_csv,
     open_geom,
 )
 from fiat.log import setup_mp_log, spawn_logger
+from fiat.models import worker_csv
 from fiat.models.base import BaseModel
 from fiat.models.util import (
     GEOM_MIN_CHUNK,
@@ -30,8 +31,7 @@ from fiat.models.util import (
     generate_jobs,
     geom_threads,
 )
-from fiat.models.worker import geom_resolve, geom_worker
-from fiat.util import create_1d_chunk, discover_exp_columns
+from fiat.util import create_1d_chunk, discover_exp_columns, generate_output_columns
 
 logger = spawn_logger("fiat.model.geom")
 
@@ -61,12 +61,12 @@ class GeomModel(BaseModel):
     ):
         super().__init__(cfg)
 
-        self.csv = self.cfg.get("exposure.use_csv", False)
+        self._exposure_csv = self.cfg.get("exposure.use_csv", False)
         self.exposure_types = self.cfg.get("exposure.types", ["damage"])
 
         # Setup the geometry model
         self.read_exposure_geoms()
-        if self.csv:
+        if self._exposure_csv:
             self.read_exposure_data()
         self.check_exposure_types()
         self._set_chunking()
@@ -130,13 +130,17 @@ calculated chunks ({self.nchunk})"
     def _setup_output_files(self):
         """_summary_."""
         # Create the temp file plus header
-        _nms = self.cfg.get("hazard.band_names")
-        for idx, _ in enumerate(_nms):
+        nms = self.cfg.get("hazard.band_names")
+        for idx, _ in enumerate(nms):
             csv_temp_file(
                 self.cfg.get("output.tmp.path"),
                 idx + 1,
                 self.exposure_data.meta["index_name"],
-                self.exposure_data.create_specific_columns(_nms[idx]),
+                generate_output_columns(
+                    getattr(self.module, "NEW_COLUMNS"),
+                    self.cfg.get("exposure.types"),
+                    suffix=[nms[idx]],
+                )[0],
             )
 
         # Define the outgoing file
@@ -168,7 +172,7 @@ calculated chunks ({self.nchunk})"
         """_summary_."""
         # Get the relevant column headers
         columns = self.exposure_geoms["file1"]._columns
-        if self.csv:
+        if self._exposure_csv:
             columns = self.exposure_data._columns
 
         # Check the exposure column headers
@@ -185,17 +189,21 @@ calculated chunks ({self.nchunk})"
             check_exp_derived_types(t, found, missing)
             types[t] = found_idx
 
-        self.cfg.set("exposure.types_expanded", types)
+        self.cfg.set("exposure.types", types)
 
         ## Information for output
-        _ex = None
+        extra = []
         if self.cfg.get("hazard.risk"):
-            _ex = ["ead"]
-        cols = self.exposure_data.create_all_columns(
-            self.cfg.get("hazard.band_names"),
-            _ex,
+            extra = ["ead"]
+        new_cols, len1, total_idx = generate_output_columns(
+            getattr(self.module, "NEW_COLUMNS"),
+            types,
+            extra=extra,
+            suffix=self.cfg.get("hazard.band_names"),
         )
-        self.cfg.set("output.new_columns", cols)
+        self.cfg.set("output.new_columns", new_cols)
+        self.cfg.set("output.csv.slen", len1)
+        self.cfg.set("output.csv.total_idx", total_idx)
 
     def read_exposure_data(self):
         """_summary_."""
@@ -207,7 +215,7 @@ calculated chunks ({self.nchunk})"
         kw.update(
             self.cfg.generate_kwargs("exposure.csv.settings"),
         )
-        data = open_exp(path, **kw)
+        data = open_csv(path, large=True, **kw)
         ##checks
         logger.info("Executing exposure data checks...")
 
@@ -275,7 +283,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         jobs = generate_jobs(
             {
                 "cfg": self.cfg,
-                "exp": self.exposure_data,
+                "exp_data": self.exposure_data,
                 "exp_geom": self.exposure_geoms,
                 "chunk": self.chunks,
                 "csv_lock": csv_lock,
@@ -287,7 +295,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         logger.info("Busy...")
         execute_pool(
             ctx=self._mp_ctx,
-            func=geom_resolve,
+            func=worker_csv.worker_ead,
             jobs=jobs,
             threads=self.nthreads,
         )
@@ -324,7 +332,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
                 "haz": self.hazard_grid,
                 "idx": range(1, self.hazard_grid.size + 1),
                 "vul": self.vulnerability_data,
-                "exp": self.exposure_data,
+                "exp_data": self.exposure_data,
                 "exp_geom": self.exposure_geoms,
                 "chunk": self.chunks,
                 "lock": locks,
@@ -339,7 +347,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         logger.info("Busy...")
         execute_pool(
             ctx=self._mp_ctx,
-            func=geom_worker,
+            func=worker_csv.worker,
             jobs=jobs,
             threads=self.nthreads,
         )

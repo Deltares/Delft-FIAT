@@ -8,9 +8,9 @@ from fiat.check import (
 )
 from fiat.io import open_grid
 from fiat.log import spawn_logger
+from fiat.models import worker_grid
 from fiat.models.base import BaseModel
 from fiat.models.util import execute_pool, generate_jobs
-from fiat.models.worker import grid_worker_exact, grid_worker_risk
 
 logger = spawn_logger("fiat.model.grid")
 
@@ -86,7 +86,7 @@ class GridModel(BaseModel):
 
             # Time the function
             _s = time.time()
-            grid_worker_risk(
+            worker_grid.worker_ead(
                 self.cfg,
                 self.exposure_grid.chunk,
             )
@@ -118,7 +118,7 @@ class GridModel(BaseModel):
         pcount = min(self.max_threads, self.hazard_grid.size)
         execute_pool(
             ctx=self._mp_ctx,
-            func=grid_worker_exact,
+            func=worker_grid.worker,
             jobs=jobs,
             threads=pcount,
         )
