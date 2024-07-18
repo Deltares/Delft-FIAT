@@ -14,7 +14,7 @@ from pathlib import Path
 from types import FunctionType, ModuleType
 
 import regex
-from osgeo import gdal
+from osgeo import gdal, ogr
 
 # Define the variables for FIAT
 BLACKLIST = type, ModuleType, FunctionType
@@ -44,6 +44,12 @@ _dtypes_from_string = {
     "float": float,
     "int": int,
     "str": str,
+}
+
+_fields_type_map = {
+    "int": ogr.OFTInteger64,
+    "float": ogr.OFTReal,
+    "str": ogr.OFTString,
 }
 
 
