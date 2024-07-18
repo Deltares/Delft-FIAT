@@ -214,6 +214,30 @@ class BufferHandler:
         self.stream.seek(self.skip)
 
 
+class BufferedFieldWriter:
+    """_summary_."""
+
+    def __init__(
+        self,
+        file: str | Path,
+        buffer_size: int = 2,
+        lock: Lock = None,
+    ):
+        # Set the buffer
+        self.buffer_size_mb = buffer_size
+        pass
+
+    def __del__(self):
+        self.buffer = None
+
+    def _calc_buffer(self):
+        pass
+
+    def write(self):
+        """_summary_."""
+        pass
+
+
 class BufferedGeomWriter:
     """_summary_."""
 
@@ -810,12 +834,6 @@ class GeomSource(_BaseIO, _BaseStruct):
     ```
     """
 
-    _type_map = {
-        "int": ogr.OFTInteger64,
-        "float": ogr.OFTReal,
-        "str": ogr.OFTString,
-    }
-
     def __new__(
         cls,
         file: str,
@@ -975,6 +993,16 @@ class GeomSource(_BaseIO, _BaseStruct):
 
     @property
     @_BaseIO._check_state
+    def dtypes(self):
+        """_summary_."""
+        if self.layer is not None:
+            _flds = self.layer.GetLayerDefn()
+            dt = [_flds.GetFieldDefn(_i).type for _i in range(_flds.GetFieldCount())]
+            _flds = None
+            return dt
+
+    @property
+    @_BaseIO._check_state
     def fields(self):
         """Return the names of the fields."""
         if self.layer is not None:
@@ -1000,11 +1028,31 @@ class GeomSource(_BaseIO, _BaseStruct):
     @_BaseIO._check_state
     def add_feature(
         self,
+        in_ft: ogr.Feature,
+        fmap: zip,
+    ):
+        """_summary_."""
+        ft = ogr.Feature(self.layer.GetLayerDefn())
+        ft.SetFrom(in_ft)
+
+        for key, item in fmap:
+            ft.SetField(key, item)
+
+        self.layer.CreateFeature(ft)
+        ft = None
+
+    @_BaseIO._check_mode
+    @_BaseIO._check_state
+    def add_feature_direct(
+        self,
         ft: ogr.Feature,
     ):
         """Add a feature to the layer.
 
         Only in write (`'w'`) mode.
+
+        Note! Everything needs to already be compliant with the created/ edited
+        dataset.
 
         Parameters
         ----------
@@ -1047,7 +1095,7 @@ class GeomSource(_BaseIO, _BaseStruct):
     def create_field(
         self,
         name: str,
-        type: object,
+        type: int,
     ):
         """Add a new field.
 
@@ -1057,13 +1105,13 @@ class GeomSource(_BaseIO, _BaseStruct):
         ----------
         name : str
             Name of the new field.
-        type : object
+        type : int
             Type of the new field.
         """
         self.layer.CreateField(
             ogr.FieldDefn(
                 name,
-                GeomSource._type_map[type],
+                type,
             )
         )
         self._retrieve_columns()
@@ -1085,10 +1133,7 @@ class GeomSource(_BaseIO, _BaseStruct):
             are the data types of the new field.
         """
         self.layer.CreateFields(
-            [
-                ogr.FieldDefn(key, GeomSource._type_map[item])
-                for key, item in fmap.items()
-            ]
+            [ogr.FieldDefn(key, item) for key, item in fmap.items()]
         )
         self._retrieve_columns()
 
