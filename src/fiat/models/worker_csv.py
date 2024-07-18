@@ -6,7 +6,7 @@ from math import nan
 from multiprocessing.synchronize import Lock
 from pathlib import Path
 
-from osgeo import osr
+from osgeo import ogr, osr
 
 from fiat.gis import geom, overlay
 from fiat.io import (
@@ -81,7 +81,7 @@ def worker_ead(
             buffer_size=cfg.get("output.geom.settings.chunk"),
             lock=geom_lock,
         )
-        geom_writer.create_fields(zip(new_cols, ["float"] * len(new_cols)))
+        geom_writer.create_fields(zip(new_cols, [ogr.OFTReal] * len(new_cols)))
 
         # Loop again over all the geometries
         for ft in gm.reduced_iter(*chunk):
