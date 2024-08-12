@@ -63,6 +63,7 @@ opt_deps = toml["project"]["optional-dependencies"]
 project_name = toml["project"]["name"]
 # specific conda_install settings
 install_config = toml["tool"].get("make_env", {})
+conda_only = install_config.get("conda_only", [])
 deps_not_in_conda = install_config.get("deps_not_in_conda", [])
 channels = install_config.get("channels", ["conda-forge"])
 if args.channels is not None:
@@ -115,8 +116,13 @@ if args.profile == "build":
             "https://github.com/cgohlke/geospatial-wheels/releases/download/v2024.2.18/GDAL-3.8.4-cp312-cp312-win_amd64.whl",
         )
         pip_deps.append("numpy<2.0.0")
-        pip_deps = sorted(list(set(pip_deps)))
 
+        for item in conda_only:
+            im = fnmatch.filter(pip_deps, item)
+            pip_deps.remove(*im)
+            conda_deps.append(*im)
+
+        pip_deps = sorted(list(set(pip_deps)))
         pip_deps.append("-e .")
 
 # add pip as a conda dependency if we have pip deps

@@ -89,6 +89,7 @@ quarto = "1.3.450"
 quartodoc = "*"
 
 [feature.extra.dependencies]
+libgdal-netcdf = "*"
 tomli-w = "*"
 
 [feature.test.dependencies]
@@ -101,10 +102,10 @@ responses = "*"
 
 ## Define the environments
 [environments]
-build = { features = ["py312", "all", "build"], solve-group = "py312"}
-default = { features = ["py312"], solve-group = "py312"}
+build = { features = ["py312", "all", "build", "extra"], solve-group = "py312"}
+default = { features = ["py312", "extra"], solve-group = "py312"}
 dev = { features = ["py312", "all", "dev", "docs", "extra", "test"], solve-group = "py312" }
-docs = { features = ["py312", "all", "docs"], solve-group = "py312"}
+docs = { features = ["py312", "all", "docs", "extra"], solve-group = "py312"}
 min = { features = ["py312"], solve-group = "py312"}
 test-py312 = {features = ["py312", "all", "extra", "test"], solve-group = "py312"}
 test-py311 = {features = ["py311", "all", "extra", "test"], solve-group = "py311"}
