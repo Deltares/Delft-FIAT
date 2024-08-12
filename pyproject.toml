@@ -89,9 +89,10 @@ docs = [
     "matplotlib",
     "pandas",
     "quartodoc",
-    "delft_fiat[all]",
+    "delft_fiat[all, extra]",
 ]
 extra = [
+    "libgdal-netcdf",
     "tomli-w",
 ]
 test = [
