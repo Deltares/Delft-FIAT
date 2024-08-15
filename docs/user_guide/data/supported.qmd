@@ -21,19 +21,54 @@ The amount of columns are determined by length of the header or the first line o
 ## Geometry files
 Below a list is presented of supported drivers in regards to the vector files:
 
+### Reading
 :::: {.columns}
 ::: {.center width="70%" style="height: 500px; overflow: auto;"}
 ```{python}
 #| echo: false
-#| label: tbl-geom-drivers
-#| tbl-cap: "Available drivers for vector data"
+#| label: tbl-geom-read-drivers
+#| tbl-cap: "Available drivers for reading vector data"
 
 import pandas as pd
-from fiat.util import GEOM_DRIVER_MAP
+from fiat.util import GEOM_READ_DRIVER_MAP
 from IPython.display import HTML
 from osgeo import gdal
 
-dr_map = dict(sorted(GEOM_DRIVER_MAP.items()))
+dr_map = dict(sorted(GEOM_READ_DRIVER_MAP.items()))
+
+long_name = []
+for _dr in dr_map.values():
+    dr = gdal.GetDriverByName(_dr)
+    long_name.append(dr.LongName)
+    dr = None
+
+df = pd.DataFrame(
+    data={
+        "File extension": dr_map.keys(),
+        "Driver": dr_map.values(),
+        "Long name": long_name,
+    }
+)
+
+HTML(df.to_html(index=False))
+```
+:::
+::::
+
+### Writing
+:::: {.columns}
+::: {.center width="70%" style="height: 500px; overflow: auto;"}
+```{python}
+#| echo: false
+#| label: tbl-geom-write-drivers
+#| tbl-cap: "Available drivers for writing vector data"
+
+import pandas as pd
+from fiat.util import GEOM_WRITE_DRIVER_MAP
+from IPython.display import HTML
+from osgeo import gdal
+
+dr_map = dict(sorted(GEOM_WRITE_DRIVER_MAP.items()))
 
 long_name = []
 for _dr in dr_map.values():
@@ -55,7 +90,7 @@ HTML(df.to_html(index=False))
 ::::
 
 ## Gridded data files
-Below a list is presented of supported drivers in regards to the raster files:
+Below a list is presented of supported drivers (both reading and writing) in regards to the raster files:
 
 :::: {.columns}
 ::: {.center width="70%" style="height: 500px; overflow: auto;"}

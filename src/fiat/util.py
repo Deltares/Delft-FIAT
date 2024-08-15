@@ -268,7 +268,9 @@ def _read_gridsource_layers_from_info(
     pass
 
 
-def _create_geom_driver_map():
+def _create_geom_driver_map(
+    write: bool = False,
+):
     """_summary_."""
     geom_drivers = {}
     _c = gdal.GetDriverCount()
@@ -276,6 +278,9 @@ def _create_geom_driver_map():
     for idx in range(_c):
         dr = gdal.GetDriver(idx)
         if dr.GetMetadataItem(gdal.DCAP_VECTOR):
+            edit = dr.GetMetadataItem(gdal.DCAP_DELETE_FIELD)
+            if write and edit is None:
+                continue
             if dr.GetMetadataItem(gdal.DCAP_CREATE) or dr.GetMetadataItem(
                 gdal.DCAP_CREATE_LAYER
             ):
@@ -297,8 +302,9 @@ def _create_geom_driver_map():
     return geom_drivers
 
 
-GEOM_DRIVER_MAP = _create_geom_driver_map()
-GEOM_DRIVER_MAP[""] = "Memory"
+GEOM_READ_DRIVER_MAP = _create_geom_driver_map()
+GEOM_WRITE_DRIVER_MAP = _create_geom_driver_map(write=True)
+GEOM_WRITE_DRIVER_MAP[""] = "Memory"
 
 
 def _create_grid_driver_map():

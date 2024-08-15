@@ -19,7 +19,7 @@ from fiat.error import DriverNotFoundError
 from fiat.util import (
     DD_NEED_IMPLEMENTED,
     DD_NOT_IMPLEMENTED,
-    GEOM_DRIVER_MAP,
+    GEOM_READ_DRIVER_MAP,
     GRID_DRIVER_MAP,
     NEED_IMPLEMENTED,
     NOT_IMPLEMENTED,
@@ -854,10 +854,13 @@ class GeomSource(_BaseIO, _BaseStruct):
         _BaseStruct.__init__(self)
         _BaseIO.__init__(self, file, mode)
 
-        if self.path.suffix not in GEOM_DRIVER_MAP:
-            raise DriverNotFoundError("")
+        if self.path.suffix not in GEOM_READ_DRIVER_MAP:
+            raise DriverNotFoundError(
+                f"Driver corresponding to \
+{self.path.suffix} extension not found."
+            )
 
-        driver = GEOM_DRIVER_MAP[self.path.suffix]
+        driver = GEOM_READ_DRIVER_MAP[self.path.suffix]
 
         self._driver = ogr.GetDriverByName(driver)
 
