@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"] #, "macos-latest", "windows-latest"]
-        python-version: ["3.11"] # fix tests to support older versions
+        python-version: ["3.12"] # fix tests to support older versions
         include:
           - os: ubuntu-latest
             label: linux-64
