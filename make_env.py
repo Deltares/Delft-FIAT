@@ -63,6 +63,7 @@ opt_deps = toml["project"]["optional-dependencies"]
 project_name = toml["project"]["name"]
 # specific conda_install settings
 install_config = toml["tool"].get("make_env", {})
+conda_only = install_config.get("conda_only", [])
 deps_not_in_conda = install_config.get("deps_not_in_conda", [])
 channels = install_config.get("channels", ["conda-forge"])
 if args.channels is not None:
@@ -101,19 +102,27 @@ if args.profile == "build":
     if platform.system().lower() == "windows":
         py = fnmatch.filter(conda_deps, "python*")
         gd = fnmatch.filter(conda_deps, "gdal*")
+        np = fnmatch.filter(conda_deps, "numpy*")
         conda_deps.remove(*gd)
+        conda_deps.remove(*np)
         if py:
             conda_deps.remove(*py)
-        py = ["python==3.11.*"]
+        py = ["python==3.12.*"]
         pip_deps += conda_deps
         conda_deps = []
         if py:
             conda_deps += py
         pip_deps.append(
-            "https://github.com/cgohlke/geospatial-wheels/releases/download/v2023.9.30/GDAL-3.7.2-cp311-cp311-win_amd64.whl",
+            "https://github.com/cgohlke/geospatial-wheels/releases/download/v2024.2.18/GDAL-3.8.4-cp312-cp312-win_amd64.whl",
         )
-        pip_deps = sorted(list(set(pip_deps)))
+        pip_deps.append("numpy<2.0.0")
 
+        for item in conda_only:
+            im = fnmatch.filter(pip_deps, item)
+            pip_deps.remove(*im)
+            conda_deps.append(*im)
+
+        pip_deps = sorted(list(set(pip_deps)))
         pip_deps.append("-e .")
 
 # add pip as a conda dependency if we have pip deps

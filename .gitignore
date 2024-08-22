@@ -32,6 +32,9 @@ pixi.lock
 # C extensions
 *.so
 
+# Pyinstaller files
+.build/fiat_build_time.py
+
 # Distribution / packaging
 .Python
 build/

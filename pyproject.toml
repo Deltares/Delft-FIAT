@@ -75,7 +75,7 @@ all = [
 ]
 build = [
     "pyinstaller>=6.0.0",
-    "delft_fiat[all]",
+    "delft_fiat[all,extra]",
 ]
 dev = [
     "cython",
@@ -89,9 +89,10 @@ docs = [
     "matplotlib",
     "pandas",
     "quartodoc",
-    "delft_fiat[all]",
+    "delft_fiat[all,extra]",
 ]
 extra = [
+    "libgdal-netcdf",
     "tomli-w",
 ]
 test = [
@@ -113,7 +114,8 @@ fiat = "fiat.cli.main:main"
 
 [tool.make_env]
 channels = ["conda-forge"]
-deps_not_in_conda = ["pytest-dependency", "quartodoc"]
+conda_only = ["libgdal-netcdf"]
+deps_not_in_conda = ["pytest-dependency"]
 
 ## Some stuff for pytest and coverage
 [tool.pytest.ini_options]

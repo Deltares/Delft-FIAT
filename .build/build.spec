@@ -1,22 +1,34 @@
-from fiat.util import generic_folder_check
+"""Spec file for building fiat."""
 
+import importlib
 import inspect
 import os
 import sys
+import time
 from pathlib import Path
 
-#Pre build event setup
+from fiat.util import generic_folder_check
+
+# Pre build event setup
 app_name = "fiat"
 sys.setrecursionlimit(5000)
 
+# Some general information
 _file = Path(inspect.getfile(lambda: None))
 cwd = _file.parent
 env_path =  os.path.dirname(sys.executable)
 generic_folder_check(Path(cwd, "../bin"))
 mode = "Release"
+# Set the build time for '--version' usage
+now = time.localtime(time.time())
+FIAT_BUILD_TIME = time.strftime('%Y-%m-%dT%H:%M:%S UTC%z', now)
+with open("./fiat_build_time.py", "w") as _w:
+    _w.write(f'BUILD_TIME = "{FIAT_BUILD_TIME}"')
 
+# Get the location of the proj database
 proj = Path(os.environ["PROJ_LIB"])
 
+# Add to the list of binaries (although its a database)
 binaries = [
     (Path(proj, 'proj.db'), './share'),
 ]
@@ -24,10 +36,10 @@ binaries = [
 # Build event
 a = Analysis(
     [Path(cwd, "../src/fiat/cli/main.py")],
-    pathex=[Path(cwd, "../src"), Path(env_path, "lib/site-packages")],
+    pathex=[Path(cwd), Path(cwd, "../src")],
     binaries=binaries,
     datas=[],
-    hiddenimports=[],
+    hiddenimports=["fiat_build_time"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[Path(cwd, 'runtime_hooks.py')],
@@ -37,10 +49,12 @@ a = Analysis(
     noarchive=False,
 )
 
+# Whatever the fuck this precisely does..
 pyz = PYZ(
     a.pure,
 )
 
+# Arguments for the executable
 exe = EXE(
     pyz,
     a.scripts,
@@ -61,6 +75,7 @@ exe = EXE(
     contents_directory='bin',
 )
 
+# Collect all binaries and libraries
 coll = COLLECT(
     exe,
     a.binaries,
