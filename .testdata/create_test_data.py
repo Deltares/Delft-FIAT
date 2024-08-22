@@ -18,6 +18,7 @@ folders = (
     "hazard",
     "vulnerability",
 )
+osr.UseExceptions()
 
 
 def create_dbase_stucture():
