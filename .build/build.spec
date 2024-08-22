@@ -22,7 +22,7 @@ mode = "Release"
 # Set the build time for '--version' usage
 now = time.localtime(time.time())
 FIAT_BUILD_TIME = time.strftime('%Y-%m-%dT%H:%M:%S UTC%z', now)
-with open("./fiat_build_time.py", "w") as _w:
+with open(Path(cwd, "fiat_build_time.py"), "w") as _w:
     _w.write(f'BUILD_TIME = "{FIAT_BUILD_TIME}"')
 
 # Get the location of the proj database
