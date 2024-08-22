@@ -84,6 +84,7 @@ dev = [
     "delft_fiat[all,docs,extra,test]",
 ]
 docs = [
+    "griffe<1.0.0",
     "jupyter",
     "jupyter-cache",
     "matplotlib",
