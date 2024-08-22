@@ -1,6 +1,7 @@
 """Cli of FIAT."""
 
 import argparse
+import importlib
 import sys
 from multiprocessing import freeze_support
 
@@ -77,6 +78,7 @@ def args_parser():
         add_help=False,
         formatter_class=MainHelpFormatter,
     )
+    # Help parser
     parser.add_argument(
         "-h",
         "--help",
@@ -84,13 +86,19 @@ def args_parser():
         default=argparse.SUPPRESS,
         help="Show this help message and exit",
     )
+    # Version parser
+    version_build_str = ""
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        mod = importlib.import_module("fiat_build_time")
+        version_build_str += f", build {mod.BUILD_TIME}"
     parser.add_argument(
         "--version",
         action="version",
-        version=f"Delft-FIAT v{__version__}",
+        version=f"FIAT {__version__}{version_build_str}\n",
         help="Show the version number",
     )
 
+    # The supparser setup
     subparser = parser.add_subparsers(
         title="Commands",
         dest="command",

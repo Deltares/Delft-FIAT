@@ -75,7 +75,7 @@ all = [
 ]
 build = [
     "pyinstaller>=6.0.0",
-    "delft_fiat[all, extra]",
+    "delft_fiat[all,extra]",
 ]
 dev = [
     "cython",
@@ -84,12 +84,13 @@ dev = [
     "delft_fiat[all,docs,extra,test]",
 ]
 docs = [
+    "griffe<1.0.0",
     "jupyter",
     "jupyter-cache",
     "matplotlib",
     "pandas",
     "quartodoc",
-    "delft_fiat[all, extra]",
+    "delft_fiat[all,extra]",
 ]
 extra = [
     "libgdal-netcdf",
