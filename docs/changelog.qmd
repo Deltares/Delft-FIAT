@@ -6,6 +6,7 @@ title: "What's new?"
 This contains the unreleased changes to Delft-FIAT.
 
 ### Added
+- Build time to FIAT cli (when build with pyinstaller), viewed with `fiat --version`
 - Docker file for docker image creation
 - Function (`generate_jobs`) to generate jobs for parallelization
 - Function (`execute_pool`) to execute code in parallel using `multiprocessing`
