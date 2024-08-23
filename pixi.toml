@@ -33,6 +33,9 @@ quarto-quick = { cmd = ["quarto", "render", "docs"] }
 quarto-render = { cmd = ["quarto", "render", "docs", "--execute"] }
 serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_site"] }
 
+# Build
+build = { cmd = "pyinstaller .build/build.spec --distpath .build/bin --workpath .build/intermediates", env = { "PROJ_LIB" = "$CONDA_PREFIX/share/proj" } }
+
 # Testing
 test = { cmd = ["pytest"] }
 test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
@@ -55,6 +58,7 @@ clean-docs = { cmd = ["rm", "-rf", "docs/_site"] }
 ## Dependencies
 [dependencies]
 gdal = ">=3.5"
+libgdal = "*"
 numpy = "*"
 regex = "*"
 tomli = "*"
