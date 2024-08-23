@@ -23,7 +23,3 @@ else:
 
 if os.path.exists(gdal_plugins):
     os.environ["GDAL_DRIVER_PATH"] = gdal_plugins
-
-print(f"GDAL_DRIVER_PATH = {gdal_plugins}")
-print("contents:")
-print(os.listdir(gdal_plugins))
