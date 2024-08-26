@@ -84,12 +84,11 @@ dev = [
     "delft_fiat[all,docs,extra,test]",
 ]
 docs = [
-    "griffe<1.0.0",
     "jupyter",
     "jupyter-cache",
     "matplotlib",
     "pandas",
-    "quartodoc",
+    "quartodoc>=0.7.6",
     "delft_fiat[all,extra]",
 ]
 extra = [

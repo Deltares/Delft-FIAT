@@ -86,7 +86,7 @@ jupyter-cache = "*"
 matplotlib = "*"
 pandas = "*"
 quarto = "1.3.450"
-quartodoc = "*"
+quartodoc = ">=0.7.6"
 
 [feature.extra.dependencies]
 libgdal-netcdf = "*"
