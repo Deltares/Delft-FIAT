@@ -20,6 +20,7 @@ from fiat.util import (
     DD_NEED_IMPLEMENTED,
     DD_NOT_IMPLEMENTED,
     GEOM_READ_DRIVER_MAP,
+    GEOM_WRITE_DRIVER_MAP,
     GRID_DRIVER_MAP,
     NEED_IMPLEMENTED,
     NOT_IMPLEMENTED,
@@ -854,10 +855,15 @@ class GeomSource(_BaseIO, _BaseStruct):
         _BaseStruct.__init__(self)
         _BaseIO.__init__(self, file, mode)
 
-        if self.path.suffix not in GEOM_READ_DRIVER_MAP:
+        if mode == "r":
+            _map = GEOM_READ_DRIVER_MAP
+        else:
+            _map = GEOM_WRITE_DRIVER_MAP
+
+        if self.path.suffix not in _map:
             raise DriverNotFoundError(gog="Geometry", path=self.path)
 
-        driver = GEOM_READ_DRIVER_MAP[self.path.suffix]
+        driver = _map[self.path.suffix]
 
         self._driver = ogr.GetDriverByName(driver)
 
