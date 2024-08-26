@@ -855,10 +855,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         _BaseIO.__init__(self, file, mode)
 
         if self.path.suffix not in GEOM_READ_DRIVER_MAP:
-            raise DriverNotFoundError(
-                f"Driver corresponding to \
-{self.path.suffix} extension not found."
-            )
+            raise DriverNotFoundError(gog="Geometry", path=self.path)
 
         driver = GEOM_READ_DRIVER_MAP[self.path.suffix]
 
