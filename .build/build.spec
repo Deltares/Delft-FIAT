@@ -15,40 +15,22 @@ _file = Path(inspect.getfile(lambda: None))
 project_root = _file.parents[1].absolute()
 
 build_dir = project_root / ".build"
-env_path =  Path(os.getenv("CONDA_PREFIX"))
 
 # check if bin folder is in build dir.
 generic_folder_check(build_dir / "bin")
 mode = "Release"
 
-# Find proj folder
-proj = Path(os.environ.get("PROJ_LIB", env_path / "share" / "proj"))
-# Find gdal plugins folder
-is_win = sys.platform.startswith("win")
-if is_win:
-    gdal_plugins_default_directory = PurePath("Library") / "lib" / "gdalplugins"
-else:
-    gdal_plugins_default_directory = PurePath("lib") / "gdalplugins"
-
-gdal_plugins = Path(os.environ.get("GDAL_DRIVER_PATH", Path(env_path) / gdal_plugins_default_directory))
-
-binaries = [
-    (Path(proj, 'proj.db'), "./share"),
-    (Path(gdal_plugins), str(gdal_plugins_default_directory)),
-]
-
 # Build event
 a = Analysis(
     [Path(project_root, "src/fiat/cli/main.py")],
     pathex=[Path(project_root, "src")],
-    binaries=binaries,
+    binaries=[],
     datas=[],
     hiddenimports=[],
-    hookspath=[],
+    hookspath=[".build"],
     hooksconfig={},
     runtime_hooks=[
-        Path(build_dir, "runtime_hooks.py"),
-        Path(build_dir, "pyi_rth_gdal_driver.py"),
+        Path(build_dir, "pyi_rth_fiat.py"),
     ],
     excludes=[],
     win_no_prefer_redirects=False,
