@@ -1,56 +1,40 @@
 """Spec file for building fiat."""
 
 import inspect
-import os
-import platform
 import sys
 import time
 from pathlib import Path
 
 from fiat.util import generic_folder_check
-from osgeo.gdal import __version__ as gdal_version
-from packaging.version import Version
 
 # Pre build event setup
 app_name = "fiat"
+mode = "Release"
 sys.setrecursionlimit(5000)
 
 # Some general information
 _file = Path(inspect.getfile(lambda: None))
-cwd = _file.parent
-env_path =  os.path.dirname(sys.executable)
-generic_folder_check(Path(cwd, "../bin"))
-mode = "Release"
+project_root = _file.parents[1]
+build_dir = Path(project_root, ".build")
+
+generic_folder_check(Path(project_root, "bin"))
+
 # Set the build time for '--version' usage
 now = time.localtime(time.time())
 FIAT_BUILD_TIME = time.strftime('%Y-%m-%dT%H:%M:%S UTC%z', now)
-with open(Path(cwd, "fiat_build_time.py"), "w") as _w:
+with open(Path(build_dir, "fiat_build_time.py"), "w") as _w:
     _w.write(f'BUILD_TIME = "{FIAT_BUILD_TIME}"')
-
-# Get the location of the proj database
-proj = Path(os.environ["PROJ_LIB"])
-
-# Add to the list of binaries (although its a database)
-binaries = [
-    (Path(proj, 'proj.db'), './share'),
-]
-if ("win" not in platform.system().lower() and
-    Version(gdal_version) >= Version("3.9.1")):
-    binaries += [
-        Path(env_path, "lib", "gdalplugins").as_posix(),
-    ]
-
 
 # Build event
 a = Analysis(
-    [Path(cwd, "../src/fiat/cli/main.py")],
-    pathex=[Path(cwd), Path(cwd, "../src")],
-    binaries=binaries,
+    [Path(project_root, "src/fiat/cli/main.py")],
+    pathex=[Path(build_dir), Path(project_root, "src")],
+    binaries=[],
     datas=[],
     hiddenimports=["fiat_build_time"],
-    hookspath=[],
+    hookspath=[build_dir.as_posix()],
     hooksconfig={},
-    runtime_hooks=[Path(cwd, 'runtime_hooks.py')],
+    runtime_hooks=[Path(build_dir, 'runtime_hooks.py')],
     excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
