@@ -2,6 +2,8 @@
 # Absolute path to this script, e.g. /home/user/bin/foo.sh
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
+PROJECTPATH=$(dirname "$SCRIPTPATH")
+PIXIPATH=$PROJECTPATH/.pixi
 
 bin_var=conda
 shell_var=bash
@@ -55,8 +57,8 @@ for value in "${valid_values[@]}"; do
 done
 
 if [ $is_valid == false ]; then
-echo "Not a valid python env system: $bin_var"
-exit 1
+  echo "Not a valid python env system: $bin_var"
+  exit 1
 fi
 
 # Setting up..
@@ -65,13 +67,13 @@ paths=$(which -a $bin_var)
 executable=$(echo "$paths" | grep "^$HOME")
 
 if [ -z "$executable" ] && [ $bin_var != "conda" ]; then
-echo "Cannot find binary for: $bin_var"
-exit 1
-elif [ -z "$executable" ]; then
-executable="/home/runner/miniconda3/condabin/conda"
-  if [ ! -e $executable ]; then
   echo "Cannot find binary for: $bin_var"
   exit 1
+elif [ -z "$executable" ]; then
+  executable="/home/runner/miniconda3/condabin/conda"
+  if [ ! -e $executable ]; then
+    echo "Cannot find binary for: $bin_var"
+    exit 1
   fi
 fi
 
@@ -91,12 +93,12 @@ echo "INFO: Executable found here: $executable"
 bin_dir=$(dirname $(dirname $executable))
 
 if [ $bin_var == "conda" ]; then
-source $bin_dir/etc/profile.d/conda.sh
-conda activate fiat_build
-export PROJ_LIB=$bin_dir/envs/fiat_build/share/proj
+  source $bin_dir/etc/profile.d/conda.sh
+  conda activate fiat_build
+  export PROJ_LIB=$bin_dir/envs/fiat_build/share/proj
 elif [ $bin_var == "pixi" ]; then
-eval $(pixi shell-hook -s $shell_var -e build)
-export PROJ_LIB=$bin_dir/envs/build/share/proj
+  eval $(pixi shell-hook --manifest-path $PROJECTPATH/pixi.toml -s $shell_var -e build)
+  export PROJ_LIB=$PIXIPATH/envs/build/share/proj
 fi
 
 # Do the thing!
