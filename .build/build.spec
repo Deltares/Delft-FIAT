@@ -1,13 +1,15 @@
 """Spec file for building fiat."""
 
-import importlib
 import inspect
 import os
+import platform
 import sys
 import time
 from pathlib import Path
 
 from fiat.util import generic_folder_check
+from osgeo.gdal import __version__ as gdal_version
+from packaging.version import Version
 
 # Pre build event setup
 app_name = "fiat"
@@ -32,6 +34,12 @@ proj = Path(os.environ["PROJ_LIB"])
 binaries = [
     (Path(proj, 'proj.db'), './share'),
 ]
+if ("win" not in platform.system().lower() and
+    Version(gdal_version) >= Version("3.9.1")):
+    binaries += [
+        Path(env_path, "lib", "gdalplugins").as_posix(),
+    ]
+
 
 # Build event
 a = Analysis(
