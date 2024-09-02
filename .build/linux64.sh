@@ -69,7 +69,7 @@ echo "Cannot find binary for: $bin_var"
 exit 1
 elif [ -z "$executable" ]; then
 executable="/home/runner/miniconda3/condabin/conda"
-  if [ ! -e $executable]; then
+  if [ ! -e $executable ]; then
   echo "Cannot find binary for: $bin_var"
   exit 1
   fi
