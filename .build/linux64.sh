@@ -64,9 +64,15 @@ echo "INFO: Locating $bin_var"
 paths=$(which -a $bin_var)
 executable=$(echo "$paths" | grep "^$HOME")
 
-if [ -z "$executable" ]; then
+if [ -z "$executable" ] && [ $bin_var != "conda" ]; then
 echo "Cannot find binary for: $bin_var"
 exit 1
+elif [ -z "$executable" ]; then
+executable="/home/runner/miniconda3/condabin/conda"
+  if [ ! -e $executable]; then
+  echo "Cannot find binary for: $bin_var"
+  exit 1
+  fi
 fi
 
 # if [ -z "$executable" ]
