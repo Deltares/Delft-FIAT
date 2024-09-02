@@ -18,9 +18,11 @@ This contains the unreleased changes to Delft-FIAT.
 - Numpy >= 2.0.0 support
 - Python 3.12 support
 - Setting return period as a variable in hazard map bands (risk)
+- Support for using pixi for binary creation (properly)
 
 ### Changed
 - Better version of `BufferHandler`
+- Fixed binary creation in general, but also specifically for `GDAL >= v3.9.1`
 - Made read methods of `BaseModel`, `GeomModel` and `GridModel` public (removed underscore)
 - Testing of workers (not properly caught due to using `multiprocessing`)
 - Testing only based on integers
