@@ -25,5 +25,5 @@ ENV RUNENV="${PIXIENV}"
 RUN echo "pixi run --locked -e ${RUNENV} \$@" > run_pixi.sh \
   && chown deltares:deltares run_pixi.sh \
   && chmod u+x run_pixi.sh
-ENTRYPOINT ["bash"]
-CMD []
+ENTRYPOINT ["bash", "run_pixi.sh"]
+CMD ["fiat"]

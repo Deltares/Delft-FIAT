@@ -4,6 +4,7 @@ SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 
 bin_var=conda
+shell_var=bash
 
 # Help message
 function help_message {
@@ -12,6 +13,7 @@ function help_message {
   echo ""
   echo "Options:"
   echo $'\t'"-b"$'\t'"Binary name for python environment creation (default: $bin_var)"
+  echo $'\t'"-s"$'\t'"Shell type (default: $shell_var)"
   echo $'\t'"-h,"$'\t'"Display this help message"$'\n\t'"--help"
 }
 
@@ -26,6 +28,9 @@ while [[ "$1" != "" ]]; do
   case $1 in
     -b ) shift
          bin_var=$1
+         ;;
+    -s ) shift
+         shell_var=$1
          ;;
     -h | --help ) help_message
                   exit 0
@@ -84,7 +89,7 @@ source $bin_dir/etc/profile.d/conda.sh
 conda activate fiat_build
 export PROJ_LIB=$bin_dir/envs/fiat_build/share/proj
 elif [ $bin_var == "pixi" ]; then
-eval $(pixi shell-hook -e build)
+eval $(pixi shell-hook -s $shell_var -e build)
 export PROJ_LIB=$bin_dir/envs/build/share/proj
 fi
 
