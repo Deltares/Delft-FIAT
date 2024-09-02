@@ -12,7 +12,8 @@ RUN curl -fsSL https://pixi.sh/install.sh | bash
 ENV PATH=/home/deltares/.pixi/bin:$PATH
 COPY pixi.toml pyproject.toml README.md ./
 COPY --chown=deltares:deltares src/fiat ./src/fiat
-COPY --chown=deltares:deltares .build ./.build
+# Unquote for building inside the docker
+# COPY --chown=deltares:deltares .build ./.build
 
 RUN chmod u+x src/ \
   && pixi run -e ${PIXIENV} install-fiat \
