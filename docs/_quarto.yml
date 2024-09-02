@@ -36,13 +36,20 @@ website:
   page-footer:
     left: |
       Made possible by:
-        <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener">
-          <img
-            src="/_static/images/deltares-blue.svg"
-            alt="Deltares"
-            style="height: 40px;"
-          />
-        </a>
+       <a href="https://www.deltares.nl/en" target="_blank" rel="noreferrer noopener">
+        <img
+          src="/_static/images/deltares-blue.svg"
+          alt="Deltares"
+          class="footer-image-light"
+          style="height: 40px;"
+        />
+        <img
+          src="/_static/images/deltares-white.svg"
+          alt="Deltares"
+          class="footer-image-dark"
+          style="height: 40px;"
+        />
+      </a>
   navbar:
     logo: _static/fiat.svg
     search: true

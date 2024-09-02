@@ -16,6 +16,8 @@ $navbar-hl: $links ;
 
 // Code blocks
 $code-block-bg-alpha: -.8;
+$code-bg: $highlight;
+$code-color: $text;
 
 .navbar-nav .dropdown-menu {
     background-color: $highlight; // Dark mode dropdown background color
@@ -68,3 +70,18 @@ $code-block-bg-alpha: -.8;
 //     border-color: rgb(255, 72, 0);
 //     // border-width: 1px;
 // }
+
+// :root {
+//   --footer-image: url('/_static/images/deltares-white.svg');
+// }
+//
+// footer img {
+//   content: var(--footer-image);
+// }
+
+.footer-image-light {
+  display: none;
+}
+.footer-image-dark {
+  display: inline;
+}
