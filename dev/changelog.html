@@ -245,12 +245,14 @@ ul.task-list li input[type="checkbox"] {
 <li>Numpy &gt;= 2.0.0 support</li>
 <li>Python 3.12 support</li>
 <li>Setting return period as a variable in hazard map bands (risk)</li>
+<li>Support for using pixi for binary creation (properly)</li>
 </ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
 <ul>
 <li>Better version of <code>BufferHandler</code></li>
+<li>Fixed binary creation in general, but also specifically for <code>GDAL &gt;= v3.9.1</code></li>
 <li>Made read methods of <code>BaseModel</code>, <code>GeomModel</code> and <code>GridModel</code> public (removed underscore)</li>
 <li>Testing of workers (not properly caught due to using <code>multiprocessing</code>)</li>
 <li>Testing only based on integers</li>
