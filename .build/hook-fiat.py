@@ -7,7 +7,7 @@ from pathlib import Path
 
 from osgeo.gdal import __version__ as gdal_version
 from packaging.version import Version
-from PyInstaller.compat import is_conda
+from PyInstaller.compat import is_conda, is_win
 from PyInstaller.utils.hooks import logger
 from PyInstaller.utils.hooks.conda import (
     distribution,
@@ -36,8 +36,16 @@ if "PROJ_DATA" in os.environ:
     src_proj = os.environ["PROJ_DATA"]
 elif "PROJ_LIB" in os.environ:
     src_proj = os.environ["PROJ_LIB"]
-else:
-    logger.warning("Proj data was not found.")
+
+# Default check based on known directories
+if src_proj is None:
+    if is_win:
+        src_proj = os.path.join(root_path, "Library", "share", "proj")
+    else:  # both linux and darwin
+        src_proj = os.path.join(root_path, "share", "proj")
+    if not os.path.isdir(src_proj):
+        src_proj = None
+        logger.warning("Proj data was not found.")
 
 if src_proj is not None:
     datas.append((src_proj, "./share"))
