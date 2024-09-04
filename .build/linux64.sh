@@ -19,12 +19,6 @@ function help_message {
   echo $'\t'"-h,"$'\t'"Display this help message"$'\n\t'"--help"
 }
 
-# # Check if no arguments are provided
-# if [[ $# -eq 0 ]]; then
-#   help_message
-#   exit 0
-# fi
-
 # Parsing the cli input
 while [[ "$1" != "" ]]; do
   case $1 in
@@ -76,17 +70,6 @@ elif [ -z "$executable" ]; then
     exit 1
   fi
 fi
-
-# if [ -z "$executable" ]
-# then
-#   # If home_conda is empty, grep with "/home/share"
-#   executable=$(echo "$paths" | grep "^/usr/share")
-# fi
-
-# if [ -z "$conda_executable" ]
-# then
-#   conda_executable="/home/runner/miniconda3/condabin/conda"
-# fi
 
 echo "INFO: Executable found here: $executable"
 
