@@ -12,6 +12,7 @@ This contains the unreleased changes to Delft-FIAT.
 - Function (`execute_pool`) to execute code in parallel using `multiprocessing`
 - General method of creating output files in `GeomModel` (`_setup_output_files`)
 - Method `_create_model_dirs` of `ConfigReader` object for creating result directories in one go
+- Method `add_handler` of the `Log` object; user setting of custom stream
 - Method `set` of `ConfigReader` object
 - Method `size` of `GeomSource` object for in situ size return; `count` becomes private
 - Method `size` of `GridSource` object for in situ size return; `count` becomes private
@@ -29,6 +30,7 @@ This contains the unreleased changes to Delft-FIAT.
 
 ### Deprecated
 - Base object `_BaseHandler`; incompatible with Python 3.12
+- Method `add_c_handler` in favour of the more generalized `add_handler`
 - Methods `_create_output_dir`, `_create_tmp_dir` and `_create_risk_dir` of the `ConfigReader` object
 - Setting return period via the name of the hazard band (risk)
 - Support of `Python` versions under `3.9.0`

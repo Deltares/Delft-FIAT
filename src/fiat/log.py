@@ -28,6 +28,18 @@ _str_formatter = StrFormatter()
 del StrFormatter
 
 
+def global_acquire():
+    """Global method for acquiring global lock."""
+    if _Global_and_Destruct_Lock:
+        _Global_and_Destruct_Lock.acquire()
+
+
+def global_release():
+    """Global method for releasing global lock."""
+    if _Global_and_Destruct_Lock:
+        _Global_and_Destruct_Lock.release()
+
+
 def _Destruction():
     """Clean up at interpreter exit."""
     items = list(_handlers.items())
@@ -214,9 +226,9 @@ class BaseHandler:
         self,
     ):
         """_summary_."""
-        _Global_and_Destruct_Lock.acquire()
+        global_acquire()
         _handlers[self._name] = self
-        _Global_and_Destruct_Lock.acquire()
+        global_release()
 
     def _make_lock(self):
         self._lock = threading.RLock()
@@ -231,10 +243,10 @@ class BaseHandler:
 
     def close(self):
         """Close and clean up."""
-        _Global_and_Destruct_Lock.acquire()
+        global_acquire()
         self._closed = True
         del _handlers[self._name]
-        _Global_and_Destruct_Lock.release()
+        global_release()
 
     def emit(self):
         """_summary_."""
@@ -297,11 +309,12 @@ class CHandler(BaseHandler):
         Parameters
         ----------
         level : int, optional
-            _description_, by default 2
+            Logging level, by default 2 (INFO)
         name : str, optional
-            _description_, by default None
+            Name of the added handler, by default None
         stream : type, optional
-            _description_, by default None
+            Stream to which to send the logging messages.
+            If none is provided, stdout is chosen. By default None
         """
         BaseHandler.__init__(self, level=level)
 
@@ -349,11 +362,11 @@ class FileHandler(CHandler):
         Parameters
         ----------
         level : int
-            _description_
+            Logging level.
         dst : str
-            _description_
+            The destination of the logging (text) file.
         name : str, optional
-            _description_, by default None
+            The name of the file handler, by default None
         """
         if name is None:
             name = "log_default"
@@ -477,7 +490,7 @@ class LogManager:
         obj = None
         name = logger.name
 
-        _Global_and_Destruct_Lock.acquire()
+        global_acquire()
         if name in self.logger_tree:
             obj = self.logger_tree[name]
             if isinstance(obj, DummyLog):
@@ -488,7 +501,7 @@ class LogManager:
         else:
             self.logger_tree[name] = logger
             self._check_parents(logger)
-        _Global_and_Destruct_Lock.release()
+        global_release()
 
         return obj
 
@@ -721,21 +734,25 @@ class Log(metaclass=Logmeta):
 
         return handle
 
-    def add_c_handler(
+    def add_handler(
         self,
         level: int = 2,
         name: str = None,
+        stream: type = None,
     ):
-        """Add an outlet to the console.
+        """Add an outlet to the logging object.
 
         Parameters
         ----------
         level : int, optional
-            Logging level.
+            Logging level, by default 2 (INFO)
         name : str, optional
-            The identifier of the stream handler.
+            Name of the added handler, by default None
+        stream : type, optional
+            Stream to which to send the logging messages.
+            If none is provided, stdout is chosen. By default None
         """
-        self._handlers.append(CHandler(level=level, name=name))
+        self._handlers.append(CHandler(level=level, name=name, stream=stream))
 
     def add_file_handler(
         self,
@@ -743,7 +760,7 @@ class Log(metaclass=Logmeta):
         level: int = 2,
         filename: str = None,
     ):
-        """Add an outlet to a file.
+        """Add an outlet directed to a file.
 
         Parameters
         ----------
@@ -845,7 +862,7 @@ def setup_default_log(
 
     obj = Log(name, level=level)
 
-    obj.add_c_handler(level=level)
+    obj.add_handler(level=level)
     obj.add_file_handler(
         dst,
         level=level,

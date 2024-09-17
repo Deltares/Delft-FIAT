@@ -18,7 +18,7 @@ def test_stream(log1, log2):
 
 def test_log(tmp_path):
     log = Log("test_log", level=2)
-    log.add_c_handler(
+    log.add_handler(
         level=2,
     )
     log.add_file_handler(
