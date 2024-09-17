@@ -1,7 +1,7 @@
-FROM debian:bookworm-slim as base
+FROM debian:bookworm-slim AS base
 ARG PIXIENV
 ARG UID=1000
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl && apt-get install -y vim && apt-get install -y binutils
 
 RUN useradd deltares
 RUN usermod -u ${UID} deltares
@@ -24,5 +24,5 @@ ENV RUNENV="${PIXIENV}"
 RUN echo "pixi run --locked -e ${RUNENV} \$@" > run_pixi.sh \
   && chown deltares:deltares run_pixi.sh \
   && chmod u+x run_pixi.sh
-ENTRYPOINT ["sh", "run_pixi.sh"]
-CMD ["fiat","info"]
+ENTRYPOINT ["bash", "run_pixi.sh"]
+CMD ["fiat"]
