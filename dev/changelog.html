@@ -239,6 +239,7 @@ ul.task-list li input[type="checkbox"] {
 <li>Function (<code>execute_pool</code>) to execute code in parallel using <code>multiprocessing</code></li>
 <li>General method of creating output files in <code>GeomModel</code> (<code>_setup_output_files</code>)</li>
 <li>Method <code>_create_model_dirs</code> of <code>ConfigReader</code> object for creating result directories in one go</li>
+<li>Method <code>add_handler</code> of the <code>Log</code> object; user setting of custom stream</li>
 <li>Method <code>set</code> of <code>ConfigReader</code> object</li>
 <li>Method <code>size</code> of <code>GeomSource</code> object for in situ size return; <code>count</code> becomes private</li>
 <li>Method <code>size</code> of <code>GridSource</code> object for in situ size return; <code>count</code> becomes private</li>
@@ -262,6 +263,7 @@ ul.task-list li input[type="checkbox"] {
 <h3 class="anchored" data-anchor-id="deprecated">Deprecated</h3>
 <ul>
 <li>Base object <code>_BaseHandler</code>; incompatible with Python 3.12</li>
+<li>Method <code>add_c_handler</code> in favour of the more generalized <code>add_handler</code></li>
 <li>Methods <code>_create_output_dir</code>, <code>_create_tmp_dir</code> and <code>_create_risk_dir</code> of the <code>ConfigReader</code> object</li>
 <li>Setting return period via the name of the hazard band (risk)</li>
 <li>Support of <code>Python</code> versions under <code>3.9.0</code></li>
