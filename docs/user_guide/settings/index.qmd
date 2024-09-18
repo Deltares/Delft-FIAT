@@ -63,7 +63,7 @@ If provided, the suffix is mandatory. The suffix should match the suffix of the 
 
 #### [hazard]
 
-- `file`: The file path to the hazard file, can be a list of files.
+- `file`: The file path to the hazard file.
 
 - `elevation_reference`: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be "DEM" while in case of a flood-elevation map this should be "datum".
 
