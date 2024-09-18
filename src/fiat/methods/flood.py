@@ -4,7 +4,7 @@ import math
 from numpy import isnan
 
 from fiat.io import Table
-from fiat.math.util import AREA_METHODS
+from fiat.methods.util import AREA_METHODS
 
 MANDATORY_COLUMNS = ["ground_elevtn", "ground_flht"]
 MANDATORY_ENTRIES = {"ref": "hazard.elevation_reference"}

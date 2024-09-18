@@ -8,7 +8,7 @@ from fiat.io import (
     GridSource,
     open_grid,
 )
-from fiat.math.ead import calc_ead
+from fiat.methods.ead import calc_ead
 from fiat.util import create_windows
 
 

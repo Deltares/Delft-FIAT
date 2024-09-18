@@ -16,7 +16,7 @@ from fiat.io import (
     open_csv,
 )
 from fiat.log import LogItem, Sender
-from fiat.math.ead import calc_ead
+from fiat.methods.ead import calc_ead
 from fiat.util import NEWLINE_CHAR, regex_pattern, replace_empty
 
 
@@ -157,7 +157,7 @@ def worker(
 ):
     """_summary_."""
     # Setup the hazard type module
-    module = importlib.import_module(f"fiat.math.{cfg.get('global.type')}")
+    module = importlib.import_module(f"fiat.methods.{cfg.get('global.type')}")
     func_hazard = getattr(module, "calculate_hazard")
     func_damage = getattr(module, "calculate_damage")
     types = cfg.get("exposure.types")

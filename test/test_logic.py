@@ -1,5 +1,5 @@
-from fiat.math.ead import calc_ead, risk_density
-from fiat.math.flood import calculate_hazard
+from fiat.methods.ead import calc_ead, risk_density
+from fiat.methods.flood import calculate_hazard
 
 
 def test_calc_haz():
