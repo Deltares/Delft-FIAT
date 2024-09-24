@@ -7,8 +7,8 @@ from multiprocessing import freeze_support
 
 from fiat.cfg import ConfigReader
 from fiat.cli.formatter import MainHelpFormatter
-from fiat.cli.util import file_path_check
-from fiat.log import setup_default_log
+from fiat.cli.util import file_path_check, run_log
+from fiat.log import check_loglevel, setup_default_log
 from fiat.main import FIAT
 from fiat.version import __version__
 
@@ -57,9 +57,10 @@ def run(args):
         cfg.set("global.threads", int(args.threads))
 
     # Setup the logger
+    loglevel = check_loglevel(cfg.get("global.loglevel", "INFO"))
     logger = setup_default_log(
         "fiat",
-        level=2 + args.quiet - args.verbose,
+        level=loglevel + args.quiet - args.verbose,
         dst=cfg.get("output.path"),
     )
     sys.stdout.write(fiat_start_str)
@@ -67,7 +68,7 @@ def run(args):
 
     # Kickstart the model
     obj = FIAT(cfg)
-    obj.run()
+    run_log(obj.run, logger=logger)
 
 
 ## Constructing the arguments parser for FIAT.

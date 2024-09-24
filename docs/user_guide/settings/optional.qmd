@@ -5,9 +5,10 @@ title: "Optional input"
 Here we provide an overview of all optional/ non essential settings that the user can provide to FIAT. These are listed in the table (@tbl-toml) below.
 
 | Field                                  | Type    | Default       |
-|----------------------------------------|---------|---------------|
+|:---------------------------------------|---------|---------------|
 | **[global]**                           |         |               |
 | [crs](#global)                         | string  | -             |
+| [loglevel](#global)                    | string  | INFO          |
 | [keep_temp_files](#global)             | boolean | false         |
 | [gdal_cache](#global)                  | int     | -             |
 | **[hazard]**                           |         |               |
@@ -33,6 +34,8 @@ Here we provide an overview of all optional/ non essential settings that the use
 #### [global]
 
 - `crs`: Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.
+
+- `loglevel`: Set the loglevel of the fiat logger from the settings file. Choose from 'DEBUG', 'INFO', 'WARNING', 'ERROR' or 'DEAD'.
 
 - `keep_temp_files`: Permanently save the temporary file outputs. These are produced during the calculations.
 

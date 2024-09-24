@@ -20,7 +20,7 @@ File paths in the settings can be relative to the settings.toml file or absolute
 :::
 
 | Entry                          | Type    | Required | Default         |
-|--------------------------------|---------|----------|-----------------|
+|:-------------------------------|---------|----------|-----------------|
 | **[output]**                   |         |          |                 |
 | [path](#output)                | string  | Yes      |                 |
 | **[output.csv]**               |         |          |                 |

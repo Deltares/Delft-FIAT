@@ -1,11 +1,12 @@
 """Checks for the data of FIAT."""
 
-import sys
 from pathlib import Path
 
 from osgeo import osr
 
-from fiat.log import setup_default_log, spawn_logger
+from fiat.error import FIATDataError
+from fiat.gis.crs import get_srs_repr
+from fiat.log import spawn_logger
 from fiat.util import deter_type
 
 logger = spawn_logger("fiat.checks")
@@ -18,7 +19,7 @@ def check_config_entries(
     parent: Path,
 ):
     """_summary_."""
-    _man_cols = [
+    _man_entries = [
         "output.path",
         "hazard.file",
         "hazard.risk",
@@ -26,17 +27,12 @@ def check_config_entries(
         "vulnerability.file",
     ]
 
-    _check = [item in keys for item in _man_cols]
+    _check = [item in keys for item in _man_entries]
     if not all(_check):
-        error_log = setup_default_log(
-            "error",
-            level=2,
-            dst=str(parent),
-        )
-        _missing = [item for item, b in zip(_man_cols, _check) if not b]
-        error_log.error(f"Missing mandatory entries in '{path.name}'")
-        error_log.info(f"Please fill in the following missing entries: {_missing}")
-        sys.exit()
+        _missing = [item for item, b in zip(_man_entries, _check) if not b]
+        msg = f"Missing mandatory entries in '{path.name}'. Please fill in the \
+following missing entries: {_missing}"
+        raise FIATDataError(msg)
 
 
 def check_config_geom(
@@ -97,9 +93,8 @@ def check_global_crs(
 ):
     """_summary_."""
     if srs is None:
-        logger.error("Could not infer the srs from '{}', nor from '{}'")
-        logger.dead("Exiting...")
-        sys.exit()
+        msg = "Could not infer the srs from '{}', nor from '{}'"
+        raise FIATDataError(msg)
 
 
 ## Text files
@@ -108,11 +103,9 @@ def check_duplicate_columns(
 ):
     """_summary_."""
     if cols is not None:
-        logger.error(
-            f"Duplicate columns were encountered. Wrong column could \
+        msg = f"Duplicate columns were encountered. Wrong column could \
 be used. Check input for these columns: {cols}"
-        )
-        sys.exit()
+        raise FIATDataError(msg)
 
 
 ## GIS
@@ -125,19 +118,22 @@ def check_grid_exact(
         haz.get_srs(),
         exp.get_srs(),
     ):
-        logger.error("")
-        sys.exit()
+        msg = f"CRS of hazard data ({get_srs_repr(haz.get_srs())}) does not match the \
+CRS of the exposure data ({get_srs_repr(exp.get_srs())})"
+        raise FIATDataError(msg)
 
     gtf1 = [round(_n, 2) for _n in haz.get_geotransform()]
     gtf2 = [round(_n, 2) for _n in exp.get_geotransform()]
 
     if gtf1 != gtf2:
-        logger.error("")
-        sys.exit()
+        msg = f"Geotransform of hazard data ({gtf1}) does not match geotransform of \
+exposure data ({gtf2})"
+        raise FIATDataError(msg)
 
     if haz.shape != exp.shape:
-        logger.error("")
-        sys.exit()
+        msg = f"Shape of hazard ({haz.shape}) does not match shape of \
+exposure data ({exp.shape})"
+        raise FIATDataError(msg)
 
 
 def check_internal_srs(
@@ -147,12 +143,9 @@ def check_internal_srs(
 ):
     """_summary_."""
     if source_srs is None and cfg_srs is None:
-        logger.error(
-            f"Coordinate reference system is unknown for '{fname}', \
+        msg = f"Coordinate reference system is unknown for '{fname}', \
 cannot safely continue"
-        )
-        logger.dead("Exiting...")
-        sys.exit()
+        raise FIATDataError(msg)
 
     if source_srs is None:
         source_srs = osr.SpatialReference()
@@ -175,8 +168,8 @@ def check_geom_extent(
     )
 
     if not all(_checks):
-        logger.error(f"Geometry bounds {gm_bounds} exceed hazard bounds {gr_bounds}")
-        sys.exit()
+        msg = f"Geometry bounds {gm_bounds} exceed hazard bounds {gr_bounds}"
+        raise FIATDataError(msg)
 
 
 def check_vs_srs(
@@ -228,15 +221,10 @@ def check_hazard_rp(
             if deter_type(rp_str, l - 1) != 3:
                 return [float(n) for n in rp_cfg]
 
-    logger.error(
-        f"'{path.name}': cannot determine the return periods for the risk calculation"
-    )
-    logger.error(
-        f"Return periods specified with the bands are: {rp_bands}, \
+    msg = f"'{path.name}': cannot determine the return periods for \
+the risk calculation. Return periods specified with the bands are: {rp_bands}, \
 return periods in settings toml are: {rp_cfg}"
-    )
-    logger.info("Specify either one them correctly")
-    sys.exit()
+    raise FIATDataError(msg)
 
 
 def check_hazard_subsets(
@@ -246,12 +234,9 @@ def check_hazard_subsets(
     """_summary_."""
     if sub is not None:
         keys = ", ".join(list(sub.keys()))
-        logger.error(
-            f"""'{path.name}': cannot read this file as there are \
-multiple datasets (subsets)"""
-        )
-        logger.info(f"Chose one of the following subsets: {keys}")
-        sys.exit()
+        msg = f"'{path.name}': cannot read this file as there are \
+multiple datasets (subsets). Chose one of the following subsets: {keys}"
+        raise FIATDataError(msg)
 
 
 ## Exposure
@@ -267,8 +252,8 @@ def check_exp_columns(
     _check = [item in columns for item in _man_columns]
     if not all(_check):
         _missing = [item for item, b in zip(_man_columns, _check) if not b]
-        logger.error(f"Missing mandatory exposure columns: {_missing}")
-        sys.exit()
+        msg = f"Missing mandatory exposure columns: {_missing}"
+        raise FIATDataError(msg)
 
 
 def check_exp_derived_types(
@@ -279,11 +264,9 @@ def check_exp_derived_types(
     """_summary_."""
     # Error when no columns are found for vulnerability type
     if not found:
-        logger.error(
-            f"For type: '{type}' no matching columns were found for \
+        msg = f"For type: '{type}' no matching columns were found for \
 fn_{type}_* and max_{type}_* columns."
-        )
-        sys.exit()
+        FIATDataError(msg)
 
     # Log when combination of fn and max is missing
     if missing:
@@ -304,10 +287,8 @@ def check_exp_grid_dmfs(
     _check = [item in dmfs for item in _ef]
     if not all(_check):
         _missing = [item for item, b in zip(_ef, _check) if not b]
-        logger.error(
-            f"Incorrect damage function identifier found in exposure grid: {_missing}",
-        )
-        sys.exit()
+        msg = f"Incorrect damage function identifier found in exposure grid: {_missing}"
+        raise FIATDataError(msg)
 
 
 ## Vulnerability

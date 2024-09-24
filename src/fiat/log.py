@@ -54,10 +54,18 @@ def _Destruction():
 atexit.register(_Destruction)
 
 
-def _Level(level):
+def check_loglevel(level):
     """Check if level can be used."""
-    if level not in LogLevels._value2member_map_:
-        raise ValueError("")
+    if isinstance(level, int) and level not in LogLevels._value2member_map_:
+        raise ValueError(f"Level ({level}) is not a valid log level.")
+    elif isinstance(level, str):
+        level = level.upper()
+        if level not in LogLevels._member_map_:
+            raise ValueError(f"Level ({level}) is not a valid log level.")
+        else:
+            level = LogLevels[level].value
+    elif not isinstance(level, (int, str)):
+        raise TypeError(f"Level ({level}) of incorrect type -> type: {type(level)}")
     return level
 
 
@@ -211,7 +219,7 @@ class BaseHandler:
         level: int = 2,
     ):
         """Create base class for all stream handlers."""
-        self.level = _Level(level)
+        self.level = check_loglevel(level)
         self.msg_formatter = None
         self._name = None
         self._closed = False
@@ -692,7 +700,7 @@ class Log(metaclass=Logmeta):
         name: str,
         level: int = 2,
     ):
-        self._level = _Level(level)
+        self._level = check_loglevel(level)
         self.name = name
         self.bubble_up = True
         self.parent = None
@@ -783,7 +791,7 @@ class Log(metaclass=Logmeta):
         self,
         val: int,
     ):
-        self._level = _Level(val)
+        self._level = check_loglevel(val)
 
     def _direct(self, msg):
         """_summary_."""
