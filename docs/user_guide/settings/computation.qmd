@@ -5,7 +5,7 @@ title: Computational input
 The inputs give the user a bit more control over the computational aspects of FIAT.
 
 | Entry                            | Type    | Default     |
-|----------------------------------|---------|-------------|
+|:---------------------------------|---------|-------------|
 | **[global]**                     |         |             |
 | [threads](#global)               | integer | <cpu count> |
 | **[global.geom]**                |         |             |

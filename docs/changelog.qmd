@@ -18,6 +18,7 @@ This contains the unreleased changes to Delft-FIAT.
 - Method `size` of `GridSource` object for in situ size return; `count` becomes private
 - Numpy >= 2.0.0 support
 - Python 3.12 support
+- Settings toml file: global setting 'loglevel'
 - Setting return period as a variable in hazard map bands (risk)
 - Support for using pixi for binary creation (properly)
 
