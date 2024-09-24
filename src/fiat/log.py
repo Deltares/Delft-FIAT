@@ -56,7 +56,7 @@ atexit.register(_Destruction)
 
 def check_loglevel(level):
     """Check if level can be used."""
-    if isinstance(level, int) and level not in LogLevels:
+    if isinstance(level, int) and level not in LogLevels._value2member_map_:
         raise ValueError(f"Level ({level}) is not a valid log level.")
     elif isinstance(level, str):
         level = level.upper()
