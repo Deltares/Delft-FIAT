@@ -301,119 +301,124 @@ ul.task-list li input[type="checkbox"] {
 <caption>Table&nbsp;1: Settings.toml input (required and optional fields)</caption>
 <thead>
 <tr class="header">
-<th>Field</th>
+<th style="text-align: left;">Field</th>
 <th>Type</th>
 <th>Default</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>[global]</strong></td>
+<td style="text-align: left;"><strong>[global]</strong></td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td><a href="#global">crs</a></td>
+<td style="text-align: left;"><a href="#global">crs</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
 <tr class="odd">
-<td><a href="#global">keep_temp_files</a></td>
+<td style="text-align: left;"><a href="#global">loglevel</a></td>
+<td>string</td>
+<td>INFO</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a href="#global">keep_temp_files</a></td>
 <td>boolean</td>
 <td>false</td>
 </tr>
-<tr class="even">
-<td><a href="#global">gdal_cache</a></td>
+<tr class="odd">
+<td style="text-align: left;"><a href="#global">gdal_cache</a></td>
 <td>int</td>
 <td>-</td>
 </tr>
-<tr class="odd">
-<td><strong>[hazard]</strong></td>
+<tr class="even">
+<td style="text-align: left;"><strong>[hazard]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
-<td><a href="#hazard">crs</a></td>
+<tr class="odd">
+<td style="text-align: left;"><a href="#hazard">crs</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
-<tr class="odd">
-<td><a href="#hazard">return_periods</a></td>
+<tr class="even">
+<td style="text-align: left;"><a href="#hazard">return_periods</a></td>
 <td>list</td>
 <td>-</td>
 </tr>
-<tr class="even">
-<td><strong>[hazard.settings]</strong></td>
+<tr class="odd">
+<td style="text-align: left;"><strong>[hazard.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="odd">
-<td><a href="#hazard.settings">subset</a></td>
+<tr class="even">
+<td style="text-align: left;"><a href="#hazard.settings">subset</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
-<tr class="even">
-<td><a href="#hazard.settings">var_as_band</a></td>
+<tr class="odd">
+<td style="text-align: left;"><a href="#hazard.settings">var_as_band</a></td>
 <td>boolean</td>
 <td>false</td>
 </tr>
-<tr class="odd">
-<td><strong>[exposure.csv]</strong></td>
+<tr class="even">
+<td style="text-align: left;"><strong>[exposure.csv]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
-<td><a href="#exposure.csv">index</a></td>
+<tr class="odd">
+<td style="text-align: left;"><a href="#exposure.csv">index</a></td>
 <td>string</td>
 <td>‘Object ID’</td>
 </tr>
-<tr class="odd">
-<td><strong>[exposure.geom]</strong></td>
+<tr class="even">
+<td style="text-align: left;"><strong>[exposure.geom]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
-<td><a href="#exposure.geom">crs</a></td>
+<tr class="odd">
+<td style="text-align: left;"><a href="#exposure.geom">crs</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
-<tr class="odd">
-<td><strong>[exposure.grid]</strong></td>
+<tr class="even">
+<td style="text-align: left;"><strong>[exposure.grid]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
-<td><a href="#exposure.grid">crs</a></td>
+<tr class="odd">
+<td style="text-align: left;"><a href="#exposure.grid">crs</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
-<tr class="odd">
-<td><strong>[exposure.grid.settings]</strong></td>
+<tr class="even">
+<td style="text-align: left;"><strong>[exposure.grid.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
-<td><a href="#exposure.grid.settings">var_as_band</a></td>
+<tr class="odd">
+<td style="text-align: left;"><a href="#exposure.grid.settings">var_as_band</a></td>
 <td>boolean</td>
 <td>false</td>
 </tr>
-<tr class="odd">
-<td><strong>[vulnerability]</strong></td>
+<tr class="even">
+<td style="text-align: left;"><strong>[vulnerability]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
-<td><a href="#vulnerability">step_size</a></td>
+<tr class="odd">
+<td style="text-align: left;"><a href="#vulnerability">step_size</a></td>
 <td>float</td>
 <td>0.01</td>
 </tr>
-<tr class="odd">
-<td><strong>[vulnerability.settings]</strong></td>
+<tr class="even">
+<td style="text-align: left;"><strong>[vulnerability.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
-<td><a href="#vulnerability.settings">index</a></td>
+<tr class="odd">
+<td style="text-align: left;"><a href="#vulnerability.settings">index</a></td>
 <td>string</td>
 <td>‘water depth’</td>
 </tr>
@@ -424,6 +429,7 @@ ul.task-list li input[type="checkbox"] {
 <h4 class="anchored" data-anchor-id="global">[global]</h4>
 <ul>
 <li><p><code>crs</code>: Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.</p></li>
+<li><p><code>loglevel</code>: Set the loglevel of the fiat logger from the settings file. Choose from ‘DEBUG’, ‘INFO’, ‘WARNING’, ‘ERROR’ or ‘DEAD’.</p></li>
 <li><p><code>keep_temp_files</code>: Permanently save the temporary file outputs. These are produced during the calculations.</p></li>
 <li><p><code>gdal_cache</code>: Set the cache used by GDAL.</p></li>
 </ul>
