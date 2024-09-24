@@ -1,6 +1,7 @@
 """Worker function for the geometry model (no csv)."""
 
 from math import nan
+from multiprocessing.queues import Queue
 from multiprocessing.synchronize import Lock
 
 from fiat.gis import geom, overlay
@@ -9,10 +10,11 @@ from fiat.io import GridSource, Table
 
 def worker(
     cfg,
+    queue: Queue,
     haz: GridSource,
     idx: int,
-    exp_geom: dict,
     vul: Table,
+    exp_geom: dict,
     chunk: tuple | list,
     lock: Lock,
 ):
