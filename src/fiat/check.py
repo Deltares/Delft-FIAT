@@ -266,7 +266,7 @@ def check_exp_derived_types(
     if not found:
         msg = f"For type: '{type}' no matching columns were found for \
 fn_{type}_* and max_{type}_* columns."
-        FIATDataError(msg)
+        raise FIATDataError(msg)
 
     # Log when combination of fn and max is missing
     if missing:

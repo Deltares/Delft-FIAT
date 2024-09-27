@@ -1021,6 +1021,12 @@ class GeomSource(_BaseIO, _BaseStruct):
 
     @property
     @_BaseIO._check_state
+    def geom_type(self):
+        """Return the geometry type."""
+        return self.layer.GetGeomType()
+
+    @property
+    @_BaseIO._check_state
     def size(
         self,
     ):

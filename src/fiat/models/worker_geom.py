@@ -12,15 +12,16 @@ def worker(
     cfg,
     queue: Queue,
     haz: GridSource,
-    idx: int,
     vul: Table,
     exp_geom: dict,
     chunk: tuple | list,
     lock: Lock,
 ):
     """_summary_."""
-    band = haz[idx]
+    # Get the bands to prevent object creation while looping
+    bands = [haz[idx + 1] for idx in range(haz.size)]
 
+    # Loop through the different files
     for _, gm in exp_geom.items():
         # Check if there actually is data for this chunk
         if chunk[0] > gm._count:
@@ -28,12 +29,15 @@ def worker(
 
         # Loop over all the geometries in a reduced manner
         for ft in gm.reduced_iter(*chunk):
-            # How to get the hazard data
-            if ft.GetField("extract_method") == "area":
-                res = overlay.clip(band, haz.get_srs(), haz.get_geotransform(), ft)
-            else:
-                res = overlay.pin(band, haz.get_geotransform(), geom.point_in_geom(ft))
+            for band in bands:
+                # How to get the hazard data
+                if ft.GetField("extract_method") == "area":
+                    res = overlay.clip(band, haz.get_srs(), haz.get_geotransform(), ft)
+                else:
+                    res = overlay.pin(
+                        band, haz.get_geotransform(), geom.point_in_geom(ft)
+                    )
 
-            res[res == band.nodata] = nan
-            pass
+                res[res == band.nodata] = nan
+                pass
     pass

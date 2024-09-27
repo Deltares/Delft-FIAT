@@ -47,7 +47,6 @@ def csv_def_file(
 
 def geom_threads(
     cpu_count: int,
-    haz_layers: int,
     chunks: int,
 ):
     """_summary_.
@@ -57,7 +56,6 @@ def geom_threads(
     n = 1
     if chunks == 0:
         chunks = 1
-    n = chunks * haz_layers
     n = min(cpu_count, n)
 
     return n

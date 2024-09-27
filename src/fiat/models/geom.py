@@ -4,6 +4,8 @@ import os
 import time
 from pathlib import Path
 
+from osgeo import ogr
+
 from fiat.cfg import ConfigReader
 from fiat.check import (
     check_exp_columns,
@@ -18,7 +20,7 @@ from fiat.io import (
     open_geom,
 )
 from fiat.log import setup_mp_log, spawn_logger
-from fiat.models import worker_csv
+from fiat.models import worker_geom
 from fiat.models.base import BaseModel
 from fiat.models.util import (
     GEOM_MIN_CHUNK,
@@ -117,24 +119,27 @@ calculated chunks ({self.nchunk})"
         """_summary_."""
         self.nthreads = geom_threads(
             self.max_threads,
-            self.hazard_grid.size,
             self.nchunk,
         )
 
     def _setup_output_files(self):
         """_summary_."""
         # Do the same for the geometry files
-        for key in self.exposure_geoms.keys():
+        for key, gm in self.exposure_geoms.items():
             _add = key[-1]
             # Define outgoing dataset
-            out_geom = f"spatial{_add}.gpkg"
+            out_geom = f"spatial{_add}.fgb"
             if f"output.geom.name{_add}" in self.cfg:
                 out_geom = self.cfg.get(f"output.geom.name{_add}")
             self.cfg.set(f"output.geom.name{_add}", out_geom)
             with open_geom(
                 Path(self.cfg.get("output.path"), out_geom), mode="w", overwrite=True
             ) as _w:
-                pass
+                _w.create_layer(self.srs, gm.geom_type)
+                _w.create_fields(dict(zip(gm.fields, gm.dtypes)))
+                new = self.cfg.get("output.new_columns")
+                _w.create_fields(dict(zip(new, [ogr.OFTReal] * len(new))))
+            _w = None
 
     def check_exposure_types(self):
         """_summary_."""
@@ -211,41 +216,6 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         # When all is done, add it
         self.exposure_geoms = _d
 
-    def resolve(
-        self,
-    ):
-        """Create permanent output.
-
-        This is done but reading, loading and sorting the temporary output within
-        the `.tmp` folder within the output folder. \n
-
-        - This method might become private.
-        """
-        # Setup the locks for the worker
-        csv_lock = self._mp_manager.Lock()
-        geom_lock = self._mp_manager.Lock()
-
-        # Setting up the jobs for resolving
-        jobs = generate_jobs(
-            {
-                "cfg": self.cfg,
-                "exp_data": self.exposure_data,
-                "exp_geom": self.exposure_geoms,
-                "chunk": self.chunks,
-                "csv_lock": csv_lock,
-                "geom_lock": geom_lock,
-            },
-        )
-
-        # Execute the jobs
-        logger.info("Busy...")
-        execute_pool(
-            ctx=self._mp_ctx,
-            func=worker_csv.worker_ead,
-            jobs=jobs,
-            threads=self.nthreads,
-        )
-
     def run(
         self,
     ):
@@ -270,19 +240,18 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # Setup the jobs
         # First setup the locks
-        locks = [self._mp_manager.Lock() for _ in range(self.hazard_grid.size)]
+        lock = self._mp_manager.Lock()
         jobs = generate_jobs(
             {
                 "cfg": self.cfg,
                 "queue": self._queue,
                 "haz": self.hazard_grid,
-                "idx": range(1, self.hazard_grid.size + 1),
                 "vul": self.vulnerability_data,
                 "exp_geom": self.exposure_geoms,
                 "chunk": self.chunks,
-                "lock": locks,
+                "lock": lock,
             },
-            tied=["idx", "lock"],
+            # tied=["idx", "lock"],
         )
 
         logger.info(f"Using number of threads: {self.nthreads}")
@@ -292,7 +261,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         logger.info("Busy...")
         execute_pool(
             ctx=self._mp_ctx,
-            func=worker_csv.worker,
+            func=worker_geom.worker,
             jobs=jobs,
             threads=self.nthreads,
         )
