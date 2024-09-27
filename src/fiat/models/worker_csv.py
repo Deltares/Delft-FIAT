@@ -92,7 +92,7 @@ def worker_ead(
 
             # If no data is found in the temporary files, write None values
             if ft_info is None:
-                geom_writer.add_feature(
+                geom_writer.add_feature_with_map(
                     ft,
                     dict(zip(new_cols, [None] * len(new_cols))),
                 )
@@ -124,7 +124,7 @@ def worker_ead(
                     vals.append(ead)
             row += NEWLINE_CHAR.encode()
             writer.write(row)
-            geom_writer.add_feature(
+            geom_writer.add_feature_with_map(
                 ft,
                 dict(zip(new_cols, vals)),
             )

@@ -13,19 +13,19 @@ def test_bufferedgeom(tmp_path, geom_data):
     )
     assert writer.size == 0
 
-    writer.add_feature(
+    writer.add_feature_with_map(
         geom_data.layer.GetFeature(1),
         {},
     )
     assert writer.size == 1
 
-    writer.add_feature(
+    writer.add_feature_with_map(
         geom_data.layer.GetFeature(2),
         {},
     )
     assert writer.size == 2
 
-    writer.add_feature(
+    writer.add_feature_with_map(
         geom_data.layer.GetFeature(3),
         {},
     )

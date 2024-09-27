@@ -332,7 +332,7 @@ class BufferedGeomWriter:
         self._clear_cache()
         self.buffer.close()
 
-    def add_feature(
+    def add_feature_with_map(
         self,
         ft: ogr.Feature,
         fmap: dict,
@@ -1040,23 +1040,6 @@ class GeomSource(_BaseIO, _BaseStruct):
     @_BaseIO._check_state
     def add_feature(
         self,
-        in_ft: ogr.Feature,
-        fmap: zip,
-    ):
-        """_summary_."""
-        ft = ogr.Feature(self.layer.GetLayerDefn())
-        ft.SetFrom(in_ft)
-
-        for key, item in fmap:
-            ft.SetField(key, item)
-
-        self.layer.CreateFeature(ft)
-        ft = None
-
-    @_BaseIO._check_mode
-    @_BaseIO._check_state
-    def add_feature_direct(
-        self,
         ft: ogr.Feature,
     ):
         """Add a feature to the layer.
@@ -1072,6 +1055,23 @@ class GeomSource(_BaseIO, _BaseStruct):
             A feature object defined by OGR.
         """
         self.layer.CreateFeature(ft)
+
+    @_BaseIO._check_mode
+    @_BaseIO._check_state
+    def add_feature_with_map(
+        self,
+        in_ft: ogr.Feature,
+        fmap: zip,
+    ):
+        """_summary_."""
+        ft = ogr.Feature(self.layer.GetLayerDefn())
+        ft.SetFrom(in_ft)
+
+        for key, item in fmap:
+            ft.SetField(key, item)
+
+        self.layer.CreateFeature(ft)
+        ft = None
 
     @_BaseIO._check_mode
     @_BaseIO._check_state
