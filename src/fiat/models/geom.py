@@ -137,7 +137,7 @@ calculated chunks ({self.nchunk})"
             ) as _w:
                 _w.create_layer(self.srs, gm.geom_type)
                 _w.create_fields(dict(zip(gm.fields, gm.dtypes)))
-                new = self.cfg.get("output.new_columns")
+                new = self.cfg.get("_.new_fields")
                 _w.create_fields(dict(zip(new, [ogr.OFTReal] * len(new))))
             _w = None
 
@@ -166,15 +166,15 @@ calculated chunks ({self.nchunk})"
         extra = []
         if self.cfg.get("hazard.risk"):
             extra = ["ead"]
-        new_cols, len1, total_idx = generate_output_columns(
+        new_fields, len1, total_idx = generate_output_columns(
             getattr(self.module, "NEW_COLUMNS"),
             types,
             extra=extra,
             suffix=self.cfg.get("hazard.band_names"),
         )
-        self.cfg.set("output.new_columns", new_cols)
-        self.cfg.set("output.csv.slen", len1)
-        self.cfg.set("output.csv.total_idx", total_idx)
+        self.cfg.set("_.new_fields", new_fields)
+        self.cfg.set("_.csv.slen", len1)
+        self.cfg.set("_.csv.total_idx", total_idx)
 
     def read_exposure_geoms(self):
         """_summary_."""
@@ -281,13 +281,5 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
                 Path(self.cfg.get("output.path"), "missing.log"),
             )
 
-        logger.info("Producing model output from temporary files")
-        # Patch output from the seperate processes back together
-        self.resolve()
         logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
-
-        if not self._keep_temp:
-            logger.info("Deleting temporary files...")
-            self._clean_up()
-
         logger.info("Geom calculation are done!")

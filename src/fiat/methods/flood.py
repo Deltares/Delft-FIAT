@@ -2,6 +2,7 @@
 import math
 
 from numpy import isnan
+from osgeo import ogr
 
 from fiat.io import Table
 from fiat.methods.util import AREA_METHODS
@@ -95,6 +96,44 @@ def calculate_damage(
             hazard_value = max(min(vul_max, hazard_value), vul_min)
             f = vuln[round(hazard_value, vul_round), info[col]]
             val = f * info[maxv[key]] * red_fact
+            val = round(val, 2)
+            total += val
+        out[idx] = val
+        idx += 1
+
+    out[-1] = round(total, 2)
+
+    return out
+
+
+def calculate_damage_ft(
+    hazard_value: float | int,
+    red_fact: float | int,
+    ft: ogr.Feature,
+    type_dict: dict,
+    vuln: Table,
+    vul_min: float | int,
+    vul_max: float | int,
+    vul_round: int,
+):
+    """Calculate damage as a result of flooding."""
+    # unpack type_dict
+    fn = type_dict["fn"]
+    maxv = type_dict["max"]
+
+    # Define outgoing list of values
+    out = [0] * (len(fn) + 1)
+
+    # Calculate the damage per catagory, and in total (_td)
+    total = 0
+    idx = 0
+    for key, col in fn.items():
+        if isnan(hazard_value) or ft.GetField(col) is None:
+            val = "nan"
+        else:
+            hazard_value = max(min(vul_max, hazard_value), vul_min)
+            f = vuln[round(hazard_value, vul_round), ft.GetField(col)]
+            val = f * ft.GetField(maxv[key]) * red_fact
             val = round(val, 2)
             total += val
         out[idx] = val
