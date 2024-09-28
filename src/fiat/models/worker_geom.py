@@ -32,6 +32,7 @@ def worker(
     new = cfg.get("_.new_fields")
     ref = cfg.get("hazard.elevation_reference")
     rounding = cfg.get("vulnerability.round")
+    slen = cfg.get("_.csv.slen")
     types = cfg.get("exposure.types")
     vul_min = min(vul.index)
     vul_max = max(vul.index)
@@ -52,6 +53,9 @@ def worker(
             lock=lock,
         )
         out_writer.create_fields(zip(new, [2] * len(new)))
+
+        # Setup indices
+        new_idx = list(range(len(gm.fields), len(gm.fields) + slen))
 
         # Loop over all the geometries in a reduced manner
         for ft in gm.reduced_iter(*chunk):
@@ -86,11 +90,9 @@ def worker(
                     )
                     out_writer.add_feature_with_map(
                         ft,
-                        dict(
-                            zip(
-                                new,
-                                [haz_value, red_fact, *out],
-                            )
+                        zip(
+                            new_idx,
+                            [haz_value, red_fact, *out],
                         ),
                     )
 

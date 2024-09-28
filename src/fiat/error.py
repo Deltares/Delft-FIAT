@@ -6,8 +6,8 @@ class DriverNotFoundError(Exception):
 
     def __init__(self, gog, path):
         self.base = f"{gog} data"
-        self.msg = f"Extension of file: {path.name} is not recoqnized"
-        super(DriverNotFoundError, self).__init__(self.base)
+        self.msg = f"Extension of file: {path.name} not recoqnized"
+        super(DriverNotFoundError, self).__init__(f"{self.base} -> {self.msg}")
 
     def __str__(self):
         return f"{self.base} -> {self.msg}"

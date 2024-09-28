@@ -338,27 +338,15 @@ class BufferedGeomWriter:
         fmap: dict,
     ):
         """_summary_."""
-        _local_ft = ogr.Feature(self.buffer.layer.GetLayerDefn())
-        _local_ft.SetFID(ft.GetFID())
-        _local_ft.SetGeometry(ft.GetGeometryRef())
-        for num in range(ft.GetFieldCount()):
-            _local_ft.SetField(
-                num,
-                ft.GetField(num),
-            )
-
-        for key, item in fmap.items():
-            _local_ft.SetField(
-                key,
-                item,
-            )
+        self.buffer.add_feature_with_map(
+            ft,
+            fmap=fmap,
+        )
 
         if self.size + 1 > self.max_size:
             self.to_drive()
 
-        self.buffer.layer.CreateFeature(_local_ft)
         self.size += 1
-        _local_ft = None
 
     def create_fields(
         self,
@@ -375,6 +363,7 @@ class BufferedGeomWriter:
     def to_drive(self):
         """_summary_."""
         # Block while writing to the drive
+        self.buffer.close()
         self.lock.acquire()
         merge_geom_layers(
             self.file.as_posix(),
@@ -383,6 +372,7 @@ class BufferedGeomWriter:
         )
         self.lock.release()
 
+        self.buffer = self.buffer.reopen(mode="w")
         self._reset_buffer()
 
 
@@ -866,14 +856,16 @@ class GeomSource(_BaseIO, _BaseStruct):
         driver = _map[self.path.suffix]
 
         self._driver = ogr.GetDriverByName(driver)
+        info = gdal.VSIStatL(self.path.as_posix())
 
-        if self.path.exists() and not overwrite:
+        if (self.path.exists() or info is not None) and not overwrite:
             self.src = self._driver.Open(self.path.as_posix(), self._mode)
         else:
             if not self._mode:
                 raise OSError(f"Cannot create {self.path} in 'read' mode.")
-            self.src = self._driver.CreateDataSource(self.path.as_posix())
+            self.create(self.path)
 
+        info = None
         self._count = 0
         self._cur_index = 0
 
@@ -962,12 +954,15 @@ class GeomSource(_BaseIO, _BaseStruct):
                 yield ft
             _c += 1
 
-    def reopen(self):
+    def reopen(
+        self,
+        mode: str = "r",
+    ):
         """Reopen a closed GeomSource."""
         if not self._closed:
             return self
-        obj = GeomSource.__new__(GeomSource, self.path)
-        obj.__init__(self.path)
+        obj = GeomSource.__new__(GeomSource, self.path, mode=mode)
+        obj.__init__(self.path, mode=mode)
         return obj
 
     @property
@@ -1101,6 +1096,22 @@ class GeomSource(_BaseIO, _BaseStruct):
             out_ft.SetField(in_ft.GetFieldDefnRef(n).GetName(), in_ft.GetField(n))
 
         self.layer.CreateFeature(out_ft)
+
+    @_BaseIO._check_mode
+    @_BaseIO._check_state
+    def create(
+        self,
+        path: Path | str,
+    ):
+        """Create a data source.
+
+        Parameters
+        ----------
+        path : Path | str
+            Path to the data source.
+        """
+        self.src = None
+        self.src = self._driver.CreateDataSource(path.as_posix())
 
     @_BaseIO._check_mode
     @_BaseIO._check_state
