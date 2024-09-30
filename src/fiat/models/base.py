@@ -20,7 +20,6 @@ from fiat.gis import grid
 from fiat.gis.crs import get_srs_repr
 from fiat.io import open_csv, open_grid
 from fiat.log import spawn_logger
-from fiat.methods.ead import risk_density
 from fiat.util import NEED_IMPLEMENTED, deter_dec
 
 logger = spawn_logger("fiat.model")
@@ -207,9 +206,6 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
                 path,
             )
             self.cfg.set("hazard.return_periods", rp)
-            # Directly calculate the coefficients
-            rp_coef = risk_density(rp)
-            self.cfg.set("hazard.rp_coefficients", rp_coef)
 
         # Information for output
         ns = check_hazard_band_names(

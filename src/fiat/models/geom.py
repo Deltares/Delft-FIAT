@@ -1,6 +1,8 @@
 """Geom model of FIAT."""
 
+import copy
 import os
+import re
 import time
 from pathlib import Path
 
@@ -8,6 +10,7 @@ from osgeo import ogr
 
 from fiat.cfg import ConfigReader
 from fiat.check import (
+    check_duplicate_columns,
     check_exp_columns,
     check_exp_derived_types,
     check_geom_extent,
@@ -17,6 +20,7 @@ from fiat.check import (
 from fiat.gis import geom, overlay
 from fiat.gis.crs import get_srs_repr
 from fiat.io import (
+    open_csv,
     open_geom,
 )
 from fiat.log import setup_mp_log, spawn_logger
@@ -59,12 +63,12 @@ class GeomModel(BaseModel):
     ):
         super().__init__(cfg)
 
-        self._exposure_csv = self.cfg.get("exposure.use_csv", False)
+        # Set/ declare some variables
         self.exposure_types = self.cfg.get("exposure.types", ["damage"])
 
         # Setup the geometry model
-        self.read_exposure_geoms()
-        self.check_exposure_types()
+        self.read_exposure()
+        self.get_exposure_meta()
         self._set_chunking()
         self._set_num_threads()
         self._queue = self._mp_manager.Queue(maxsize=10000)
@@ -78,6 +82,56 @@ class GeomModel(BaseModel):
         for _f in _p.glob("*"):
             os.unlink(_f)
         os.rmdir(_p)
+
+    def _discover_exposure_meta(
+        self,
+        columns: dict,
+        meta: dict,
+        index: int,
+    ):
+        """Simple method for sorting out the exposure meta."""  # noqa: D401
+        # check if set from the csv file
+        if -1 not in meta:
+            meta[index] = {}
+            # Check the exposure column headers
+            check_exp_columns(
+                list(columns.keys()),
+                specific_columns=getattr(self.module, "MANDATORY_COLUMNS"),
+            )
+
+            # Check the found columns
+            types = {}
+            for t in self.exposure_types:
+                types[t] = {}
+                found, found_idx, missing = discover_exp_columns(columns, type=t)
+                check_exp_derived_types(t, found, missing)
+                types[t] = found_idx
+            meta[index].update({"types": types})
+
+            ## Information for output
+            extra = []
+            if self.cfg.get("hazard.risk"):
+                extra = ["ead"]
+            new_fields, len1, total_idx = generate_output_columns(
+                getattr(self.module, "NEW_COLUMNS"),
+                types,
+                extra=extra,
+                suffix=self.cfg.get("hazard.band_names"),
+            )
+            meta[index].update(
+                {
+                    "new_fields": new_fields,
+                    "slen": len1,
+                    "total_idx": total_idx,
+                }
+            )
+        else:
+            meta[index] = copy.deepcopy(meta[-1])
+            new_fields = meta[index]["new_fields"]
+
+        # Set the indices for the outgoing columns
+        idxs = list(range(len(columns), len(columns) + len(new_fields)))
+        meta[index].update({"idxs": idxs})
 
     def _set_chunking(self):
         """_summary_."""
@@ -126,62 +180,74 @@ calculated chunks ({self.nchunk})"
         """_summary_."""
         # Do the same for the geometry files
         for key, gm in self.exposure_geoms.items():
-            _add = key[-1]
             # Define outgoing dataset
-            out_geom = f"spatial{_add}.fgb"
-            if f"output.geom.name{_add}" in self.cfg:
-                out_geom = self.cfg.get(f"output.geom.name{_add}")
-            self.cfg.set(f"output.geom.name{_add}", out_geom)
+            out_geom = f"spatial{key}.fgb"
+            if f"output.geom.name{key}" in self.cfg:
+                out_geom = self.cfg.get(f"output.geom.name{key}")
+            self.cfg.set(f"output.geom.name{key}", out_geom)
+            # Open and write a layer with the necessary fields
             with open_geom(
                 Path(self.cfg.get("output.path"), out_geom), mode="w", overwrite=True
             ) as _w:
                 _w.create_layer(self.srs, gm.geom_type)
                 _w.create_fields(dict(zip(gm.fields, gm.dtypes)))
-                new = self.cfg.get("_.new_fields")
+                new = self.cfg.get("_exposure_meta")[key]["new_fields"]
                 _w.create_fields(dict(zip(new, [ogr.OFTReal] * len(new))))
             _w = None
 
-    def check_exposure_types(self):
+    def get_exposure_meta(self):
         """_summary_."""
         # Get the relevant column headers
-        columns = self.exposure_geoms["file1"]._columns
+        meta = {}
+        if self.exposure_data is not None:
+            self._discover_exposure_meta(
+                self.exposure_data._columns,
+                meta,
+                -1,
+            )
+        for key, gm in self.exposure_geoms.items():
+            columns = gm._columns
+            self._discover_exposure_meta(columns, meta, key)
+        self.cfg.set("_exposure_meta", meta)
 
-        # Check the exposure column headers
-        check_exp_columns(
-            list(columns.keys()),
-            specific_columns=getattr(self.module, "MANDATORY_COLUMNS"),
+    def read_exposure(self):
+        """_summary_."""
+        self.read_exposure_geoms()
+        csv = self.cfg.get("exposure.csv.file")
+        if csv is not None:
+            self.read_exposure_data()
+
+    def read_exposure_data(self):
+        """_summary_."""
+        path = self.cfg.get("exposure.csv.file")
+        logger.info(f"Reading exposure data ('{path.name}')")
+
+        # Setting the keyword arguments from settings file
+        kw = {"index": "object_id"}
+        kw.update(
+            self.cfg.generate_kwargs("exposure.csv.settings"),
         )
+        data = open_csv(path, large=True, **kw)
+        ##checks
+        logger.info("Executing exposure data checks...")
 
-        # Check the found columns
-        types = {}
-        for t in self.exposure_types:
-            types[t] = {}
-            found, found_idx, missing = discover_exp_columns(columns, type=t)
-            check_exp_derived_types(t, found, missing)
-            types[t] = found_idx
+        # Check for duplicate columns
+        check_duplicate_columns(data.meta["dup_cols"])
 
-        self.cfg.set("exposure.types", types)
-
-        ## Information for output
-        extra = []
-        if self.cfg.get("hazard.risk"):
-            extra = ["ead"]
-        new_fields, len1, total_idx = generate_output_columns(
-            getattr(self.module, "NEW_COLUMNS"),
-            types,
-            extra=extra,
-            suffix=self.cfg.get("hazard.band_names"),
-        )
-        self.cfg.set("_.new_fields", new_fields)
-        self.cfg.set("_.csv.slen", len1)
-        self.cfg.set("_.csv.total_idx", total_idx)
+        ## When all is done, add it
+        self.exposure_data = data
 
     def read_exposure_geoms(self):
         """_summary_."""
+        # Discover the files
         _d = {}
         _found = [item for item in list(self.cfg) if "exposure.geom.file" in item]
+        _found = [item for item in _found if re.match(r"^(.*)file(\d+)", item)]
+
+        # For all that is found, try to read the data
         for file in _found:
             path = self.cfg.get(file)
+            suffix = int(re.findall(r"\d+", file.rsplit(".", 1)[1])[0])
             logger.info(
                 f"Reading exposure geometry '{file.split('.')[-1]}' ('{path.name}')"
             )
@@ -212,7 +278,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
             )
 
             # Add to the dict
-            _d[file.rsplit(".", 1)[1]] = data
+            _d[suffix] = data
         # When all is done, add it
         self.exposure_geoms = _d
 

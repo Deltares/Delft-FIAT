@@ -1580,7 +1580,7 @@ multiple variables.
         for n in range(self.size):
             name = self.get_band_name(n + 1)
             if not name:
-                _names.append(f"Band{n+1}")
+                _names.append(f"band{n+1}")
                 continue
             _names.append(name)
 

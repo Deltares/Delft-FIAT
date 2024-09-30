@@ -40,7 +40,6 @@ def check_config_geom(
 ):
     """_summary_."""
     _req_fields = [
-        "exposure.csv.file",
         "exposure.geom.crs",
         "exposure.geom.file1",
     ]
