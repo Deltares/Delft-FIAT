@@ -39,9 +39,6 @@ class GridModel(BaseModel):
     def __del__(self):
         BaseModel.__del__(self)
 
-    def _clean_up(self):
-        pass
-
     def read_exposure_grid(self):
         """_summary_."""
         file = self.cfg.get("exposure.grid.file")
@@ -110,12 +107,10 @@ class GridModel(BaseModel):
             }
         )
 
-        logger.info(f"Using number of threads: {self.nthreads}")
-
         # Execute the jobs
         _s = time.time()
         logger.info("Busy...")
-        pcount = min(self.max_threads, self.hazard_grid.size)
+        pcount = min(self.threads, self.hazard_grid.size)
         execute_pool(
             ctx=self._mp_ctx,
             func=worker_grid.worker,

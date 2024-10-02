@@ -290,4 +290,13 @@ def check_exp_grid_dmfs(
         raise FIATDataError(msg)
 
 
+def check_exp_index_col(
+    obj: object,
+    index_col: type,
+):
+    """_summary_."""
+    if index_col not in obj.columns:
+        raise FIATDataError(f"Index column ('{index_col}') not found in {obj.path}")
+
+
 ## Vulnerability

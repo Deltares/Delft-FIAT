@@ -23,6 +23,7 @@ from fiat.util import (
     GEOM_WRITE_DRIVER_MAP,
     GRID_DRIVER_MAP,
     NEED_IMPLEMENTED,
+    NEWLINE_CHAR,
     NOT_IMPLEMENTED,
     DummyLock,
     _dtypes_from_string,
@@ -246,8 +247,8 @@ class BufferedGeomWriter:
         self,
         file: str | Path,
         srs: osr.SpatialReference,
-        layer_meta: ogr.FeatureDefn,
-        buffer_size: int = 20000,  # geometries
+        layer_defn: ogr.FeatureDefn = None,
+        buffer_size: int = 100000,  # geometries
         lock: Lock = None,
     ):
         """_summary_.
@@ -279,18 +280,23 @@ class BufferedGeomWriter:
 
         # Set for later use
         self.srs = srs
-        self.in_layer_meta = layer_meta
         self.flds = {}
         self.n = 1
+
+        if layer_defn is None:
+            with open_geom(self.file, mode="r") as _r:
+                layer_defn = _r.layer.GetLayerDefn()
+            _r = None
+        self.layer_defn = layer_defn
 
         # Create the buffer
         self.buffer = open_geom(f"/vsimem/{file.stem}.gpkg", "w")
         self.buffer.create_layer(
             srs,
-            layer_meta.GetGeomType(),
+            layer_defn.GetGeomType(),
         )
         self.buffer.set_layer_from_defn(
-            layer_meta,
+            layer_defn,
         )
         # Set some check vars
         # TODO: do this based om memory foodprint
@@ -300,6 +306,7 @@ class BufferedGeomWriter:
 
     def __del__(self):
         self.buffer = None
+        self.layer_defn = None
 
     def __reduce__(self) -> str | tuple[Any, ...]:
         pass
@@ -315,10 +322,10 @@ class BufferedGeomWriter:
         # Re-create
         self.buffer.create_layer(
             self.srs,
-            self.in_layer_meta.GetGeomType(),
+            self.layer_defn.GetGeomType(),
         )
         self.buffer.set_layer_from_defn(
-            self.in_layer_meta,
+            self.layer_defn,
         )
         self.create_fields(self.flds)
 
@@ -363,7 +370,7 @@ class BufferedGeomWriter:
     def to_drive(self):
         """_summary_."""
         # Block while writing to the drive
-        self.buffer.close()
+        # self.buffer.close()
         self.lock.acquire()
         merge_geom_layers(
             self.file.as_posix(),
@@ -372,7 +379,7 @@ class BufferedGeomWriter:
         )
         self.lock.release()
 
-        self.buffer = self.buffer.reopen(mode="w")
+        # self.buffer = self.buffer.reopen(mode="w")
         self._reset_buffer()
 
 
@@ -437,6 +444,18 @@ class BufferedTextWriter(BytesIO):
         if self.__sizeof__() + len(b) > self.max_size:
             self.to_drive()
         BytesIO.write(self, b)
+
+    def write_iterable(self, *args):
+        """_summary_.
+
+        _extended_summary_
+        """
+        by = b""
+        for arg in args:
+            by += ("," + "{}," * len(arg)).format(*arg).rstrip(",").encode()
+        by = by.lstrip(b",")
+        by += NEWLINE_CHAR.encode()
+        self.write(by)
 
 
 ## Parsing

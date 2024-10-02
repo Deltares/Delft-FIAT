@@ -8,7 +8,7 @@ from fiat.io import (
     GridSource,
     open_grid,
 )
-from fiat.methods.ead import calc_ead
+from fiat.methods.ead import calc_ead, risk_density
 from fiat.util import create_windows
 
 
@@ -159,7 +159,7 @@ def worker_ead(
     chunk: tuple,
 ):
     """_summary_."""
-    _rp_coef = cfg.get("hazard.rp_coefficients")
+    _rp_coef = risk_density(cfg.get("hazard.return_periods"))
     _out = cfg.get("output.path")
     _chunk = [floor(_n / len(_rp_coef)) for _n in chunk]
     td = []

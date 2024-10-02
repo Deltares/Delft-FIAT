@@ -325,7 +325,6 @@ def create_settings_geom():
     doc = {
         "global": {
             "crs": "EPSG:4326",
-            "keep_temp_files": True,
         },
         "output": {
             "path": "output/geom_event",
@@ -404,7 +403,6 @@ def create_settings_grid():
     doc = {
         "global": {
             "crs": "EPSG:4326",
-            "keep_temp_files": True,
         },
         "output": {
             "path": "output/grid_event",

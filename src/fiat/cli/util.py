@@ -27,6 +27,6 @@ def run_log(
         func()
     except BaseException:
         t, v, tb = sys.exc_info()
-        logger.error(",".join(v.args))
+        logger.error(",".join([str(item) for item in v.args]))
         # Exit with code 1
         sys.exit(1)

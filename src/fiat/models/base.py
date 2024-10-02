@@ -52,24 +52,16 @@ class BaseModel(metaclass=ABCMeta):
         self._vul_step_size = 0.01
         self._rounding = 2
         self.cfg.set("vulnerability.round", self._rounding)
-        # Temporay files
-        self._keep_temp = False
         # Threading stuff
         self._mp_ctx = get_context("spawn")
         self._mp_manager = Manager()
-        self.max_threads = 1
-        self.nthreads = 1
-        self.chunk = None
+        self.threads = 1
         self.chunks = []
-        self.nchunk = 0
 
-        self._set_max_threads()
         self._set_model_srs()
+        self._set_num_threads()
         self.read_hazard_grid()
         self.read_vulnerability_data()
-
-        if "global.keep_temp_files" in self.cfg:
-            self._keep_temp = self.cfg.get("global.keep_temp_files")
 
     @abstractmethod
     def __del__(self):
@@ -78,24 +70,6 @@ class BaseModel(metaclass=ABCMeta):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} object at {id(self):#018x}>"
-
-    @abstractmethod
-    def _clean_up(self):
-        raise NotImplementedError(NEED_IMPLEMENTED)
-
-    def _set_max_threads(self):
-        """_summary_."""
-        self.max_threads = cpu_count()
-        _max_threads = self.cfg.get("global.threads")
-        if _max_threads is not None:
-            if _max_threads > self.max_threads:
-                logger.warning(
-                    f"Given number of threads ('{_max_threads}') \
-exceeds machine thread count ('{self.max_threads}')"
-                )
-            self.max_threads = min(self.max_threads, _max_threads)
-
-        logger.info(f"Available number of threads: {self.max_threads}")
 
     def _set_model_srs(self):
         """_summary_."""
@@ -133,12 +107,19 @@ exceeds machine thread count ('{self.max_threads}')"
         # Clean up
         gm = None
 
-    @abstractmethod
-    def _set_num_threads(
-        self,
-    ):
+    def _set_num_threads(self):
         """_summary_."""
-        raise NotImplementedError(NEED_IMPLEMENTED)
+        max_threads = cpu_count()
+        user_threads = self.cfg.get("global.threads")
+        if user_threads is not None:
+            if user_threads > max_threads:
+                logger.warning(
+                    f"Given number of threads ('{user_threads}') \
+exceeds machine thread count ('{max_threads}')"
+                )
+            self.threads = min(max_threads, user_threads)
+
+        logger.info(f"Using number of threads: {self.threads}")
 
     @abstractmethod
     def _setup_output_files(

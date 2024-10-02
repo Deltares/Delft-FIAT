@@ -5,10 +5,19 @@ from math import nan
 from multiprocessing.queues import Queue
 from multiprocessing.synchronize import Lock
 from pathlib import Path
+from typing import Callable
 
 from fiat.gis import geom, overlay
-from fiat.io import BufferedGeomWriter, GridSource, Table
+from fiat.io import (
+    BufferedGeomWriter,
+    BufferedTextWriter,
+    GridSource,
+    Table,
+    TableLazy,
+)
+from fiat.log import LogItem, Sender
 from fiat.methods.ead import calc_ead, risk_density
+from fiat.util import DummyWriter, regex_pattern
 
 
 def worker(
@@ -16,21 +25,28 @@ def worker(
     queue: Queue,
     haz: GridSource,
     vul: Table,
+    exp_func: Callable,
+    exp_data: TableLazy,
     exp_geom: dict,
     chunk: tuple | list,
-    lock: Lock,
+    lock1: Lock,
+    lock2: Lock,
 ):
     """_summary_."""
     # Setup the hazard type module
+    sender = Sender(queue=queue)
     module = importlib.import_module(f"fiat.methods.{cfg.get('global.type')}")
     func_hazard = getattr(module, "calculate_hazard")
-    func_damage = getattr(module, "calculate_damage_ft")
+    func_damage = getattr(module, "calculate_damage")
+    man_columns = getattr(module, "MANDATORY_COLUMNS")
+    man_entries = tuple(getattr(module, "MANDATORY_ENTRIES").values())
 
     # Get the bands to prevent object creation while looping
     bands = [(haz[idx + 1], idx + 1) for idx in range(haz.size)]
 
     # More meta data
-    ref = cfg.get("hazard.elevation_reference")
+    cfg_entries = [cfg.get(item) for item in man_entries]
+    index_col = cfg.get("exposure.geom.settings.index")
     risk = cfg.get("hazard.risk", False)
     rounding = cfg.get("vulnerability.round")
     vul_min = min(vul.index)
@@ -40,15 +56,29 @@ def worker(
         rp_coef = risk_density(cfg.get("hazard.return_periods"))
         rp_coef.reverse()
 
+    pattern = None
+    out_text_writer = DummyWriter()
+    if exp_data is not None:
+        man_columns = [exp_data.columns.index(item) for item in man_columns]
+        pattern = regex_pattern(exp_data.delimiter)
+        out_text_writer = BufferedTextWriter(
+            Path(cfg.get("output.path"), cfg.get("output.csv.name")),
+            mode="ab",
+            buffer_size=100000,
+            lock=lock1,
+        )
+
     # Loop through the different files
     for idx, gm in exp_geom.items():
         # Check if there actually is data for this chunk
         if chunk[0] > gm._count:
             continue
 
+        # Get the object id column index
+        oid = gm.fields.index(index_col)
+
         # Some meta for the specific geometry file
         field_meta = cfg.get("_exposure_meta")[idx]
-        new = field_meta["new_fields"]
         slen = field_meta["slen"]
         total_idx = field_meta["total_idx"]
         types = field_meta["types"]
@@ -59,18 +89,32 @@ def worker(
         out_writer = BufferedGeomWriter(
             Path(cfg.get("output.path"), out_geom),
             gm.get_srs(),
-            gm.layer.GetLayerDefn(),
-            buffer_size=cfg.get("output.geom.settings.chunk"),
-            lock=lock,
+            buffer_size=cfg.get("global.geom.chunk"),
+            lock=lock2,
         )
-        out_writer.create_fields(zip(new, [2] * len(new)))
 
         # Loop over all the geometries in a reduced manner
         for ft in gm.reduced_iter(*chunk):
             out = []
+            info, method, haz_kwargs = exp_func(
+                ft,
+                exp_data,
+                oid,
+                man_columns,
+                pattern,
+            )
+            if info is None:
+                sender.emit(
+                    LogItem(
+                        2,
+                        f"Object with ID: {ft.GetField(oid)} -> \
+No data found in exposure database",
+                    )
+                )
+                continue
             for band, bn in bands:
                 # How to get the hazard data
-                if ft.GetField("extract_method") == "area":
+                if method == "area":
                     res = overlay.clip(band, haz.get_srs(), haz.get_geotransform(), ft)
                 else:
                     res = overlay.pin(
@@ -81,16 +125,15 @@ def worker(
 
                 haz_value, red_fact = func_hazard(
                     res.tolist(),
-                    reference=ref,
-                    ground_elevtn=ft.GetField(gm._columns["ground_elevtn"]),
-                    ground_flht=ft.GetField(gm._columns["ground_flht"]),
+                    *cfg_entries,
+                    *haz_kwargs,
                 )
                 out += [haz_value, red_fact]
                 for key, item in types.items():
                     out += func_damage(
                         haz_value,
                         red_fact,
-                        ft,
+                        info,
                         item,
                         vul,
                         vul_min,
@@ -117,6 +160,7 @@ def worker(
                     out,
                 ),
             )
+            out_text_writer.write_iterable(info, out)
 
             pass
         out_writer.close()

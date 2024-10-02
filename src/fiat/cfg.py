@@ -130,14 +130,6 @@ class ConfigReader(dict):
         )
         self.set("output.path", _p)
 
-        # Temporary files directory
-        _p = self._create_dir(
-            self.get("output.path"),
-            ".tmp",
-            hidden=False,
-        )
-        self.set("output.tmp.path", _p)
-
         # Damage directory for grid risk calculations
         if self.get("hazard.risk") and check_config_grid(self):
             _p = self._create_dir(

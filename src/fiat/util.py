@@ -506,6 +506,25 @@ class DummyLock:
         pass
 
 
+class DummyWriter:
+    """Mimic the behaviour of an object that is capable of writing."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def close(self):
+        """Call dummy close."""
+        pass
+
+    def write(self, *args):
+        """Call dummy write."""
+        pass
+
+    def write_iterable(self, *args):
+        """Call dummy write iterable."""
+        pass
+
+
 # Typing related stuff
 def deter_type(
     e: bytes,

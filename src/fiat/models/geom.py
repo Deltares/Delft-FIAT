@@ -13,6 +13,7 @@ from fiat.check import (
     check_duplicate_columns,
     check_exp_columns,
     check_exp_derived_types,
+    check_exp_index_col,
     check_geom_extent,
     check_internal_srs,
     check_vs_srs,
@@ -27,11 +28,11 @@ from fiat.log import setup_mp_log, spawn_logger
 from fiat.models import worker_geom
 from fiat.models.base import BaseModel
 from fiat.models.util import (
-    GEOM_MIN_CHUNK,
-    GEOM_MIN_WRITE_CHUNK,
+    EXPOSURE_FIELDS,
+    GEOM_DEFAULT_CHUNK,
+    csv_def_file,
     execute_pool,
     generate_jobs,
-    geom_threads,
 )
 from fiat.util import create_1d_chunk, discover_exp_columns, generate_output_columns
 
@@ -70,18 +71,10 @@ class GeomModel(BaseModel):
         self.read_exposure()
         self.get_exposure_meta()
         self._set_chunking()
-        self._set_num_threads()
         self._queue = self._mp_manager.Queue(maxsize=10000)
 
     def __del__(self):
         BaseModel.__del__(self)
-
-    def _clean_up(self):
-        """_summary_."""
-        _p = self.cfg.get("output.tmp.path")
-        for _f in _p.glob("*"):
-            os.unlink(_f)
-        os.rmdir(_p)
 
     def _discover_exposure_meta(
         self,
@@ -139,46 +132,18 @@ class GeomModel(BaseModel):
         max_geom_size = max(
             [item.size for item in self.exposure_geoms.values()],
         )
-        # Set calculations chunk size
-        self.chunk = max_geom_size
-        _chunk = self.cfg.get("global.geom.chunk")
-        if _chunk is not None:
-            self.chunk = max(GEOM_MIN_CHUNK, _chunk)
-
-        # Set cache size for outgoing data
-        _out_chunk = self.cfg.get("output.geom.settings.chunk")
-        if _out_chunk is None:
-            _out_chunk = GEOM_MIN_WRITE_CHUNK
-        self.cfg.set("output.geom.settings.chunk", _out_chunk)
-
-        # Determine amount of threads
-        self.nchunk = max_geom_size // self.chunk
-        if self.nchunk == 0:
-            self.nchunk = 1
-        # Constrain by max threads
-        if self.max_threads < self.nchunk:
-            logger.warning(
-                f"Less threads ({self.max_threads}) available than \
-calculated chunks ({self.nchunk})"
-            )
-            self.nchunk = self.max_threads
-
         # Set the 1D chunks
         self.chunks = create_1d_chunk(
             max_geom_size,
-            self.nchunk,
+            self.threads,
         )
-
-    def _set_num_threads(self):
-        """_summary_."""
-        self.nthreads = geom_threads(
-            self.max_threads,
-            self.nchunk,
-        )
+        # Set the write size chunking
+        chunk_int = self.cfg.get("global.geom.chunk", GEOM_DEFAULT_CHUNK)
+        self.cfg.set("global.geom.chunk", chunk_int)
 
     def _setup_output_files(self):
         """_summary_."""
-        # Do the same for the geometry files
+        # Setup the geometry output files
         for key, gm in self.exposure_geoms.items():
             # Define outgoing dataset
             out_geom = f"spatial{key}.fgb"
@@ -194,6 +159,18 @@ calculated chunks ({self.nchunk})"
                 new = self.cfg.get("_exposure_meta")[key]["new_fields"]
                 _w.create_fields(dict(zip(new, [ogr.OFTReal] * len(new))))
             _w = None
+
+        # Check whether to do the same for the csv
+        if self.exposure_data is not None:
+            out_csv = self.cfg.get("output.csv.name", "output.csv")
+            self.cfg.set("output.csv.name", out_csv)
+
+            # Create an empty csv file for the separate thread to till
+            csv_def_file(
+                Path(self.cfg.get("output.path"), out_csv),
+                self.exposure_data.columns
+                + tuple(self.cfg.get("_exposure_meta")[-1]["new_fields"]),
+            )
 
     def get_exposure_meta(self):
         """_summary_."""
@@ -241,8 +218,13 @@ calculated chunks ({self.nchunk})"
         """_summary_."""
         # Discover the files
         _d = {}
+        # TODO find maybe a better solution of defining this in the settings file
         _found = [item for item in list(self.cfg) if "exposure.geom.file" in item]
         _found = [item for item in _found if re.match(r"^(.*)file(\d+)", item)]
+
+        # First check for the index_col
+        index_col = self.cfg.get("exposure.geom.settings.index", "object_id")
+        self.cfg.set("exposure.geom.settings.index", index_col)
 
         # For all that is found, try to read the data
         for file in _found:
@@ -254,6 +236,9 @@ calculated chunks ({self.nchunk})"
             data = open_geom(str(path))
             ## checks
             logger.info("Executing exposure geometry checks...")
+
+            # check for the index column
+            check_exp_index_col(data, index_col=index_col)
 
             # check the internal srs of the file
             _int_srs = check_internal_srs(
@@ -304,23 +289,28 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         # Start the receiver (which is in a seperate thread)
         _receiver.start()
 
+        # Exposure fields get function
+        field_func = EXPOSURE_FIELDS[self.exposure_data is None]
+
         # Setup the jobs
         # First setup the locks
-        lock = self._mp_manager.Lock()
+        lock1 = self._mp_manager.Lock()
+        lock2 = self._mp_manager.Lock()
         jobs = generate_jobs(
             {
                 "cfg": self.cfg,
                 "queue": self._queue,
                 "haz": self.hazard_grid,
                 "vul": self.vulnerability_data,
+                "exp_func": field_func,
+                "exp_data": self.exposure_data,
                 "exp_geom": self.exposure_geoms,
                 "chunk": self.chunks,
-                "lock": lock,
+                "lock1": lock1,
+                "lock2": lock2,
             },
             # tied=["idx", "lock"],
         )
-
-        logger.info(f"Using number of threads: {self.nthreads}")
 
         # Execute the jobs in a multiprocessing pool
         _s = time.time()
@@ -329,7 +319,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
             ctx=self._mp_ctx,
             func=worker_geom.worker,
             jobs=jobs,
-            threads=self.nthreads,
+            threads=self.threads,
         )
         _e = time.time() - _s
 
