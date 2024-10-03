@@ -19,25 +19,27 @@ def calculate_hazard(
     ground_elevtn: float = 0,
     method: str = "mean",
 ) -> float:
-    """_summary_.
+    """Calculate the hazard value for flood hazard.
 
     Parameters
     ----------
-    haz : list
-        _description_
-    ref : str
-        _description_
-    gfh : float
-        _description_
-    ge : float, optional
-        Ground Elevation, by default 0
+    hazard : list
+        Raw hazard values.
+    reference : str
+        Reference, either 'dem' or 'datum'.
+    ground_flht : float
+        The height of the floor of an object (.e.g the door elevation).
+    ground_elevtn : float, optional
+        Ground height in reference to e.g. the ocean.
+        (Needed when 'reference' is 'datum')
     method : str, optional
-        _description_, by default "mean"
+        Chose 'max' or 'mean' for either the maximum value or the average,
+        by default 'mean'.
 
     Returns
     -------
     float
-        _description_
+        A representative hazard value.
     """
     _ge = 0
     if reference.lower() == "datum" and not math.isnan(ground_elevtn):
@@ -71,14 +73,41 @@ def calculate_hazard(
 def calculate_damage(
     hazard_value: float | int,
     red_fact: float | int,
-    ft: ogr.Feature,
+    ft: ogr.Feature | list,
     type_dict: dict,
     vuln: Table,
     vul_min: float | int,
     vul_max: float | int,
     vul_round: int,
-):
-    """Calculate damage as a result of flooding."""
+) -> tuple:
+    """Calculate the damage corresponding with the hazard value.
+
+    Parameters
+    ----------
+    hazard_value : float | int
+        The representative hazard value.
+    red_fact : float | int
+        The reduction factor. How much to compensate for the lack of touching the grid
+        by an object (geometry).
+    ft : ogr.Feature | list
+        A feature or feature info (whichever has to contain the exposure data).
+        See docs on running FIAT with an without csv.
+    type_dict : dict
+        The exposure types and corresponding column id's.
+    vuln : Table
+        Vulnerability data.
+    vul_min : float | int
+        Minimum value of the index of the vulnerability data.
+    vul_max : float | int
+        Maximum value of the index of the vulnerability data.
+    vul_round : int
+        Significant decimals to be used.
+
+    Returns
+    -------
+    tuple
+        Damage values.
+    """
     # unpack type_dict
     fn = type_dict["fn"]
     maxv = type_dict["max"]

@@ -17,7 +17,9 @@ dynamic = ['version']
 
 authors = [
     {name = "B.W. Dalmijn", email = "brencodeert@outlook.com"},
-    {name = "F.C. de Groen", email = "frederique.degroen@deltares.nl"}
+    {name = "F.C. de Groen", email = "frederique.degroen@deltares.nl"},
+    {name = "S.A. Rautenbach", email = "sarah.rautenbach@deltares.nl"},
+    {name = "P. Athanasiou", email = "panos.athanasiou@deltares.nl"},
 ]
 maintainers = [
     {name = "B.W. Dalmijn", email = "brencodeert@outlook.com"},
@@ -41,7 +43,7 @@ classifiers = [
 #   3 - Alpha
 #   4 - Beta
 #   5 - Production/Stable
-'Development Status :: 3 - Alpha',
+'Development Status :: 4 - Beta',
 
 # Indicate who your project is intended for
 'Intended Audience :: End Users/Desktop',
@@ -172,7 +174,7 @@ exclude = ["docs"]
 "src/fiat/__init__.py" = ["E402", "F401", "F403"]
 "src/fiat/cli/__init__.py" = ["F403"]
 "src/fiat/gis/__init__.py" = ["F403"]
-"src/fiat/math/__init__.py" = ["F403"]
+"src/fiat/methods/__init__.py" = ["F403"]
 "src/fiat/models/__init__.py" = ["F403"]
 
 [tool.ruff.pydocstyle]

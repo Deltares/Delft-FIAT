@@ -2,61 +2,9 @@
 title: CSV
 ---
 
-The exposure data CSV file contains information about each asset in the area of interest that is needed for the damage calculation. Each row represents one asset, such as a building, road segment, or utility, and each column represents an attribute of the asset, such as its location, elevation or maximum potential damage value.
-For users that want to create their own exposure data, or modify existing exposure data, a description of the default fields (columns) in the exposure data CSV can be found in @tbl-exposure.
+The exposure data CSV file contains information about each asset in the area of interest that is optional for the damage calculation. Each row represents one asset, such as a building, road segment, or utility, and each column represents an attribute of the asset, such as its location, elevation or maximum potential damage value.
+For users that want to create their own exposure data, or modify existing exposure data, a description of the default fields (columns) in the exposure data CSV can be found [here](./data.qmd).
 
 ::: {.callout-tip title="Tip"}
 Users can add as many columns to the exposure CSV as they want, for example, to later identify the most damaged administrative areas. All data field will also be saved in the output of FIAT.
 :::
-
-
-| Field                                                  | Required | Multiple | Example                   |
-|--------------------------------------------------------|----------|----------|---------------------------|
-| [Object ID](#object-id)                                | Yes      | -        | 1                         |
-| [Object Name](#object-name)                            | No       | -        | fp_1                      |
-| [Primary Object Type](#primarysecondary-object-type)   | No       | -        | RES1_1SNB                 |
-| [Secondary Object Type](#primarysecondary-object-type) | No       | -        | Res 1,1 Story no basement |
-| [Extraction Method](#extraction-method)                | Yes      | -        | 'centroid'                |
-| [Damage Function: < ANY >](#damage-functions)          | Yes      | Yes      | struct_2                  |
-| [Ground Floor Height](#ground-floor-height)            | Yes      | -        | 4                         |
-| [Ground Elevation](#ground-elevation)                  | No       | -        | 10.11                     |
-| [Max Potential Damage: < ANY >](#max-potential-damage) | Yes      | Yes      | 193457.00                 |
-| [< Additional attributes >](#additional-attributes)    | No       |          | 1205                      |
-: exposure.csv input {#tbl-exposure .hover}
-
-A more detailed description of the data fields in the *exposure.csv* can be found below.
-
-#### Object ID
-The object ID is used to link the geometries to the information in the exposure CSV. The object ID must be unique for each object. At the moment of writing, FIAT does not check whether the object IDs are indeed unique and it is the responsibility of the user to ensure this. At a later stage, FIAT will have a built-in check for this.
-
-#### Object name
-The object name field can be chosen freely and can serve as a field for identifying the damages assets.
-
-#### Primary/Secondary object type
-The primary object type describes the occupancy or category of the asset (e.g. residential or commercial). The secondary object type allows for a more detailed profile of the object (e.g. single-story home or grocery store). The developer of the exposure dataset is free to set their own categories of asset types.
-
-::: {.callout-tip title="Tip"}
-Defining primary/secondary object types can facilitate the assignment of damage functions to the assets for the user by creating automatic look-up tables.
-:::
-
-#### Extraction Method
-The extraction method refers to how the water level or water depth is sampled per asset. The options are (1) *centroid*, which samples the water level or depth at the estimated centroid inside of the asset, or (2) area, which considers the water level or depth over the entire polygon or line and takes either an average or maximum. The user can set the choice for the latter per damage function, in the [vulnerability curves file](../vulnerability.qmd).
-
-::: {.callout-important}
- In case the user selects 'area' as extraction method for certain assets, the geometries related to those assets should be a line or polygon.
-:::
-
-#### Damage Functions
-The user can input as many damage functions and related max potential damages as required. However, at least one damage function and related max potential damage must be provides per asset. Damage function column are named as **"Damage Function: `damage function name`"**. This name can be chosen freely but it is recommended to give it a descriptive name, such as *structure* or *content*, and it is required to use the same name in the max potential damage column. The value that must be entered is the name of the damage function, relating to the names in the corresponding damage functions in the [vulnerability curves file](../vulnerability.qmd). Globally, continental damage functions can be obtained from [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific functions when available.
-
-#### Ground Floor Height
-The ground floor height column indicates the height of the ground floor of an asset above the ground elevation. For example, when a building is built on poles, the ground floor (finished floor in the US) is lifted off the ground with a certain height. Usually, buildings are at least a certain amount above ground elevation because of the road and sidewalk. This value is used to calculate the water depth inside of the asset, for buildings.
-
-#### Ground Elevation
-The ground elevation is the value of a digital elevation model (DEM) at the location of the asset.
-
-#### Max Potential Damage
-The maximum potential damage corresponds to the damage functions for each asset. For each damage function type that was assigned, a maximum potential damage must also be assigned. These values represent the maximum damage to, for example, the structure, content, or other (e.g. inventory). There are methods to derive these values, based on building type and area of the building. Globally, maximum damage values per country can be obtained from [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific damage values. In the US, [FEMA Hazus](https://www.fema.gov/flood-maps/products-tools/hazusis) is an industry standard in how to derive these values.
-
-#### Additional attributes
-Attitional attributes can be added to the exposure CSV file. The added columns can be named freely. The resulting FIAT output contains all data that was put in, therefore they can be used by the [FIAT Toolbox](https://github.com/Deltares/fiat_toolbox) to calculate user-specified output metrics. For example, a user could configure the output metrics to always show the number of people affected with a high social vulnerability, per administrative region. The user can add columns to the CSV file manually or with the help of the [HydroMT-FIAT model builder](https://deltares.github.io/hydromt_fiat/latest/#), in which the user is free to select a descriptive *'Label name'* for the additional attributes. If the user wishes to connect the damages per administrative or other aggregation area to a GIS file, the **FIAT Toolbox offers a post-processing tool to do so.

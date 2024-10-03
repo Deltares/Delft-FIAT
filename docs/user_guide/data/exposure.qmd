@@ -15,7 +15,7 @@ Because FIAT consists of two models, the exposure data can be supplied in either
 FIAT can be used to assess flood damages to buildings, roads, utilities, and other types of structures of which data is available. These type of assets are often spatially represented with vector, or geometry data. Building a FIAT model with geometry exposure data requires two data types:
 
 - [Geometry file(s)](exposure/geometries.qmd)
-- [CSV file](exposure/csv.qmd)
+- [CSV file (optional)](exposure/csv.qmd)
 
 ### Raster Data
 

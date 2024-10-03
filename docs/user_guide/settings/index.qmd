@@ -33,10 +33,12 @@ File paths in the settings can be relative to the settings.toml file or absolute
 | [file](#hazard)                | string  | Yes      |                 |
 | [elevation_reference](#hazard) | string  | Yes      |                 |
 | [risk](#hazard)                | boolean | No       | false           |
+| **[exposure.csv]**             |         |          |                 |
+| [file](#exposure.csv)          | string  | No       | -               |
 | **[exposure.geom]**            |         |          |                 |
 | [file[n]](#exposure.geom)      | string  | Yes      |                 |
-| **[exposure.csv]**             |         |          |                 |
-| [file](#exposure.csv)          | string  | Yes      |                 |
+| **[exposure.grid]**            |         |          |                 |
+| [file](#exposure.grid)         | string  | Yes      |                 |
 | **[vulnerability]**            |         |          |                 |
 | [file](#vulnerability)         | string  | Yes      |                 |
 : Most basic settings file input {#tbl-toml .hover}
@@ -69,17 +71,28 @@ If provided, the suffix is mandatory. The suffix should match the suffix of the 
 
 - `risk`: In case of a risk calculation this must be set to "true", for a single events this must be set to "false".
 
+#### [exposure.csv]
+
+- `file`: The path to the exposure CSV file (recommended to be within the [exposure folder](../data/index.qmd)) that contains the [required information](../data/exposure.qmd) per asset. There can only be one exposure CSV file.
+
 #### [exposure.geom]
 
-- `file[n]`: The path to the exposure vector file (recommended to be within the [exposure folder](../data/index.qmd)) with the assets' geometry and Object ID. The user can provide multiple vector files. Therefore the '[n]' suffix, as the user can create mulitple entries for vector files (e.g. `file1`, `file2` etc.).
+- `file[n]`: The path to the exposure vector file (recommended to be within the [exposure folder](../data/index.qmd)) with the assets' geometry and object_id. The user can provide multiple vector files. Therefore the '[n]' suffix, as the user can create mulitple entries for vector files (e.g. `file1`, `file2` etc.).
 
 ::: {.callout-warning}
 The suffix is mandatory. So if only one file is provided, name it `file1`.
 :::
+::: {.callout-note}
+Only required when running the geometry based model.
+:::
 
-#### [exposure.csv]
+#### [exposure.grid]
 
-- `file`: The path to the exposure CSV file (recommended to be within the [exposure folder](../data/index.qmd)) that contains the [required information](../data/exposure.qmd) per asset. There can only be one exposure CSV file.
+- `file`: The path to the exposure raster file (recommended to be within the [exposure folder](../data/index.qmd)).
+
+::: {.callout-note}
+Only required when running the raster based model.
+:::
 
 #### [vulnerability]
 

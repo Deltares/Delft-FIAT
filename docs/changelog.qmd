@@ -6,38 +6,56 @@ title: "What's new?"
 This contains the unreleased changes to Delft-FIAT.
 
 ### Added
+- Attribute `size` of `GeomSource` object for in situ size return; `count` becomes private
+- Attribute `size` of `GridSource` object for in situ size return; `count` becomes private
+- Attributes `dtypes` and `geom_type` of `GeomModel`
 - Build time to FIAT cli (when build with pyinstaller), viewed with `fiat --version`
+- Different types of exposure (e.g. 'damage', 'affected', 'outage' etc.)
 - Docker file for docker image creation
 - Function (`generate_jobs`) to generate jobs for parallelization
 - Function (`execute_pool`) to execute code in parallel using `multiprocessing`
+- Flood hazard/ damage functions (`methods` submodule)
 - General method of creating output files in `GeomModel` (`_setup_output_files`)
 - Method `_create_model_dirs` of `ConfigReader` object for creating result directories in one go
 - Method `add_handler` of the `Log` object; user setting of custom stream
+- Method `add_feature_with_map` of `GeomModel` to set features with extra info
+- Method `create` of `GeomModel` to create an ogr.DataSource (new dataset)
 - Method `set` of `ConfigReader` object
-- Method `size` of `GeomSource` object for in situ size return; `count` becomes private
-- Method `size` of `GridSource` object for in situ size return; `count` becomes private
 - Numpy >= 2.0.0 support
 - Python 3.12 support
-- Settings toml file: global setting 'loglevel'
+- Settings toml file: global setting 'global.loglevel'; default 'INFO'
+- Settings toml file: exposure setting 'exposure.types'; default 'flood'
 - Setting return period as a variable in hazard map bands (risk)
 - Support for using pixi for binary creation (properly)
 
 ### Changed
 - Better version of `BufferHandler`
+- Exposure data headers are now lower-/ snakecase ('object_id' -> 'objectId'), see [docs](./user_guide/data/exposure/data.qmd)
 - Fixed binary creation in general, but also specifically for `GDAL >= v3.9.1`
 - Made read methods of `BaseModel`, `GeomModel` and `GridModel` public (removed underscore)
+- Made csv files (exposure data) optional
+- Moved hazard/ damage calculation function to `methods` submodule
+- Proper checking for duplicate columns in csv files
+- Settings toml file: exposure setting 'exposure.csv.file' (becomes optional)
 - Testing of workers (not properly caught due to using `multiprocessing`)
 - Testing only based on integers
 
 ### Deprecated
 - Base object `_BaseHandler`; incompatible with Python 3.12
+- Function `open_exp` from `fiat.io`, superseded by general use of `open_csv`
 - Method `add_c_handler` in favour of the more generalized `add_handler`
 - Methods `_create_output_dir`, `_create_tmp_dir` and `_create_risk_dir` of the `ConfigReader` object
+- Object `ExposureTable`, now done via `TableLazy`
+- Resolve stage of `GeomModel`; now properly handled in `GeomModel.run`
 - Setting return period via the name of the hazard band (risk)
+- Settings toml file: global setting 'global.keep_temp_files'
+- Settings toml file: output setting 'output.geom.chunk'; superseded by 'global.geom.chunk'
 - Support of `Python` versions under `3.9.0`
+- Temporary files (`GeomModel`)
 - `TextHandler` object; unused
 
 ### Documentation
+- Added methods to the api
 - Cleaner home page
 - Getting started remade into `Information`
 

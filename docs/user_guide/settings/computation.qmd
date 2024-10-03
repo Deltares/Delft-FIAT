@@ -7,7 +7,7 @@ The inputs give the user a bit more control over the computational aspects of FI
 | Entry                            | Type    | Default     |
 |:---------------------------------|---------|-------------|
 | **[global]**                     |         |             |
-| [threads](#global)               | integer | <cpu count> |
+| [threads](#global)               | integer | 1           |
 | **[global.geom]**                |         |             |
 | [chunk](#global.geom)            | integer | -           |
 | **[global.grid]**                |         |             |
@@ -31,7 +31,7 @@ This input benefits from multiple threads.
 :::
 
 ::: {.callout-note}
-This input is only applicable to the [GeomModel]()
+This input is only applicable to the [GeomModel](../../info/models.qmd#geommodel)
 :::
 
 #### [global.grid]
@@ -39,5 +39,5 @@ This input is only applicable to the [GeomModel]()
 - `chunk`: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be `[1024, 1024,]`.
 
 ::: {.callout-note}
-This input is only applicable to the [GridModel]()
+This input is only applicable to the [GridModel](../../info/models.qmd#gridmodel)
 :::

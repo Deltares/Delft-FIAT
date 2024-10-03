@@ -93,9 +93,9 @@ website:
             - "setup_guide/general/docker.qmd"
         - section: "FIAT package"
           contents:
-            - setup_guide/kernel/installation.qmd
-            - setup_guide/kernel/application.qmd
-            - setup_guide/kernel/linux.qmd
+            - setup_guide/kernel/install.qmd
+            - setup_guide/kernel/dev.qmd
+            - setup_guide/kernel/build.qmd
     - title: "User guide"
       collapse-level: 1
       contents:
@@ -115,8 +115,9 @@ website:
             - text: Exposure data
               file: user_guide/data/exposure.qmd
               contents:
-                - user_guide/data/exposure/csv.qmd
+                - user_guide/data/exposure/data.qmd
                 - user_guide/data/exposure/geometries.qmd
+                - user_guide/data/exposure/csv.qmd
             - user_guide/data/vulnerability.qmd
             - user_guide/data/supported.qmd
         - title: Examples
@@ -183,6 +184,14 @@ quartodoc:
           children: separate
         - name: GridModel
           children: separate
+    - subtitle: Methods
+      desc: The hazard functions
+      package: fiat.methods
+      contents:
+        - ead.risk_density
+        - ead.calc_ead
+        - flood.calculate_hazard
+        - flood.calculate_damage
 
     # Logging
     - title: Logging

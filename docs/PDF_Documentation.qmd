@@ -218,7 +218,7 @@ damages per asset
 [**exposure.geom**]
 `csv`: This will create an exposure CSV file within the exposure folder ([folder strucute](index.qmd)) that contains the [required information](exposure.qmd) per asset.
 `crs`: The projection of the exposure vector file.
-`file1`: This will create an exposure vector file within the exposure folder with the assets'geometry and Object ID.
+`file1`: This will create an exposure vector file within the exposure folder with the assets'geometry and object_id.
 
 [**vulnerability**]
 `file`: This will create an vulnerability curves CSV file within the vulnerability folder ([folder strucute](index.qmd)) that contains the damage curves.
@@ -254,9 +254,9 @@ If the user prefers to create a more advanced model or to utilize grid data inst
 | var_ as_band                 | True/False Read netCDF subdatasets as raster bands                                                                                                                           | No                                  | False                                     |
 | **[exposure.geom]**          |                                                                                                                                                                              |                                     |                                           |
 | csv                          | File path to exposure.csv file, that contains information about e.g. asset type, max. potential damage, aggregation and so forth)                                            | Yes                                 | 'exposure/exposure.csv'                   |
-| file1                        | File path of exposure vector file with Object ID column to enable linking exposure.csv output to vector file.                                                                | Yes                                 | 'exposure/buildings.gpkg'                 |
+| file1                        | File path of exposure vector file with object_id column to enable linking exposure.csv output to vector file.                                                                | Yes                                 | 'exposure/buildings.gpkg'                 |
 | crs                          | Projection of exposure data                                                                                                                                                  | Yes, if crs is unknown in dataset   | 'EPSG:32617'                              |
-| index                        | Define the name of the index column of the data to link the exposure CSV file with the exposure vector file.                                                                 | No                                  | 'Object ID'                               |
+| index                        | Define the name of the index column of the data to link the exposure CSV file with the exposure vector file.                                                                 | No                                  | 'object_id'                               |
 | **[exposure.grid]**          |                                                                                                                                                                              |                                     |                                           |
 | file                         | File path to exposure.nc grid file, that contains the spatial information and information about the maximum potential damage per cell.                                       | Yes, if netCDF is provided as input | 'exposure/raster.nc'                      |
 | crs                          | Output projection                                                                                                                                                            | Yes, if crs is unknown in dataset   | 'EPSG:32617'                              |
@@ -324,7 +324,7 @@ For users who would want to create their own exposure data, or modify existing e
 
 | Field                                  | Description                                                                                | Required                                 | Example                    |
 |----------------------------------------|--------------------------------------------------------------------------------------------|------------------------------------------|----------------------------|
-| Object ID                              | Unique numerical indentifier of the object                                                 | Yes                                      | 1                          |
+| object_id                              | Unique numerical indentifier of the object                                                 | Yes                                      | 1                          |
 | Object Name                            | Unique name of the object                                                                  | No                                       | fp_1                       |
 | Primary Object Type                    | Object type                                                                                | No                                       | RES1_1SNB                  |
 | Secondary Object Type                  | More specification about object type                                                       | No                                       | Res 1,1 Story no basement  |
@@ -342,8 +342,8 @@ For users who would want to create their own exposure data, or modify existing e
 
 A more detailed description of the data fields in the *exposure.csv* can be found below;
 
- **Object ID/Object name**
- Object ID and Object name are administrative information, which the user is free to choose. Input must be unique for each object, if they are not unique, FIAT gives a warning and stops the model built-up.
+ **object_id/Object name**
+ object_id and Object name are administrative information, which the user is free to choose. Input must be unique for each object, if they are not unique, FIAT gives a warning and stops the model built-up.
 
 **Primary/Secondary object type**
 The primary object type describes the category of the asset (e.g. residential or commercial). The secondary object type allows for a more detailed profile of the object (e.g. single-story home, or grocery store). The developer of the exposure dataset is free to set their own categories of object types. (*Exception: FIAT requires **roads** to be assigned as **primary object type = ‘road**’, to summarize road damages separately from buildings and utilities*.)

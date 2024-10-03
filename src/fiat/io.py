@@ -1020,7 +1020,7 @@ class GeomSource(_BaseIO, _BaseStruct):
     def size(
         self,
     ):
-        """_summary_."""
+        """Return the size (geometry count)."""
         if self.layer is not None:
             count = self.layer.GetFeatureCount()
             self._count = count
@@ -1053,7 +1053,16 @@ class GeomSource(_BaseIO, _BaseStruct):
         in_ft: ogr.Feature,
         fmap: zip,
     ):
-        """_summary_."""
+        """Add a feature with extra field data.
+
+        Parameters
+        ----------
+        in_ft : ogr.Feature
+            The feature to be added.
+        fmap : zip
+            Extra fields data, i.e. a zip object of fields id's
+            and the correspondingv alues
+        """
         ft = ogr.Feature(self.layer.GetLayerDefn())
         ft.SetFrom(in_ft)
 
@@ -1503,10 +1512,7 @@ multiple variables.
     @property
     @_BaseIO._check_state
     def size(self):
-        """_summary_.
-
-        _extended_summary_
-        """
+        """Return the number of bands."""
         count = self.src.RasterCount
         self._count = count
         return self._count

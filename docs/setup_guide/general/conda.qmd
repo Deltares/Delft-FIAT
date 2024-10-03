@@ -6,7 +6,8 @@ In order to develop on **FIAT** locally, the Python package manager **Miniforge3
 
 Download and install [Miniforge3](https://github.com/conda-forge/miniforge#mambaforge)
 
-Initialize conda by running the following in the Miniforge prompt:
+Make sure the conda binary (and mamba) is added to PATH. In windows this is simply done via the 'set environment variables' screen, on linux one can append the 'PATH' variable via the `.bashrc` configurations file (or another rc file corresponding with the shell in use).
+Initialize conda by running the following command in your shell.
 
 ```bash
 conda init

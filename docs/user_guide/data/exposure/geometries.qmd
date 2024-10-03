@@ -1,10 +1,13 @@
 ---
 title: Geometry
 ---
-A user can specify one or multiple **geometry files** in the [settings.toml](../../settings/index.qmd). It is advisable to give descriptive names to the geometry files, e.g., *buildings.gpkg* or *roads.gpkg*. Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page. All geometry files must have an attribute `Object ID` that holds unique IDs over all geometry files, linking to the `Object ID` column in the exposure CSV file (see below).
+A user can specify one or multiple **geometry files** in the [settings.toml](../../settings/index.qmd). It is advisable to give descriptive names to the geometry files, e.g., *buildings.gpkg* or *roads.gpkg*. Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page. All geometry files must have an attribute `object_id`. These need to be unique over all geometry files if a csv file with exposure data is provided and corresponding to the `object_is`'s in the provided csv file.
+
+If no csv file provided with the exposure information, that information needs to be present in the geometry files(s) themselves.
+An overview of all the required input is shown [here](./data.qmd).
 
 ::: {.callout-tip title="Example"}
-When using a GeoPackage file with roads containing `Object IDs` 1-100, a second GeoPackage file with building footprints should contain `Object ID`s from 101-n. Then, those IDs should link to the corresponding rows and IDs in the exposure CSV file.
+When using a GeoPackage file with roads containing `object_ids` 1-100, a second GeoPackage file with building footprints should contain `object_id`s from 101-n. Then, if applicable, those IDs should link to the corresponding rows and IDs in the exposure CSV file.
 :::
 
 When providing a polygon or line geometry file, a user can choose to use the *area extraction method* ('extraction method' = 'area', see [here](csv.qmd#tbl-exposure)) for considering water levels or depths over the whole area of the asset. This can be more appropriate than point estimates for example for large buildings.

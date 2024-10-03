@@ -1,0 +1,37 @@
+---
+title: "Development install"
+---
+
+This is for those who wish to contribute to the development of FIAT.
+
+- First, clone the FIAT repository on Github into a local directory of choice:
+
+```bash
+cd ~/{your path}
+
+git clone https://github.com/Deltares/Delft-FIAT.git fiat
+```
+
+- Create a new development environment. Make sure you either have tomli or tomllib (build-in with Python 3.11) in your base enviroment. Go into your cloned FIAT repository folder and create the environment file by running the *make_env.py* script:
+
+```bash
+cd ~/{your path}/fiat
+
+python make_env.py dev
+```
+
+- Then, create and activate the new environment in conda:
+
+```bash
+conda env create -f environment.yml
+
+conda activate fiat_dev
+```
+
+- To install all the required dependencies, run:
+
+```bash
+pip install -e .
+```
+
+There you go. FIAT is now installed on your local machine for development purposes.

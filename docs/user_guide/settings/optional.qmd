@@ -9,17 +9,21 @@ Here we provide an overview of all optional/ non essential settings that the use
 | **[global]**                           |         |               |
 | [crs](#global)                         | string  | -             |
 | [loglevel](#global)                    | string  | INFO          |
-| [gdal_cache](#global)                  | int     | -             |
+| [type](#global)                        | string  | flood         |
 | **[hazard]**                           |         |               |
 | [crs](#hazard)                         | string  | -             |
 | [return_periods](#hazard)              | list    | -             |
 | **[hazard.settings]**                  |         |               |
 | [subset](#hazard.settings)             | string  | -             |
 | [var_as_band](#hazard.settings)        | boolean | false         |
-| **[exposure.csv]**                     |         |               |
-| [index](#exposure.csv)                 | string  | 'Object ID'   |
+| **[exposure]**                         |         |               |
+| [types](#exposure)                     | list    | ['damage']    |
+| **[exposure.csv.settings]**            |         |               |
+| [index](#exposure.csv.settings)        | string  | object_id     |
 | **[exposure.geom]**                    |         |               |
 | [crs](#exposure.geom)                  | string  | -             |
+| **[exposure.geom.settings]**           |         |               |
+| [index](#exposure.geom.settings)       | string  | object_id     |
 | **[exposure.grid]**                    |         |               |
 | [crs](#exposure.grid)                  | string  | -             |
 | **[exposure.grid.settings]**           |         |               |
@@ -36,7 +40,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 
 - `loglevel`: Set the loglevel of the fiat logger from the settings file. Choose from 'DEBUG', 'INFO', 'WARNING', 'ERROR' or 'DEAD'.
 
-- `gdal_cache`: Set the cache used by GDAL.
+- `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.methods.flood`)
 
 ::: {.callout-warning}
 The entry `gdal_cache` performs poorly and will probably be deprecated soon.
@@ -58,13 +62,21 @@ The entry `gdal_cache` performs poorly and will probably be deprecated soon.
 The entry `var_as_band` is only applicable to netCDF files.
 :::
 
-#### [exposure.csv]
+#### [exposure]
 
-- `index`: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to 'Object ID'.
+- `types`: Types of exposure. This could be monetary damages ('damage'), affected people ('affected') etc.
+
+#### [exposure.csv.settings]
+
+- `index`: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to 'object_id'.
 
 #### [exposure.geom]
 
 - `crs`: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.
+
+#### [exposure.geom.settings]
+
+- `index`: Set the index column of the geom file(s). In case nothing is provided, the default value 'object_id' is used.
 
 #### [exposure.grid]
 

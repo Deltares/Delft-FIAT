@@ -1,0 +1,67 @@
+---
+title: "Building FIAT"
+---
+
+To build FIAT as an executable/ binary, it is required to clone the FIAT repository to your local drive.
+This required [git](https://git-scm.com/) to be installed on your local machine.
+
+```bash
+git clone git@github.com:Deltares/Delft-FIAT.git
+```
+
+Besides git, a python installation/ environment with the necessary packages is needed.
+It is recommended to use [miniforge3](../general/conda.qmd) for this purpose.
+
+::: {.panel-tabset}
+
+## Windows
+
+- Create a yml for a seperate **build** environment:
+
+```bash
+python make_env.py build
+```
+
+- Create the environment with mamba. This time, FIAT will be automatically installed with the environment:
+
+```bash
+mamba env create -f environment.yml
+```
+
+- Go to the .build/ directory and execute the win64.bat script:
+
+```bash
+cd ./.build
+
+win64.bat
+```
+
+That's it.
+A FIAT application will be located in the `{root}/bin/Release` folder.
+
+## Linux
+
+- Create a yml for a seperate **build** environment:
+
+```bash
+python make_env.py build
+```
+
+- Create the environment with mamba. This time, FIAT will be automatically installed with the environment:
+
+```bash
+mamba env create -f environment.yml
+```
+
+- Set the rights of the shell script and exexute it:
+
+```bash
+chmod u+x .build/linux64.sh
+
+.build/linux64.sh
+```
+
+That's it.
+A FIAT application will be located in the `{root}/bin/Release` folder
+
+:::

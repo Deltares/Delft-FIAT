@@ -1,0 +1,49 @@
+---
+title: "Installing FIAT"
+---
+
+## For Use
+FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.
+
+### New environment
+To create a new environment follow the steps below.
+
+- Create a new environment:
+
+```bash
+conda create -n fiat python=3.12.*
+```
+- Activate the environment:
+
+```bash
+conda activate fiat`
+```
+
+- Install FIAT from [pypi]():
+
+```bash
+pip install delft_fiat
+```
+
+- Install FIAT from [conda-forge]()
+
+```bash
+# When conda-forge is added as a channel
+conda install delft_fiat
+
+# When not
+conda install delft_fiat -c conda-forge
+```
+
+- Install FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use **pip install** to do so:
+
+```bash
+pip install git+https://github.com/Deltares/Delft-FIAT.git
+```
+
+### Existing environment
+If you want to install FIAT into an existing environment, simply activate the desired environment and run:
+
+```bash
+pip install git+https://github.com/Deltares/Delft-FIAT.git
+```
