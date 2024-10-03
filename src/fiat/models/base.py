@@ -138,7 +138,7 @@ exceeds machine thread count ('{max_threads}')"
             self.cfg.generate_kwargs("hazard.settings"),
         )
         kw.update(
-            self.cfg.generate_kwargs("global.grid"),
+            self.cfg.generate_kwargs("global.grid.chunk"),
         )
         data = open_grid(path, **kw)
         ## checks

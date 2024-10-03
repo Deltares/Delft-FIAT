@@ -12,6 +12,7 @@ This contains the unreleased changes to Delft-FIAT.
 - Build time to FIAT cli (when build with pyinstaller), viewed with `fiat --version`
 - Different types of exposure (e.g. 'damage', 'affected', 'outage' etc.)
 - Docker file for docker image creation
+- Extra arguments to `grid.reproject`
 - Function (`generate_jobs`) to generate jobs for parallelization
 - Function (`execute_pool`) to execute code in parallel using `multiprocessing`
 - Flood hazard/ damage functions (`methods` submodule)
@@ -20,7 +21,9 @@ This contains the unreleased changes to Delft-FIAT.
 - Method `add_handler` of the `Log` object; user setting of custom stream
 - Method `add_feature_with_map` of `GeomModel` to set features with extra info
 - Method `create` of `GeomModel` to create an ogr.DataSource (new dataset)
+- Method `create_equal_grids` of `GridModel` for making hazard and exposure grid spatially equal
 - Method `set` of `ConfigReader` object
+- Not stopping when exposure and hazard grids (`GridModel`), but instead make them spatially equal
 - Numpy >= 2.0.0 support
 - Python 3.12 support
 - Settings toml file: global setting 'global.loglevel'; default 'INFO'

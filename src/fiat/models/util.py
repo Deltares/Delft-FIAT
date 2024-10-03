@@ -12,6 +12,10 @@ from fiat.io import TableLazy
 from fiat.util import NEWLINE_CHAR, replace_empty
 
 GEOM_DEFAULT_CHUNK = 50000
+GRID_PREFER = {
+    False: "hazard",
+    True: "exposure",
+}
 
 
 def exposure_from_geom(

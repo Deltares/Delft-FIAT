@@ -119,7 +119,8 @@ def check_grid_exact(
     ):
         msg = f"CRS of hazard data ({get_srs_repr(haz.get_srs())}) does not match the \
 CRS of the exposure data ({get_srs_repr(exp.get_srs())})"
-        raise FIATDataError(msg)
+        logger.warning(msg)
+        return False
 
     gtf1 = [round(_n, 2) for _n in haz.get_geotransform()]
     gtf2 = [round(_n, 2) for _n in exp.get_geotransform()]
@@ -127,12 +128,16 @@ CRS of the exposure data ({get_srs_repr(exp.get_srs())})"
     if gtf1 != gtf2:
         msg = f"Geotransform of hazard data ({gtf1}) does not match geotransform of \
 exposure data ({gtf2})"
-        raise FIATDataError(msg)
+        logger.warning(msg)
+        return False
 
     if haz.shape != exp.shape:
         msg = f"Shape of hazard ({haz.shape}) does not match shape of \
 exposure data ({exp.shape})"
-        raise FIATDataError(msg)
+        logger.warning(msg)
+        return False
+
+    return True
 
 
 def check_internal_srs(

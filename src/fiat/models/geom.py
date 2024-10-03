@@ -173,7 +173,7 @@ class GeomModel(BaseModel):
             )
 
     def get_exposure_meta(self):
-        """_summary_."""
+        """Get the exposure meta regarding the data itself (fields etc.)."""
         # Get the relevant column headers
         meta = {}
         if self.exposure_data is not None:
@@ -188,14 +188,14 @@ class GeomModel(BaseModel):
         self.cfg.set("_exposure_meta", meta)
 
     def read_exposure(self):
-        """_summary_."""
+        """Read all the exposure files."""
         self.read_exposure_geoms()
         csv = self.cfg.get("exposure.csv.file")
         if csv is not None:
             self.read_exposure_data()
 
     def read_exposure_data(self):
-        """_summary_."""
+        """Read the exposure data file (csv)."""
         path = self.cfg.get("exposure.csv.file")
         logger.info(f"Reading exposure data ('{path.name}')")
 
@@ -215,7 +215,7 @@ class GeomModel(BaseModel):
         self.exposure_data = data
 
     def read_exposure_geoms(self):
-        """_summary_."""
+        """Read the exposure geometries."""
         # Discover the files
         _d = {}
         # TODO find maybe a better solution of defining this in the settings file

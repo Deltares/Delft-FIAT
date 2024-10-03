@@ -34,13 +34,13 @@ def test_reproject(tmp_path, geom_data, grid_event_data):
     new_gm = geom.reproject(
         geom_data,
         dst_crs,
-        str(tmp_path),
+        out_dir=str(tmp_path),
     )
 
     new_gr = grid.reproject(
         grid_event_data,
         dst_crs,
-        str(tmp_path),
+        out_dir=str(tmp_path),
     )
 
     assert new_gm.get_srs().GetAuthorityCode(None) == "3857"

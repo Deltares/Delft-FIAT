@@ -10,6 +10,8 @@ Here we provide an overview of all optional/ non essential settings that the use
 | [crs](#global)                         | string  | -             |
 | [loglevel](#global)                    | string  | INFO          |
 | [type](#global)                        | string  | flood         |
+| **[global.grid]**                      |         |               |
+| [prefer](#global.grid)                 | string  | exposure      |
 | **[hazard]**                           |         |               |
 | [crs](#hazard)                         | string  | -             |
 | [return_periods](#hazard)              | list    | -             |
@@ -42,9 +44,9 @@ Here we provide an overview of all optional/ non essential settings that the use
 
 - `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.methods.flood`)
 
-::: {.callout-warning}
-The entry `gdal_cache` performs poorly and will probably be deprecated soon.
-:::
+#### [global.grid]
+
+- `prefer`: Whether to spatially prefer exposure data or hazard data. The other will be warped when they are not equal. Chose 'exposure' or 'hazard'.
 
 #### [hazard]
 
