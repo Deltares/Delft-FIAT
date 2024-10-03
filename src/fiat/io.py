@@ -216,30 +216,6 @@ class BufferHandler:
         self.stream.seek(self.skip)
 
 
-class BufferedFieldWriter:
-    """_summary_."""
-
-    def __init__(
-        self,
-        file: str | Path,
-        buffer_size: int = 2,
-        lock: Lock = None,
-    ):
-        # Set the buffer
-        self.buffer_size_mb = buffer_size
-        pass
-
-    def __del__(self):
-        self.buffer = None
-
-    def _calc_buffer(self):
-        pass
-
-    def write(self):
-        """_summary_."""
-        pass
-
-
 class BufferedGeomWriter:
     """_summary_."""
 

@@ -340,7 +340,6 @@ def create_settings_geom():
             "elevation_reference": "DEM",
         },
         "exposure": {
-            "use_csv": True,
             "csv": {
                 "file": "exposure/spatial.csv",
             },
