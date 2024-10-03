@@ -1975,7 +1975,7 @@ class TableLazy(_Table):
     ----------
     data : BufferHandler
         A stream.
-    index : strortuple, optional
+    index : str | tuple, optional
         The index column used as row indices.
     columns : list, optional
         The column headers of the table.
