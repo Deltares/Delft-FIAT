@@ -2,8 +2,8 @@
 title: "What's new?"
 ---
 
-## Unreleased
-This contains the unreleased changes to Delft-FIAT.
+## v0.1.0 (2024-10-03)
+The first full release of Delft-FIAT.
 
 ### Added
 - Attribute `size` of `GeomSource` object for in situ size return; `count` becomes private
