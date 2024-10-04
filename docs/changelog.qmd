@@ -8,6 +8,7 @@ Small patch release.
 ### Changes
 - Bugfix regarding drivernotfound error in `GridSource`
 - Fixed install from conda
+- More functions and objects exposed directly under `fiat` -> e.g. `from fiat import open_grid`
 
 ## v0.1.0 (2024-10-03)
 The first full release of Delft-FIAT.
