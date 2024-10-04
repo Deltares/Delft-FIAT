@@ -107,7 +107,7 @@ test = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/Deltares/Delft-FIAT"
+"Homepage" = "https://deltares.github.io/Delft-FIAT/stable/"
 "Bug Reports" = "https://github.com/Deltares/Delft-FIAT/issues"
 "Source" =  "https://github.com/Deltares/Delft-FIAT"
 
