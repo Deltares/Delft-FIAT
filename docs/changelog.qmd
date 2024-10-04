@@ -2,16 +2,12 @@
 title: "What's new?"
 ---
 
-## Unreleased
-These are the unreleased changes of Delft-FIAT
-
-### Added
+## v0.1.1 (2024-10-04)
+Small patch release.
 
 ### Changes
-
-### Deprecated
-
-### Documentation
+- Bugfix regarding drivernotfound error in `GridSource`
+- Fixed install from conda
 
 ## v0.1.0 (2024-10-03)
 The first full release of Delft-FIAT.

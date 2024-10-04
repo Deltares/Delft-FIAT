@@ -1331,7 +1331,7 @@ multiple variables.
         _BaseIO.__init__(self, file, mode)
 
         if self.path.suffix not in GRID_DRIVER_MAP:
-            raise DriverNotFoundError("")
+            raise DriverNotFoundError(gog="Grid", path=self.path)
 
         driver = GRID_DRIVER_MAP[self.path.suffix]
 
