@@ -9,7 +9,7 @@ CUR_DIR = Path(__file__).parent
 
 
 def check():
-    """_summary_"""
+    """Check if a new version was added to the gh-pages branch."""
     with open(
         Path(CUR_DIR, "..", "versions.json"),
         "r",
@@ -52,7 +52,10 @@ def check():
 def add(
     new: tuple | list,
 ):
-    """_summary_"""
+    """Add documentation to the switcher if needed.
+    
+    Also sets the stable version if new doc version is added to the switcher.
+    """
     with open(Path(CUR_DIR, "..", "switcher.json"),
         "r",
     ) as _r:
@@ -67,8 +70,12 @@ def add(
 
     sw = []
 
+    # Take out the new stable
+    stable = max(new)
+    new.remove(stable)
+
     if sorted(new) != sorted(sv):
-        for item in new[:-1]:
+        for item in new:
             if item not in sv:
                 sw.append(
                     {
@@ -77,7 +84,8 @@ def add(
                         "href": f"{BASE_URL}/v{item.public}/"
                     },
                 )
-
+    
+    # Add whats not already there and what is not the stable
     if len(sw) != 0:
         for _s in reversed(sw):
             s.insert(2, _s)
@@ -86,7 +94,7 @@ def add(
         ) as _w:
             json.dump(s, _w, indent=4)
 
-        return f"v{new[-1].public}"
+        return f"v{stable.public}"
 
 
 if __name__ == "__main__":
@@ -100,5 +108,4 @@ if __name__ == "__main__":
 
     with open(os.getenv('GITHUB_ENV'), 'a') as fh:
         print(f'NEW_STABLE_VERSION={res2}', file=fh)
-    
-    
+ 
