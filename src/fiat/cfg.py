@@ -74,9 +74,6 @@ class ConfigReader(dict):
                     self.path,
                 )
                 self[key] = path
-            else:
-                if isinstance(item, str):
-                    self[key] = item.lower()
 
         # Switch the build flag off
         self._build = False

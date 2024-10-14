@@ -25,8 +25,11 @@ def run_log(
     """Cli friendly run for/ with logging exceptions."""
     try:
         func()
-    except BaseException:
+    except Exception:
         t, v, tb = sys.exc_info()
         logger.error(",".join([str(item) for item in v.args]))
         # Exit with code 1
+        sys.exit(1)
+    except KeyboardInterrupt:
+        logger.error("Keyboard Interrupt")
         sys.exit(1)

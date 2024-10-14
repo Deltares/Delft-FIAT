@@ -18,11 +18,13 @@ from fiat.util import NOT_IMPLEMENTED
 
 DEFAULT_FMT = "{asctime:20s}{levelname:8s}{message}"
 DEFAULT_TIME_FMT = "%Y-%m-%d %H:%M:%S"
+RECEIVER_COUNT = 1
 STREAM_COUNT = 1
 
 _Global_and_Destruct_Lock = threading.RLock()
 _handlers = weakref.WeakValueDictionary()
 _loggers = weakref.WeakValueDictionary()
+_receivers = weakref.WeakValueDictionary()
 
 _str_formatter = StrFormatter()
 del StrFormatter
@@ -49,6 +51,9 @@ def _Destruction():
             handler.flush()
         handler.close()
         handler.release()
+    items = list(_receivers.items())
+    for _, receiver in items:
+        receiver.close()
 
 
 atexit.register(_Destruction)
@@ -585,6 +590,20 @@ class Receiver:
         self.count = 0
         self.q = queue
 
+        global RECEIVER_COUNT
+        self._name = f"Receiver{RECEIVER_COUNT}"
+        RECEIVER_COUNT += 1
+
+        self._add_global_receiver_ref()
+
+    def _add_global_receiver_ref(
+        self,
+    ):
+        """_summary_."""
+        global_acquire()
+        _receivers[self._name] = self
+        global_release()
+
     def _log(
         self,
         record: LogItem,
@@ -599,6 +618,7 @@ class Receiver:
             try:
                 record = self.get(True)
                 if record is self._sentinel:
+                    sys.stdout.write(f"Received Sentinel {self._name}..\n")
                     break
                 self._log(record)
                 self.count += 1
@@ -607,9 +627,13 @@ class Receiver:
 
     def close(self):
         """Close the receiver."""
-        self.q.put_nowait(self._sentinel)
-        self._t.join()
-        self._t = None
+        if self._t is not None:
+            self.q.put_nowait(self._sentinel)
+            self._t.join()
+            self._t = None
+        # global_acquire()
+        # del _receivers[self._name]
+        # global_release()
 
     def close_handlers(self):
         """Close all associated handlers."""
@@ -651,8 +675,8 @@ class Receiver:
         self._t = t = threading.Thread(
             target=self._waiting,
             name="mp_logging_thread",
+            daemon=True,
         )
-        t.deamon = True
         t.start()
 
 
