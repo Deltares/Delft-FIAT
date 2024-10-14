@@ -42,9 +42,10 @@ def world2pixel(
     ulX = gtf[0]
     ulY = gtf[3]
     xDist = gtf[1]
-    pixel = int((x - ulX) / xDist)
-    line = int((ulY - y) / xDist)
-    return (pixel, line)
+    yDist = gtf[5]
+    coorX = int((x - ulX) / xDist)
+    coorY = int((y - ulY) / yDist)
+    return (coorX, coorY)
 
 
 def pixel2world(

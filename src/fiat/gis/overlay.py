@@ -206,8 +206,8 @@ def pin(
     array
         A NumPy array containing one value.
     """
-    X, Y = world2pixel(gtf, *point)
+    x, y = world2pixel(gtf, *point)
 
-    value = band[X, Y, 1, 1]
+    value = band[x, y, 1, 1]
 
     return value[0]
