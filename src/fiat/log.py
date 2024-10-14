@@ -585,6 +585,7 @@ class Receiver:
         self,
         queue: object,
     ):
+        self._closed = False
         self._t = None
         self._handlers = []
         self.count = 0
@@ -618,7 +619,6 @@ class Receiver:
             try:
                 record = self.get(True)
                 if record is self._sentinel:
-                    sys.stdout.write(f"Received Sentinel {self._name}..\n")
                     break
                 self._log(record)
                 self.count += 1
@@ -627,13 +627,14 @@ class Receiver:
 
     def close(self):
         """Close the receiver."""
-        if self._t is not None:
+        if not self._closed:
             self.q.put_nowait(self._sentinel)
             self._t.join()
             self._t = None
-        # global_acquire()
-        # del _receivers[self._name]
-        # global_release()
+            self._closed = True
+        global_acquire()
+        del _receivers[self._name]
+        global_release()
 
     def close_handlers(self):
         """Close all associated handlers."""
