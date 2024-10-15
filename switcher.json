@@ -10,6 +10,11 @@
         "href": "https://deltares.github.io/Delft-FIAT/stable/"
     },
     {
+        "name": "v0.1.1",
+        "version": "0.1.1",
+        "href": "https://deltares.github.io/Delft-FIAT/v0.1.1/"
+    },
+    {
         "name": "v0.1.0",
         "version": "0.1.0",
         "href": "https://deltares.github.io/Delft-FIAT/v0.1.0/"
