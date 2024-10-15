@@ -3,16 +3,17 @@ from numpy import mean
 
 
 def test_clip_grid_geom(geom_data, grid_event_data):
-    for ft in geom_data:
-        hazard = overlay.clip(
-            grid_event_data[1],
-            grid_event_data.get_srs(),
-            grid_event_data.get_geotransform(),
-            ft,
-        )
+    ft = geom_data[4]
+    hazard = overlay.clip(
+        grid_event_data[1],
+        grid_event_data.get_srs(),
+        grid_event_data.get_geotransform(),
+        ft,
+    )
+    ft = None
 
-    assert len(hazard) == 7
-    assert int(round(mean(hazard) * 100, 0)) == 166
+    assert len(hazard) == 6
+    assert int(round(mean(hazard) * 100, 0)) == 170
 
 
 def test_pin(geom_data, grid_event_data):

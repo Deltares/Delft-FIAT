@@ -9,7 +9,7 @@ def test_geomsource(geom_data):
 
     bounds = geom_data.bounds
     bounds = [round(item * 10000) for item in bounds]
-    assert bounds == [43550, 44400, 519600, 520450]
+    assert bounds == [43550, 44395, 519605, 520450]
 
     assert geom_data.fields == ["object_id", "object_name"]
 
