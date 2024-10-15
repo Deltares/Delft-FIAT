@@ -1,10 +1,9 @@
 """Base FIAT utility."""
 
-import ctypes
 import fnmatch
+import importlib
 import math
 import os
-import platform
 import re
 import sys
 from collections.abc import MutableMapping
@@ -356,31 +355,6 @@ def generic_folder_check(
         path.mkdir(parents=True)
 
 
-def create_hidden_folder(
-    path: Path | str,
-):
-    """_summary_.
-
-    Parameters
-    ----------
-    path : Path | str
-        _description_
-    """
-    path = Path(path)
-    if not path.stem.startswith("."):
-        path = Path(path.parent, f".{path.stem}")
-    generic_folder_check(path)
-
-    if platform.system().lower() == "windows":
-        r = ctypes.windll.kernel32.SetFileAttributesW(
-            str(path),
-            FILE_ATTRIBUTE_HIDDEN,
-        )
-
-        if not r:
-            raise OSError("")
-
-
 def generic_path_check(
     path: str,
     root: str,
@@ -452,6 +426,14 @@ def find_duplicates(elements: tuple | list):
     if not dup:
         return None
     return dup
+
+
+def get_module_attr(module: str, attr: str):
+    """Quickly get attribute from a module dynamically."""
+    module = importlib.import_module(module)
+    out = getattr(module, attr)
+    module = None
+    return out
 
 
 def object_size(obj):

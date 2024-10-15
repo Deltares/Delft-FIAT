@@ -85,7 +85,7 @@ def clip(
 
 
 def clip_weighted(
-    band: gdal.Band,
+    band: Grid,
     srs: osr.SpatialReference,
     gtf: tuple,
     ft: ogr.Feature,
@@ -142,7 +142,7 @@ cells that are touched by the feature.
     pxWidth = int(lrX - ulX) + 1
     pxHeight = int(lrY - ulY) + 1
 
-    clip = band.ReadAsArray(ulX, ulY, pxWidth, pxHeight)
+    clip = band[ulX, ulY, pxWidth, pxHeight]
     # m = mask.ReadAsArray(ulX,ulY,pxWidth,pxHeight)
 
     # pts = geom.GetGeometryRef(0)

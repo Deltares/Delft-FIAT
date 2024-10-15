@@ -581,10 +581,10 @@ class CSVParser:
 
     def read(
         self,
-        large: bool = False,
+        lazy: bool = False,
     ):
         """_summary_."""
-        if large:
+        if lazy:
             return TableLazy(
                 data=self.data,
                 index=self.index,
@@ -2154,7 +2154,7 @@ def open_csv(
     delimiter: str = ",",
     header: bool = True,
     index: str = None,
-    large: bool = False,
+    lazy: bool = False,
 ) -> object:
     """Open a csv file.
 
@@ -2168,7 +2168,7 @@ def open_csv(
         Whether or not to use headers.
     index : str, optional
         Name of the index column.
-    large : bool, optional
+    lazy : bool, optional
         If `True`, a lazy read is executed.
 
     Returns
@@ -2186,7 +2186,7 @@ def open_csv(
     )
 
     return parser.read(
-        large=large,
+        lazy=lazy,
     )
 
 

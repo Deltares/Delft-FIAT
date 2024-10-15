@@ -70,8 +70,8 @@ def reproject(
     if not Path(str(out_dir)).is_dir():
         out_dir = gs.path.parent
 
-    fname_int = Path(out_dir, f"{gs.path.stem}_repr_fiat.tif")
-    fname = Path(out_dir, f"{gs.path.stem}_repr_fiat{gs.path.suffix}")
+    fname_int = Path(out_dir, f"{gs.path.stem}_repr.tif")
+    fname = Path(out_dir, f"{gs.path.stem}_repr{gs.path.suffix}")
 
     out_srs = osr.SpatialReference()
     out_srs.SetFromUserInput(dst_crs)

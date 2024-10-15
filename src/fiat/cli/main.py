@@ -28,7 +28,7 @@ fiat_start_str = """
 ###############################################################
 
                 Fast Impact Assessment Tool
-                \u00A9 Deltares
+                \u00a9 Deltares
 
 """
 

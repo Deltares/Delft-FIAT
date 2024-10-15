@@ -1,4 +1,5 @@
 """Worker functions for grid model."""
+
 from math import floor
 from pathlib import Path
 

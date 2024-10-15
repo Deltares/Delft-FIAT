@@ -1,8 +1,9 @@
 from pathlib import Path
 
+from osgeo import gdal
+
 from fiat import FIAT
 from fiat.io import open_csv
-from osgeo import gdal
 
 
 def run_model(cfg, p):

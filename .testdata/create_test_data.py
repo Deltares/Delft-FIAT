@@ -41,6 +41,32 @@ def create_exposure_dbase():
             f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\n")
 
 
+def create_exposure_dbase_missing():
+    """_summary_."""
+    with open(Path(p, "exposure", "spatial_missing.csv"), "w") as f:
+        f.write("extract_method,ground_flht,ground_elevtn,")
+        f.write("fn_damage_structure,max_damage_structure\n")
+        for n in range(5):
+            if (n + 1) % 2 != 0:
+                dmc = "struct_1"
+            else:
+                dmc = "struct_2"
+            f.write(f"area,0,0,{dmc},{(n+1)*1000}\n")
+
+
+def create_exposure_dbase_partial():
+    """_summary_."""
+    with open(Path(p, "exposure", "spatial_partial.csv"), "w") as f:
+        f.write("object_id,extract_method,ground_flht,ground_elevtn,")
+        f.write("fn_damage_structure,fn_damage_content,max_damage_structure\n")
+        for n in range(5):
+            if (n + 1) % 2 != 0:
+                dmc = "struct_1"
+            else:
+                dmc = "struct_2"
+            f.write(f"{n+1},area,0,0,{dmc},{dmc},{(n+1)*1000}\n")
+
+
 def create_exposure_geoms():
     """_summary_."""
     geoms = (
@@ -276,6 +302,45 @@ def create_hazard_map():
     dr = None
 
 
+def create_hazard_map_highres():
+    """_summary_."""
+    srs = osr.SpatialReference()
+    srs.ImportFromEPSG(4326)
+    dr = gdal.GetDriverByName("netCDF")
+    src = dr.Create(
+        str(Path(p, "hazard", "event_map_highres.nc")),
+        100,
+        100,
+        1,
+        gdal.GDT_Float32,
+    )
+    gtf = (
+        4.35,
+        0.001,
+        0.0,
+        52.05,
+        0.0,
+        -0.001,
+    )
+    src.SetSpatialRef(srs)
+    src.SetGeoTransform(gtf)
+
+    band = src.GetRasterBand(1)
+    data = zeros((100, 100))
+    oneD = tuple(range(100))
+    for x, y in product(oneD, oneD):
+        data[x, y] = 3.6 - ((x + y) * 0.02)
+    band.WriteArray(data)
+
+    band.FlushCache()
+    src.FlushCache()
+
+    srs = None
+    band = None
+    src = None
+    dr = None
+
+
 def create_risk_map():
     """_summary_."""
     srs = osr.SpatialReference()
@@ -396,6 +461,18 @@ def create_settings_geom():
     with open(Path(p, "geom_risk_2g.toml"), "wb") as f:
         tomli_w.dump(doc_r2g, f)
 
+    missing_hazard = copy.deepcopy(doc)
+    del missing_hazard["hazard"]["file"]
+
+    with open(Path(p, "missing_hazard.toml"), "wb") as f:
+        tomli_w.dump(missing_hazard, f)
+
+    missing_models = copy.deepcopy(doc)
+    del missing_models["exposure"]["geom"]["file1"]
+
+    with open(Path(p, "missing_models.toml"), "wb") as f:
+        tomli_w.dump(missing_models, f)
+
 
 def create_settings_grid():
     """_summary_."""
@@ -438,6 +515,12 @@ def create_settings_grid():
     with open(Path(p, "grid_risk.toml"), "wb") as f:
         tomli_w.dump(doc_r, f)
 
+    doc_u = copy.deepcopy(doc)
+    doc_u["hazard"]["file"] = "hazard/event_map_highres.nc"
+
+    with open(Path(p, "grid_unequal.toml"), "wb") as f:
+        tomli_w.dump(doc_u, f)
+
 
 def create_vulnerability():
     """_summary_."""
@@ -463,11 +546,14 @@ def create_vulnerability():
 if __name__ == "__main__":
     create_dbase_stucture()
     create_exposure_dbase()
+    create_exposure_dbase_missing()
+    create_exposure_dbase_partial()
     create_exposure_geoms()
     create_exposure_geoms_2()
     create_exposure_geoms_3()
     create_exposure_grid()
     create_hazard_map()
+    create_hazard_map_highres()
     create_risk_map()
     create_settings_geom()
     create_settings_grid()

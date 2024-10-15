@@ -12,10 +12,10 @@ from fiat.check import (
     check_config_grid,
 )
 from fiat.util import (
-    create_hidden_folder,
     flatten_dict,
     generic_folder_check,
     generic_path_check,
+    get_module_attr,
 )
 
 
@@ -51,10 +51,13 @@ class ConfigReader(dict):
         f.close()
 
         # Initial check for mandatory entries of the settings toml
+        extra_entries = get_module_attr(
+            f"fiat.methods.{self.get('global.type', 'flood')}", "MANDATORY_ENTRIES"
+        )
         check_config_entries(
             self.keys(),
             self.filepath,
-            self.path,
+            extra_entries,
         )
 
         # Set the cache size per GDAL object
@@ -103,16 +106,12 @@ class ConfigReader(dict):
         self,
         root: Path | str,
         path: Path | str,
-        hidden: bool = False,
     ):
         """_summary_."""
         _p = Path(path)
         if not _p.is_absolute():
             _p = Path(root, _p)
-        if hidden:
-            create_hidden_folder(_p)
-        else:
-            generic_folder_check(_p)
+        generic_folder_check(_p)
         return _p
 
     def _create_model_dirs(

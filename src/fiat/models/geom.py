@@ -81,6 +81,7 @@ class GeomModel(BaseModel):
         columns: dict,
         meta: dict,
         index: int,
+        index_col: str,
     ):
         """Simple method for sorting out the exposure meta."""  # noqa: D401
         # check if set from the csv file
@@ -88,7 +89,8 @@ class GeomModel(BaseModel):
             meta[index] = {}
             # Check the exposure column headers
             check_exp_columns(
-                list(columns.keys()),
+                index_col,
+                columns=list(columns.keys()),
                 specific_columns=getattr(self.module, "MANDATORY_COLUMNS"),
             )
 
@@ -181,10 +183,16 @@ class GeomModel(BaseModel):
                 self.exposure_data._columns,
                 meta,
                 -1,
+                self.cfg.get("exposure.csv.settings.index"),
             )
         for key, gm in self.exposure_geoms.items():
             columns = gm._columns
-            self._discover_exposure_meta(columns, meta, key)
+            self._discover_exposure_meta(
+                columns,
+                meta,
+                key,
+                self.cfg.get("exposure.geom.settings.index"),
+            )
         self.cfg.set("_exposure_meta", meta)
 
     def read_exposure(self):
@@ -204,7 +212,8 @@ class GeomModel(BaseModel):
         kw.update(
             self.cfg.generate_kwargs("exposure.csv.settings"),
         )
-        data = open_csv(path, large=True, **kw)
+        self.cfg.set("exposure.csv.settings.index", kw["index"])
+        data = open_csv(path, lazy=True, **kw)
         ##checks
         logger.info("Executing exposure data checks...")
 

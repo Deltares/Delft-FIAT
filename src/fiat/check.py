@@ -16,16 +16,15 @@ logger = spawn_logger("fiat.checks")
 def check_config_entries(
     keys: tuple,
     path: Path,
-    parent: Path,
+    extra_entries: list,
 ):
     """_summary_."""
     _man_entries = [
         "output.path",
         "hazard.file",
         "hazard.risk",
-        "hazard.elevation_reference",
         "vulnerability.file",
-    ]
+    ] + extra_entries
 
     _check = [item in keys for item in _man_entries]
     if not all(_check):
@@ -143,7 +142,7 @@ exposure data ({exp.shape})"
 def check_internal_srs(
     source_srs: osr.SpatialReference,
     fname: str,
-    cfg_srs: osr.SpatialReference = None,
+    cfg_srs: str = None,
 ):
     """_summary_."""
     if source_srs is None and cfg_srs is None:
@@ -245,12 +244,13 @@ multiple datasets (subsets). Chose one of the following subsets: {keys}"
 
 ## Exposure
 def check_exp_columns(
+    index_col: str,
     columns: tuple | list,
     specific_columns: tuple | list = [],
 ):
     """_summary_."""
     _man_columns = [
-        "object_id",
+        index_col,
     ] + specific_columns
 
     _check = [item in columns for item in _man_columns]

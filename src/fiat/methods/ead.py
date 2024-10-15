@@ -1,4 +1,5 @@
 """EAD (Expected Annual Damages) related functionality."""
+
 import math
 
 

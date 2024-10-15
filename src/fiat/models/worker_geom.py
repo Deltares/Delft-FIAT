@@ -39,7 +39,7 @@ def worker(
     func_hazard = getattr(module, "calculate_hazard")
     func_damage = getattr(module, "calculate_damage")
     man_columns = getattr(module, "MANDATORY_COLUMNS")
-    man_entries = tuple(getattr(module, "MANDATORY_ENTRIES").values())
+    man_entries = getattr(module, "MANDATORY_ENTRIES")
 
     # Get the bands to prevent object creation while looping
     bands = [(haz[idx + 1], idx + 1) for idx in range(haz.size)]
