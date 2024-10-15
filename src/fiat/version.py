@@ -2,8 +2,8 @@
 
 main = 0
 major = 2
-minor = 0
+minor = 1
 build = 0
-suffix = ""
+suffix = ".dev"
 
 __version__ = f"{main}.{major}.{minor}{suffix}"

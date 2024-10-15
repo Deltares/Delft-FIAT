@@ -2,6 +2,17 @@
 title: "What's new?"
 ---
 
+## Unreleased
+These are the unreleased changes of Delft-FIAT.
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Documentation
+
 ## v0.2.0 (2024-10-15)
 Added small features.
 
