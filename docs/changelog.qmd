@@ -6,8 +6,13 @@ title: "What's new?"
 These are the unreleased changes of Delft-FIAT.
 
 ### Added
+- 'Normal' exit when keyboard interrupt is triggered over cli
+- Support for grids with non square cells
 
 ### Changed
+- Fixed hanging issue with the mp-logging receiver when erroring
+- Fixed square cell assumption when mapping world coordinates to pixel coordinates
+- Support capitalized entries in the settings toml (again; it was disabled)
 
 ### Deprecated
 
