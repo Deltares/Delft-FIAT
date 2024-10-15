@@ -2,8 +2,8 @@
 title: "What's new?"
 ---
 
-## Unreleased
-These are the unreleased changes of Delft-FIAT.
+## v0.2.0 (2024-10-15)
+Added small features.
 
 ### Added
 - 'Normal' exit when keyboard interrupt is triggered over cli
@@ -13,10 +13,7 @@ These are the unreleased changes of Delft-FIAT.
 - Fixed hanging issue with the mp-logging receiver when erroring
 - Fixed square cell assumption when mapping world coordinates to pixel coordinates
 - Support capitalized entries in the settings toml (again; it was disabled)
-
-### Deprecated
-
-### Documentation
+- Various small non breaking fixes
 
 ## v0.1.1 (2024-10-04)
 Small patch release.
