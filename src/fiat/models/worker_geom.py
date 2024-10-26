@@ -56,10 +56,12 @@ def worker(
         rp_coef = risk_density(cfg.get("hazard.return_periods"))
         rp_coef.reverse()
 
+    # Some exposure csv dependent data (or not)
+    mid = None
     pattern = None
     out_text_writer = DummyWriter()
     if exp_data is not None:
-        man_columns = [exp_data.columns.index(item) for item in man_columns]
+        man_columns_idxs = [exp_data.columns.index(item) for item in man_columns]
         pattern = regex_pattern(exp_data.delimiter)
         out_text_writer = BufferedTextWriter(
             Path(cfg.get("output.path"), cfg.get("output.csv.name")),
@@ -83,6 +85,9 @@ def worker(
         total_idx = field_meta["total_idx"]
         types = field_meta["types"]
         idxs = field_meta["idxs"]
+        if exp_data is None:
+            man_columns_idxs = [gm.fields.index(item) for item in man_columns]
+            mid = gm.fields.index("extract_method")
 
         # Setup the dataset buffer writer
         out_geom = Path(cfg.get(f"output.geom.name{idx}"))
@@ -100,7 +105,8 @@ def worker(
                 ft,
                 exp_data,
                 oid,
-                man_columns,
+                mid,
+                man_columns_idxs,
                 pattern,
             )
             if info is None:
@@ -115,10 +121,17 @@ No data found in exposure database",
             for band, bn in bands:
                 # How to get the hazard data
                 if method == "area":
-                    res = overlay.clip(band, haz.get_srs(), haz.get_geotransform(), ft)
+                    res = overlay.clip(
+                        ft,
+                        band,
+                        haz.get_geotransform(),
+                        all_touched=True,
+                    )
                 else:
                     res = overlay.pin(
-                        band, haz.get_geotransform(), geom.point_in_geom(ft)
+                        geom.point_in_geom(ft),
+                        band,
+                        haz.get_geotransform(),
                     )
 
                 res[res == band.nodata] = nan

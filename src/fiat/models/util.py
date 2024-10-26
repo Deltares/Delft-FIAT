@@ -22,11 +22,12 @@ def exposure_from_geom(
     ft: ogr.Feature,
     exp: TableLazy,
     oid: int,
+    mid: int,
     idxs_haz: list | tuple,
     pattern: object,
 ):
     """_summary_."""
-    method = ft.GetField("extract_method")
+    method = ft.GetField(mid)
     haz = [ft.GetField(idx) for idx in idxs_haz]
     return ft, method, haz
 
@@ -35,6 +36,7 @@ def exposure_from_csv(
     ft: ogr.Feature,
     exp: TableLazy,
     oid: int,
+    mid: int,
     idxs_haz: list | tuple,
     pattern: object,
 ):
