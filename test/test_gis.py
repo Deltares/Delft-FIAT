@@ -43,9 +43,9 @@ def test_pin(geom_data, grid_event_data):
         XY = geom.point_in_geom(ft)
 
         hazard = overlay.pin(
+            XY,
             grid_event_data[1],
             grid_event_data.get_geotransform(),
-            XY,
         )
 
     assert int(round(hazard[0] * 100, 0)) == 160
