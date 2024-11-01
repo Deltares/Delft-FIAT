@@ -1,9 +1,12 @@
 """Util for cli."""
 
+import cProfile
+import pstats
 import sys
 from pathlib import Path
 from typing import Callable
 
+from fiat.cfg import ConfigReader
 from fiat.log import Log
 
 
@@ -33,3 +36,32 @@ def run_log(
         logger.error(msg)
         # Exit with code 1
         sys.exit(1)
+
+
+def run_profiler(
+    func: Callable,
+    profile: str,
+    cfg: ConfigReader,
+    logger: Log,
+):
+    """Run the profiler from cli."""
+    logger.warning("Running profiler...")
+
+    # Setup the profiler and run the function
+    profiler = cProfile.Profile()
+    profiler.enable()
+    run_log(func, logger=logger)
+    profiler.disable()
+
+    # Save all the stats
+    profile_out = cfg.get("output.path") / profile
+    profiler.dump_stats(profile_out)
+    logger.info(f"Saved profiling stats to: {profile_out}")
+
+    # Save a human readable portion to a text file
+    txt_out = cfg.get("output.path") / "profile.txt"
+    with open(txt_out, "w") as _w:
+        _w.write(f"Delft-FIAT profile ({cfg.filepath}):\n\n")
+        stats = pstats.Stats(profiler, stream=_w)
+        _ = stats.sort_stats("tottime").print_stats()
+        logger.info(f"Saved profiling stats in human readable format: {txt_out}")
