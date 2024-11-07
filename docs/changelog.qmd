@@ -8,6 +8,10 @@ These are the unreleased changes of Delft-FIAT.
 ### Added
 
 ### Changed
+- Disabled locks when running 'single threaded'
+- Fixed logging of errors during settings file checks
+- Logging class `Log` is now called `Logger`
+- Specifying destination ('dst') is now optional for `setup_default_log`
 
 ### Deprecated
 
