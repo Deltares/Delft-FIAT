@@ -20,6 +20,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -434,8 +468,8 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../api/Log.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Log</span></a>
+            <a href="../../api/Logger.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logger</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -443,49 +477,43 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/add_file_handler.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/add_file_handler.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">add_file_handler</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/add_handler.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/add_handler.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">add_handler</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/dead.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/dead.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">dead</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/debug.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/debug.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">debug</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/error.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/error.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">error</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/handle_log.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">handle_log</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../api/Log/info.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/info.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">info</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/warning.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/warning.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">warning</span></a>
   </div>
 </li>
@@ -983,7 +1011,7 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="fiat.io.GridSource.close" class="level1">
 <h1>close</h1>
-<p><code>io.GridSource.close()</code></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>io.GridSource.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Close the GridSource.</p>
 
 

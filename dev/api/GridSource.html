@@ -468,8 +468,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../api/Log.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Log</span></a>
+            <a href="../api/Logger.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logger</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -477,49 +477,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/Log/add_file_handler.html" class="sidebar-item-text sidebar-link">
+  <a href="../api/Logger/add_file_handler.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">add_file_handler</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/Log/add_handler.html" class="sidebar-item-text sidebar-link">
+  <a href="../api/Logger/add_handler.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">add_handler</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/Log/dead.html" class="sidebar-item-text sidebar-link">
+  <a href="../api/Logger/dead.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">dead</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/Log/debug.html" class="sidebar-item-text sidebar-link">
+  <a href="../api/Logger/debug.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">debug</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/Log/error.html" class="sidebar-item-text sidebar-link">
+  <a href="../api/Logger/error.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">error</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/Log/handle_log.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">handle_log</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Log/info.html" class="sidebar-item-text sidebar-link">
+  <a href="../api/Logger/info.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">info</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/Log/warning.html" class="sidebar-item-text sidebar-link">
+  <a href="../api/Logger/warning.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">warning</span></a>
   </div>
 </li>
@@ -1023,11 +1017,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="fiat.io.GridSource" class="level1">
 <h1>GridSource</h1>
-<p><code>io.GridSource(self, file, chunk=None, subset=None, var_as_band=False, mode='r')</code></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>io.GridSource(<span class="va">self</span>, <span class="bu">file</span>, chunk<span class="op">=</span><span class="va">None</span>, subset<span class="op">=</span><span class="va">None</span>, var_as_band<span class="op">=</span><span class="va">False</span>, mode<span class="op">=</span><span class="st">'r'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>A source object for geospatial gridded data.</p>
 <p>Essentially a gdal Dataset wrapper.</p>
-<section id="parameters" class="level2">
-<h2 class="anchored" data-anchor-id="parameters">Parameters</h2>
+<section id="parameters" class="level2 doc-section doc-section-parameters">
+<h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -1039,31 +1033,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>file</code></td>
+<td>file</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
 <td>The path to a file.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
-<td><code>chunk</code></td>
+<td>chunk</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
 <td>Chunking size of the data.</td>
 <td><code>None</code></td>
 </tr>
 <tr class="odd">
-<td><code>subset</code></td>
+<td>subset</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
 <td>The wanted subset of data. This is applicable to netCDF files containing multiple variables.</td>
 <td><code>None</code></td>
 </tr>
 <tr class="even">
-<td><code>var_as_band</code></td>
+<td>var_as_band</td>
 <td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
 <td>Whether to interpret the variables as bands. This is applicable to netCDF files containing multiple variables.</td>
 <td><code>False</code></td>
 </tr>
 <tr class="odd">
-<td><code>mode</code></td>
+<td>mode</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
 <td>The I/O mode. Either <code>r</code> for reading or <code>w</code> for writing.</td>
 <td><code>'r'</code></td>
@@ -1071,14 +1065,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="examples" class="level2">
-<h2 class="anchored" data-anchor-id="examples">Examples</h2>
+<section id="examples" class="level2 doc-section doc-section-examples">
+<h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
 <p>Can be indexed directly to get a <code>Grid</code> object.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Open a file</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>gs <span class="op">=</span> open_grid(<span class="op">&lt;</span> path<span class="op">-</span>to<span class="op">-</span><span class="bu">file</span> <span class="op">&gt;</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Index it (take the first band)</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> gs[<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Open a file</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>gs <span class="op">=</span> open_grid(<span class="op">&lt;</span> path<span class="op">-</span>to<span class="op">-</span><span class="bu">file</span> <span class="op">&gt;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Index it (take the first band)</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> gs[<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="attributes" class="level2">
 <h2 class="anchored" data-anchor-id="attributes">Attributes</h2>

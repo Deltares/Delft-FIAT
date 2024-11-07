@@ -468,8 +468,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../api/Log.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Log</span></a>
+            <a href="../../api/Logger.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Logger</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -477,49 +477,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/add_file_handler.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/add_file_handler.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">add_file_handler</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/add_handler.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/add_handler.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">add_handler</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/dead.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/dead.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">dead</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/debug.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/debug.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">debug</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/error.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/error.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">error</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/handle_log.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">handle_log</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../api/Log/info.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/info.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">info</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Log/warning.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/Logger/warning.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">warning</span></a>
   </div>
 </li>
@@ -1022,11 +1016,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="fiat.gis.util.world2pixel" class="level1">
 <h1>world2pixel</h1>
-<p><code>gis.util.world2pixel(gtf, x, y)</code></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>gis.util.world2pixel(gtf, x, y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Calculate the pixel location based on coordinates.</p>
 <p>(Thanks to the <a href="https://pcjericks.github.io/py-gdalogr-cookbook/index.html">ogr cookbook</a>!)</p>
-<section id="parameters" class="level2">
-<h2 class="anchored" data-anchor-id="parameters">Parameters</h2>
+<section id="parameters" class="level2 doc-section doc-section-parameters">
+<h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -1038,19 +1032,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>gtf</code></td>
+<td>gtf</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
 <td>The geotransform of a grid dataset. Can be optained via the <a href="../../api/GridSource/get_geotransform.html">get_geotransform</a> method. Has the following shape: (left, xres, xrot, upper, yrot, yres).</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
-<td><code>x</code></td>
+<td>x</td>
 <td><a href="https://docs.python.org/3/library/functions.html#float">float</a> | <a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
 <td>The x coordinates of a point</td>
 <td><em>required</em></td>
 </tr>
 <tr class="odd">
-<td><code>y</code></td>
+<td>y</td>
 <td><a href="https://docs.python.org/3/library/functions.html#float">float</a> | <a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
 <td>The y coordinates of a point</td>
 <td><em>required</em></td>
@@ -1058,31 +1052,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns" class="level2">
-<h2 class="anchored" data-anchor-id="returns">Returns</h2>
+<section id="returns" class="level2 doc-section doc-section-returns">
+<h2 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h2>
 <table class="caption-top table">
 <thead>
 <tr class="header">
+<th>Name</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<td></td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
 <td>Row and column indices.</td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="examples" class="level2">
-<h2 class="anchored" data-anchor-id="examples">Examples</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load a dataset</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>gs <span class="op">=</span> fiat.io.GridSource(<span class="op">&lt;</span>some raster <span class="bu">file</span><span class="op">&gt;</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the geotransform</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>gtf <span class="op">=</span> gs.get_geotransform()</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the indices</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>row, col <span class="op">=</span> world2pixel(gtf, <span class="op">&lt;</span>x<span class="op">&gt;</span>, <span class="op">&lt;</span>y<span class="op">&gt;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="examples" class="level2 doc-section doc-section-examples">
+<h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load a dataset</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>gs <span class="op">=</span> fiat.io.GridSource(<span class="op">&lt;</span>some raster <span class="bu">file</span><span class="op">&gt;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the geotransform</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>gtf <span class="op">=</span> gs.get_geotransform()</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the indices</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>row, col <span class="op">=</span> world2pixel(gtf, <span class="op">&lt;</span>x<span class="op">&gt;</span>, <span class="op">&lt;</span>y<span class="op">&gt;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
