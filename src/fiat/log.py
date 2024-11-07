@@ -758,7 +758,7 @@ class Log(metaclass=Logmeta):
             else:
                 obj = obj.parent
 
-    def handle_log(log_m):
+    def _handle_log(log_m):
         """Wrap logging messages."""
 
         def handle(self, *args, **kwargs):
@@ -808,7 +808,7 @@ class Log(metaclass=Logmeta):
 
     @property
     def level(self):
-        """_summary_."""
+        """Return the current logging level."""
         return self._level
 
     @level.setter
@@ -817,32 +817,34 @@ class Log(metaclass=Logmeta):
         val: int,
     ):
         self._level = check_loglevel(val)
+        for h in self._handlers:
+            h.level = val
 
     def _direct(self, msg):
         """_summary_."""
         raise NotImplementedError(NOT_IMPLEMENTED)
 
-    @handle_log
+    @_handle_log
     def debug(self, msg: str):
         """Create a debug message."""
         return 1, msg
 
-    @handle_log
+    @_handle_log
     def info(self, msg: str):
         """Create an info message."""
         return 2, msg
 
-    @handle_log
+    @_handle_log
     def warning(self, msg: str):
         """Create a warning message."""
         return 3, msg
 
-    @handle_log
+    @_handle_log
     def error(self, msg: str):
         """Create an error message."""
         return 4, msg
 
-    @handle_log
+    @_handle_log
     def dead(self, msg: str):
         """Create a kernel-deceased message."""
         return 5, msg
@@ -869,7 +871,7 @@ def spawn_logger(
 def setup_default_log(
     name: str,
     level: int,
-    dst: str,
+    dst: str | None = None,
 ) -> Log:
     """Set up the base logger of a hierarchy.
 
@@ -882,7 +884,7 @@ def setup_default_log(
         Identifier of the logger.
     level : int
         Logging level.
-    dst : str
+    dst : str | None, optional
         The path to where the logging file will be located.
 
     Returns
@@ -891,16 +893,17 @@ def setup_default_log(
         A Log object (for logging, no really..)
     """
     if len(name.split(".")) > 1:
-        raise ValueError()
+        raise ValueError("Only root names (without a period) are allowed.")
 
     obj = Log(name, level=level)
 
     obj.add_handler(level=level)
-    obj.add_file_handler(
-        dst,
-        level=level,
-        filename=name,
-    )
+    if dst is not None:
+        obj.add_file_handler(
+            dst,
+            level=level,
+            filename=name,
+        )
 
     return obj
 

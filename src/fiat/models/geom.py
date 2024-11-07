@@ -303,8 +303,9 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # Setup the jobs
         # First setup the locks
-        lock1 = self._mp_manager.Lock()
-        lock2 = self._mp_manager.Lock()
+        lock1, lock2 = (None, None)
+        if self.threads != 1:
+            lock1, lock2 = [self._mp_manager.Lock()] * 2
         jobs = generate_jobs(
             {
                 "cfg": self.cfg,
