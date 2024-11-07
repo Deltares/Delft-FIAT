@@ -1,7 +1,7 @@
 import io
 from pathlib import Path
 
-from fiat.log import CHandler, Log, MessageFormatter, spawn_logger
+from fiat.log import CHandler, Logger, MessageFormatter, spawn_logger
 
 
 def test_stream(log1, log2):
@@ -17,7 +17,7 @@ def test_stream(log1, log2):
 
 
 def test_log(tmp_path):
-    log = Log("test_log", level=2)
+    log = Logger("test_log", level=2)
     log.add_handler(
         level=2,
     )

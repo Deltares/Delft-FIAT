@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from typing import Callable
 
-from fiat.log import Log
+from fiat.log import Logger
 
 
 def file_path_check(path):
@@ -20,7 +20,7 @@ def file_path_check(path):
 
 def run_log(
     func: Callable,
-    logger: Log,
+    logger: Logger,
     *args,
 ):
     """Cli friendly run for/ with logging exceptions."""
