@@ -1015,7 +1015,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="fiat.gis.overlay.pin" class="level1">
 <h1>pin</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>gis.overlay.pin(band, gtf, point)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>gis.overlay.pin(point, band, gtf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Pin a the value of a cell based on a coordinate.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
@@ -1030,21 +1030,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
+<td>point</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>x and y coordinate.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
 <td>band</td>
 <td><code>Grid</code></td>
 <td>Input object. This holds a connection to the specified band.</td>
 <td><em>required</em></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>gtf</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
 <td>The geotransform of a grid dataset. Can be optained via the <a href="../../api/GridSource/get_geotransform.html">get_geotransform</a> method. Has the following shape: (left, xres, xrot, upper, yrot, yres).</td>
-<td><em>required</em></td>
-</tr>
-<tr class="odd">
-<td>point</td>
-<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
-<td>x and y coordinate.</td>
 <td><em>required</em></td>
 </tr>
 </tbody>
@@ -1063,7 +1063,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td></td>
-<td><a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array">array</a></td>
+<td><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
 <td>A NumPy array containing one value.</td>
 </tr>
 </tbody>

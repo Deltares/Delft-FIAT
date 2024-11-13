@@ -256,12 +256,17 @@ ul.task-list li input[type="checkbox"] {
 <p>These are the unreleased changes of Delft-FIAT.</p>
 <section id="added" class="level3">
 <h3 class="anchored" data-anchor-id="added">Added</h3>
+<ul>
+<li>Custom rasterization functions instead of relying on GDAL (which included dataset creation at runtime)</li>
+<li>Profiler for developers</li>
+</ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
 <ul>
 <li>Disabled locks when running ‘single threaded’</li>
 <li>Fixed logging of errors during settings file checks</li>
+<li>Improved performance when running without csv</li>
 <li>Logging class <code>Log</code> is now called <code>Logger</code></li>
 <li>Specifying destination (‘dst’) is now optional for <code>setup_default_log</code></li>
 </ul>

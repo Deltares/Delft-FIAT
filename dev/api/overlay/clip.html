@@ -1016,7 +1016,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="fiat.gis.overlay.clip" class="level1">
 <h1>clip</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>gis.overlay.clip(band, srs, gtf, ft)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>gis.overlay.clip(ft, band, gtf, all_touched<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Clip a grid based on a feature (vector).</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
@@ -1031,15 +1031,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>band</td>
-<td><code>Grid</code></td>
-<td>An object that contains a connection the band within the dataset. For further information, see <a href="../../api/Grid.html">Grid</a>!</td>
+<td>ft</td>
+<td><code>ogr</code>.<code>Feature</code></td>
+<td>A Feature according to the <a href="https://gdal.org/api/python/osgeo.ogr.html">ogr module</a> of osgeo. Can be optained by indexing a <a href="../../api/GeomSource.html">GeomSource</a>.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
-<td>srs</td>
-<td><code>osr</code>.<code>SpatialReference</code></td>
-<td>Spatial reference (Projection) of the Grid object (e.g.&nbsp;WGS84). Can be optained with the <a href="../../api/GridSource/get_srs.html">get_srs</a> method.</td>
+<td>band</td>
+<td><code>Grid</code></td>
+<td>An object that contains a connection the band within the dataset. For further information, see <a href="../../api/Grid.html">Grid</a>!</td>
 <td><em>required</em></td>
 </tr>
 <tr class="odd">
@@ -1049,10 +1049,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><em>required</em></td>
 </tr>
 <tr class="even">
-<td>ft</td>
-<td><code>ogr</code>.<code>Feature</code></td>
-<td>A Feature according to the <a href="https://gdal.org/api/python/osgeo.ogr.html">ogr module</a> of osgeo. Can be optained by indexing a <a href="../../api/GeomSource.html">GeomSource</a>.</td>
-<td><em>required</em></td>
+<td>all_touched</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether or not to include cells that are ‘touched’ without covering the center of the cell.</td>
+<td><code>False</code></td>
 </tr>
 </tbody>
 </table>
