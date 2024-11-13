@@ -201,7 +201,7 @@ quartodoc:
         - spawn_logger
         - setup_default_log
         - setup_mp_log
-        - name: Log
+        - name: Logger
           children: separate
         - name: Receiver
           children: separate

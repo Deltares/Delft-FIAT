@@ -47,23 +47,32 @@ Therefore it is available under the MIT license.\n"""
 
 # Run FIAT function
 def run(args):
-    """_summary_."""
+    """Run the model from cli."""
+    # Setup the logger, first without a file
+    logger = setup_default_log(
+        "fiat",
+        level=2,
+    )
+    sys.stdout.write(fiat_start_str)
+
     # Setup the config reader
     cfg = file_path_check(args.config)
-    cfg = ConfigReader(cfg)
+    cfg = run_log(ConfigReader, logger, cfg)
 
+    # Set the threads is specified
     if args.threads is not None:
         assert int(args.threads)
         cfg.set("global.threads", int(args.threads))
 
-    # Setup the logger
+    # Complete the setup of the logger
     loglevel = check_loglevel(cfg.get("global.loglevel", "INFO"))
-    logger = setup_default_log(
-        "fiat",
-        level=loglevel + args.quiet - args.verbose,
+    logger.add_file_handler(
         dst=cfg.get("output.path"),
+        filename="fiat",
     )
-    sys.stdout.write(fiat_start_str)
+    logger.level = loglevel
+
+    # Add the model version
     logger.info(f"Delft-Fiat version: {__version__}")
 
     # Kickstart the model

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Callable
 
 from fiat.cfg import ConfigReader
-from fiat.log import Log
+from fiat.log import Logger
 
 
 def file_path_check(path):
@@ -23,11 +23,12 @@ def file_path_check(path):
 
 def run_log(
     func: Callable,
-    logger: Log,
+    logger: Logger,
+    *args,
 ):
     """Cli friendly run for/ with logging exceptions."""
     try:
-        func()
+        out = func(*args)
     except BaseException:
         t, v, tb = sys.exc_info()
         msg = ",".join([str(item) for item in v.args])
@@ -36,13 +37,15 @@ def run_log(
         logger.error(msg)
         # Exit with code 1
         sys.exit(1)
+    else:
+        return out
 
 
 def run_profiler(
     func: Callable,
     profile: str,
     cfg: ConfigReader,
-    logger: Log,
+    logger: Logger,
 ):
     """Run the profiler from cli."""
     logger.warning("Running profiler...")

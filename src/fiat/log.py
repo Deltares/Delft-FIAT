@@ -454,7 +454,7 @@ class LogManager:
     def _check_children(
         self,
         obj: DummyLog,
-        logger: "Log",
+        logger: "Logger",
     ):
         """Ensure the hierarchy is corrected downwards."""
         name = logger.name
@@ -467,7 +467,7 @@ class LogManager:
                     logger.parent = child.parent
                 child.parent = logger
 
-    def _check_parents(self, logger: "Log"):
+    def _check_parents(self, logger: "Logger"):
         """Ensure the hierarchy is corrected upwards."""
         name = logger.name
         parent = None
@@ -485,7 +485,7 @@ class LogManager:
                 self.logger_tree[substr] = DummyLog(logger)
             else:
                 obj = self.logger_tree[substr]
-                if isinstance(obj, Log):
+                if isinstance(obj, Logger):
                     parent = obj
                     break
                 else:
@@ -497,7 +497,7 @@ class LogManager:
 
     def resolve_logger_tree(
         self,
-        logger: "Log",
+        logger: "Logger",
     ):
         """_summary_."""
         obj = None
@@ -556,7 +556,7 @@ class Logmeta(type):
         obj = cls.__new__(cls, name, level)
         cls.__init__(obj, name, level)
 
-        res = Log.manager.resolve_logger_tree(obj)
+        res = Logger.manager.resolve_logger_tree(obj)
         if res is not None:
             warn(
                 f"{name} is already in use -> returning currently known object",
@@ -681,7 +681,7 @@ class Receiver:
         t.start()
 
 
-class Log(metaclass=Logmeta):
+class Logger(metaclass=Logmeta):
     """Generate a logger.
 
     The list of available logging levels:\n
@@ -738,7 +738,7 @@ class Log(metaclass=Logmeta):
 
     def __repr__(self):
         _lvl_str = str(LogLevels(self.level)).split(".")[1]
-        return f"<Log {self.name} level={_lvl_str}>"
+        return f"<Logger {self.name} level={_lvl_str}>"
 
     def __str__(self):
         _mem_loc = f"{id(self):#018x}".upper()
@@ -758,7 +758,7 @@ class Log(metaclass=Logmeta):
             else:
                 obj = obj.parent
 
-    def handle_log(log_m):
+    def _handle_log(log_m):
         """Wrap logging messages."""
 
         def handle(self, *args, **kwargs):
@@ -808,7 +808,7 @@ class Log(metaclass=Logmeta):
 
     @property
     def level(self):
-        """_summary_."""
+        """Return the current logging level."""
         return self._level
 
     @level.setter
@@ -817,32 +817,34 @@ class Log(metaclass=Logmeta):
         val: int,
     ):
         self._level = check_loglevel(val)
+        for h in self._handlers:
+            h.level = val
 
     def _direct(self, msg):
         """_summary_."""
         raise NotImplementedError(NOT_IMPLEMENTED)
 
-    @handle_log
+    @_handle_log
     def debug(self, msg: str):
         """Create a debug message."""
         return 1, msg
 
-    @handle_log
+    @_handle_log
     def info(self, msg: str):
         """Create an info message."""
         return 2, msg
 
-    @handle_log
+    @_handle_log
     def warning(self, msg: str):
         """Create a warning message."""
         return 3, msg
 
-    @handle_log
+    @_handle_log
     def error(self, msg: str):
         """Create an error message."""
         return 4, msg
 
-    @handle_log
+    @_handle_log
     def dead(self, msg: str):
         """Create a kernel-deceased message."""
         return 5, msg
@@ -850,7 +852,7 @@ class Log(metaclass=Logmeta):
 
 def spawn_logger(
     name: str,
-) -> Log:
+) -> Logger:
     """Spawn a logger within a hierarchy.
 
     Parameters
@@ -860,17 +862,17 @@ def spawn_logger(
 
     Returns
     -------
-    Log
-        A Log object (for logging).
+    Logger
+        A Logger object (for logging).
     """
-    return Log(name)
+    return Logger(name)
 
 
 def setup_default_log(
     name: str,
     level: int,
-    dst: str,
-) -> Log:
+    dst: str | None = None,
+) -> Logger:
     """Set up the base logger of a hierarchy.
 
     It's advisable to make this a single string that is not concatenated by period.
@@ -882,25 +884,26 @@ def setup_default_log(
         Identifier of the logger.
     level : int
         Logging level.
-    dst : str
+    dst : str | None, optional
         The path to where the logging file will be located.
 
     Returns
     -------
-    Log
-        A Log object (for logging, no really..)
+    Logger
+        A Logger object (for logging, no really..)
     """
     if len(name.split(".")) > 1:
-        raise ValueError()
+        raise ValueError("Only root names (without a period) are allowed.")
 
-    obj = Log(name, level=level)
+    obj = Logger(name, level=level)
 
     obj.add_handler(level=level)
-    obj.add_file_handler(
-        dst,
-        level=level,
-        filename=name,
-    )
+    if dst is not None:
+        obj.add_file_handler(
+            dst,
+            level=level,
+            filename=name,
+        )
 
     return obj
 
