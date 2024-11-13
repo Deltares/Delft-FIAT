@@ -138,13 +138,6 @@ def args_parser():
         help="Path to the settings file",
     )
     run_parser.add_argument(
-        "-p",
-        "--profile",
-        help=argparse.SUPPRESS,
-        action="store_const",
-        const="profile",
-    )
-    run_parser.add_argument(
         "-t",
         "--threads",
         metavar="<THREADS>",
@@ -166,6 +159,13 @@ def args_parser():
         help="Increase output verbosity",
         action="count",
         default=0,
+    )
+    run_parser.add_argument(
+        "-p",
+        "--profile",
+        help="Run profiler",
+        action="store_const",
+        const="profile",
     )
     run_parser.set_defaults(func=run)
     return parser
