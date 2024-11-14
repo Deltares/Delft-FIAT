@@ -1,90 +1,11 @@
 """Combined vector and raster methods for FIAT."""
 
-from numpy import any, arange, array, ndarray, ones, stack, tile, zeros_like
+from numpy import any, arange, array, ndarray, ones, stack, tile
 from osgeo import ogr
 
+from fiat.gis.rasterize import rasterize
 from fiat.gis.util import pixel2world, world2pixel
 from fiat.io import Grid
-
-
-def intersect_cell(
-    geom: ogr.Geometry,
-    x: float | int,
-    y: float | int,
-    dx: float | int,
-    dy: float | int,
-):
-    """_summary_.
-
-    _extended_summary_
-
-    Parameters
-    ----------
-    geom : ogr.Geometry
-        _description_
-    x : float | int
-        _description_
-    y : float | int
-        _description_
-    dx : float | int
-        _description_
-    dy : float | int
-        _description_
-    """
-    x = float(x)
-    y = float(y)
-    cell = ogr.Geometry(ogr.wkbPolygon)
-    ring = ogr.Geometry(ogr.wkbLinearRing)
-    ring.AddPoint(x, y)
-    ring.AddPoint(x + dx, y)
-    ring.AddPoint(x + dx, y + dy)
-    ring.AddPoint(x, y + dy)
-    ring.AddPoint(x, y)
-    cell.AddGeometry(ring)
-    return geom.Intersects(cell)
-
-
-def rasterize(
-    x: ndarray,
-    y: ndarray,
-    geometry: list | tuple,
-) -> ndarray:
-    """Rasterize a polygon according to the even odd rule.
-
-    Depending on the input, it is either 'center only' or 'all touched'.
-
-    Parameters
-    ----------
-    x : ndarray
-        A 2D or 3D array of the x coordinates of the raster.
-    y : ndarray
-        A 2d or 3D array of the y coordinates of the raster.
-    geometry : list | tuple,
-        A list or tuple containing tuples of xy coordinates of the vertices.
-
-    Returns
-    -------
-    ndarray
-        The resulting binary rasterized polygon.
-    """
-    # Set up array and information
-    n = len(geometry)
-    touched = zeros_like(x, dtype=bool)
-    p1x, p1y = geometry[0]
-
-    for i in range(n + 1):
-        p2x, p2y = geometry[i % n]
-
-        # Check for a point being inside
-        mask = (y >= min(p1y, p2y)) & (y <= max(p1y, p2y)) & (x <= max(p1x, p2x))
-        if p1y != p2y:
-            xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-            mask &= (p1x == p2x) | (x <= xinters)
-        touched ^= mask
-
-        # Set for next point
-        p1x, p1y = p2x, p2y
-    return touched
 
 
 def vertices(
