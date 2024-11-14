@@ -11,6 +11,11 @@ repos:
       - id: check-json
       - id: debug-statements
       - id: mixed-line-ending
+  - repo: https://github.com/MarcoGorelli/cython-lint
+    rev: v0.16.6
+    hooks:
+    -   id: cython-lint
+    -   id: double-quote-cython-strings
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.6.9
     hooks:

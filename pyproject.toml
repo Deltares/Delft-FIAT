@@ -1,6 +1,6 @@
 ## Build system related stuff
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["cython", "numpy", "setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -9,6 +9,14 @@ include = ["fiat*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "fiat.version.__version__"}
+
+[tool.cibuildwheel]
+build = [
+    "cp310-*",
+    "cp311-*",
+    "cp312-*",
+    "cp313-*",
+]
 
 ## Project related stuff
 [project]
@@ -31,6 +39,7 @@ license = {text = "MIT"}
 
 requires-python = ">=3.10"
 dependencies = [
+"cython>=3.0.0",
 "gdal>=3.5",
 "numpy",
 "regex",
@@ -69,10 +78,12 @@ classifiers = [
 'Programming Language :: Python :: 3.10',
 'Programming Language :: Python :: 3.11',
 'Programming Language :: Python :: 3.12',
+'Programming Language :: Python :: 3.13',
 ]
 
 [project.optional-dependencies] # Optional
 all = [
+    "cibuildwheel",
     "setuptools>=61.0.0",
 ]
 build = [
@@ -80,7 +91,6 @@ build = [
     "delft_fiat[all,extra]",
 ]
 dev = [
-    "cython",
     "pre-commit",
     "ruff",
     "delft_fiat[all,docs,extra,test]",
@@ -100,7 +110,6 @@ extra = [
 test = [
 	"pytest>=2.7.3",
 	"pytest-cov",
-    "pytest-dependency",
     "pytest-mock",
 	"responses",
     "delft_fiat[all,extra]",
@@ -117,7 +126,6 @@ fiat = "fiat.cli.main:main"
 [tool.make_env]
 channels = ["conda-forge"]
 conda_only = ["libgdal-netcdf"]
-deps_not_in_conda = ["pytest-dependency"]
 
 ## Some stuff for pytest and coverage
 [tool.pytest.ini_options]
