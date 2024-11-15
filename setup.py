@@ -9,7 +9,7 @@ from setuptools import Extension, setup
 
 build_dir = "build"
 os.makedirs(build_dir, exist_ok=True)
-Options.annotate = False
+Options.annotate = True
 
 extensions = [
     Extension(

@@ -1,34 +1,11 @@
 """Combined vector and raster methods for FIAT."""
 
-from numpy import any, arange, array, ndarray, ones, stack, tile
+from numpy import arange, array, ndarray, ones, stack, tile
 from osgeo import ogr
 
-from fiat.gis.rasterize import rasterize
+from fiat.gis._rasterize import polygon_all_touched
 from fiat.gis.util import pixel2world, world2pixel
 from fiat.io import Grid
-
-
-def vertices(
-    mask,
-    xmin,
-    xmax,
-    ymin,
-    ymax,
-    geometry,
-):
-    """_summary_."""
-    px = geometry[:, 0]
-    py = geometry[:, 1]
-    mask |= any(
-        (
-            (px[:, None, None] > xmin)
-            & (px[:, None, None] < xmax)
-            & (py[:, None, None] > ymin)
-            & (py[:, None, None] < ymax)
-        ),
-        axis=0,
-    )
-    return mask
 
 
 def clip(
@@ -99,12 +76,9 @@ def clip(
         geometry = gself.GetGeometryRef(0).GetPoints()
     else:
         geometry = gself.GetPoints()
-    mask = rasterize(x, y, geometry)
+    geometry = array(geometry)
 
-    if all_touched:
-        mask = any(mask, axis=0)
-        # Get the vertex touched cells
-        vertices(mask, x[0], x[1], y[2], y[0], array(geometry))
+    mask = polygon_all_touched(x, y, geometry)
 
     return clip[mask == 1]
 
@@ -192,12 +166,9 @@ cells that are touched by the feature.
         geometry = gself.GetGeometryRef(0).GetPoints()
     else:
         geometry = gself.GetPoints()
-    mask = rasterize(x, y, geometry)
+    geometry = array(geometry)
 
-    if all_touched:
-        mask = any(mask, axis=0)
-        # Get the vertex touched cells
-        vertices(mask, x[0], x[1], y[2], y[0], array(geometry))
+    mask = polygon_all_touched(x, y, geometry)
 
     # Resample the higher resolution mask
     mask = mask.reshape((pxHeight, upscale, pxWidth, -1)).mean(3).mean(1)
