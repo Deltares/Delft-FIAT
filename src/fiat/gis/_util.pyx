@@ -6,9 +6,9 @@
 from libc.math cimport floor
 
 
-cdef world2pixel(
-    Py_ssize_t x,
-    Py_ssize_t y,
+cpdef world2pixel(
+    double x,
+    double y,
     tuple gtf,
 ):
     """_summary_."""
@@ -25,10 +25,10 @@ cdef world2pixel(
     return coorX, coorY
 
 
-
 cpdef pixel2world(
-    Py_ssize_t x,
-    Py_ssize_t y,
-    Py_ssize_t gtf,
+    int x,
+    int y,
+    tuple gtf,
 ):
     """_summary_."""
+    pass

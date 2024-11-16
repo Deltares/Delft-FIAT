@@ -91,11 +91,11 @@ cdef cnp.ndarray[cnp.int8_t, ndim=2] polygon_vertices(
 
     for i in range(n):
         px, py = geometry[i % n]
-        for j in range(h):
-            for k in range(w):
-                if ((px > xmin[j, k]) and (px < xmax[j, k])
-                    and (py > ymin[j, k]) and (py < ymax[j, k])):
-                    mask[j, k] = 1
+        for d1 in range(h):
+            for d2 in range(w):
+                if ((px > xmin[d1, d2]) and (px < xmax[d1, d2])
+                   and (py > ymin[d1, d2]) and (py < ymax[d1, d2])):
+                    mask[d1, d2] = 1
     return mask
 
 
@@ -145,19 +145,15 @@ cpdef cnp.ndarray[cnp.int8_t, ndim=2] polygon_all_touched(
 
 cpdef polyline(
     cnp.ndarray[cnp.float64_t, ndim=2] geometry,
-    Py_ssize_t ulX,
-    Py_ssize_t ulY,
-    Py_ssize_t lrX,
-    Py_ssize_t lrY,
+    Py_ssize_t h,
+    Py_ssize_t w,
     tuple gtf,
 ):
     """_summary_."""
     cdef cnp.ndarray[cnp.int8_t, ndim=2, cast=True] mask
-    cdef int h, w, d1, d2
-    h = lrY - ulY
-    w = lrX - ulX
     mask = np.zeros((h, w), dtype=np.bool_)
-    cdef Py_ssize_t n, p1x, p1y, p2x, p2y
+    cdef Py_ssize_t n
+    cdef double p1x, p1y, p2x, p2y
     cdef int c0, r0, c1, r1
     cdef int i
 
@@ -193,18 +189,20 @@ cpdef polyline(
             sc, sr = sr, sc
         d = (2 * dr) - dc
 
-        for d1 in range(h):
-            for d2 in range(w):
-                if steep:
-                    mask[c,r] = True
-                else:
-                    mask[r,c] = True
-                while d >= 0:
-                    r = r + sr
-                    d = d - (2 * dc)
-                c = c + sc
-                d = d + (2 * dr)
+        for j in range(dc):
+            if steep:
+                mask[c, r] = True
+            else:
+                mask[r, c] = True
+            while d >= 0:
+                r = r + sr
+                d = d - (2 * dc)
+            c = c + sc
+            d = d + (2 * dr)
 
         mask[r1, c1] = True
+
+        c0, r0 = world2pixel(p2x, p2y, gtf)
+        r, c = r0, c0
 
     return mask

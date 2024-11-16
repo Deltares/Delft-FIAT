@@ -1,1 +1,1 @@
-cdef world2pixel(Py_ssize_t x, Py_ssize_t y, tuple gtf)
+cpdef world2pixel(double x, double y, tuple gtf)
