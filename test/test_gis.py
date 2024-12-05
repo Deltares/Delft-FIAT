@@ -23,7 +23,6 @@ def test_clip_weighted(geom_data, grid_event_data):
         ft,
         grid_event_data[1],
         grid_event_data.get_geotransform(),
-        all_touched=True,
         upscale=10,
     )
     assert int(weights[0, 0] * 100) == 90
@@ -32,7 +31,6 @@ def test_clip_weighted(geom_data, grid_event_data):
         ft,
         grid_event_data[1],
         grid_event_data.get_geotransform(),
-        all_touched=True,
         upscale=100,
     )
     assert int(weights[0, 0] * 100) == 81

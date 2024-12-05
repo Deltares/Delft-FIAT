@@ -1,6 +1,8 @@
 """Combined vector and raster methods for FIAT."""
 
-from numpy import any, arange, array, ndarray, ones, stack, tile, zeros_like
+from itertools import product
+
+from numpy import ndarray, ones
 from osgeo import ogr
 
 from fiat.gis.util import pixel2world, world2pixel
@@ -44,77 +46,10 @@ def intersect_cell(
     return geom.Intersects(cell)
 
 
-def rasterize(
-    x: ndarray,
-    y: ndarray,
-    geometry: list | tuple,
-) -> ndarray:
-    """Rasterize a polygon according to the even odd rule.
-
-    Depending on the input, it is either 'center only' or 'all touched'.
-
-    Parameters
-    ----------
-    x : ndarray
-        A 2D or 3D array of the x coordinates of the raster.
-    y : ndarray
-        A 2d or 3D array of the y coordinates of the raster.
-    geometry : list | tuple,
-        A list or tuple containing tuples of xy coordinates of the vertices.
-
-    Returns
-    -------
-    ndarray
-        The resulting binary rasterized polygon.
-    """
-    # Set up array and information
-    n = len(geometry)
-    touched = zeros_like(x, dtype=bool)
-    p1x, p1y = geometry[0]
-
-    for i in range(n + 1):
-        p2x, p2y = geometry[i % n]
-
-        # Check for a point being inside
-        mask = (y >= min(p1y, p2y)) & (y <= max(p1y, p2y)) & (x <= max(p1x, p2x))
-        if p1y != p2y:
-            xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-            mask &= (p1x == p2x) | (x <= xinters)
-        touched ^= mask
-
-        # Set for next point
-        p1x, p1y = p2x, p2y
-    return touched
-
-
-def vertices(
-    mask,
-    xmin,
-    xmax,
-    ymin,
-    ymax,
-    geometry,
-):
-    """_summary_."""
-    px = geometry[:, 0]
-    py = geometry[:, 1]
-    mask |= any(
-        (
-            (px[:, None, None] > xmin)
-            & (px[:, None, None] < xmax)
-            & (py[:, None, None] > ymin)
-            & (py[:, None, None] < ymax)
-        ),
-        axis=0,
-    )
-    return mask
-
-
 def clip(
     ft: ogr.Feature,
     band: Grid,
     gtf: tuple,
-    all_touched: bool = False,
 ):
     """Clip a grid based on a feature (vector).
 
@@ -133,9 +68,6 @@ def clip(
         Can be optained via the [get_geotransform]\
 (/api/GridSource/get_geotransform.qmd) method.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
-    all_touched : bool, optional
-        Whether or not to include cells that are 'touched' without covering the
-        center of the cell.
 
     Returns
     -------
@@ -148,10 +80,6 @@ def clip(
     """
     # Get the geometry information form the feature
     geom = ft.GetGeometryRef()
-    gtype = geom.GetGeometryType()
-    gself = geom
-    if gtype in [3, 6]:
-        gself = geom.GetGeometryRef(0)
 
     # Extract information
     dx = gtf[1]
@@ -162,28 +90,13 @@ def clip(
     plX, plY = pixel2world(gtf, ulX, ulY)
     pxWidth = int(lrX - ulX) + 1
     pxHeight = int(lrY - ulY) + 1
-
-    # Create clip and mask
     clip = band[ulX, ulY, pxWidth, pxHeight]
-    mask = ones((pxHeight, pxWidth))
+    mask = ones(clip.shape)
 
-    x = tile(arange(plX + 0.5 * dx, plX + (dx * pxWidth), dx), (pxHeight, 1))
-    y = tile(arange(plY + 0.5 * dy, plY + (dy * pxHeight), dy), (pxWidth, 1)).T
-    # Create 3d arrays when all touched is true, to check for the corners
-    if all_touched:
-        x = stack([x - 0.5 * dx, x + 0.5 * dx, x + 0.5 * dx, x - 0.5 * dx])
-        y = stack([y - 0.5 * dy, y - 0.5 * dy, y + 0.5 * dy, y + 0.5 * dy])
-
-    if gtype > 3:
-        geometry = gself.GetGeometryRef(0).GetPoints()
-    else:
-        geometry = gself.GetPoints()
-    mask = rasterize(x, y, geometry)
-
-    if all_touched:
-        mask = any(mask, axis=0)
-        # Get the vertex touched cells
-        vertices(mask, x[0], x[1], y[2], y[0], array(geometry))
+    # Loop trough the cells
+    for i, j in product(range(pxWidth), range(pxHeight)):
+        if not intersect_cell(geom, plX + (dx * i), plY + (dy * j), dx, dy):
+            mask[j, i] = 0
 
     return clip[mask == 1]
 
@@ -192,7 +105,6 @@ def clip_weighted(
     ft: ogr.Feature,
     band: Grid,
     gtf: tuple,
-    all_touched: bool = False,
     upscale: int = 3,
 ):
     """Clip a grid based on a feature (vector), but weighted.
@@ -219,9 +131,6 @@ cells that are touched by the feature.
         Can be optained via the [get_geotransform]\
 (/api/GridSource/get_geotransform.qmd) method.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
-    all_touched : bool, optional
-        Whether or not to include cells that are 'touched' without covering the
-        center of the cell.
     upscale : int, optional
         How much the underlying grid will be upscaled.
         The higher the value, the higher the accuracy.
@@ -236,10 +145,6 @@ cells that are touched by the feature.
     - [clip](/api/overlay/clip.qmd)
     """
     geom = ft.GetGeometryRef()
-    gtype = geom.GetGeometryType()
-    gself = geom
-    if gtype in [3, 6]:
-        gself = geom.GetGeometryRef(0)
 
     # Extract information
     dx = gtf[1]
@@ -252,44 +157,19 @@ cells that are touched by the feature.
     dyn = dy / upscale
     pxWidth = int(lrX - ulX) + 1
     pxHeight = int(lrY - ulY) + 1
-
-    # Setup clip and mask arrays
     clip = band[ulX, ulY, pxWidth, pxHeight]
-    x = tile(
-        arange(plX + 0.5 * dxn, plX + (dxn * (pxWidth * upscale)), dxn),
-        (pxHeight * upscale, 1),
-    )
-    y = tile(
-        arange(plY + 0.5 * dyn, plY + (dyn * (pxHeight * upscale)), dyn),
-        (pxWidth * upscale, 1),
-    ).T
-    if all_touched:
-        x = stack([x - 0.5 * dxn, x + 0.5 * dxn, x + 0.5 * dxn, x - 0.5 * dxn])
-        y = stack([y - 0.5 * dyn, y - 0.5 * dyn, y + 0.5 * dyn, y + 0.5 * dyn])
+    mask = ones((pxHeight * upscale, pxWidth * upscale))
 
-    if gtype > 3:
-        geometry = gself.GetGeometryRef(0).GetPoints()
-    else:
-        geometry = gself.GetPoints()
-    mask = rasterize(x, y, geometry)
-
-    if all_touched:
-        mask = any(mask, axis=0)
-        # Get the vertex touched cells
-        vertices(mask, x[0], x[1], y[2], y[0], array(geometry))
+    # Loop trough the cells
+    for i, j in product(range(pxWidth * upscale), range(pxHeight * upscale)):
+        if not intersect_cell(geom, plX + (dxn * i), plY + (dyn * j), dxn, dyn):
+            mask[j, i] = 0
 
     # Resample the higher resolution mask
     mask = mask.reshape((pxHeight, upscale, pxWidth, -1)).mean(3).mean(1)
     clip = clip[mask != 0]
 
     return clip, mask
-
-
-def mask(
-    driver: str,
-):
-    """_summary_."""
-    pass
 
 
 def pin(
