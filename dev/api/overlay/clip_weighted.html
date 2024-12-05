@@ -1017,7 +1017,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="fiat.gis.overlay.clip_weighted" class="level1">
 <h1>clip_weighted</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>gis.overlay.clip_weighted(ft, band, gtf, all_touched<span class="op">=</span><span class="va">False</span>, upscale<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>gis.overlay.clip_weighted(ft, band, gtf, upscale<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Clip a grid based on a feature (vector), but weighted.</p>
 <p>This method caters to those who wish to have information about the percentages of cells that are touched by the feature.</p>
 <section id="warnings" class="level2 doc-section doc-section-warnings">
@@ -1055,12 +1055,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><em>required</em></td>
 </tr>
 <tr class="even">
-<td>all_touched</td>
-<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
-<td>Whether or not to include cells that are ‘touched’ without covering the center of the cell.</td>
-<td><code>False</code></td>
-</tr>
-<tr class="odd">
 <td>upscale</td>
 <td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
 <td>How much the underlying grid will be upscaled. The higher the value, the higher the accuracy.</td>
@@ -1082,7 +1076,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td></td>
-<td><a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array">array</a></td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a></td>
 <td>A 1D array containing the clipped values.</td>
 </tr>
 </tbody>
