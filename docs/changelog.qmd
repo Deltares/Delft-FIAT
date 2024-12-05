@@ -2,8 +2,8 @@
 title: "What's new?"
 ---
 
-## Unreleased
-These are the unreleased changes of Delft-FIAT.
+## v0.2.1 (2024-12-05)
+Patch release for improved performance
 
 ### Added
 - Profiler for developers
@@ -16,10 +16,6 @@ These are the unreleased changes of Delft-FIAT.
 - Improved performance when running without csv
 - Logging class `Log` is now called `Logger`
 - Specifying destination ('dst') is now optional for `setup_default_log`
-
-### Deprecated
-
-### Documentation
 
 ## v0.2.0 (2024-10-15)
 Added small features.
