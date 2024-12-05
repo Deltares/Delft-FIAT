@@ -8,8 +8,10 @@ These are the unreleased changes of Delft-FIAT.
 ### Added
 - Custom rasterization functions instead of relying on GDAL (which included dataset creation at runtime)
 - Profiler for developers
+- Sniffer for newline character in text files
 
 ### Changed
+- Complete OS independent reading of text files (linux csv's on windows and vice versa)
 - Disabled locks when running 'single threaded'
 - Fixed logging of errors during settings file checks
 - Improved performance when running without csv
