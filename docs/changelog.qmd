@@ -2,8 +2,19 @@
 title: "What's new?"
 ---
 
+# Unreleased
+These are the unreleased changes.
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Documentation
+
 ## v0.2.1 (2024-12-05)
-Patch release for improved performance
+Patch release for improved performance.
 
 ### Added
 - Profiler for developers
