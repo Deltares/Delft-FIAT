@@ -6,7 +6,6 @@ title: "What's new?"
 These are the unreleased changes of Delft-FIAT.
 
 ### Added
-- Custom rasterization functions instead of relying on GDAL (which included dataset creation at runtime)
 - Profiler for developers
 - Sniffer for newline character in text files
 
