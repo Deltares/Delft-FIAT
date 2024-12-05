@@ -52,14 +52,12 @@ _fields_type_map = {
 }
 
 
-def regex_pattern(
-    delimiter: str,
-    multi: bool = False,
-):
+def regex_pattern(delimiter: str, multi: bool = False, nchar: bytes = b"\n"):
     """_summary_."""
+    nchar = nchar.decode()
     if not multi:
         return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}'.encode())
-    return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}|{NEWLINE_CHAR}'.encode())
+    return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}|{nchar}'.encode())
 
 
 # Calculation
@@ -73,6 +71,7 @@ def _text_chunk_gen(
     h: object,
     pattern: re.Pattern,
     chunk_size: int = 100000,
+    nchar: bytes = b"\n",
 ):
     _res = b""
     while True:
@@ -82,12 +81,12 @@ def _text_chunk_gen(
         t = _res + t
         try:
             t, _res = t.rsplit(
-                NEWLINE_CHAR.encode(),
+                nchar,
                 1,
             )
         except Exception:
             _res = b""
-        _nlines = t.count(NEWLINE_CHAR.encode())
+        _nlines = t.count(nchar)
         sd = pattern.split(t)
         del t
         yield _nlines, sd

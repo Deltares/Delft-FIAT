@@ -802,7 +802,7 @@ class Logger(metaclass=Logmeta):
         level : int, optional
             Logging level.
         filename : str, optional
-            The name of the file, also the identifier for the steam handler.
+            The name of the file, also the identifier for the stream handler.
         """
         self._handlers.append(FileHandler(dst=dst, level=level, name=filename))
 
