@@ -30,15 +30,15 @@ def create_dbase_stucture():
 
 def create_exposure_dbase():
     """_summary_."""
-    with open(Path(p, "exposure", "spatial.csv"), "w") as f:
-        f.write("object_id,extract_method,ground_flht,ground_elevtn,")
-        f.write("fn_damage_structure,max_damage_structure\n")
+    with open(Path(p, "exposure", "spatial.csv"), "wb") as f:
+        f.write(b"object_id,extract_method,ground_flht,ground_elevtn,")
+        f.write(b"fn_damage_structure,max_damage_structure\n")
         for n in range(5):
             if (n + 1) % 2 != 0:
                 dmc = "struct_1"
             else:
                 dmc = "struct_2"
-            f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\n")
+            f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\n".encode())
 
 
 def create_exposure_dbase_missing():
@@ -67,6 +67,19 @@ def create_exposure_dbase_partial():
             f.write(f"{n+1},area,0,0,{dmc},{dmc},{(n+1)*1000}\n")
 
 
+def create_exposure_dbase_win():
+    """_summary_."""
+    with open(Path(p, "exposure", "spatial_win.csv"), "wb") as f:
+        f.write(b"object_id,extract_method,ground_flht,ground_elevtn,")
+        f.write(b"fn_damage_structure,max_damage_structure\r\n")
+        for n in range(5):
+            if (n + 1) % 2 != 0:
+                dmc = "struct_1"
+            else:
+                dmc = "struct_2"
+            f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\r\n".encode())
+
+
 def create_exposure_geoms():
     """_summary_."""
     geoms = (
@@ -80,8 +93,8 @@ def create_exposure_geoms():
     )
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
-    dr = ogr.GetDriverByName("GPKG")
-    src = dr.CreateDataSource(str(Path(p, "exposure", "spatial.gpkg")))
+    dr = ogr.GetDriverByName("GeoJSON")
+    src = dr.CreateDataSource(str(Path(p, "exposure", "spatial.geojson")))
     layer = src.CreateLayer(
         "spatial",
         srs,
@@ -127,8 +140,8 @@ def create_exposure_geoms_2():
     )
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
-    dr = ogr.GetDriverByName("GPKG")
-    src = dr.CreateDataSource(str(Path(p, "exposure", "spatial2.gpkg")))
+    dr = ogr.GetDriverByName("GeoJSON")
+    src = dr.CreateDataSource(str(Path(p, "exposure", "spatial2.geojson")))
     layer = src.CreateLayer(
         "spatial",
         srs,
@@ -175,8 +188,8 @@ def create_exposure_geoms_3():
     )
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
-    dr = ogr.GetDriverByName("GPKG")
-    src = dr.CreateDataSource(str(Path(p, "exposure", "spatial_missing.gpkg")))
+    dr = ogr.GetDriverByName("GeoJSON")
+    src = dr.CreateDataSource(str(Path(p, "exposure", "spatial_missing.geojson")))
     layer = src.CreateLayer(
         "spatial",
         srs,
@@ -409,7 +422,7 @@ def create_settings_geom():
                 "file": "exposure/spatial.csv",
             },
             "geom": {
-                "file1": "exposure/spatial.gpkg",
+                "file1": "exposure/spatial.geojson",
                 "crs": "EPSG:4326",
             },
         },
@@ -427,7 +440,7 @@ def create_settings_geom():
     doc2g = copy.deepcopy(doc)
     doc2g["output"]["path"] = "output/geom_event_2g"
     doc2g["output"]["geom"]["name2"] = "spatial2.gpkg"
-    doc2g["exposure"]["geom"]["file2"] = "exposure/spatial2.gpkg"
+    doc2g["exposure"]["geom"]["file2"] = "exposure/spatial2.geojson"
 
     with open(Path(p, "geom_event_2g.toml"), "wb") as f:
         tomli_w.dump(doc2g, f)
@@ -436,7 +449,7 @@ def create_settings_geom():
     doc_m = copy.deepcopy(doc)
     doc_m["output"]["path"] = "output/geom_event_missing"
     doc_m["output"]["geom"]["name1"] = "spatial_missing.gpkg"
-    doc_m["exposure"]["geom"]["file1"] = "exposure/spatial_missing.gpkg"
+    doc_m["exposure"]["geom"]["file1"] = "exposure/spatial_missing.geojson"
 
     with open(Path(p, "geom_event_missing.toml"), "wb") as f:
         tomli_w.dump(doc_m, f)
@@ -456,7 +469,7 @@ def create_settings_geom():
     doc_r2g = copy.deepcopy(doc_r)
     doc_r2g["output"]["path"] = "output/geom_risk_2g"
     doc_r2g["output"]["geom"]["name2"] = "spatial2.gpkg"
-    doc_r2g["exposure"]["geom"]["file2"] = "exposure/spatial2.gpkg"
+    doc_r2g["exposure"]["geom"]["file2"] = "exposure/spatial2.geojson"
 
     with open(Path(p, "geom_risk_2g.toml"), "wb") as f:
         tomli_w.dump(doc_r2g, f)
@@ -535,12 +548,33 @@ def create_vulnerability():
     dc1 = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
     dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
 
-    with open(Path(p, "vulnerability", "vulnerability_curves.csv"), mode="w") as f:
-        f.write("#UNIT=meter\n")
-        f.write("#method,mean,max\n")
-        f.write("water depth,struct_1,struct_2\n")
+    with open(Path(p, "vulnerability", "vulnerability_curves.csv"), mode="wb") as f:
+        f.write(b"#UNIT=meter\n")
+        f.write(b"#method,mean,max\n")
+        f.write(b"water depth,struct_1,struct_2\n")
         for idx, item in enumerate(wd):
-            f.write(f"{item},{dc1[idx]},{dc2[idx]}\n")
+            f.write(f"{item},{dc1[idx]},{dc2[idx]}\n".encode())
+
+
+def create_vulnerability_win():
+    """_summary_."""
+
+    def log_base(b, x):
+        r = math.log(x) / math.log(b)
+        if r < 0:
+            return 0
+        return r
+
+    wd = arange(0, 5.25, 0.25)
+    dc1 = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
+    dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
+
+    with open(Path(p, "vulnerability", "vulnerability_curves_win.csv"), mode="wb") as f:
+        f.write(b"#UNIT=meter\r\n")
+        f.write(b"#method,mean,max\r\n")
+        f.write(b"water depth,struct_1,struct_2\r\n")
+        for idx, item in enumerate(wd):
+            f.write(f"{item},{dc1[idx]},{dc2[idx]}\r\n".encode())
 
 
 if __name__ == "__main__":
@@ -548,6 +582,7 @@ if __name__ == "__main__":
     create_exposure_dbase()
     create_exposure_dbase_missing()
     create_exposure_dbase_partial()
+    create_exposure_dbase_win()
     create_exposure_geoms()
     create_exposure_geoms_2()
     create_exposure_geoms_3()
@@ -558,4 +593,5 @@ if __name__ == "__main__":
     create_settings_geom()
     create_settings_grid()
     create_vulnerability()
+    create_vulnerability_win()
     gc.collect()
