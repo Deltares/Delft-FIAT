@@ -259,11 +259,13 @@ ul.task-list li input[type="checkbox"] {
 <ul>
 <li>Custom rasterization functions instead of relying on GDAL (which included dataset creation at runtime)</li>
 <li>Profiler for developers</li>
+<li>Sniffer for newline character in text files</li>
 </ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
 <ul>
+<li>Complete OS independent reading of text files (linux csv’s on windows and vice versa)</li>
 <li>Disabled locks when running ‘single threaded’</li>
 <li>Fixed logging of errors during settings file checks</li>
 <li>Improved performance when running without csv</li>
