@@ -125,6 +125,7 @@ No data found in exposure database",
                         ft,
                         band,
                         haz.get_geotransform(),
+                        all_touched=True,
                     )
                 else:
                     res = overlay.pin(
