@@ -62,7 +62,7 @@ def worker(
     out_text_writer = DummyWriter()
     if exp_data is not None:
         man_columns_idxs = [exp_data.columns.index(item) for item in man_columns]
-        pattern = regex_pattern(exp_data.delimiter)
+        pattern = regex_pattern(exp_data.delimiter, nchar=exp_data.nchar)
         out_text_writer = BufferedTextWriter(
             Path(cfg.get("output.path"), cfg.get("output.csv.name")),
             mode="ab",

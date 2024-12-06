@@ -2,23 +2,34 @@
 title: "What's new?"
 ---
 
-## Unreleased
-These are the unreleased changes of Delft-FIAT.
+# Unreleased
+These are the unreleased changes.
 
 ### Added
 - Custom rasterization functions instead of relying on GDAL (which included dataset creation at runtime)
-- Profiler for developers
+- Cython performance boost
 
 ### Changed
+- Partial ported code to Cython
+
+### Deprecated
+
+### Documentation
+
+## v0.2.1 (2024-12-05)
+Patch release for improved performance.
+
+### Added
+- Profiler for developers
+- Sniffer for newline character in text files
+
+### Changed
+- Complete OS independent reading of text files (linux csv's on windows and vice versa)
 - Disabled locks when running 'single threaded'
 - Fixed logging of errors during settings file checks
 - Improved performance when running without csv
 - Logging class `Log` is now called `Logger`
 - Specifying destination ('dst') is now optional for `setup_default_log`
-
-### Deprecated
-
-### Documentation
 
 ## v0.2.0 (2024-10-15)
 Added small features.

@@ -61,7 +61,7 @@ def grid_risk(configs):
 
 @pytest.fixture
 def geom_data():
-    d = open_geom(Path(_PATH, ".testdata", "exposure", "spatial.gpkg"))
+    d = open_geom(Path(_PATH, ".testdata", "exposure", "spatial.geojson"))
     return d
 
 
@@ -98,6 +98,14 @@ def grid_risk_data():
 @pytest.fixture
 def vul_data():
     d = open_csv(Path(_PATH, ".testdata", "vulnerability", "vulnerability_curves.csv"))
+    return d
+
+
+@pytest.fixture
+def vul_data_win():
+    d = open_csv(
+        Path(_PATH, ".testdata", "vulnerability", "vulnerability_curves_win.csv"),
+    )
     return d
 
 

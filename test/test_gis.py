@@ -5,7 +5,7 @@ from fiat.gis.crs import get_srs_repr
 
 
 def test_clip(geom_data, grid_event_data):
-    ft = geom_data[4]
+    ft = geom_data[3]
     hazard = overlay.clip(
         ft,
         grid_event_data[1],
@@ -19,12 +19,11 @@ def test_clip(geom_data, grid_event_data):
 
 
 def test_clip_weighted(geom_data, grid_event_data):
-    ft = geom_data[4]
+    ft = geom_data[3]
     _, weights = overlay.clip_weighted(
         ft,
         grid_event_data[1],
         grid_event_data.get_geotransform(),
-        all_touched=True,
         upscale=10,
     )
     assert int(weights[0, 0] * 100) == 90
@@ -33,7 +32,6 @@ def test_clip_weighted(geom_data, grid_event_data):
         ft,
         grid_event_data[1],
         grid_event_data.get_geotransform(),
-        all_touched=True,
         upscale=100,
     )
     assert int(weights[0, 0] * 100) == 81

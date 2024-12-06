@@ -44,12 +44,21 @@ def test_gridsource(grid_event_data):
     assert rebuild.shape == (10, 10)
 
 
-def test_tabel(vul_data):
+def test_tabel(vul_data, vul_data_win):
     tb = copy.deepcopy(vul_data)
+    assert tb.nchar == b"\n"
     assert len(tb.columns) == 3
     assert len(tb.index) == 21
     assert int(tb[9, "struct_2"] * 100) == 74
     max_idx = max(tb.index)
+    assert max_idx == 20
+
+    # Assert the same for the windows variant
+    assert vul_data_win.nchar == b"\r\n"
+    assert len(vul_data_win.columns) == 3
+    assert len(vul_data_win.index) == 21
+    assert int(vul_data_win[9, "struct_2"] * 100) == 74
+    max_idx = max(vul_data_win.index)
     assert max_idx == 20
 
     # interpolate to refine the scale
