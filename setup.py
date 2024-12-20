@@ -11,6 +11,14 @@ build_dir = "build"
 os.makedirs(build_dir, exist_ok=True)
 Options.annotate = True
 
+directives_fiat = {
+    "boundscheck": False,
+    "cdivision": True,
+    "language_level": "3",
+    "nonecheck": False,
+    "wraparound": False,
+}
+
 extensions = [
     Extension(
         name="*",
@@ -26,8 +34,8 @@ setup(
         annotate=False,
         build_dir=build_dir,
         force=True,
-        compiler_directives={"language_level": "3", "profile": False},
-        quiet=True,
+        compiler_directives=directives_fiat,
+        quiet=False,
     ),
     zip_safe=False,
 )

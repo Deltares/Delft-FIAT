@@ -1,7 +1,3 @@
-# cython: cdivision=True
-# cython: boundscheck=False
-# cython: nonecheck=False
-# cython: wraparound=False
 import numpy as np
 cimport numpy as cnp
 
@@ -165,7 +161,7 @@ cpdef polyline(
     cdef int r = r0
     cdef int c = c0
     cdef int sr, sc, d
-    cdef Py_ssize_t dc, dr
+    cdef int dc, dr
 
     for i in range(1, n):
         p2x, p2y = geometry[i % n]

@@ -135,10 +135,18 @@ testpaths = [
 
 [tool.coverage.run]
 branch = true
-source = ["./src"]
-omit = ["*/gui/*"]
+source = ["./src/fiat"]
+plugins = [ "Cython.Coverage" ]
+
+[tool.coverage.cython]
+annotate = true
 
 [tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
 # Regexes for lines to exclude from consideration
 exclude_also = [
     # Don't complain about missing debug-only code:
