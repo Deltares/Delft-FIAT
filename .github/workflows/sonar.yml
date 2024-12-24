@@ -16,7 +16,7 @@ on:
 jobs:
   sonarcloud:
     env:
-      PYVERSION: "3.11"
+      PYVERSION: "3.13"
 
     name: SonarCloud
     runs-on: ubuntu-latest
