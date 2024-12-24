@@ -1,7 +1,7 @@
 ## Global stuff
 [project]
 name = "delft_fiat"
-version = "0.1.0"
+version = "0.3.0"
 description = "Pixi for Delft-FIAT."
 authors = ["B.W. Dalmijn <brencodeert@outlook.com>"]
 channels = ["conda-forge"]
@@ -58,7 +58,7 @@ gdal = ">=3.5"
 numpy = "*"
 regex = "*"
 tomli = "*"
-pip = ">=24.0,<25"
+pip = ">=24.0"
 
 [feature.py310.dependencies]
 python = "3.10.*"
@@ -68,6 +68,9 @@ python = "3.11.*"
 
 [feature.py312.dependencies]
 python = "3.12.*"
+
+[feature.py313.dependencies]
+python = "3.13.*"
 
 [feature.all.dependencies]
 setuptools = ">=61.0.0"
@@ -85,7 +88,7 @@ jupyter = "*"
 jupyter-cache = "*"
 matplotlib = "*"
 pandas = "*"
-quarto = "1.3.450"
+quarto = "1.5.57"
 quartodoc = ">=0.7.6"
 
 [feature.extra.dependencies]
@@ -95,7 +98,6 @@ tomli-w = "*"
 [feature.test.dependencies]
 pytest = ">=2.7.3"
 pytest-cov = "*"
-pytest-dependency = "*"
 pytest-mock = "*"
 responses = "*"
 
@@ -103,10 +105,11 @@ responses = "*"
 ## Define the environments
 [environments]
 build = { features = ["py312", "all", "build", "extra"], solve-group = "py312"}
-default = { features = ["py312", "extra"], solve-group = "py312"}
-dev = { features = ["py312", "all", "dev", "docs", "extra", "test"], solve-group = "py312" }
-docs = { features = ["py312", "all", "docs", "extra"], solve-group = "py312"}
-min = { features = ["py312"], solve-group = "py312"}
+default = { features = ["py313", "extra"], solve-group = "py313"}
+dev = { features = ["py313", "all", "dev", "docs", "extra", "test"], solve-group = "py313" }
+docs = { features = ["py313", "all", "docs", "extra"], solve-group = "py313"}
+min = { features = ["py313"], solve-group = "py313"}
+test-py313 = {features = ["py313", "all", "extra", "test"], solve-group = "py313"}
 test-py312 = {features = ["py312", "all", "extra", "test"], solve-group = "py312"}
 test-py311 = {features = ["py311", "all", "extra", "test"], solve-group = "py311"}
 test-py310 = {features = ["py310", "all", "extra", "test"], solve-group = "py310"}
