@@ -11,7 +11,7 @@ platforms = ["linux-64", "win-64"]
 ## The different tasks of this project
 [tasks]
 # Installation
-install = { depends_on = ["install-fiat", "install-pre-commit"] }
+install = { depends-on = ["install-fiat", "install-pre-commit"] }
 install-fiat = "pip install --no-deps --editable ."
 install-pre-commit = "pre-commit install"
 
@@ -23,7 +23,7 @@ lint = { cmd = ["pre-commit", "run", "--all"] }
 docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 
 # Documentation generation
-docs = { depends_on = ["generate-api", "interlink-docs", "quarto-render"] }
+docs = { depends-on = ["generate-api", "interlink-docs", "quarto-render"] }
 docs-quick = { depends-on = ["interlink-docs", "quarto-quick"] }
 docs-slim = { depends-on = ["interlink-docs", "quarto-render"] }
 generate-api = { cmd = ["python", "docs/api.py", "docs/_quarto.yml"] }
@@ -40,7 +40,7 @@ test-cov = { cmd = ["pytest", "--verbose", "--cov=fiat", "--cov-report", "xml"] 
 test-cov-local = { cmd = ["pytest", "--verbose", "--cov", "--cov-report", "html",] }
 
 # Clean up (some of) the temporary files
-clean = { depends_on = [
+clean = { depends-on = [
   "clean-env-files",
   "clean-bin",
   "clean-dist",
