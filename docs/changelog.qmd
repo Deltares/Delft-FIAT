@@ -6,8 +6,11 @@ title: "What's new?"
 These are the unreleased changes.
 
 ### Added
+- Custom rasterization functions instead of relying on GDAL (which included dataset creation at runtime)
+- Cython performance boost
 
 ### Changed
+- Partial ported code to Cython
 
 ### Deprecated
 
