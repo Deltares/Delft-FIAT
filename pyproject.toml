@@ -29,7 +29,7 @@ description = "Delft Fast Impact Assessment Tool"
 readme = "README.md"
 license = {text = "MIT"}
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
 "gdal>=3.5",
 "numpy",
@@ -66,7 +66,6 @@ classifiers = [
 # Specify the Python versions you support here. In particular, ensure
 # that you indicate whether you support Python 2, Python 3 or both.
 'Programming Language :: Python :: 3',
-'Programming Language :: Python :: 3.10',
 'Programming Language :: Python :: 3.11',
 'Programming Language :: Python :: 3.12',
 'Programming Language :: Python :: 3.13',
@@ -95,7 +94,6 @@ docs = [
     "delft_fiat[all,extra]",
 ]
 extra = [
-    "libgdal-netcdf",
     "tomli-w",
 ]
 test = [
@@ -172,3 +170,79 @@ ignore = ["B904", "D105", "D211", "D213", "D301", "E712", "E741"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+## Pixi related stuff
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64", "win-64"]
+
+[tool.pixi.tasks]
+# Installation
+install = { depends_on = ["install-fiat", "install-pre-commit"] }
+install-fiat = "pip install --no-deps --editable ."
+install-pre-commit = "pre-commit install"
+
+# Repo related tasks
+generate-data = { cmd = ["python", ".testdata/create_test_data.py"] }
+lint = { cmd = ["pre-commit", "run", "--all"] }
+
+# Docker related stuff (expand in future)
+docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
+
+# Documentation generation
+docs = { depends_on = ["generate-api", "interlink-docs", "quarto-render"] }
+docs-quick = { depends-on = ["interlink-docs", "quarto-quick"] }
+docs-slim = { depends-on = ["interlink-docs", "quarto-render"] }
+generate-api = { cmd = ["python", "docs/api.py", "docs/_quarto.yml"] }
+interlink-docs = { cmd = ["python", "docs/inv.py", "interlinks", "docs/_quarto.yml"] }
+quarto = { cmd = ["quarto", "render"] }
+quarto-quick = { cmd = ["quarto", "render", "docs"] }
+quarto-render = { cmd = ["quarto", "render", "docs", "--execute"] }
+serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_site"] }
+
+# Testing
+test = { cmd = ["pytest"] }
+test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
+test-cov = { cmd = ["pytest", "--verbose", "--cov=fiat", "--cov-report", "xml"] }
+test-cov-local = { cmd = ["pytest", "--verbose", "--cov", "--cov-report", "html",] }
+
+# Clean up (some of) the temporary files
+clean = { depends_on = [
+  "clean-env-files",
+  "clean-bin",
+  "clean-dist",
+  "clean-docs",
+] }
+clean-env-files = { cmd = ["rm", "-f", "*environment.yml"] }
+clean-bin = { cmd = ["rm", "-rf", "bin"] }
+clean-dist = {cmd = ["rm", "-rf", "dist"] }
+clean-docs = { cmd = ["rm", "-rf", "docs/_site"] }
+
+# Specify conda only deps
+[tool.pixi.dependencies]
+gdal = ">=3.5"
+pip = "*"
+
+[tool.pixi.feature.extra.dependencies]
+libgdal-netcdf = "*"
+
+# Extra python environments
+[tool.pixi.feature.py311.dependencies]
+python = "3.11.*"
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+
+[tool.pixi.feature.py313.dependencies]
+python = "3.13.*"
+
+# Environments
+[tool.pixi.environments]
+build = { features = ["all", "build", "extra"], solve-group = "default"}
+default = { features = ["extra"], solve-group = "default"}
+dev = { features = ["all", "dev", "docs", "extra", "test"], solve-group = "default"}
+docs = { features = ["all", "docs", "extra"], solve-group = "default"}
+min = { features = [], solve-group = "default"}
+test-py313 = {features = ["py313", "all", "extra", "test"], solve-group = "py313"}
+test-py312 = {features = ["py312", "all", "extra", "test"], solve-group = "py312"}
+test-py311 = {features = ["py311", "all", "extra", "test"], solve-group = "py311"}
