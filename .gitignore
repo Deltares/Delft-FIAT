@@ -26,7 +26,6 @@ whl/
 
 # pixi environments
 .pixi
-pixi.lock
 *.egg-info
 
 # C extensions
