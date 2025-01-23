@@ -10,5 +10,7 @@ foreach package $packages {
     send -- "y\r"
     expect "Would you like to continue"
     send -- "y\r"
+    expect "View documentation using default browser"
+    send -- "n\r"
     expect eof
 }

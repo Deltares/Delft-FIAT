@@ -27,48 +27,29 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.12"]
         include:
           - os: ubuntu-latest
             label: linux-64
-            prefix: /home/runner/miniconda3/envs/fiat_test
 
-    name: ${{ matrix.os }} - py${{ matrix.python-version }}
+    name: ${{ matrix.os }} - build
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Generate env yaml
-        run: |
-          pip install tomli
-          python make_env.py build
-
-      - name: Load cache
-        id: cache
-        uses: actions/cache/restore@v4
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@v0.8.1
         with:
-          path: |
-            /home/runner/miniconda3
-            ~/pycache
-          # the below two settings mean we'll alway srestore the cache
-          # but the cache hit output can tell us if we have to update afterwards
-          key: build-${{ hashFiles('environment.yml')  }}
-          restore-keys: |
-            build
+          pixi-version: "v0.40.3"
+          environments: build-linux
+          locked: false
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
 
-      - name: Cache failed
-        if: steps.cache.outputs.cache-matched-key == ''
+      - name: Install fiat
         run: |
-          echo "Failed to restore any cache. exiting..."
-          exit 1
-
-      - name: Update environment
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          export PATH=/home/runner/miniconda3/bin:$PATH
-          mamba env update -n fiat_build -f environment.yml
+          pixi run -e build-linux install-fiat
 
       - name: Build FIAT
         run: |
@@ -77,12 +58,7 @@ jobs:
 
       - name: Create Testdata
         run: |
-          export PATH=/home/runner/miniconda3/bin:$PATH
-          source /home/runner/miniconda3/etc/profile.d/conda.sh
-          conda activate fiat_build
-          pip install tomli-w
-          python .testdata/create_test_data.py
-          conda deactivate
+          pixi run -e build-linux generate-data
 
       - name: Test Binary
         run: ./bin/Release/fiat run .testdata/geom_event.toml

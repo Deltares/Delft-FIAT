@@ -29,11 +29,9 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.13"]
         include:
           - os: ubuntu-latest
             label: linux-64
-            prefix: /home/runner/miniconda3/envs/fiat_test
 
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.os }}
@@ -42,67 +40,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Generate env yaml
-        run: |
-          pip install tomli
-          python make_env.py docs -p ${{ matrix.python-version }}.*
-
-      - name: Load cache
-        id: cache
-        uses: actions/cache/restore@v4
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@v0.8.1
         with:
-          path: |
-            /home/runner/miniconda3
-            ~/pycache
-          # the below two settings mean we'll alway srestore the cache
-          # but the cache hit output can tell us if we have to update afterwards
-          key: docs-${{ hashFiles('environment.yml')  }}
-          restore-keys: |
-            docs
-
-      - name: Cache failed
-        if: steps.cache.outputs.cache-matched-key == ''
-        run: |
-          echo "Failed to restore any cache. exiting..."
-          exit 1
-
-      - name: Update environment
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          export PATH=/home/runner/miniconda3/bin:$PATH
-          mamba env update -n fiat_docs -f environment.yml
-
-      - name: Setup quarto
-        run: |
-          sudo apt install -y curl
-          sudo apt install -y gdebi-core
-          mkdir tmp
-          curl -L https://github.com/quarto-dev/quarto-cli/releases/download/v1.5.57/quarto-1.5.57-linux-amd64.deb --output tmp/quarto.deb
-          chmod +x tmp/quarto.deb
-          sudo gdebi -n tmp/quarto.deb
+          pixi-version: "v0.40.3"
+          environments: docs
+          locked: false
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
 
       - name: Install quarto extensions
         run: |
           sudo apt install -y expect
+          pixi shell-hook --manifest-path pyproject.toml -s bash -e docs > pixi-hook.rc
+          source pixi-hook.rc
           cd docs
           chmod u+x _scripts/add_packages.sh
           _scripts/add_packages.sh
 
-      - name: Setup api & testdata
+      - name: Install fiat
         run: |
-          export PATH=/home/runner/miniconda3/bin:$PATH
-          mamba run -n fiat_docs python -m pip install tomli-w
-          mamba run -n fiat_docs python .testdata/create_test_data.py
-          mamba run -n fiat_docs python docs/_scripts/api.py docs/_quarto.yml
-          mamba run -n fiat_docs python docs/_scripts/inv.py interlinks docs/_quarto.yml
+          pixi run -e docs install-fiat
+
+      - name: Setup testdata
+        run: |
+          pixi run -e docs generate-data
 
       - name: Generate docs
         run: |
-          export PATH=/home/runner/miniconda3/bin:$PATH
-          source /home/runner/miniconda3/etc/profile.d/conda.sh
-          conda activate fiat_docs
-          quarto render docs/ --execute
-          echo "DOC_VERSION=$(mamba run -n fiat_docs python -c 'from fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
+          pixi run -e docs docs
+          echo "DOC_VERSION=$(pixi run -e docs python -c 'from fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
 
       - name: Upload to GitHub Pages
         if: ${{ github.event_name != 'pull_request' && !github.event.act }}
