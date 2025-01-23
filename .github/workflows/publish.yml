@@ -52,18 +52,26 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.13"]
         include:
           - os: ubuntu-latest
             label: linux-64
-            prefix: /home/runner/miniconda3/envs/fiat_min
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v3
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          pixi-version: "v0.40.3"
+          environments: default
+          locked: false
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
         with:
           name: releases
           path: dist
@@ -73,40 +81,9 @@ jobs:
           ls -ltrh
           ls -ltrh dist
 
-      - name: Generate env yaml
-        run: pip install tomli && python make_env.py min -p ${{ matrix.python-version }}.*
-
-      - name: load from cache
-        id: cache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            /home/runner/miniconda3
-            ~/pycache
-          # the below two settings mean we'll alway srestore the cache
-          # but the cache hit output can tell us if we have to update afterwards
-          key: min-${{ hashFiles('environment.yml')  }}
-          restore-keys: |
-            min
-
-      - name: Fail on no cache restore
-        if: steps.cache.outputs.cache-matched-key == ''
-        run: |
-          echo "Failed to restore any cache. exiting..."
-          exit 1
-
-      - name: Conda info
-        run: |
-          export PATH=/home/runner/miniconda3/bin:$PATH
-          conda info
-          conda list -n fiat_min
-
       - name: Verify the built dist/wheel is valid
         run: |
-          export PATH=/home/runner/miniconda3/bin:$PATH
-          source /home/runner/miniconda3/etc/profile.d/conda.sh
-          conda activate fiat_min
-          python -m pip install dist/delft_fiat*.whl
+          pixi run python -m pip install dist/delft_fiat*.whl
           fiat --help
 
   upload-to-test-pypi:
