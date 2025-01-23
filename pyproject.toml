@@ -34,7 +34,6 @@ dependencies = [
 "gdal>=3.5",
 "numpy",
 "regex",
-"tomli",
 ]
 
 keywords = ["FIAT", "Assessment", "Damage"]
@@ -175,10 +174,11 @@ convention = "numpy"
 [tool.pixi.project]
 channels = ["conda-forge"]
 platforms = ["linux-64", "win-64"]
+preview = ["pixi-build"]
 
 [tool.pixi.tasks]
 # Installation
-install = { depends_on = ["install-fiat", "install-pre-commit"] }
+install = { depends-on = ["install-fiat", "install-pre-commit"] }
 install-fiat = "pip install --no-deps --editable ."
 install-pre-commit = "pre-commit install"
 
@@ -190,14 +190,13 @@ lint = { cmd = ["pre-commit", "run", "--all"] }
 docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 
 # Documentation generation
-docs = { depends_on = ["generate-api", "interlink-docs", "quarto-render"] }
-docs-quick = { depends-on = ["interlink-docs", "quarto-quick"] }
+docs = { depends-on = ["generate-api", "interlink-docs", "quarto-execute"] }
 docs-slim = { depends-on = ["interlink-docs", "quarto-render"] }
-generate-api = { cmd = ["python", "docs/api.py", "docs/_quarto.yml"] }
-interlink-docs = { cmd = ["python", "docs/inv.py", "interlinks", "docs/_quarto.yml"] }
-quarto = { cmd = ["quarto", "render"] }
-quarto-quick = { cmd = ["quarto", "render", "docs"] }
-quarto-render = { cmd = ["quarto", "render", "docs", "--execute"] }
+docs-slim-execute = { depends-on = ["interlink-docs", "quarto-execute"] }
+generate-api = { cmd = ["python", "docs/_scripts/api.py", "docs/_quarto.yml"] }
+interlink-docs = { cmd = ["python", "docs/_scripts/inv.py", "interlinks", "docs/_quarto.yml"] }
+quarto-render = { cmd = ["quarto", "render", "docs"] }
+quarto-execute = { cmd = ["quarto", "render", "docs", "--execute"] }
 serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_site"] }
 
 # Testing
@@ -207,42 +206,56 @@ test-cov = { cmd = ["pytest", "--verbose", "--cov=fiat", "--cov-report", "xml"] 
 test-cov-local = { cmd = ["pytest", "--verbose", "--cov", "--cov-report", "html",] }
 
 # Clean up (some of) the temporary files
-clean = { depends_on = [
+clean = { depends-on = [
   "clean-env-files",
   "clean-bin",
+  "clean-build",
   "clean-dist",
   "clean-docs",
 ] }
-clean-env-files = { cmd = ["rm", "-f", "*environment.yml"] }
+clean-env-files = { cmd = ["rm", "-f", "environment.yml"] }
 clean-bin = { cmd = ["rm", "-rf", "bin"] }
+clean-build = {cmd = ["rm", "-rf", "build"] }
 clean-dist = {cmd = ["rm", "-rf", "dist"] }
 clean-docs = { cmd = ["rm", "-rf", "docs/_site"] }
 
 # Specify conda only deps
 [tool.pixi.dependencies]
-gdal = ">=3.5"
 pip = "*"
 
-[tool.pixi.feature.extra.dependencies]
+[tool.pixi.feature.build-win]
+dependencies = {python = "3.12.*"}
+pypi-dependencies = {gdal = {url = "https://github.com/cgohlke/geospatial-wheels/releases/download/v2025.1.20/GDAL-3.10.1-cp312-cp312-win_amd64.whl"}}
+platforms = ["win-64"]
+
+[tool.pixi.feature.build-linux]
+dependencies = {python = "3.12.*"}
+platforms = ["linux-64"]
+
+[tool.pixi.feature.docs.dependencies]
+quarto = "==1.5.57"
+
+[tool.pixi.feature.gdal.dependencies]
+gdal = ">=3.5"
 libgdal-netcdf = "*"
 
 # Extra python environments
-[tool.pixi.feature.py311.dependencies]
-python = "3.11.*"
+[tool.pixi.feature.py313.dependencies]
+python = "3.13.*"
 
 [tool.pixi.feature.py312.dependencies]
 python = "3.12.*"
 
-[tool.pixi.feature.py313.dependencies]
-python = "3.13.*"
+[tool.pixi.feature.py311.dependencies]
+python = "3.11.*"
 
 # Environments
 [tool.pixi.environments]
-build = { features = ["all", "build", "extra"], solve-group = "default"}
-default = { features = ["extra"], solve-group = "default"}
-dev = { features = ["all", "dev", "docs", "extra", "test"], solve-group = "default"}
-docs = { features = ["all", "docs", "extra"], solve-group = "default"}
-min = { features = [], solve-group = "default"}
-test-py313 = {features = ["py313", "all", "extra", "test"], solve-group = "py313"}
-test-py312 = {features = ["py312", "all", "extra", "test"], solve-group = "py312"}
-test-py311 = {features = ["py311", "all", "extra", "test"], solve-group = "py311"}
+build-win = { features = ["all", "build", "build-win", "extra"]}
+build-linux = { features = ["all", "build", "build-linux", "extra", "gdal"]}
+default = { features = ["gdal", "extra"], solve-group = "default"}
+dev = { features = ["all", "dev", "docs", "extra", "gdal", "test"], solve-group = "default"}
+docs = { features = ["all", "docs", "extra", "gdal"], solve-group = "default"}
+test-py313 = {features = ["py313", "all", "extra", "gdal", "test"]}
+test-py312 = {features = ["py312", "all", "extra", "gdal", "test"]}
+test-py311 = {features = ["py311", "all", "extra", "gdal", "test"]}

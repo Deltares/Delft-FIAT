@@ -44,11 +44,10 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           username: deltares
-          options: -v ${{ github.workspace }}/.testdata:/home/deltares/data
+          options: -v ${{ github.workspace }}/.testdata:/home/deltares/.testdata
           shell: bash
           image: fiat:latest
           run: |
-            pixi run python -m pip install tomli-w
-            pixi run python data/create_test_data.py
-            pixi run fiat run data/geom_event.toml
+            pixi run generate-data
+            pixi run fiat run .testdata/geom_event.toml
             exit

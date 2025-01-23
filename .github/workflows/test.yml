@@ -47,11 +47,15 @@ jobs:
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@v0.8.1
         with:
-          pixi-version: "v0.39.4"
+          pixi-version: "v0.40.3"
           environments: test-py${{ matrix.python-version }}
           locked: false
           cache: true
-          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+
+      - name: Install fiat
+        run: |
+          pixi run -e test-py${{ matrix.python-version }} install-fiat
 
       - name: Create testdata
         run: |
