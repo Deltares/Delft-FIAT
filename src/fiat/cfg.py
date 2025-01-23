@@ -1,9 +1,9 @@
 """The config interpreter of FIAT."""
 
+import tomllib
 from pathlib import Path
 from typing import Any
 
-import tomli
 from osgeo import gdal
 
 from fiat.check import (
@@ -47,7 +47,7 @@ class ConfigReader(dict):
 
         # Load the config as a simple flat dictionary
         f = open(file, "rb")
-        dict.__init__(self, flatten_dict(tomli.load(f), "", "."))
+        dict.__init__(self, flatten_dict(tomllib.load(f), "", "."))
         f.close()
 
         # Initial check for mandatory entries of the settings toml

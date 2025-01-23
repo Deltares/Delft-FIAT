@@ -5,7 +5,7 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 PROJECTPATH=$(dirname "$SCRIPTPATH")
 PIXIPATH=$PROJECTPATH/.pixi
 
-bin_var=conda
+bin_var=pixi
 shell_var=bash
 
 # Help message
@@ -80,7 +80,8 @@ if [ $bin_var == "conda" ]; then
   conda activate fiat_build
   export PROJ_LIB=$bin_dir/envs/fiat_build/share/proj
 elif [ $bin_var == "pixi" ]; then
-  eval $(pixi shell-hook --manifest-path $PROJECTPATH/pixi.toml -s $shell_var -e build)
+  pixi shell-hook --manifest-path $PROJECTPATH/pixi.toml -s $shell_var -e build-linux > $PROJECTPATH/.build/pixi-hook.rc
+  source $PROJECTPATH/.build/pixi-hook.rc
   export PROJ_LIB=$PIXIPATH/envs/build/share/proj
 fi
 

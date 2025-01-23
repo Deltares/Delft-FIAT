@@ -21,14 +21,17 @@ else:
     root_path = sys.prefix
 
 if is_conda and Version(gdal_version) >= Version("3.9.1"):
-    plugin = distribution("libgdal-netcdf")
+    try:
+        plugin = distribution("libgdal-netcdf")
 
-    # Look for all the plugins
-    plugin_dir = Path(root_path, plugin.files[0].parent)
-    all_plugins = glob.glob(Path(plugin_dir, "*").as_posix())
+        # Look for all the plugins
+        plugin_dir = Path(root_path, plugin.files[0].parent)
+        all_plugins = glob.glob(Path(plugin_dir, "*").as_posix())
 
-    # Append the data
-    datas += list(map(lambda path: (path, "./gdalplugins"), all_plugins))
+        # Append the data
+        datas += list(map(lambda path: (path, "./gdalplugins"), all_plugins))
+    except BaseException:
+        logger.warning("NetCDF plugin for gdal not found.")
 
 # Sort out the proj database
 src_proj = None

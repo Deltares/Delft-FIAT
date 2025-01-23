@@ -33,6 +33,7 @@ whl/
 
 # Pyinstaller files
 .build/fiat_build_time.py
+.build/pixi-hook.rc
 
 # Distribution / packaging
 .Python
