@@ -213,7 +213,7 @@ clean = { depends-on = [
   "clean-dist",
   "clean-docs",
 ] }
-clean-env-files = { cmd = ["rm", "-f", "*environment.yml"] }
+clean-env-files = { cmd = ["rm", "-f", "environment.yml"] }
 clean-bin = { cmd = ["rm", "-rf", "bin"] }
 clean-build = {cmd = ["rm", "-rf", "build"] }
 clean-dist = {cmd = ["rm", "-rf", "dist"] }
