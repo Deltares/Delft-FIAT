@@ -1,7 +1,7 @@
 FROM debian:bookworm-slim AS base
 ARG PIXIENV
 ARG UID=1000
-RUN apt-get update && apt-get install -y curl && apt-get install -y vim && apt-get install -y binutils
+RUN apt-get update && apt-get install -y curl && apt-get install -y vim && apt-get install -y binutils && apt-get install -y gcc
 
 RUN useradd deltares
 RUN usermod -u ${UID} deltares
@@ -10,7 +10,7 @@ WORKDIR /home/deltares
 
 RUN curl -fsSL https://pixi.sh/install.sh | bash
 ENV PATH=/home/deltares/.pixi/bin:$PATH
-COPY pixi.lock pyproject.toml README.md ./
+COPY pixi.lock pyproject.toml README.md setup.py ./
 COPY --chown=deltares:deltares src/fiat ./src/fiat
 
 RUN chmod u+x src/ \
