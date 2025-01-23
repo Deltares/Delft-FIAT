@@ -253,7 +253,7 @@ python = "3.11.*"
 [tool.pixi.environments]
 build-win = { features = ["all", "build", "build-win", "extra"]}
 build-linux = { features = ["all", "build", "build-linux", "extra", "gdal"]}
-default = { features = ["extra"], solve-group = "default"}
+default = { features = ["gdal", "extra"], solve-group = "default"}
 dev = { features = ["all", "dev", "docs", "extra", "gdal", "test"], solve-group = "default"}
 docs = { features = ["all", "docs", "extra", "gdal"], solve-group = "default"}
 min = { features = ["gdal"], solve-group = "default"}

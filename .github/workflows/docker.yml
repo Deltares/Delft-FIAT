@@ -48,7 +48,6 @@ jobs:
           shell: bash
           image: fiat:latest
           run: |
-            pixi run python -m pip install tomli-w
-            pixi run python data/create_test_data.py
+            pixi run generate-data
             pixi run fiat run data/geom_event.toml
             exit
