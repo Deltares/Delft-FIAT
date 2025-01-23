@@ -61,11 +61,6 @@ jobs:
         run: |
           pixi run -e test-py${{ matrix.python-version }} generate-data
 
-      - name: Build Cython extensions
-        run: |
-          export PATH=/home/runner/miniconda3/bin:$PATH
-          mamba run -n fiat_test python setup.py build_ext
-
       - name: Test
         run: |
           pixi run -e test-py${{ matrix.python-version }} test-cov
