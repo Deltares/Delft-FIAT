@@ -52,7 +52,8 @@ jobs:
       - name: Install quarto extensions
         run: |
           sudo apt install -y expect
-          pixi shell -e docs
+          pixi shell-hook --manifest-path $PROJECTPATH/pixi.toml -s $shell_var -e build-linux > .build/pixi-hook.rc
+          source .build/pixi-hook.rc
           cd docs
           chmod u+x _scripts/add_packages.sh
           _scripts/add_packages.sh

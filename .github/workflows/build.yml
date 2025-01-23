@@ -42,14 +42,14 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.8.1
         with:
           pixi-version: "v0.40.3"
-          environments: linux-build
+          environments: build-linux
           locked: false
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
 
       - name: Install fiat
         run: |
-          pixi run -e linux-build install-fiat
+          pixi run -e build-linux install-fiat
 
       - name: Build FIAT
         run: |
