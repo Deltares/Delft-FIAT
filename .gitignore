@@ -33,7 +33,6 @@ whl/
 
 # Pyinstaller files
 .build/fiat_build_time.py
-.build/pixi-hook.rc
 
 # Distribution / packaging
 .Python
@@ -104,6 +103,7 @@ ENV/
 env.bak/
 venv.bak/
 environment.yml
+pixi-hook.rc
 
 # Rope project settings
 .ropeproject
