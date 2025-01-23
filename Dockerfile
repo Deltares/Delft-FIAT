@@ -10,7 +10,7 @@ WORKDIR /home/deltares
 
 RUN curl -fsSL https://pixi.sh/install.sh | bash
 ENV PATH=/home/deltares/.pixi/bin:$PATH
-COPY pyproject.toml README.md ./
+COPY pixi.lock pyproject.toml README.md ./
 COPY --chown=deltares:deltares src/fiat ./src/fiat
 
 RUN chmod u+x src/ \
