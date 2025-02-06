@@ -196,7 +196,7 @@ preview = ["pixi-build"]
 [tool.pixi.tasks]
 # Installation
 install = { depends-on = ["install-fiat", "install-pre-commit"] }
-install-fiat = "pip install --no-deps --editable ."
+install-fiat = "pip install --no-deps --editable $PIXI_PROJECT_ROOT"
 install-pre-commit = "pre-commit install"
 
 # Repo related tasks
