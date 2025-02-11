@@ -18,7 +18,7 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
-from fiat.gis import geom, overlay
+from fiat.gis import geom
 from fiat.gis.crs import get_srs_repr
 from fiat.io import (
     open_csv,
@@ -52,11 +52,6 @@ class GeomModel(BaseModel):
     cfg : ConfigReader
         ConfigReader object containing the settings.
     """
-
-    _method = {
-        "area": overlay.clip,
-        "centroid": overlay.pin,
-    }
 
     def __init__(
         self,
@@ -129,7 +124,7 @@ class GeomModel(BaseModel):
         meta[index].update({"idxs": idxs})
 
     def _set_chunking(self):
-        """_summary_."""
+        """Set the chunking size."""
         # Determine maximum geometry dataset size
         max_geom_size = max(
             [item.size for item in self.exposure_geoms.values()],
@@ -144,7 +139,10 @@ class GeomModel(BaseModel):
         self.cfg.set("global.geom.chunk", chunk_int)
 
     def _setup_output_files(self):
-        """_summary_."""
+        """Set up the output files.
+
+        These are the filled by running the model.
+        """
         # Setup the geometry output files
         for key, gm in self.exposure_geoms.items():
             # Define outgoing dataset
@@ -152,27 +150,31 @@ class GeomModel(BaseModel):
             if f"output.geom.name{key}" in self.cfg:
                 out_geom = self.cfg.get(f"output.geom.name{key}")
             self.cfg.set(f"output.geom.name{key}", out_geom)
+            # Get the new fields per geometry file
+            new_fields = tuple(self.cfg.get("_exposure_meta")[key]["new_fields"])
             # Open and write a layer with the necessary fields
             with open_geom(
                 Path(self.cfg.get("output.path"), out_geom), mode="w", overwrite=True
             ) as _w:
                 _w.create_layer(self.srs, gm.geom_type)
                 _w.create_fields(dict(zip(gm.fields, gm.dtypes)))
-                new = self.cfg.get("_exposure_meta")[key]["new_fields"]
-                _w.create_fields(dict(zip(new, [ogr.OFTReal] * len(new))))
+                _w.create_fields(dict(zip(new_fields, [ogr.OFTReal] * len(new_fields))))
             _w = None
 
-        # Check whether to do the same for the csv
-        if self.exposure_data is not None:
-            out_csv = self.cfg.get("output.csv.name", "output.csv")
-            self.cfg.set("output.csv.name", out_csv)
+            # Check whether to do the same for the csv
+            out_csv = self.cfg.get(f"output.csv.name{key}")
+            if out_csv is not None:
+                columns = ("object_id",) + new_fields
+                if self.exposure_data is not None:
+                    columns = self.exposure_data.columns + tuple(
+                        self.cfg.get("_exposure_meta")[-1]["new_fields"]
+                    )
 
-            # Create an empty csv file for the separate thread to till
-            csv_def_file(
-                Path(self.cfg.get("output.path"), out_csv),
-                self.exposure_data.columns
-                + tuple(self.cfg.get("_exposure_meta")[-1]["new_fields"]),
-            )
+                # Create an empty csv file for the separate thread to till
+                csv_def_file(
+                    Path(self.cfg.get("output.path"), out_csv),
+                    columns,
+                )
 
     def get_exposure_meta(self):
         """Get the exposure meta regarding the data itself (fields etc.)."""

@@ -407,7 +407,7 @@ def create_settings_geom():
         "output": {
             "path": "output/geom_event",
             "csv": {
-                "name": "output.csv",
+                "name1": "output.csv",
             },
             "geom": {"name1": "spatial.gpkg"},
         },
