@@ -49,7 +49,7 @@ def test_pin(geom_data, grid_event_data):
     assert int(round(hazard[0] * 100, 0)) == 160
 
 
-def test_geom_reproject(tmp_path, geom_data, grid_event_data):
+def test_geom_reproject(tmp_path, geom_data):
     dst_crs = "EPSG:3857"
     new_gm = geom.reproject(
         geom_data,
@@ -58,6 +58,23 @@ def test_geom_reproject(tmp_path, geom_data, grid_event_data):
     )
 
     assert new_gm.get_srs().GetAuthorityCode(None) == "3857"
+
+
+def test_geom_reproject_single(geom_data):
+    ft = geom_data[1]
+    geometry = ft.GetGeometryRef()
+
+    vertices = geometry.GetGeometryRef(0).GetPoints()
+    assert 4.39 < vertices[0][0] < 4.4
+
+    geom.reproject_feature(
+        geometry,
+        src_crs="EPSG:4326",
+        dst_crs="EPSG:28992",
+    )
+
+    vertices = geometry.GetGeometryRef(0).GetPoints()
+    assert 80000 < vertices[0][0] < 90000
 
 
 def test_grid_reproject(tmp_path, grid_event_data):

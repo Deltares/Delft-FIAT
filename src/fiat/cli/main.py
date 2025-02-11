@@ -35,7 +35,7 @@ fiat_start_str = """
 
 # Info function
 def info(args):
-    """_summary_."""
+    """Show an info string."""
     sys.stdout.write(fiat_start_str)
     sys.stdout.write(
         """This tool is meant for quick impact assessment.
@@ -85,7 +85,7 @@ def run(args):
 
 ## Constructing the arguments parser for FIAT.
 def args_parser():
-    """_summary_."""
+    """Parse the arguments."""
     parser = argparse.ArgumentParser(
         #    usage="%(prog)s <options> <commands>",
         add_help=False,
@@ -173,7 +173,7 @@ def args_parser():
 
 ## Main entry point: parsing gets done here
 def main(argv=sys.argv[1:]):
-    """_summary_."""
+    """Execute main cli function."""
     parser = args_parser()
     args = parser.parse_args(args=None if argv else ["--help"])
     args.func(args)

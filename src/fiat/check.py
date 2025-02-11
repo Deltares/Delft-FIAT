@@ -18,7 +18,7 @@ def check_config_entries(
     path: Path,
     extra_entries: list,
 ):
-    """_summary_."""
+    """Check the mandatory config entries."""
     _man_entries = [
         "output.path",
         "hazard.file",
@@ -37,7 +37,7 @@ following missing entries: {_missing}"
 def check_config_geom(
     cfg: object,
 ):
-    """_summary_."""
+    """Check the geometry entries."""
     _req_fields = [
         "exposure.geom.crs",
         "exposure.geom.file1",
@@ -63,7 +63,7 @@ def check_config_geom(
 def check_config_grid(
     cfg: object,
 ):
-    """_summary_."""
+    """Check the grid config entries."""
     _req_fields = [
         "exposure.grid.crs",
         "exposure.grid.file",
@@ -89,7 +89,10 @@ def check_global_crs(
     fname: str,
     fname_haz: str,
 ):
-    """_summary_."""
+    """Check the global spatial reference system.
+
+    This should exist.
+    """
     if srs is None:
         msg = "Could not infer the srs from '{}', nor from '{}'"
         raise FIATDataError(msg)
@@ -99,7 +102,7 @@ def check_global_crs(
 def check_duplicate_columns(
     cols,
 ):
-    """_summary_."""
+    """Check for duplicate column headers."""
     if cols is not None:
         msg = f"Duplicate columns were encountered. Wrong column could \
 be used. Check input for these columns: {cols}"
@@ -111,7 +114,7 @@ def check_grid_exact(
     haz,
     exp,
 ):
-    """_summary_."""
+    """Check whether the hazard and exposure grid align."""
     if not check_vs_srs(
         haz.get_srs(),
         exp.get_srs(),
@@ -144,7 +147,10 @@ def check_internal_srs(
     fname: str,
     cfg_srs: str = None,
 ):
-    """_summary_."""
+    """Check the internal spatial reference system.
+
+    This also should exist.
+    """
     if source_srs is None and cfg_srs is None:
         msg = f"Coordinate reference system is unknown for '{fname}', \
 cannot safely continue"
@@ -162,7 +168,7 @@ def check_geom_extent(
     gm_bounds: tuple | list,
     gr_bounds: tuple | list,
 ):
-    """_summary_."""
+    """Check whether the geometries lie within the bounds of the hazard data."""
     _checks = (
         gm_bounds[0] > gr_bounds[0],
         gm_bounds[1] < gr_bounds[1],
@@ -179,7 +185,7 @@ def check_vs_srs(
     global_srs: osr.SpatialReference,
     source_srs: osr.SpatialReference,
 ):
-    """_summary_."""
+    """Check if the spatial reference systems match."""
     if not (
         global_srs.IsSame(source_srs)
         or global_srs.ExportToProj4() == source_srs.ExportToProj4()
@@ -196,7 +202,7 @@ def check_hazard_band_names(
     rp: list,
     count: int,
 ):
-    """_summary_."""
+    """Check the band names of the hazard data."""
     if risk:
         return [f"{n}y" for n in rp]
 
@@ -211,7 +217,10 @@ def check_hazard_rp(
     rp_cfg: list,
     path: Path,
 ):
-    """_summary_."""
+    """Check the return periods of the hazard data.
+
+    Applies to risk calculations.
+    """
     l = len(rp_bands)
 
     bn_str = "\n".join(rp_bands).encode()
@@ -234,7 +243,7 @@ def check_hazard_subsets(
     sub: dict,
     path: Path,
 ):
-    """_summary_."""
+    """Check whether there are subsets available."""
     if sub is not None:
         keys = ", ".join(list(sub.keys()))
         msg = f"'{path.name}': cannot read this file as there are \
@@ -248,7 +257,7 @@ def check_exp_columns(
     columns: tuple | list,
     specific_columns: tuple | list = [],
 ):
-    """_summary_."""
+    """Check the columns of the exposure data."""
     _man_columns = [
         index_col,
     ] + specific_columns
@@ -265,7 +274,7 @@ def check_exp_derived_types(
     found: tuple | list,
     missing: tuple | list,
 ):
-    """_summary_."""
+    """Check whether columns are available for a certain exposure type."""
     # Error when no columns are found for vulnerability type
     if not found:
         msg = f"For type: '{type}' no matching columns were found for \
@@ -284,7 +293,7 @@ def check_exp_grid_dmfs(
     exp: object,
     dmfs: tuple | list,
 ):
-    """_summary_."""
+    """Check the damage functions mentioned in the exposure bands."""
     _ef = [_i.get_metadata_item("fn_damage") for _i in exp]
     _i = None
 
@@ -299,7 +308,7 @@ def check_exp_index_col(
     obj: object,
     index_col: type,
 ):
-    """_summary_."""
+    """Check whether the index column exists in the exposure geometry dataset."""
     if index_col not in obj.columns:
         raise FIATDataError(f"Index column ('{index_col}') not found in {obj.path}")
 

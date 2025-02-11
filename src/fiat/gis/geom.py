@@ -8,16 +8,6 @@ from osgeo import ogr, osr
 from fiat.io import GeomSource, open_geom
 
 
-def coor_transform():
-    """_summary_."""
-    pass
-
-
-def geom_centroid(ft: ogr.Feature) -> tuple:
-    """_summary_."""
-    pass
-
-
 def point_in_geom(
     ft: ogr.Feature,
 ) -> tuple:
@@ -43,11 +33,34 @@ def point_in_geom(
 
 
 def reproject_feature(
-    ft: ogr.Feature,
-    crs: str,
-):
-    """_summary_."""
-    pass
+    geometry: ogr.Geometry,
+    src_crs: str,
+    dst_crs: str,
+) -> ogr.Feature:
+    """Transform geometry/ geometries of a feature.
+
+    Parameters
+    ----------
+    geometry : ogr.Geometry
+        The geometry.
+    src_crs : str
+        Coordinate reference system of the feature.
+    dst_crs : str
+        Coordinate reference system to which the feature is transformed.
+    """
+    src_srs = osr.SpatialReference()
+    src_srs.SetFromUserInput(src_crs)
+    src_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+    dst_srs = osr.SpatialReference()
+    dst_srs.SetFromUserInput(dst_crs)
+    src_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
+    transform = osr.CoordinateTransformation(src_srs, dst_srs)
+    geometry.Transform(transform)
+
+    src_srs = None
+    dst_srs = None
+    transform = None
 
 
 def reproject(

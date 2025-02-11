@@ -47,6 +47,7 @@ class GridModel(BaseModel):
         BaseModel.__del__(self)
 
     def _setup_output_files(self):
+        """Ensure that it's defined."""
         pass
 
     def create_equal_grids(self):

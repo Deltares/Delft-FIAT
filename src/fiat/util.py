@@ -53,7 +53,22 @@ _fields_type_map = {
 
 
 def regex_pattern(delimiter: str, multi: bool = False, nchar: bytes = b"\n"):
-    """_summary_."""
+    """Create a regex pattern.
+
+    Parameters
+    ----------
+    delimiter : str
+        The delimiter of the text.
+    multi : bool, optional
+        Whether is spans multiple lines or not, by default False
+    nchar : bytes, optional
+        The newline character, by default b"\n"
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
     nchar = nchar.decode()
     if not multi:
         return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}'.encode())
@@ -67,12 +82,30 @@ def mean(values: list):
 
 
 # Chunking helper functions
-def _text_chunk_gen(
+def text_chunk_gen(
     h: object,
     pattern: re.Pattern,
     chunk_size: int = 100000,
     nchar: bytes = b"\n",
 ):
+    """Read and split text in chunks.
+
+    Parameters
+    ----------
+    h : object
+        A stream handler.
+    pattern : re.Pattern
+        Pattern on how to split the text.
+    chunk_size : int, optional
+        The chunk size in characters, by default 100000
+    nchar : bytes, optional
+        The newline character, by default b"\n"
+
+    Returns
+    -------
+    tuple
+        Number of lines, split text
+    """
     _res = b""
     while True:
         t = h.read(chunk_size)
@@ -96,7 +129,20 @@ def create_windows(
     shape: tuple,
     chunk: tuple,
 ):
-    """_summary_."""
+    """Create chunk windows from a grid.
+
+    Parameters
+    ----------
+    shape : tuple
+        Shape of the grid.
+    chunk : tuple
+        The chunk size.
+
+    Returns
+    -------
+    tuple
+        Tuple containing the upperleft x and y corner and the width and height
+    """
     _x, _y = shape
     _lu = tuple(
         product(
@@ -161,7 +207,21 @@ def discover_exp_columns(
     columns: dict,
     type: str,
 ):
-    """_summary_."""
+    """Figure out the which are the exposure related columns.
+
+    Parameters
+    ----------
+    columns : dict
+        The columns.
+    type : str
+        Type of exposure, e.g. damage or affected
+
+    Returns
+    -------
+    Tuple
+        Exposure suffix (e.g. structure for damage), index of the columns, \
+missing values.
+    """
     dmg_idx = {}
 
     # Get column values
@@ -197,7 +257,7 @@ def generate_output_columns(
     extra: tuple | list = [],
     suffix: tuple | list = [""],
 ):
-    """_summary_."""
+    """Generate the output columns."""
     default = specific_columns + ["red_fact"]
     total_idx = []
 
@@ -223,11 +283,11 @@ def generate_output_columns(
 
 
 # GIS related utility
-def _read_gridsource_info(
+def read_gridsource_info(
     gr: gdal.Dataset,
     format: str = "json",
 ):
-    """_summary_.
+    """Read grid source information.
 
     Thanks to:
     https://stackoverflow.com/questions/72059815/how-to-retrieve-all-variable-names-within-a-netcdf-using-gdal.
@@ -236,10 +296,10 @@ def _read_gridsource_info(
     return info
 
 
-def _read_gridsrouce_layers(
+def read_gridsource_layers(
     gr: gdal.Dataset,
 ):
-    """_summary_."""
+    """Read the layers of a gridsource."""
     sd = gr.GetSubDatasets()
 
     out = {}
@@ -252,24 +312,10 @@ def _read_gridsrouce_layers(
     return out
 
 
-def _read_gridsource_layers_from_info(
-    info: dict,
-):
-    """_summary_.
-
-    Thanks to:
-    https://stackoverflow.com/questions/72059815/how-to-retrieve-all-variable-names-within-a-netcdf-using-gdal.
-    """
-    _sub_data_keys = [x for x in info["metadata"]["SUBDATASETS"].keys() if "_NAME" in x]
-    _sub_data_vars = [info["metadata"]["SUBDATASETS"][x] for x in _sub_data_keys]
-
-    pass
-
-
 def _create_geom_driver_map(
     write: bool = False,
 ):
-    """_summary_."""
+    """Create a map of geometry drivers."""
     geom_drivers = {}
     _c = gdal.GetDriverCount()
 
@@ -306,7 +352,7 @@ GEOM_WRITE_DRIVER_MAP[""] = "Memory"
 
 
 def _create_grid_driver_map():
-    """_summary_."""
+    """Create a map of grid drivers."""
     grid_drivers = {}
     _c = gdal.GetDriverCount()
 
@@ -342,12 +388,12 @@ GRID_DRIVER_MAP[""] = "MEM"
 def generic_folder_check(
     path: Path | str,
 ):
-    """_summary_.
+    """Check if a directory exists.
 
     Parameters
     ----------
     path : Path | str
-        _description_
+        Path to the directory.
     """
     path = Path(path)
     if not path.exists():
@@ -358,24 +404,19 @@ def generic_path_check(
     path: str,
     root: str,
 ) -> Path:
-    """_summary_.
+    """Check whether a file exists.
 
     Parameters
     ----------
     path : str
-        _description_
+        Path to the file.
     root : str
-        _description_
+        Current root directory.
 
     Returns
     -------
     Path
-        _description_
-
-    Raises
-    ------
-    FileNotFoundError
-        _description_
+        Absolute path to the file.
     """
     path = Path(path)
     if not path.is_absolute():
@@ -463,18 +504,6 @@ def object_size(obj):
 
 
 # Objects for dummy usage
-class DoNotCall(type):
-    """_summary_."""
-
-    def __call__(
-        self,
-        *args,
-        **kwargs,
-    ):
-        """_summary_."""
-        raise AttributeError("Cannot initialize directly, needs a contructor")
-
-
 class DummyLock:
     """Mimic Lock functionality while doing nothing."""
 
@@ -511,7 +540,20 @@ def deter_type(
     e: bytes,
     l: int,
 ):
-    """_summary_."""
+    """Detemine the type of a column of text.
+
+    Parameters
+    ----------
+    e : bytes
+        The bytes containing the text.
+    l : int
+        Number of occurances.
+
+    Returns
+    -------
+    int
+        Type of the column expressed by an integer.
+    """
     f_p = rf"((^(-)?\d+(\.\d*)?(E(\+|\-)?\d+)?)$|^$)(\n((^(-)?\d+(\.\d*)?(E(\+|\-)?\d+)?)$|^$)){{{l}}}"  # noqa: E501
     f_c = re.compile(bytes(f_p, "utf-8"), re.MULTILINE | re.IGNORECASE)
 
@@ -529,11 +571,11 @@ def deter_dec(
     e: float,
     base: float = 10.0,
 ):
-    """_summary_."""
+    """Detemine the number of decimals."""
     ndec = math.floor(math.log(e) / math.log(base))
     return abs(ndec)
 
 
 def replace_empty(l: list):
-    """_summary_."""
+    """Replace empty values by None in a string (i.e. between delimiters)."""
     return ["nan" if not e else e.decode() for e in l]

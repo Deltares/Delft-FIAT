@@ -16,22 +16,20 @@ def intersect_cell(
     dx: float | int,
     dy: float | int,
 ):
-    """_summary_.
-
-    _extended_summary_
+    """Return where a geometry intersects with a cell.
 
     Parameters
     ----------
     geom : ogr.Geometry
-        _description_
+        The geometry.
     x : float | int
-        _description_
+        Left side of the cell.
     y : float | int
-        _description_
+        Upper side of the cell.
     dx : float | int
-        _description_
+        Width of the cell.
     dy : float | int
-        _description_
+        Height of the cell.
     """
     x = float(x)
     y = float(y)
