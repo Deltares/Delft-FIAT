@@ -146,7 +146,7 @@ class GeomModel(BaseModel):
         # Setup the geometry output files
         for key, gm in self.exposure_geoms.items():
             # Define outgoing dataset
-            out_geom = f"spatial{key}.fgb"
+            out_geom = f"spatial{key}.gpkg"
             if f"output.geom.name{key}" in self.cfg:
                 out_geom = self.cfg.get(f"output.geom.name{key}")
             self.cfg.set(f"output.geom.name{key}", out_geom)
