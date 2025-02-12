@@ -1819,9 +1819,9 @@ class Table(_Table):
     ----------
     data : ndarray
         The data in numpy.ndarray format.
-    index : str | tuple, optional
+    index : list | tuple, optional
         The index column from which the values are taken and used to index the rows.
-    columns : list, optional
+    columns : list | tuple, optional
         The column headers of the table.
         If not supplied, it will be inferred from the file.
 
@@ -1834,8 +1834,8 @@ class Table(_Table):
     def __init__(
         self,
         data: ndarray,
-        index: tuple = None,
-        columns: list = None,
+        index: list | tuple = None,
+        columns: list | tuple = None,
         **kwargs,
     ) -> object:
         self.data = data
@@ -1885,9 +1885,9 @@ class Table(_Table):
         ----------
         data : BufferHandler
             Handler of the steam to a file.
-        columns : list
+        columns : list | tuple
             Columns (headers) of the file.
-        index : str | tuple, optional
+        index : list | tuple, optional
             The index column.
         """
         dtypes = kwargs["dtypes"]

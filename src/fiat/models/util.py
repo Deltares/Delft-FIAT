@@ -82,7 +82,7 @@ def csv_def_file(
 def generate_jobs(
     d: dict,
     tied: tuple | list = None,
-) -> Generator[dict]:
+) -> dict:  # type: ignore
     """Generate jobs.
 
     Parameters
