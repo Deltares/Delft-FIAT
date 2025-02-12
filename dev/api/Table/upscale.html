@@ -799,6 +799,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">get_srs</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GeomSource/reduced_iter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reduced_iter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GeomSource/reopen.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reopen</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GeomSource/set_layer_from_defn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">set_layer_from_defn</span></a>
+  </div>
+</li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
@@ -942,14 +960,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-24" class="collapse list-unstyled sidebar-section depth4 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Table/max.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">max</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../api/Table/mean.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">mean</span></a>
+  <a href="../../api/Table/from_stream.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">from_stream</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -1015,7 +1027,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="fiat.io.Table.upscale" class="level1">
 <h1>upscale</h1>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>io.Table.upscale(delta, inplace<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><em>summary</em>.</p>
+<p>Upscale the data by a smaller delta.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
 <table class="caption-top table">
@@ -1031,13 +1043,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td>delta</td>
 <td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
-<td><em>description</em></td>
+<td>Size of the new interval.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td>inplace</td>
 <td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
-<td><em>description</em>, by default True</td>
+<td>Whether to execute in place, i.e.&nbsp;overwrite the existing data. By default True</td>
 <td><code>False</code></td>
 </tr>
 </tbody>

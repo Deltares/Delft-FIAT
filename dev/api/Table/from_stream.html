@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>mean – Delft FIAT</title>
+<title>from_stream – Delft FIAT</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -186,7 +186,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item">I/O</li><li class="breadcrumb-item"><a href="../../api/GeomSource.html">Objects</a></li><li class="breadcrumb-item"><a href="../../api/Table.html">Table</a></li><li class="breadcrumb-item"><a href="../../api/Table/mean.html">mean</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item">I/O</li><li class="breadcrumb-item"><a href="../../api/GeomSource.html">Objects</a></li><li class="breadcrumb-item"><a href="../../api/Table.html">Table</a></li><li class="breadcrumb-item"><a href="../../api/Table/from_stream.html">from_stream</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -799,6 +799,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">get_srs</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GeomSource/reduced_iter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reduced_iter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GeomSource/reopen.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reopen</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GeomSource/set_layer_from_defn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">set_layer_from_defn</span></a>
+  </div>
+</li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
@@ -942,14 +960,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-24" class="collapse list-unstyled sidebar-section depth4 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/Table/max.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">max</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../api/Table/mean.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">mean</span></a>
+  <a href="../../api/Table/from_stream.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">from_stream</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -999,7 +1011,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#fiat.io.Table.mean" id="toc-fiat.io.Table.mean" class="nav-link active" data-scroll-target="#fiat.io.Table.mean">mean</a></li>
+  <li><a href="#fiat.io.Table.from_stream" id="toc-fiat.io.Table.from_stream" class="nav-link active" data-scroll-target="#fiat.io.Table.from_stream">from_stream</a>
+  <ul class="collapse">
+  <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -1009,12 +1024,45 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="fiat.io.Table.mean" class="level1">
-<h1>mean</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>io.Table.mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><em>summary</em>.</p>
+<section id="fiat.io.Table.from_stream" class="level1">
+<h1>from_stream</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>io.Table.from_stream(data, columns, index<span class="op">=</span><span class="va">None</span>, <span class="op">**</span>kwargs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Create the Table from a data steam (file).</p>
+<section id="parameters" class="level2 doc-section doc-section-parameters">
+<h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>data</td>
+<td><code>BufferHandler</code></td>
+<td>Handler of the steam to a file.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>columns</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a> | <a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>Columns (headers) of the file.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>index</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a> | <a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>The index column.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
 
 
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->

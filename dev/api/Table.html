@@ -799,6 +799,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">get_srs</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/GeomSource/reduced_iter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reduced_iter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/GeomSource/reopen.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reopen</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/GeomSource/set_layer_from_defn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">set_layer_from_defn</span></a>
+  </div>
+</li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
@@ -942,14 +960,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-24" class="collapse list-unstyled sidebar-section depth4 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/Table/max.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">max</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Table/mean.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">mean</span></a>
+  <a href="../api/Table/from_stream.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">from_stream</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -1032,19 +1044,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>data</td>
-<td><code>BufferHandler</code> | <a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></td>
-<td>A datastream or a dictionary. The datastream is a connection through which data can pass.</td>
+<td><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The data in numpy.ndarray format.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td>index</td>
-<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a> | <a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
 <td>The index column from which the values are taken and used to index the rows.</td>
 <td><code>None</code></td>
 </tr>
 <tr class="odd">
 <td>columns</td>
-<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a> | <a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
 <td>The column headers of the table. If not supplied, it will be inferred from the file.</td>
 <td><code>None</code></td>
 </tr>
@@ -1081,16 +1093,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../api/Table/max.html#fiat.io.Table.max">max</a></td>
-<td><em>summary</em>.</td>
+<td><a href="../api/Table/from_stream.html#fiat.io.Table.from_stream">from_stream</a></td>
+<td>Create the Table from a data steam (file).</td>
 </tr>
 <tr class="even">
-<td><a href="../api/Table/mean.html#fiat.io.Table.mean">mean</a></td>
-<td><em>summary</em>.</td>
-</tr>
-<tr class="odd">
 <td><a href="../api/Table/upscale.html#fiat.io.Table.upscale">upscale</a></td>
-<td><em>summary</em>.</td>
+<td>Upscale the data by a smaller delta.</td>
 </tr>
 </tbody>
 </table>
