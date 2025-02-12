@@ -1796,14 +1796,6 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
     def __getitem__(self, key):
         raise NotImplementedError(DD_NEED_IMPLEMENTED)
 
-    # @abstractmethod
-    # def __iter__(self):
-    #     pass
-
-    # @abstractmethod
-    # def __next__(self):
-    #     pass
-
     @property
     def columns(self):
         return tuple(self._columns.keys())
@@ -1842,7 +1834,7 @@ class Table(_Table):
     def __init__(
         self,
         data: ndarray,
-        index: str | tuple = None,
+        index: tuple = None,
         columns: list = None,
         **kwargs,
     ) -> object:
@@ -1879,31 +1871,12 @@ class Table(_Table):
     def __eq__(self, other):
         return NotImplemented
 
-    def __str__(self):
-        if len(self.columns) > 6:
-            return self._small_repr()
-        else:
-            return self._big_repr()
-
-    def _big_repr(self):
-        repr = ""
-        repr += ", ".join([f"{item:6s}" for item in self.columns]) + "\n"
-        m = zip(*[row[0:3] for row in self.data])
-        for item in m:
-            repr += ", ".join([f"{str(val):6s}" for val in item]) + "\n"
-        repr += f"{'...':6s}, ...\n"
-        return repr
-
-    def _small_repr(self):
-        repr = ""
-        return repr
-
     @classmethod
     def from_stream(
         cls,
         data: BufferHandler,
-        columns: list,
-        index: str | tuple = None,
+        columns: list | tuple,
+        index: list | tuple = None,
         **kwargs,
     ):
         """Create the Table from a data steam (file).
@@ -1937,6 +1910,11 @@ class Table(_Table):
             kwargs["ncol"] -= 1
 
         if index_col >= 0 and index_col in cols:
+            if index is not None:
+                index = [
+                    dtypes[index_col](item)
+                    for item in replace_empty(_d[index_col::ncol])
+                ]
             cols.remove(index_col)
 
         for c in cols:
@@ -1944,14 +1922,6 @@ class Table(_Table):
 
         data = column_stack((*_f,))
         return cls(data=data, index=index, columns=columns, **kwargs)
-
-    def mean(self):
-        """Calculate the main."""
-        raise NotImplementedError(NOT_IMPLEMENTED)
-
-    def max(self):
-        """Return the maximum value."""
-        raise NotImplementedError(NOT_IMPLEMENTED)
 
     def upscale(
         self,
