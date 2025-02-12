@@ -7,6 +7,7 @@ from pathlib import Path
 from osgeo import gdal, osr
 
 from fiat.io import Grid, GridSource, open_grid
+from fiat.util import NOT_IMPLEMENTED
 
 
 def clip(
@@ -14,7 +15,7 @@ def clip(
     gtf: tuple,
     idx: tuple,
 ):
-    """_summary_.
+    """Clip a grid.
 
     Parameters
     ----------
@@ -25,7 +26,7 @@ def clip(
     idx : tuple
         _description_
     """
-    pass
+    raise NotImplementedError(NOT_IMPLEMENTED)
 
 
 def reproject(

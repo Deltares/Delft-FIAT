@@ -85,14 +85,21 @@ class LogLevels(Enum):
 
 
 class LogItem:
-    """_summary_."""
+    """A logging item.
+
+    Parameters
+    ----------
+    level : str
+        Logging level.
+    msg : str
+        The message.
+    """
 
     def __init__(
         self,
         level: str,
         msg: str,
     ):
-        """Struct for logging messages..."""
         self.ct = time.time()
         self.level = level
         self.levelname = LogLevels(level).name
@@ -101,12 +108,20 @@ class LogItem:
     def get_message(
         self,
     ):
-        """_summary_."""
+        """Return the message."""
         return str(self.msg)
 
 
 class FormatStyler:
-    """_summary_."""
+    """The underlying engine of the formatter.
+
+    Parameters
+    ----------
+    fmt : str
+        The format of the message.
+    defaults : dict, optional
+        Default values, by default None
+    """
 
     default_format = "{message}"
     asctime_format = "{asctime}"
@@ -117,12 +132,12 @@ class FormatStyler:
     )
     field_spec = re.compile(r"^(\d+|\w+)(\.\w+|\[[^]]+\])*$")
 
-    def __init__(self, fmt, *, defaults=None):
+    def __init__(self, fmt: str, *, defaults: dict = None):
         self._fmt = fmt or self.default_format
         self._defaults = defaults
 
     def uses_time(self):
-        """_summary_."""
+        """Check if time is used in the formatter."""
         return self._fmt.find(self.asctime_search) >= 0
 
     def validate(self):
@@ -153,7 +168,7 @@ class FormatStyler:
         return self._fmt.format(**values)
 
     def format(self, record):
-        """_summary_."""
+        """Format the record."""
         try:
             return self._format(record)
         except KeyError as e:
@@ -161,12 +176,30 @@ class FormatStyler:
 
 
 class MessageFormatter(object):
-    """_summary_."""
+    """Format logging items.
+
+    Parameters
+    ----------
+    fmt : str, optional
+        The format, by default None
+    datefmt : str, optional
+        The date(time) format, by default None
+    validate : bool, optional
+        Validate the supplied formats, by default True
+    defaults : dict, optional
+        Default values, by default None
+    """
 
     _conv = time.localtime
 
-    def __init__(self, fmt=None, datefmt=None, validate=True, *, defaults=None):
-        """_summary_."""
+    def __init__(
+        self,
+        fmt: str = None,
+        datefmt: str = None,
+        validate: bool = True,
+        *,
+        defaults: dict = None,
+    ):
         self._style = FormatStyler(fmt, defaults=defaults)
         if validate:
             self._style.validate()
@@ -175,7 +208,7 @@ class MessageFormatter(object):
         self.datefmt = datefmt
 
     def format_time(self, record):
-        """_summary_."""
+        """Format the time."""
         ct = self._conv(record.ct)
         if datefmt := self.datefmt:
             s = time.strftime(datefmt, ct)
@@ -184,7 +217,7 @@ class MessageFormatter(object):
         return s
 
     def format_exception(self, ei):
-        """_summary_."""
+        """Format an exception."""
         sio = io.StringIO()
         tb = ei[2]
         traceback.print_exception(ei[0], ei[1], tb, None, sio)
@@ -199,11 +232,22 @@ class MessageFormatter(object):
         return self._style.uses_time()
 
     def format_message(self, record):
-        """_summary_."""
+        """Format the message."""
         return self._style.format(record)
 
-    def format(self, record):
-        """_summary_."""
+    def format(self, record: LogItem):
+        """Format a record.
+
+        Parameters
+        ----------
+        record : LogItem
+            The record to be formatted.
+
+        Returns
+        -------
+        str
+            Formatted record/ message.
+        """
         record.message = record.get_message()
         if self.uses_time():
             record.asctime = self.format_time(record)
@@ -217,13 +261,18 @@ _default_formatter = MessageFormatter(DEFAULT_FMT, DEFAULT_TIME_FMT)
 
 
 class BaseHandler:
-    """_summary_."""
+    """Create base class for all stream handlers.
+
+    Parameters
+    ----------
+    level : int, optional
+        Logging level, by default 2 (INFO)
+    """
 
     def __init__(
         self,
         level: int = 2,
     ):
-        """Create base class for all stream handlers."""
         self.level = check_loglevel(level)
         self.msg_formatter = None
         self._name = None
@@ -238,20 +287,21 @@ class BaseHandler:
     def _add_global_stream_ref(
         self,
     ):
-        """_summary_."""
+        """Add a global reference for this handler."""
         global_acquire()
         _handlers[self._name] = self
         global_release()
 
     def _make_lock(self):
+        """Create a lock."""
         self._lock = threading.RLock()
 
     def acquire(self):
-        """_summary_."""
+        """Acquire the lock."""
         self._lock.acquire()
 
     def release(self):
-        """_summary_."""
+        """Release the lock."""
         self._lock.release()
 
     def close(self):
@@ -262,18 +312,29 @@ class BaseHandler:
         global_release()
 
     def emit(self):
-        """_summary_."""
+        """Emit a message."""
         raise NotImplementedError(NOT_IMPLEMENTED)
 
     def flush(self):
-        """_summary_."""
+        """Flush."""
         raise NotImplementedError(NOT_IMPLEMENTED)
 
     def format(
         self,
         record: LogItem,
     ):
-        """_summary_."""
+        """Format a record.
+
+        Parameters
+        ----------
+        record : LogItem
+            The records.
+
+        Returns
+        -------
+        str
+            Formatted record (message)
+        """
         if self.msg_formatter:
             msg_fmt = self.msg_formatter
         else:
@@ -284,20 +345,31 @@ class BaseHandler:
         self,
         formatter: MessageFormatter,
     ):
-        """_summary_."""
+        """Set the message formatter.
+
+        Parameters
+        ----------
+        formatter : MessageFormatter
+            The formatter.
+        """
         self.msg_formatter = formatter
 
 
 class Sender(BaseHandler):
-    """_summary_."""
+    """Sender object for records.
 
-    def __init__(self, queue):
-        """_summary_."""
+    Parameters
+    ----------
+    queue : object
+        The queue for the records. Specifically designed for use in multiprocessing.
+    """
+
+    def __init__(self, queue: object):
         BaseHandler.__init__(self)
         self.q = queue
 
     def put(self, record):
-        """_summary_."""
+        """Put a record in the queue."""
         self.q.put_nowait(record)
 
     def emit(self, record):
@@ -309,7 +381,18 @@ class Sender(BaseHandler):
 
 
 class CHandler(BaseHandler):
-    """_summary_."""
+    """Output text to the console.
+
+    Parameters
+    ----------
+    level : int, optional
+        Logging level, by default 2 (INFO)
+    stream : type, optional
+        Stream to which to send the logging messages.
+        If none is provided, stdout is chosen. By default None
+    name : str, optional
+        Name of the added handler, by default None
+    """
 
     def __init__(
         self,
@@ -317,18 +400,6 @@ class CHandler(BaseHandler):
         stream: type = None,
         name: str = None,
     ):
-        """Output text to the console.
-
-        Parameters
-        ----------
-        level : int, optional
-            Logging level, by default 2 (INFO)
-        name : str, optional
-            Name of the added handler, by default None
-        stream : type, optional
-            Stream to which to send the logging messages.
-            If none is provided, stdout is chosen. By default None
-        """
         BaseHandler.__init__(self, level=level)
 
         if stream is None:
@@ -361,7 +432,19 @@ class CHandler(BaseHandler):
 
 
 class FileHandler(CHandler):
-    """_summary_."""
+    """Output text to a file.
+
+    Parameters
+    ----------
+    level : int
+        Logging level.
+    dst : str
+        The destination of the logging (text) file.
+    name : str, optional
+        The name of the file handler, by default None
+    mode : str, optional
+        Mode in which to open the log file, by default 'w'
+    """
 
     def __init__(
         self,
@@ -370,17 +453,6 @@ class FileHandler(CHandler):
         name: str = None,
         mode: str = "w",
     ):
-        """Output text to a file.
-
-        Parameters
-        ----------
-        level : int
-            Logging level.
-        dst : str
-            The destination of the logging (text) file.
-        name : str, optional
-            The name of the file handler, by default None
-        """
         if name is None:
             name = "log_default"
         self._filename = os.path.join(dst, f"{name}.log")
@@ -407,16 +479,15 @@ class FileHandler(CHandler):
 
 
 class DummyLog:
-    """_summary_."""
+    """Create dummy class for tracking children.
+
+    (actually funny..).
+    """
 
     def __init__(
         self,
         obj,
     ):
-        """Create dummy class for tracking children.
-
-        (actually funny..).
-        """
         self.child_tree = {obj: None}
 
     def __repr__(self):
@@ -436,19 +507,17 @@ class DummyLog:
             del self.child_tree[child]
 
     def add_to_chain(self, obj):
-        """_summary_."""
+        """Add object to the tree."""
         self._check_succession(obj)
         self.child_tree[obj] = None
 
 
 class LogManager:
-    """_summary_."""
+    """The manager of all the loggers."""
 
     def __init__(
         self,
-        stuff=None,
     ):
-        """_summary_."""
         self.logger_tree = {}
 
     def _check_children(
@@ -499,7 +568,7 @@ class LogManager:
         self,
         logger: "Logger",
     ):
-        """_summary_."""
+        """Solve the logger family tree."""
         obj = None
         name = logger.name
 
@@ -518,31 +587,9 @@ class LogManager:
 
         return obj
 
-    # def spawn_logger(self, name: str):
-    #     """_summary_"""
-
-    #     logger = None
-    #     _Global_and_Destruct_Lock.acquire()
-
-    #     if name in self.logger_tree:
-    #         logger = self.logger_tree[name]
-    #         if isinstance(logger, DummyLog):
-    #             obj = logger
-    #             logger = Log(name)
-    #             self.logger_tree[name] = logger
-    #             self._check_children(obj, logger)
-    #             self._check_parents(logger)
-    #     else:
-    #         logger = Log(name)
-    #         self._check_parents(logger)
-    #         self.logger_tree[name] = logger
-    #     _Global_and_Destruct_Lock.release()
-
-    #     return logger
-
 
 class Logmeta(type):
-    """_summary_."""
+    """Meta class for logging."""
 
     def __call__(
         cls,
@@ -600,7 +647,7 @@ class Receiver:
     def _add_global_receiver_ref(
         self,
     ):
-        """_summary_."""
+        """Add a global reference for the reciever."""
         global_acquire()
         _receivers[self._name] = self
         global_release()
@@ -609,12 +656,13 @@ class Receiver:
         self,
         record: LogItem,
     ):
-        """_summary_."""
+        """Log an item."""
         for handler in self._handlers:
             if record.level >= handler.level:
                 handler.emit(record)
 
     def _waiting(self):
+        """Wait for the next item/ record to be received."""
         while True:
             try:
                 record = self.get(True)
@@ -821,7 +869,7 @@ class Logger(metaclass=Logmeta):
             h.level = val
 
     def _direct(self, msg):
-        """_summary_."""
+        """Log something directly."""
         raise NotImplementedError(NOT_IMPLEMENTED)
 
     @_handle_log

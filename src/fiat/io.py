@@ -28,12 +28,12 @@ from fiat.util import (
     DummyLock,
     _dtypes_from_string,
     _dtypes_reversed,
-    _read_gridsrouce_layers,
-    _text_chunk_gen,
     deter_type,
     find_duplicates,
+    read_gridsource_layers,
     regex_pattern,
     replace_empty,
+    text_chunk_gen,
 )
 
 _IOS = weakref.WeakValueDictionary()
@@ -60,6 +60,16 @@ atexit.register(_DESTRUCT)
 
 ## Base
 class _BaseIO(metaclass=ABCMeta):
+    """Base class for objects concerning I/O.
+
+    Parameters
+    ----------
+    file : str, optional
+        Path to the file, by default None
+    mode : str, optional
+        Mode in which to open the file, by default "r"
+    """
+
     _mode_map = {
         "r": 0,
         "w": 1,
@@ -75,7 +85,6 @@ class _BaseIO(metaclass=ABCMeta):
         file: str = None,
         mode: str = "r",
     ):
-        """_summary_."""
         if file is not None:
             self.path = Path(file)
             self._path = Path(file)
@@ -162,7 +171,15 @@ class _BaseStruct(metaclass=ABCMeta):
 
 ## Handlers
 class BufferHandler:
-    """Handler for buffers."""
+    """Handle a buffer connected to a file.
+
+    Parameters
+    ----------
+    path : Path
+        Path to the file.
+    skip : int, optional
+        Amount of characters to skip at the beginning of the file, by default 0
+    """
 
     def __init__(
         self,
@@ -199,19 +216,19 @@ class BufferHandler:
         return False
 
     def close(self):
-        """_summary_."""
+        """Close the handler."""
         if self.stream is not None:
             self.stream.flush()
             self.close_stream()
 
     def close_stream(self):
-        """_summary_."""
+        """Close the steam to the file."""
         self.stream.close()
         self.stream = None
         self.size = None
 
     def setup_stream(self):
-        """_summary_."""
+        """Set up the steam to the file."""
         self.stream = BufferedReader(FileIO(self.path))
         self.sniffer()
         self.size = self.stream.read().count(self.nchar)
@@ -226,7 +243,19 @@ class BufferHandler:
 
 
 class BufferedGeomWriter:
-    """_summary_."""
+    """Write geometries from a buffer.
+
+    Parameters
+    ----------
+    file : str | Path
+        Path to the file.
+    srs : osr.SpatialReference
+        The spatial reference system of the file (and the buffer).
+    layer_defn : ogr.FeatureDefn, optional
+        The definition of the layer, by default None
+    buffer_size : int, optional
+        The size of the buffer, by default 100000
+    """
 
     def __init__(
         self,
@@ -236,21 +265,6 @@ class BufferedGeomWriter:
         buffer_size: int = 100000,  # geometries
         lock: Lock = None,
     ):
-        """_summary_.
-
-        _extended_summary_
-
-        Parameters
-        ----------
-        file : str | Path
-            _description_
-        srs : osr.SpatialReference
-            _description_
-        layer_meta : ogr.FeatureDefn
-            _description_
-        buffer_size : int, optional
-            _description_, by default 20000
-        """
         # Ensure pathlib.Path
         file = Path(file)
         self.file = file
@@ -318,7 +332,7 @@ class BufferedGeomWriter:
         self.size = 0
 
     def close(self):
-        """_summary_."""
+        """Close the buffer."""
         # Flush on last time
         self.to_drive()
         self._clear_cache()
@@ -329,7 +343,16 @@ class BufferedGeomWriter:
         ft: ogr.Feature,
         fmap: dict,
     ):
-        """_summary_."""
+        """Add a feature to the buffer with additional field info.
+
+        Parameters
+        ----------
+        ft : ogr.Feature
+            The feature.
+        fmap : dict
+            Additional field information, the keys must align with \
+the fields in the buffer.
+        """
         self.buffer.add_feature_with_map(
             ft,
             fmap=fmap,
@@ -344,7 +367,7 @@ class BufferedGeomWriter:
         self,
         flds: zip,
     ):
-        """_summary_."""
+        """Create new fields in the buffer dataset."""
         _new = dict(flds)
         self.flds.update(_new)
 
@@ -353,7 +376,7 @@ class BufferedGeomWriter:
         )
 
     def to_drive(self):
-        """_summary_."""
+        """Dump the buffer to the drive."""
         # Block while writing to the drive
         # self.buffer.close()
         self.lock.acquire()
@@ -369,7 +392,17 @@ class BufferedGeomWriter:
 
 
 class BufferedTextWriter(BytesIO):
-    """_summary_."""
+    """Write text in chunks.
+
+    Parameters
+    ----------
+    file : Path | str
+        Path to the file.
+    mode : str, optional
+        Mode for opening the file. Byte-mode is mandatory, by default "wb"
+    buffer_size : int, optional
+        The size of the buffer, by default 524288 (which is 512 kb)
+    """
 
     def __init__(
         self,
@@ -393,7 +426,7 @@ class BufferedTextWriter(BytesIO):
         self.max_size = buffer_size
 
     def close(self):
-        """_summary_."""
+        """Close the writer and the buffer."""
         # Flush on last time
         self.to_drive()
         self.stream.close()
@@ -402,7 +435,7 @@ class BufferedTextWriter(BytesIO):
         BytesIO.close(self)
 
     def to_drive(self):
-        """_summary_."""
+        """Dump to buffer to the drive."""
         self.seek(0)
 
         # Push data to the file
@@ -416,25 +449,23 @@ class BufferedTextWriter(BytesIO):
         self.truncate(0)
         self.seek(0)
 
-    def write(self, b):
-        """_summary_.
-
-        _extended_summary_
+    def write(
+        self,
+        b: bytes,
+    ):
+        """Write bytes to the buffer.
 
         Parameters
         ----------
-        b : _type_
-            _description_
+        b : bytes
+            Bytes to write.
         """
         if self.__sizeof__() + len(b) > self.max_size:
             self.to_drive()
         BytesIO.write(self, b)
 
     def write_iterable(self, *args):
-        """_summary_.
-
-        _extended_summary_
-        """
+        """Write a multiple entries to the buffer."""
         by = b""
         for arg in args:
             by += ("," + "{}," * len(arg)).format(*arg).rstrip(",").encode()
@@ -445,7 +476,19 @@ class BufferedTextWriter(BytesIO):
 
 ## Parsing
 class CSVParser:
-    """_summary_."""
+    """Parse a csv file.
+
+    Parameters
+    ----------
+    handler : BufferHandler
+
+    delimiter : str
+        The delimiter of the textfile, e.g. ',' or ';'
+    header : bool
+        Whether there is a header or not.
+    index : str, optional
+        Index of the csv file (row wise), by default None
+    """
 
     def __init__(
         self,
@@ -454,7 +497,6 @@ class CSVParser:
         header: bool,
         index: str = None,
     ):
-        """_summary_."""
         self.delimiter = delimiter
         self.data = handler
         self.meta = {}
@@ -475,7 +517,13 @@ class CSVParser:
         self,
         header: bool,
     ):
-        """Parse the meta data of the csv file."""
+        """Parse the meta data of the csv file.
+
+        Parameters
+        ----------
+        header : bool
+            Whether there is a header or not.
+        """
         _pat = regex_pattern(self.delimiter)
         self.data.stream.seek(0)
 
@@ -525,7 +573,13 @@ class CSVParser:
         self,
         index: str,
     ):
-        """Parse the csv file to create the structure."""
+        """Parse the csv file to create the structure.
+
+        Parameters
+        ----------
+        index : str
+            Index of the csv file.
+        """
         _get_index = False
         _get_dtypes = True
         _pat_multi = regex_pattern(self.delimiter, multi=True, nchar=self.data.nchar)
@@ -555,7 +609,7 @@ class CSVParser:
             if _get_dtypes:
                 _dtypes = [0] * self._ncol
             with self.data as _h:
-                for _nlines, sd in _text_chunk_gen(
+                for _nlines, sd in text_chunk_gen(
                     _h, pattern=_pat_multi, nchar=self.data.nchar
                 ):
                     if _get_dtypes:
@@ -595,7 +649,18 @@ class CSVParser:
         self,
         lazy: bool = False,
     ):
-        """_summary_."""
+        """Read the parsed csv file into a data structure.
+
+        Parameters
+        ----------
+        lazy : bool, optional
+            Whether to read the data lazily or not, by default False
+
+        Returns
+        -------
+        Tabel | TableLazy
+            Data structure.
+        """
         if lazy:
             return TableLazy(
                 data=self.data,
@@ -604,7 +669,7 @@ class CSVParser:
                 **self.meta,
             )
 
-        return Table(
+        return Table.from_stream(
             data=self.data,
             index=self.index,
             columns=self.columns,
@@ -772,20 +837,6 @@ class Grid(
         self._chunk = chunk
 
     @_BaseIO._check_mode
-    def _write(
-        self,
-        data: array,
-    ):
-        """_summary_.
-
-        Parameters
-        ----------
-        data : array
-            _description_
-        """
-        raise NotImplementedError(NOT_IMPLEMENTED)
-
-    @_BaseIO._check_mode
     def write_chunk(
         self,
         chunk: array,
@@ -838,7 +889,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         mode: str = "r",
         overwrite: bool = False,
     ):
-        """_summary_."""
+        """Create a GeomSource object."""
         obj = object.__new__(cls)
 
         return obj
@@ -950,8 +1001,8 @@ class GeomSource(_BaseIO, _BaseStruct):
         ei : int
             Ending index.
 
-        Yields
-        ------
+        Returns
+        -------
         ogr.Feature
             Features from the vector layer.
         """
@@ -1002,7 +1053,7 @@ class GeomSource(_BaseIO, _BaseStruct):
     @property
     @_BaseIO._check_state
     def dtypes(self):
-        """_summary_."""
+        """Return the data types of the fields."""
         if self.layer is not None:
             _flds = self.layer.GetLayerDefn()
             dt = [_flds.GetFieldDefn(_i).type for _i in range(_flds.GetFieldCount())]
@@ -1246,7 +1297,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         self.layer = self.src.CopyLayer(layer, layer_fn, ["OVERWRITE=YES"])
 
     def _get_layer(self, l_id):
-        """_summary_."""
+        """Get a layer from the datasource."""
         raise NotImplementedError(NOT_IMPLEMENTED)
 
     @_BaseIO._check_state
@@ -1319,7 +1370,7 @@ multiple variables.
         var_as_band: bool = False,
         mode: str = "r",
     ):
-        """_summary_."""
+        """Create a new GridSource object."""
         obj = object.__new__(cls)
 
         return obj
@@ -1381,7 +1432,7 @@ multiple variables.
                 raise ValueError(f"Incorrect chunking set: {chunk}")
 
             if self._count == 0:
-                self.subset_dict = _read_gridsrouce_layers(
+                self.subset_dict = read_gridsource_layers(
                     self.src,
                 )
 
@@ -1689,25 +1740,24 @@ multiple variables.
         """
         self.src.SetSpatialRef(srs)
 
-    @_BaseIO._check_mode
-    @_BaseIO._check_state
-    def _write_array(
-        self,
-        array: "array",
-        band: int,
-    ):
-        """_summary_."""
-        raise NotImplementedError(NOT_IMPLEMENTED)
-
 
 class _Table(_BaseStruct, metaclass=ABCMeta):
+    """Base class for table objects.
+
+    Parameters
+    ----------
+    index : tuple, optional
+        Indices of the table object, by default None
+    columns : tuple, optional
+        Columns of the table object, by default None
+    """
+
     def __init__(
         self,
         index: tuple = None,
         columns: tuple = None,
         **kwargs,
     ) -> object:
-        """_summary_."""
         # Declarations
         self.dtypes = ()
         self.meta = kwargs
@@ -1746,14 +1796,6 @@ class _Table(_BaseStruct, metaclass=ABCMeta):
     def __getitem__(self, key):
         raise NotImplementedError(DD_NEED_IMPLEMENTED)
 
-    # @abstractmethod
-    # def __iter__(self):
-    #     pass
-
-    # @abstractmethod
-    # def __next__(self):
-    #     pass
-
     @property
     def columns(self):
         return tuple(self._columns.keys())
@@ -1775,12 +1817,11 @@ class Table(_Table):
 
     Parameters
     ----------
-    data : BufferHandler | dict
-        A datastream or a dictionary.
-        The datastream is a connection through which data can pass.
-    index : str | tuple, optional
+    data : ndarray
+        The data in numpy.ndarray format.
+    index : list | tuple, optional
         The index column from which the values are taken and used to index the rows.
-    columns : list, optional
+    columns : list | tuple, optional
         The column headers of the table.
         If not supplied, it will be inferred from the file.
 
@@ -1792,24 +1833,14 @@ class Table(_Table):
 
     def __init__(
         self,
-        data: BufferHandler | dict,
-        index: str | tuple = None,
-        columns: list = None,
+        data: ndarray,
+        index: list | tuple = None,
+        columns: list | tuple = None,
         **kwargs,
     ) -> object:
-        if isinstance(data, BufferHandler):
-            self._build_from_stream(
-                data,
-                columns,
-                **kwargs,
-            )
+        self.data = data
 
-        elif isinstance(data, ndarray):
-            self.data = data
-
-        elif isinstance(data, list):
-            self._build_from_list(data)
-
+        # Supercharge with _Table
         _Table.__init__(
             self,
             index,
@@ -1824,7 +1855,6 @@ class Table(_Table):
         raise NotImplementedError(DD_NOT_IMPLEMENTED)
 
     def __getitem__(self, keys):
-        """_summary_."""
         keys = list(keys)
 
         if keys[0] != slice(None):
@@ -1841,32 +1871,25 @@ class Table(_Table):
     def __eq__(self, other):
         return NotImplemented
 
-    def __str__(self):
-        if len(self.columns) > 6:
-            return self._small_repr()
-        else:
-            return self._big_repr()
-
-    def _big_repr(self):
-        repr = ""
-        repr += ", ".join([f"{item:6s}" for item in self.columns]) + "\n"
-        m = zip(*[row[0:3] for row in self.data])
-        for item in m:
-            repr += ", ".join([f"{str(val):6s}" for val in item]) + "\n"
-        repr += f"{'...':6s}, ...\n"
-        return repr
-
-    def _small_repr(self):
-        repr = ""
-        return repr
-
-    def _build_from_stream(
-        self,
+    @classmethod
+    def from_stream(
+        cls,
         data: BufferHandler,
-        columns: list,
+        columns: list | tuple,
+        index: list | tuple = None,
         **kwargs,
     ):
-        """_summary_."""
+        """Create the Table from a data steam (file).
+
+        Parameters
+        ----------
+        data : BufferHandler
+            Handler of the steam to a file.
+        columns : list | tuple
+            Columns (headers) of the file.
+        index : list | tuple, optional
+            The index column.
+        """
         dtypes = kwargs["dtypes"]
         ncol = kwargs["ncol"]
         index_col = kwargs["index_col"]
@@ -1887,48 +1910,33 @@ class Table(_Table):
             kwargs["ncol"] -= 1
 
         if index_col >= 0 and index_col in cols:
+            if index is not None:
+                index = [
+                    dtypes[index_col](item)
+                    for item in replace_empty(_d[index_col::ncol])
+                ]
             cols.remove(index_col)
 
         for c in cols:
             _f.append([dtypes[c](item) for item in replace_empty(_d[c::ncol])])
 
-        self.data = column_stack((*_f,))
-
-    def _build_from_dict(
-        self,
-        data: dict,
-    ):
-        """_summary_."""
-        raise NotImplementedError(NOT_IMPLEMENTED)
-
-    def _build_from_list(
-        self,
-        data: list,
-    ):
-        """_summary_."""
-        self.data = array(data, dtype=object)
-
-    def mean(self):
-        """_summary_."""
-        raise NotImplementedError(NOT_IMPLEMENTED)
-
-    def max(self):
-        """_summary_."""
-        raise NotImplementedError(NOT_IMPLEMENTED)
+        data = column_stack((*_f,))
+        return cls(data=data, index=index, columns=columns, **kwargs)
 
     def upscale(
         self,
         delta: float,
         inplace: bool = False,
     ):
-        """_summary_.
+        """Upscale the data by a smaller delta.
 
         Parameters
         ----------
         delta : float
-            _description_
+            Size of the new interval.
         inplace : bool, optional
-            _description_, by default True
+            Whether to execute in place, i.e. overwrite the existing data.
+            By default True
 
         """
         meta = self.meta.copy()
@@ -2035,7 +2043,6 @@ class TableLazy(_Table):
         self,
         oid: object,
     ):
-        """_summary_."""
         try:
             idx = self._index[oid]
         except Exception:
@@ -2086,7 +2093,7 @@ class TableLazy(_Table):
         with self.handler as h:
             c = 0
 
-            for _nlines, sd in _text_chunk_gen(h, _pat_multi, nchar=self.nchar):
+            for _nlines, sd in text_chunk_gen(h, _pat_multi, nchar=self.nchar):
                 new_index[c:_nlines] = [
                     *map(
                         self.dtypes[idx],

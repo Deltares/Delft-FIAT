@@ -6,7 +6,18 @@ from osgeo import osr
 def get_srs_repr(
     srs: osr.SpatialReference,
 ) -> str:
-    """_summary_."""
+    """Get a representation of a spatial reference system object.
+
+    Parameters
+    ----------
+    srs : osr.SpatialReference
+        Spatial reference system.
+
+    Returns
+    -------
+    str
+        Representing string.
+    """
     if srs is None:
         raise ValueError("'srs' can not be 'None'.")
     _auth_c = srs.GetAuthorityCode(None)

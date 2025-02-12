@@ -5,7 +5,7 @@ from collections.abc import Iterable
 
 
 class MainHelpFormatter(HelpFormatter):
-    """_summary_."""
+    """Format the help screen over cli."""
 
     def add_usage(
         self,
@@ -14,7 +14,7 @@ class MainHelpFormatter(HelpFormatter):
         groups: Iterable[_MutuallyExclusiveGroup],
         prefix: str | None = None,
     ) -> None:
-        """_summary_."""
+        """Add usage string."""
         return super().add_usage(usage, actions, groups, prefix)
 
     # def _format_usage(self, usage: str | None, actions: Iterable[Action],
@@ -44,6 +44,6 @@ class MainHelpFormatter(HelpFormatter):
     #     return '    ' + text
 
     def start_section(self, heading):
-        """_summary_."""
+        """Show start section."""
         heading = heading[0].upper() + heading[1:]
         return super().start_section(heading)

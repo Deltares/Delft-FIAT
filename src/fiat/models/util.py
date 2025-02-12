@@ -26,10 +26,10 @@ def exposure_from_geom(
     idxs_haz: list | tuple,
     pattern: object,
 ):
-    """_summary_."""
+    """Get exposure info from feature."""
     method = ft.GetField(mid)
     haz = [ft.GetField(idx) for idx in idxs_haz]
-    return ft, method, haz
+    return ft, [ft.GetField(oid)], method, haz
 
 
 def exposure_from_csv(
@@ -40,16 +40,16 @@ def exposure_from_csv(
     idxs_haz: list | tuple,
     pattern: object,
 ):
-    """_summary_."""
+    """Get exposure info from csv file."""
     ft_info_raw = exp[ft.GetField(oid)]
     if ft_info_raw is None:
-        return None, None, None
+        return None, None, None, None
 
     ft_info = replace_empty(pattern.split(ft_info_raw))
     ft_info = [x(y) for x, y in zip(exp.dtypes, ft_info)]
     method = ft_info[exp._columns["extract_method"]].lower()
     haz = [ft_info[idx] for idx in idxs_haz]
-    return ft_info, method, haz
+    return ft_info, ft_info, method, haz
 
 
 EXPOSURE_FIELDS = {
@@ -58,30 +58,18 @@ EXPOSURE_FIELDS = {
 }
 
 
-def csv_temp_file(
-    p: Path | str,
-    idx: int,
-    index_col: str,
-    columns: tuple | list,
-):
-    """_summary_.
-
-    _extended_summary_
-    """
-    header = (
-        f"{index_col},".encode() + ",".join(columns).encode() + NEWLINE_CHAR.encode()
-    )
-    with open(Path(p, f"{idx:03d}.dat"), "wb") as _tw:
-        _tw.write(header)
-
-
 def csv_def_file(
     p: Path | str,
     columns: tuple | list,
 ):
-    """_summary_.
+    """_summary_Set up the outgoing csv file.
 
-    _extended_summary_
+    Parameters
+    ----------
+    p : Path | str
+        Path to the file.
+    columns : tuple | list
+        Headers to be added to the file.
     """
     header = b""
     header += ",".join(columns).encode()
@@ -91,28 +79,24 @@ def csv_def_file(
         _dw.write(header)
 
 
-def geom_threads(
-    cpu_count: int,
-    chunks: int,
-):
-    """_summary_.
-
-    _extended_summary_
-    """
-    n = 1
-    if chunks == 0:
-        chunks = 1
-    n = chunks
-    n = min(cpu_count, n)
-
-    return n
-
-
 def generate_jobs(
     d: dict,
     tied: tuple | list = None,
-):
-    """_summary_."""
+) -> dict:  # type: ignore
+    """Generate jobs.
+
+    Parameters
+    ----------
+    d : dict
+        Dictionary of elements, either containing single values or iterables.
+    tied : tuple | list, optional
+        Values in the dictionary that depend on each other.
+
+    Returns
+    -------
+    dict
+        Dictionary containing the job.
+    """
     arg_list = []
     single_var = None
     if tied is not None:
@@ -142,7 +126,19 @@ def execute_pool(
     jobs: Generator,
     threads: int,
 ):
-    """_summary_."""
+    """Execute a python process pool.
+
+    Parameters
+    ----------
+    ctx : SpawnContext
+        Context of the current process.
+    func : Callable
+        To be executed function.
+    jobs : Generator
+        A job generator. Returns single dictionaries.
+    threads : int
+        Number of threads.
+    """
     # If there is only one thread needed, execute in the main process
     if threads == 1:
         for job in jobs:

@@ -21,7 +21,7 @@ from fiat.util import DummyWriter, regex_pattern
 
 
 def worker(
-    cfg,
+    cfg: dict,
     queue: Queue,
     haz: GridSource,
     vul: Table,
@@ -32,7 +32,34 @@ def worker(
     lock1: Lock,
     lock2: Lock,
 ):
-    """_summary_."""
+    """Run the geometry model.
+
+    This is the worker function corresponding to the run method \
+of the [GeomSource](/api/GeomSource.qmd) object.
+
+    Parameters
+    ----------
+    cfg : dict
+        The configurations.
+    queue : Queue
+        A Queue for logging back to the main thread.
+    haz : GridSource
+        The hazard data.
+    vul : Table
+        The vulnerability data.
+    exp_func : Callable
+        The function to get information from a feature.
+    exp_data : TableLazy
+        The exposure data.
+    exp_geom : dict
+        The exposure geometries.
+    chunk : tuple | list
+        The chunk to run through.
+    lock1 : Lock
+        The lock for the csv output.
+    lock2 : Lock
+        The lock for the geometries output.
+    """
     # Setup the hazard type module
     sender = Sender(queue=queue)
     module = importlib.import_module(f"fiat.methods.{cfg.get('global.type')}")
@@ -59,16 +86,9 @@ def worker(
     # Some exposure csv dependent data (or not)
     mid = None
     pattern = None
-    out_text_writer = DummyWriter()
     if exp_data is not None:
         man_columns_idxs = [exp_data.columns.index(item) for item in man_columns]
         pattern = regex_pattern(exp_data.delimiter, nchar=exp_data.nchar)
-        out_text_writer = BufferedTextWriter(
-            Path(cfg.get("output.path"), cfg.get("output.csv.name")),
-            mode="ab",
-            buffer_size=100000,
-            lock=lock1,
-        )
 
     # Loop through the different files
     for idx, gm in exp_geom.items():
@@ -98,10 +118,21 @@ def worker(
             lock=lock2,
         )
 
+        # Check for the csv writer
+        out_text_writer = DummyWriter()
+        out_csv = cfg.get(f"output.csv.name{idx}")
+        if out_csv is not None:
+            out_text_writer = BufferedTextWriter(
+                Path(cfg.get("output.path"), out_csv),
+                mode="ab",
+                buffer_size=100000,
+                lock=lock1,
+            )
+
         # Loop over all the geometries in a reduced manner
         for ft in gm.reduced_iter(*chunk):
             out = []
-            info, method, haz_kwargs = exp_func(
+            in_info, out_info, method, haz_kwargs = exp_func(
                 ft,
                 exp_data,
                 oid,
@@ -109,7 +140,7 @@ def worker(
                 man_columns_idxs,
                 pattern,
             )
-            if info is None:
+            if in_info is None:
                 sender.emit(
                     LogItem(
                         2,
@@ -141,11 +172,11 @@ No data found in exposure database",
                     *haz_kwargs,
                 )
                 out += [haz_value, red_fact]
-                for key, item in types.items():
+                for _, item in types.items():
                     out += func_damage(
                         haz_value,
                         red_fact,
-                        info,
+                        in_info,
                         item,
                         vul,
                         vul_min,
@@ -172,9 +203,9 @@ No data found in exposure database",
                     out,
                 ),
             )
-            out_text_writer.write_iterable(info, out)
+            out_text_writer.write_iterable(out_info, out)
 
-            pass
         out_writer.close()
         out_writer = None
-    pass
+        out_text_writer.close()
+        out_text_writer = None

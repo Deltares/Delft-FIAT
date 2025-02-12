@@ -8,10 +8,14 @@ These are the unreleased changes.
 ### Added
 
 ### Changed
+- CSV file output coupled with vector file output
+- Default vector output file format back to `GPKG`
+- Optional CSV file output
 
 ### Deprecated
 
 ### Documentation
+- Fixed missing docstrings (API)
 
 ## v0.2.1 (2024-12-05)
 Patch release for improved performance.
