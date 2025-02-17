@@ -58,10 +58,6 @@ jobs:
           chmod u+x _scripts/add_packages.sh
           _scripts/add_packages.sh
 
-      - name: Install fiat
-        run: |
-          pixi run -e docs install-fiat
-
       - name: Setup testdata
         run: |
           pixi run -e docs generate-data
