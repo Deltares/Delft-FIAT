@@ -10,6 +10,7 @@ These are the unreleased changes.
 ### Changed
 - CSV file output coupled with vector file output
 - Default vector output file format back to `GPKG`
+- Fixed bug in newline sniffer
 - Optional CSV file output
 
 ### Deprecated
