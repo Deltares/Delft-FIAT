@@ -178,8 +178,7 @@ preview = ["pixi-build"]
 
 [tool.pixi.tasks]
 # Installation
-install = { depends-on = ["install-fiat", "install-pre-commit"] }
-install-fiat = "pip install --no-deps --editable ."
+install = { depends-on = ["install-pre-commit"] }
 install-pre-commit = "pre-commit install"
 
 # Repo related tasks
@@ -222,6 +221,9 @@ clean-docs = { cmd = ["rm", "-rf", "docs/_site"] }
 # Specify conda only deps
 [tool.pixi.dependencies]
 pip = "*"
+
+[tool.pixi.pypi-dependencies]
+delft_fiat = { path = ".", editable = true }
 
 [tool.pixi.feature.build-win]
 dependencies = {python = "3.12.*"}

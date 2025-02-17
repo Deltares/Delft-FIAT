@@ -53,10 +53,6 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
 
-      - name: Install fiat
-        run: |
-          pixi run -e test-py${{ matrix.python-version }} install-fiat
-
       - name: Create testdata
         run: |
           pixi run -e test-py${{ matrix.python-version }} generate-data

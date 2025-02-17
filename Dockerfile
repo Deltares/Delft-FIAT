@@ -14,7 +14,6 @@ COPY pixi.lock pyproject.toml README.md ./
 COPY --chown=deltares:deltares src/fiat ./src/fiat
 
 RUN chmod u+x src/ \
-  && pixi run -e ${PIXIENV} install-fiat \
   && rm -rf .cache \
   && find .pixi -type f -name "*.pyc" -delete
 

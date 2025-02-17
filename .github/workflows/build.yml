@@ -47,10 +47,6 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
 
-      - name: Install fiat
-        run: |
-          pixi run -e build-linux install-fiat
-
       - name: Build FIAT
         run: |
           chmod +x .build/linux64.sh
