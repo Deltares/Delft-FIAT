@@ -186,7 +186,7 @@ class BufferHandler:
         path: Path,
         skip: int = 0,
     ):
-        self.path = path
+        self.path = Path(path)
         self.size = None
         self.skip = skip
         self.nchar = b"\n"
@@ -237,8 +237,14 @@ class BufferHandler:
     def sniffer(self):
         """Sniff for the newline character."""
         raw = self.stream.read(20000)
-        if len(raw.split(b"\r\n")) != 1:
+        r_count = raw.count(b"\r")
+        n_count = raw.count(b"\n")
+        if n_count > 9 * r_count:
+            pass
+        elif n_count < 1.1 * r_count:
             self.nchar = b"\r\n"
+        else:
+            raise ValueError(f"Mixed newline characters in {self.path.as_posix()}")
         self.stream.seek(0)
 
 
