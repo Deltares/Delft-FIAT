@@ -78,17 +78,23 @@ def clip(
     """
     # Get the geometry information form the feature
     geom = ft.GetGeometryRef()
+    ow, oh = band.shape_xy
 
     # Extract information
     dx = gtf[1]
     dy = gtf[5]
     minX, maxX, minY, maxY = geom.GetEnvelope()
     ulX, ulY = world2pixel(gtf, minX, maxY)
+    ulXn = min(max(0, ulX), ow - 1)
+    ulYn = min(max(0, ulY), oh - 1)
     lrX, lrY = world2pixel(gtf, maxX, minY)
+    lrXn = min(max(0, lrX), ow - 1)
+    lrYn = min(max(0, lrY), oh - 1)
     plX, plY = pixel2world(gtf, ulX, ulY)
-    pxWidth = int(lrX - ulX) + 1
-    pxHeight = int(lrY - ulY) + 1
-    clip = band[ulX, ulY, pxWidth, pxHeight]
+    pxWidth = max(int(lrX - ulX) + 1 - abs(lrXn - lrX) - abs(ulXn - ulX), 0)
+    pxHeight = max(int(lrY - ulY) + 1 - abs(lrYn - lrY) - abs(ulYn - ulY), 0)
+
+    clip = band[ulXn, ulYn, pxWidth, pxHeight]
     mask = ones(clip.shape)
 
     # Loop trough the cells
