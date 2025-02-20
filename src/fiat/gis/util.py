@@ -1,5 +1,7 @@
 """Util of GIS module."""
 
+from math import floor
+
 
 def world2pixel(
     gtf: tuple,
@@ -43,8 +45,8 @@ def world2pixel(
     ulY = gtf[3]
     xDist = gtf[1]
     yDist = gtf[5]
-    coorX = int((x - ulX) / xDist)
-    coorY = int((y - ulY) / yDist)
+    coorX = floor((x - ulX) / xDist)
+    coorY = floor((y - ulY) / yDist)
     return (coorX, coorY)
 
 
