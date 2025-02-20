@@ -178,7 +178,6 @@ def check_geom_extent(
 
     if not all(_checks):
         msg = f"Geometry bounds {gm_bounds} exceed hazard bounds {gr_bounds}"
-        # raise FIATDataError(msg)
         logger.warning(msg)
 
 

@@ -83,23 +83,23 @@ def clip(
     # Extract information
     dx = gtf[1]
     dy = gtf[5]
-    minX, maxX, minY, maxY = geom.GetEnvelope()
-    ulX, ulY = world2pixel(gtf, minX, maxY)
-    ulXn = min(max(0, ulX), ow - 1)
-    ulYn = min(max(0, ulY), oh - 1)
-    lrX, lrY = world2pixel(gtf, maxX, minY)
-    lrXn = min(max(0, lrX), ow - 1)
-    lrYn = min(max(0, lrY), oh - 1)
-    plX, plY = pixel2world(gtf, ulX, ulY)
-    pxWidth = max(int(lrX - ulX) + 1 - abs(lrXn - lrX) - abs(ulXn - ulX), 0)
-    pxHeight = max(int(lrY - ulY) + 1 - abs(lrYn - lrY) - abs(ulYn - ulY), 0)
+    minx, maxx, miny, maxy = geom.GetEnvelope()
+    ulx, uly = world2pixel(gtf, minx, maxy)
+    ulxn = min(max(0, ulx), ow - 1)
+    ulyn = min(max(0, uly), oh - 1)
+    lrx, lry = world2pixel(gtf, maxx, miny)
+    lrxn = min(max(0, lrx), ow - 1)
+    lryn = min(max(0, lry), oh - 1)
+    plx, ply = pixel2world(gtf, ulx, uly)
+    px_w = max(int(lrx - ulx) + 1 - abs(lrxn - lrx) - abs(ulxn - ulx), 0)
+    px_h = max(int(lry - uly) + 1 - abs(lryn - lry) - abs(ulyn - uly), 0)
 
-    clip = band[ulXn, ulYn, pxWidth, pxHeight]
+    clip = band[ulxn, ulyn, px_w, px_h]
     mask = ones(clip.shape)
 
     # Loop trough the cells
-    for i, j in product(range(pxWidth), range(pxHeight)):
-        if not intersect_cell(geom, plX + (dx * i), plY + (dy * j), dx, dy):
+    for i, j in product(range(px_w), range(px_h)):
+        if not intersect_cell(geom, plx + (dx * i), ply + (dy * j), dx, dy):
             mask[j, i] = 0
 
     return clip[mask == 1]
@@ -153,24 +153,24 @@ cells that are touched by the feature.
     # Extract information
     dx = gtf[1]
     dy = gtf[5]
-    minX, maxX, minY, maxY = geom.GetEnvelope()
-    ulX, ulY = world2pixel(gtf, minX, maxY)
-    lrX, lrY = world2pixel(gtf, maxX, minY)
-    plX, plY = pixel2world(gtf, ulX, ulY)
+    minx, maxx, miny, maxy = geom.GetEnvelope()
+    ulx, uly = world2pixel(gtf, minx, maxy)
+    lrx, lry = world2pixel(gtf, maxx, miny)
+    plx, ply = pixel2world(gtf, ulx, uly)
     dxn = dx / upscale
     dyn = dy / upscale
-    pxWidth = int(lrX - ulX) + 1
-    pxHeight = int(lrY - ulY) + 1
-    clip = band[ulX, ulY, pxWidth, pxHeight]
-    mask = ones((pxHeight * upscale, pxWidth * upscale))
+    px_w = int(lrx - ulx) + 1
+    px_h = int(lry - uly) + 1
+    clip = band[ulx, uly, px_w, px_h]
+    mask = ones((px_h * upscale, px_w * upscale))
 
     # Loop trough the cells
-    for i, j in product(range(pxWidth * upscale), range(pxHeight * upscale)):
-        if not intersect_cell(geom, plX + (dxn * i), plY + (dyn * j), dxn, dyn):
+    for i, j in product(range(px_w * upscale), range(px_h * upscale)):
+        if not intersect_cell(geom, plx + (dxn * i), ply + (dyn * j), dxn, dyn):
             mask[j, i] = 0
 
     # Resample the higher resolution mask
-    mask = mask.reshape((pxHeight, upscale, pxWidth, -1)).mean(3).mean(1)
+    mask = mask.reshape((px_h, upscale, px_w, -1)).mean(3).mean(1)
     clip = clip[mask != 0]
 
     return clip, mask
