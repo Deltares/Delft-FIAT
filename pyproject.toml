@@ -1,6 +1,6 @@
 ## Build system related stuff
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["cython", "numpy", "setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -9,6 +9,14 @@ include = ["fiat*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "fiat.version.__version__"}
+
+[tool.cibuildwheel]
+build = [
+    "cp310-*",
+    "cp311-*",
+    "cp312-*",
+    "cp313-*",
+]
 
 ## Project related stuff
 [project]
@@ -31,6 +39,7 @@ license = {text = "MIT"}
 
 requires-python = ">=3.11"
 dependencies = [
+"cython>=3.0.0",
 "gdal>=3.5",
 "numpy",
 "regex",
@@ -72,6 +81,7 @@ classifiers = [
 
 [project.optional-dependencies] # Optional
 all = [
+    "cibuildwheel",
     "setuptools>=61.0.0",
 ]
 build = [
@@ -79,7 +89,6 @@ build = [
     "delft_fiat[all,extra]",
 ]
 dev = [
-    "cython",
     "pre-commit",
     "ruff",
     "delft_fiat[all,docs,extra,test]",
@@ -123,10 +132,18 @@ testpaths = [
 
 [tool.coverage.run]
 branch = true
-source = ["./src"]
-omit = ["*/gui/*"]
+source = ["./src/fiat"]
+plugins = [ "Cython.Coverage" ]
+
+[tool.coverage.cython]
+annotate = true
 
 [tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
 # Regexes for lines to exclude from consideration
 exclude_also = [
     # Don't complain about missing debug-only code:
