@@ -26,13 +26,18 @@ logger = spawn_logger("fiat.model")
 
 
 class BaseModel(metaclass=ABCMeta):
-    """_summary_."""
+    """Base template for the model objects.
+
+    Parameters
+    ----------
+    cfg : ConfigReader
+        Configuration object, derived from dictionary.
+    """
 
     def __init__(
         self,
         cfg: object,
     ):
-        """_summary_."""
         self.cfg = cfg
         logger.info(f"Using settings from '{self.cfg.filepath}'")
 
@@ -72,7 +77,7 @@ class BaseModel(metaclass=ABCMeta):
         return f"<{self.__class__.__name__} object at {id(self):#018x}>"
 
     def _set_model_srs(self):
-        """_summary_."""
+        """Set the model spatial reference system."""
         _srs = self.cfg.get("global.crs")
         path = self.cfg.get("hazard.file")
         if _srs is not None:
@@ -108,7 +113,10 @@ class BaseModel(metaclass=ABCMeta):
         gm = None
 
     def _set_num_threads(self):
-        """_summary_."""
+        """Set the number of threads.
+
+        Either through the config file or cli.
+        """
         max_threads = cpu_count()
         user_threads = self.cfg.get("global.threads")
         if user_threads is not None:
@@ -125,11 +133,11 @@ exceeds machine thread count ('{max_threads}')"
     def _setup_output_files(
         self,
     ):
-        """_summary_."""
+        """Set up output files."""
         raise NotImplementedError(NEED_IMPLEMENTED)
 
     def read_hazard_grid(self):
-        """_summary_."""
+        """Read the hazard data."""
         path = self.cfg.get("hazard.file")
         logger.info(f"Reading hazard data ('{path.name}')")
         # Set the extra arguments from the settings file
@@ -201,7 +209,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         self.hazard_grid = data
 
     def read_vulnerability_data(self):
-        """_summary_."""
+        """Read the vulnerability data."""
         path = self.cfg.get("vulnerability.file")
         logger.info(f"Reading vulnerability curves ('{path.name}')")
 
@@ -235,5 +243,5 @@ using a step size of: {self._vul_step_size}"
     def run(
         self,
     ):
-        """_summary_."""
+        """Run model."""
         raise NotImplementedError(NEED_IMPLEMENTED)

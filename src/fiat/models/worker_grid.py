@@ -7,6 +7,7 @@ from numpy import full, ravel, unravel_index, where
 
 from fiat.io import (
     GridSource,
+    Table,
     open_grid,
 )
 from fiat.methods.ead import calc_ead, risk_density
@@ -14,13 +15,30 @@ from fiat.util import create_windows
 
 
 def worker(
-    cfg: object,
+    cfg: dict,
     haz: GridSource,
     idx: int,
-    vul: object,
+    vul: Table,
     exp: GridSource,
 ):
-    """_summary_."""
+    """Run the geometry model.
+
+    This is the worker function corresponding to the run method \
+of the [GridSource](/api/GeomSource.qmd) object.
+
+    Parameters
+    ----------
+    cfg : object
+        The configurations.
+    haz : GridSource
+        The hazard data.
+    idx : int
+        Index of the hazard data band to be used.
+    vul : Table
+        The vulnerability data.
+    exp : GridSource
+        The exposure data.
+    """
     # Set some variables for the calculations
     exp_bands = []
     write_bands = []
@@ -150,16 +168,11 @@ def worker(
     haz_band = None
 
 
-def worker2():
-    """_summary_."""
-    pass
-
-
 def worker_ead(
     cfg: object,
     chunk: tuple,
 ):
-    """_summary_."""
+    """Calculate the ead."""
     _rp_coef = risk_density(cfg.get("hazard.return_periods"))
     _out = cfg.get("output.path")
     _chunk = [floor(_n / len(_rp_coef)) for _n in chunk]

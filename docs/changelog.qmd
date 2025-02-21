@@ -10,11 +10,16 @@ These are the unreleased changes.
 - Cython performance boost
 
 ### Changed
+- CSV file output coupled with vector file output
 - Partial ported code to Cython
+- Default vector output file format back to `GPKG`
+- Fixed bug in newline sniffer
+- Optional CSV file output
 
 ### Deprecated
 
 ### Documentation
+- Fixed missing docstrings (API)
 
 ## v0.2.1 (2024-12-05)
 Patch release for improved performance.

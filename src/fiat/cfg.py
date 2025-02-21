@@ -91,7 +91,6 @@ class ConfigReader(dict):
         return f"<ConfigReader object file='{self.filepath}'>"
 
     def __reduce__(self):
-        """_summary_."""
         return self.__class__, (
             self.filepath,
             self._extra_args,
@@ -107,7 +106,7 @@ class ConfigReader(dict):
         root: Path | str,
         path: Path | str,
     ):
-        """_summary_."""
+        """Create directory when it does not yet exist."""
         _p = Path(path)
         if not _p.is_absolute():
             _p = Path(root, _p)
@@ -118,7 +117,7 @@ class ConfigReader(dict):
         self,
         path: Path | str,
     ):
-        """_summary_."""
+        """Ensure output directory existence."""
         # Global output directory
         _p = self._create_dir(
             self.path,

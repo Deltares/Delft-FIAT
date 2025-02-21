@@ -2,7 +2,7 @@
 
 
 class DriverNotFoundError(Exception):
-    """_summary_."""
+    """Custom driver not found class."""
 
     def __init__(self, gog, path):
         self.base = f"{gog} data"
@@ -13,14 +13,8 @@ class DriverNotFoundError(Exception):
         return f"{self.base} -> {self.msg}"
 
 
-class GenericFIATError(Exception):
-    """_summary_."""
-
-    pass
-
-
 class FIATDataError(Exception):
-    """_summary_."""
+    """Custom FIAT error class."""
 
     def __init__(self, msg):
         self.base = "Data error"
