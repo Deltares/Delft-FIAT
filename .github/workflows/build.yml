@@ -49,8 +49,7 @@ jobs:
 
       - name: Build FIAT
         run: |
-          chmod +x .build/linux64.sh
-          .build/linux64.sh
+          pixi run -e build-linux build
 
       - name: Create Testdata
         run: |
