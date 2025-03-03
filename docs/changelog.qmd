@@ -6,6 +6,7 @@ title: "What's new?"
 These are the unreleased changes.
 
 ### Added
+- Build task for pixi
 
 ### Changed
 - CSV file output coupled with vector file output
