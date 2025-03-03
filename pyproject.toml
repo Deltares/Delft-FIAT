@@ -181,6 +181,9 @@ preview = ["pixi-build"]
 install = { depends-on = ["install-pre-commit"] }
 install-pre-commit = "pre-commit install"
 
+# Building
+build = { cmd = ["pyinstaller", "$PIXI_PROJECT_ROOT/.build/build.spec", "--distpath", "$PIXI_PROJECT_ROOT/bin", "--workpath", "$PIXI_PROJECT_ROOT/bin/intermediates"] }
+
 # Repo related tasks
 generate-data = { cmd = ["python", ".testdata/create_test_data.py"] }
 lint = { cmd = ["pre-commit", "run", "--all"] }
