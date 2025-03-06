@@ -1,7 +1,7 @@
 FROM debian:bookworm-slim AS base
 ARG PIXIENV
 ARG UID=1000
-RUN apt-get update && apt-get install -y curl && apt-get install -y vim && apt-get install -y binutils
+RUN apt-get update && apt-get install -y curl && apt-get install -y vim && apt-get install -y binutils && apt-get install -y gcc
 
 RUN useradd deltares
 RUN usermod -u ${UID} deltares
@@ -10,7 +10,8 @@ WORKDIR /home/deltares
 
 RUN curl -fsSL https://pixi.sh/install.sh | bash
 ENV PATH=/home/deltares/.pixi/bin:$PATH
-COPY pixi.lock pyproject.toml README.md ./
+ENV PIXI_FROZEN=true
+COPY pixi.lock pyproject.toml README.md setup.py ./
 COPY --chown=deltares:deltares src/fiat ./src/fiat
 
 RUN chmod u+x src/ \
@@ -21,7 +22,7 @@ RUN chmod u+x src/ \
 # Workaround: write a file that runs pixi with correct environment.
 # This is needed because the argument is not passed to the entrypoint.
 ENV RUNENV="${PIXIENV}"
-RUN echo "pixi run --locked -e ${RUNENV} \$@" > run_pixi.sh \
+RUN echo "pixi run -e ${RUNENV} \$@" > run_pixi.sh \
   && chown deltares:deltares run_pixi.sh \
   && chmod u+x run_pixi.sh
 ENTRYPOINT ["bash", "run_pixi.sh"]

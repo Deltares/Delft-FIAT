@@ -7,9 +7,12 @@ These are the unreleased changes.
 
 ### Added
 - Build task for pixi
+- Custom rasterization functions instead of relying on GDAL (which included dataset creation at runtime)
+- Cython performance boost
 
 ### Changed
 - CSV file output coupled with vector file output
+- Partial ported code to Cython
 - Default vector output file format back to `GPKG`
 - Fixed bug in newline sniffer
 - Optional CSV file output
