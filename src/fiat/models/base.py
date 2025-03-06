@@ -7,6 +7,7 @@ from os import cpu_count
 
 from osgeo import osr
 
+from fiat.cfg import ConfigReader
 from fiat.check import (
     check_duplicate_columns,
     check_global_crs,
@@ -36,10 +37,10 @@ class BaseModel(metaclass=ABCMeta):
 
     def __init__(
         self,
-        cfg: object,
+        cfg: ConfigReader,
     ):
         self.cfg = cfg
-        logger.info(f"Using settings from '{self.cfg.filepath}'")
+        logger.info(f"Using settings from '{self.cfg.path}'")
 
         ## Declarations
         # Model data
@@ -102,8 +103,6 @@ class BaseModel(metaclass=ABCMeta):
         # Simple check to see if it's not None
         check_global_crs(
             self.srs,
-            self.cfg.filepath.name,
-            path.name,
         )
         # Set crs for later use
         self.cfg.set("global.crs", get_srs_repr(self.srs))

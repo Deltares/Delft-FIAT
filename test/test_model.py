@@ -8,7 +8,7 @@ from fiat.io import open_csv
 
 def run_model(cfg, p):
     # Execute
-    cfg.set_output_dir(str(p))
+    cfg.setup_output_dir(str(p))
     mod = FIAT(cfg)
     mod.run()
 

@@ -12,27 +12,30 @@ from fiat.check import (
     check_config_grid,
 )
 from fiat.util import (
+    create_dir,
     flatten_dict,
-    generic_folder_check,
     generic_path_check,
     get_module_attr,
 )
 
 
 class ConfigReader(dict):
-    """Object holding information from a settings file.
+    """Object holding model configuration information.
 
     Parameters
     ----------
-    file : Path | str
-        Path to the settings file.
+    settings : dict,
+        Model configuration in dictionary format.
+    root : Path | str, optional
+        Working directory of the model.
     extra_args : dict, optional
         Extra arguments that are not in the settings file.
     """
 
     def __init__(
         self,
-        file: Path | str,
+        settings: dict,
+        root: Path | str = None,
         extra_args: dict = None,
     ):
         # container for extra
@@ -42,13 +45,12 @@ class ConfigReader(dict):
             self._extra_args.update(extra_args)
 
         # Set the root directory
-        self.filepath = Path(file)
-        self.path = self.filepath.parent
+        if root is None:
+            root = Path.cwd()
+        self.path = root
 
         # Load the config as a simple flat dictionary
-        f = open(file, "rb")
-        dict.__init__(self, flatten_dict(tomllib.load(f), "", "."))
-        f.close()
+        dict.__init__(self, flatten_dict(settings, "", "."))
 
         # Initial check for mandatory entries of the settings toml
         extra_entries = get_module_attr(
@@ -56,7 +58,6 @@ class ConfigReader(dict):
         )
         check_config_entries(
             self.keys(),
-            self.filepath,
             extra_entries,
         )
 
@@ -84,15 +85,17 @@ class ConfigReader(dict):
         # (Re)set the extra values
         self.update(self._extra_args)
 
-        # Ensure the output directory is there
-        self._create_model_dirs(self.get("output.path"))
+        # Ensure absolute path for output
+        self._ensure_output_path()
 
     def __repr__(self):
-        return f"<ConfigReader object file='{self.filepath}'>"
+        _mem_loc = f"{id(self):#018x}".upper()
+        return f"<{self.__class__.__name__} object at {_mem_loc}>"
 
     def __reduce__(self):
         return self.__class__, (
-            self.filepath,
+            self,
+            self.path,
             self._extra_args,
         )
 
@@ -101,37 +104,34 @@ class ConfigReader(dict):
             self._extra_args[__key] = __value
         super().__setitem__(__key, __value)
 
-    def _create_dir(
-        self,
-        root: Path | str,
+    def _ensure_output_path(self):
+        """Make sure the output path is present and absolute."""
+        output_dir = Path(self.get("output.path", "output"))
+        if not output_dir.is_absolute():
+            output_dir = Path(self.path, output_dir)
+        self.set("output.path", output_dir)
+
+    @classmethod
+    def from_file(
+        cls,
         path: Path | str,
     ):
-        """Create directory when it does not yet exist."""
-        _p = Path(path)
-        if not _p.is_absolute():
-            _p = Path(root, _p)
-        generic_folder_check(_p)
-        return _p
+        """Initialize ConfigReader from a file.
 
-    def _create_model_dirs(
-        self,
-        path: Path | str,
-    ):
-        """Ensure output directory existence."""
-        # Global output directory
-        _p = self._create_dir(
-            self.path,
-            path,
-        )
-        self.set("output.path", _p)
+        Parameters
+        ----------
+        path : Path | str
+            Path to the settings file.
+        """
+        path = Path(path)
 
-        # Damage directory for grid risk calculations
-        if self.get("hazard.risk") and check_config_grid(self):
-            _p = self._create_dir(
-                self.get("output.path"),
-                "damages",
-            )
-            self.set("output.damages.path", _p)
+        # Open the file
+        with open(path, "rb") as f:
+            settings = tomllib.load(f)
+
+        # Create the object
+        obj = cls(settings, root=path.parent)
+        return obj
 
     def get_model_type(
         self,
@@ -217,15 +217,34 @@ the bool is set to True.
         """
         self[key] = value
 
-    def set_output_dir(
+    def setup_output_dir(
         self,
-        path: Path | str,
+        path: Path | str = None,
     ):
         """Set the output directory.
 
         Parameters
         ----------
-        path : Path | str
+        path : Path | str, optional
             A Path to the new directory.
         """
-        self._create_model_dirs(path)
+        if path is None:
+            path = self.get("output.path")
+        _p = create_dir(
+            self.path,
+            path,
+        )
+        self.set("output.path", _p)
+
+        # Damage directory for grid risk calculations
+        if self.get("hazard.risk") and check_config_grid(self):
+            _p = create_dir(
+                _p,
+                "damages",
+            )
+            self.set("output.damages.path", _p)
+
+    def update(self, other):
+        """Update the config settings object."""
+        dict.__init__(self, other)
+        self._ensure_output_path()

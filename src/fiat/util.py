@@ -385,6 +385,18 @@ GRID_DRIVER_MAP[""] = "MEM"
 
 
 # I/O stuff
+def create_dir(
+    root: Path | str,
+    path: Path | str,
+):
+    """Create directory when it does not yet exist."""
+    _p = Path(path)
+    if not _p.is_absolute():
+        _p = Path(root, _p)
+    generic_folder_check(_p)
+    return _p
+
+
 def generic_folder_check(
     path: Path | str,
 ):

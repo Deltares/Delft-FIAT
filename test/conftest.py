@@ -43,7 +43,7 @@ def configs(settings_files):
     _cfgs = {}
     for key, item in settings_files.items():
         if not key.startswith("missing"):
-            _cfgs[key] = ConfigReader(item)
+            _cfgs[key] = ConfigReader.from_file(item)
     return _cfgs
 
 

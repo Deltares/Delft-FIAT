@@ -55,7 +55,7 @@ class GeomModel(BaseModel):
 
     def __init__(
         self,
-        cfg: ConfigReader | dict,
+        cfg: ConfigReader,
     ):
         super().__init__(cfg)
 
@@ -65,7 +65,6 @@ class GeomModel(BaseModel):
         # Setup the geometry model
         self.read_exposure()
         self.get_exposure_meta()
-        self._set_chunking()
         self._queue = self._mp_manager.Queue(maxsize=10000)
 
     def __del__(self):
@@ -285,7 +284,11 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         Generates output in the specified `output.path` directory.
         """
-        # Create the output files
+        # Set the chunking
+        self._set_chunking()
+
+        # Create the output directory and files
+        self.cfg.setup_output_dir()
         self._setup_output_files()
 
         # Get band names for logging

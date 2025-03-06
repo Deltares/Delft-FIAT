@@ -15,7 +15,6 @@ logger = spawn_logger("fiat.checks")
 ## Config
 def check_config_entries(
     keys: tuple,
-    path: Path,
     extra_entries: list,
 ):
     """Check the mandatory config entries."""
@@ -29,7 +28,7 @@ def check_config_entries(
     _check = [item in keys for item in _man_entries]
     if not all(_check):
         _missing = [item for item, b in zip(_man_entries, _check) if not b]
-        msg = f"Missing mandatory entries in '{path.name}'. Please fill in the \
+        msg = f"Missing mandatory entries in the settings. Please fill in the \
 following missing entries: {_missing}"
         raise FIATDataError(msg)
 
@@ -86,8 +85,6 @@ def check_config_grid(
 
 def check_global_crs(
     srs: osr.SpatialReference,
-    fname: str,
-    fname_haz: str,
 ):
     """Check the global spatial reference system.
 
