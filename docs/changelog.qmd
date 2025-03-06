@@ -6,6 +6,7 @@ title: "What's new?"
 These are the unreleased changes.
 
 ### Added
+- Build task for pixi
 - Custom rasterization functions instead of relying on GDAL (which included dataset creation at runtime)
 - Cython performance boost
 
