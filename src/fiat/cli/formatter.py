@@ -7,6 +7,10 @@ from collections.abc import Iterable
 class MainHelpFormatter(HelpFormatter):
     """Format the help screen over cli."""
 
+    def __init__(self, *args, **kwargs):
+        kwargs["max_help_position"] = 40
+        super().__init__(*args, **kwargs)
+
     def add_usage(
         self,
         usage: str | None,
@@ -16,11 +20,6 @@ class MainHelpFormatter(HelpFormatter):
     ) -> None:
         """Add usage string."""
         return super().add_usage(usage, actions, groups, prefix)
-
-    # def _format_usage(self, usage: str | None, actions: Iterable[Action],
-    # groups: Iterable[_MutuallyExclusiveGroup], prefix: str | None) -> str:
-    #     print(usage)
-    #     return super()._format_usage(usage, actions, groups, prefix)
 
     def _format_action_invocation(self, action):
         if not action.option_strings:
@@ -37,11 +36,27 @@ class MainHelpFormatter(HelpFormatter):
             parts = "\n".join(parts.split("\n")[1:])
         return parts
 
-    # def _split_lines(self, text, width):
-    #     return super()._split_lines(text, width)
+    def _format_usage(self, usage, actions, groups, prefix):
+        if prefix is None:
+            prefix = "Usage: "
 
-    # def _fill_text(self, text, width, indent):
-    #     return '    ' + text
+        # Program name
+        usage = [self._prog]
+
+        # Add options string if there are actions (options)
+        if actions:
+            usage.append("<options>")
+
+        # Positional arguments
+        positionals = [
+            action.metavar or action.dest
+            for action in actions
+            if action.option_strings == []
+        ]
+        usage.extend(positionals)
+
+        # Return the formatted string
+        return f"{prefix}{' '.join(usage)}\n"
 
     def start_section(self, heading):
         """Show start section."""

@@ -4,6 +4,7 @@ import copy
 import os
 import re
 import time
+from multiprocessing import Manager
 from pathlib import Path
 
 from osgeo import ogr
@@ -30,6 +31,7 @@ from fiat.models.base import BaseModel
 from fiat.models.util import (
     EXPOSURE_FIELDS,
     GEOM_DEFAULT_CHUNK,
+    check_file_for_read,
     csv_def_file,
     execute_pool,
     generate_jobs,
@@ -65,7 +67,6 @@ class GeomModel(BaseModel):
         # Setup the geometry model
         self.read_exposure()
         self.get_exposure_meta()
-        self._queue = self._mp_manager.Queue(maxsize=10000)
 
     def __del__(self):
         BaseModel.__del__(self)
@@ -199,13 +200,26 @@ class GeomModel(BaseModel):
     def read_exposure(self):
         """Read all the exposure files."""
         self.read_exposure_geoms()
-        csv = self.cfg.get("exposure.csv.file")
-        if csv is not None:
-            self.read_exposure_data()
+        self.read_exposure_data()
 
-    def read_exposure_data(self):
-        """Read the exposure data file (csv)."""
-        path = self.cfg.get("exposure.csv.file")
+    def read_exposure_data(
+        self,
+        path: Path | str = None,
+    ):
+        """Read the exposure data file (csv).
+
+        If no path is provided the method tries to
+        infer it from the model configurations.
+
+        Parameters
+        ----------
+        path : Path | str, optional
+            Path to the exposure data, by default None
+        """
+        file_entry = "exposure.csv.file"
+        path = check_file_for_read(self.cfg, file_entry, path)
+        if path is None:
+            return
         logger.info(f"Reading exposure data ('{path.name}')")
 
         # Setting the keyword arguments from settings file
@@ -221,6 +235,8 @@ class GeomModel(BaseModel):
         # Check for duplicate columns
         check_duplicate_columns(data.meta["dup_cols"])
 
+        # Reset to ensure the entry is present
+        self.cfg.set(file_entry, path)
         ## When all is done, add it
         self.exposure_data = data
 
@@ -243,7 +259,7 @@ class GeomModel(BaseModel):
             logger.info(
                 f"Reading exposure geometry '{file.split('.')[-1]}' ('{path.name}')"
             )
-            data = open_geom(str(path))
+            data = open_geom(path.as_posix())
             ## checks
             logger.info("Executing exposure geometry checks...")
 
@@ -252,15 +268,17 @@ class GeomModel(BaseModel):
 
             # check the internal srs of the file
             _int_srs = check_internal_srs(
-                data.get_srs(),
+                data.srs,
                 path.name,
             )
+            if _int_srs is not None:
+                data.srs = _int_srs
 
             # check if file srs is the same as the model srs
-            if not check_vs_srs(self.srs, data.get_srs()):
+            if not check_vs_srs(self.srs, data.srs):
                 logger.warning(
                     f"Spatial reference of '{path.name}' \
-('{get_srs_repr(data.get_srs())}') does not match \
+('{get_srs_repr(data.srs)}') does not match \
 the model spatial reference ('{get_srs_repr(self.srs)}')"
                 )
                 logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
@@ -274,6 +292,8 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
             # Add to the dict
             _d[suffix] = data
+            # And reset the entry
+            self.cfg.set(f"exposure.geom.file{suffix}", path)
         # When all is done, add it
         self.exposure_geoms = _d
 
@@ -284,15 +304,17 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         Generates output in the specified `output.path` directory.
         """
+        # Setup the manager
+        if self._mp_manager is None:
+            self._mp_manager = Manager()
+        self._queue = self._mp_manager.Queue(maxsize=10000)
+
         # Set the chunking
         self._set_chunking()
 
         # Create the output directory and files
         self.cfg.setup_output_dir()
         self._setup_output_files()
-
-        # Get band names for logging
-        _nms = self.cfg.get("hazard.band_names")
 
         # Setup the mp logger for missing stuff
         _receiver = setup_mp_log(
@@ -354,3 +376,6 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
         logger.info("Geom calculation are done!")
+
+        # Shutdown the manager
+        self._mp_manager.shutdown()

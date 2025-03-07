@@ -1,6 +1,7 @@
 """The FIAT grid model."""
 
 import time
+from pathlib import Path
 
 from fiat.check import (
     check_exp_grid_dmfs,
@@ -12,7 +13,12 @@ from fiat.io import open_grid
 from fiat.log import spawn_logger
 from fiat.models import worker_grid
 from fiat.models.base import BaseModel
-from fiat.models.util import GRID_PREFER, execute_pool, generate_jobs
+from fiat.models.util import (
+    GRID_PREFER,
+    check_file_for_read,
+    execute_pool,
+    generate_jobs,
+)
 
 logger = spawn_logger("fiat.model.grid")
 
@@ -78,8 +84,8 @@ data to {prefer} data"
         )
         data_warped = grid.reproject(
             data_warp,
-            get_srs_repr(data.get_srs()),
-            data.get_geotransform(),
+            get_srs_repr(data.srs),
+            data.geotransform,
             *data.shape_xy,
         )
 
@@ -91,10 +97,26 @@ data to {prefer} data"
             self.exposure_grid = data_warped
             self.cfg.set("exposure.grid.file", data_warped.path)
 
-    def read_exposure_grid(self):
-        """Read the exposure grid."""
-        file = self.cfg.get("exposure.grid.file")
-        logger.info(f"Reading exposure grid ('{file.name}')")
+    def read_exposure_grid(
+        self,
+        path: Path | str = None,
+    ):
+        """Read the exposure grid.
+
+        If no path is provided the method tries to
+        infer it from the model configurations.
+
+        Parameters
+        ----------
+        path : Path | str, optional
+            Path to an exposure grid, by default None
+        """
+        file_entry = "exposure.grid.file"
+        path = check_file_for_read(self.cfg, file_entry, path)
+        if path is None:
+            return
+        logger.info(f"Reading exposure grid ('{path.name}')")
+
         # Set the extra arguments from the settings file
         kw = {}
         kw.update(
@@ -103,7 +125,7 @@ data to {prefer} data"
         kw.update(
             self.cfg.generate_kwargs("global.grid.chunk"),
         )
-        data = open_grid(file, **kw)
+        data = open_grid(path, **kw)
         ## checks
         logger.info("Executing exposure data checks...")
         # Check exact overlay of exposure and hazard
@@ -114,6 +136,9 @@ data to {prefer} data"
             self.vulnerability_data.columns,
         )
 
+        # Reset to ensure the entry is present
+        self.cfg.set(file_entry, path)
+        ## When all is done, add it
         self.exposure_grid = data
 
     def resolve(self):
@@ -141,7 +166,6 @@ data to {prefer} data"
 
         Generates output in the specified `output.path` directory.
         """
-        _nms = self.cfg.get("hazard.band_names")
         # Setup the jobs
         jobs = generate_jobs(
             {

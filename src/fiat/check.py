@@ -1,5 +1,6 @@
 """Checks for the data of FIAT."""
 
+import re
 from pathlib import Path
 
 from osgeo import osr
@@ -15,22 +16,17 @@ logger = spawn_logger("fiat.checks")
 ## Config
 def check_config_entries(
     keys: tuple,
-    extra_entries: list,
+    mandatory_entries: list | tuple,
 ):
     """Check the mandatory config entries."""
-    _man_entries = [
-        "output.path",
-        "hazard.file",
-        "hazard.risk",
-        "vulnerability.file",
-    ] + extra_entries
-
-    _check = [item in keys for item in _man_entries]
+    _check = [
+        any([re.match(item, value) for value in keys]) for item in mandatory_entries
+    ]
     if not all(_check):
-        _missing = [item for item, b in zip(_man_entries, _check) if not b]
+        _missing = [item for item, b in zip(mandatory_entries, _check) if not b]
         msg = f"Missing mandatory entries in the settings. Please fill in the \
 following missing entries: {_missing}"
-        raise FIATDataError(msg)
+        FIATDataError(msg)
 
 
 def check_config_geom(
@@ -113,16 +109,16 @@ def check_grid_exact(
 ):
     """Check whether the hazard and exposure grid align."""
     if not check_vs_srs(
-        haz.get_srs(),
-        exp.get_srs(),
+        haz.srs,
+        exp.srs,
     ):
-        msg = f"CRS of hazard data ({get_srs_repr(haz.get_srs())}) does not match the \
-CRS of the exposure data ({get_srs_repr(exp.get_srs())})"
+        msg = f"CRS of hazard data ({get_srs_repr(haz.srs)}) does not match the \
+CRS of the exposure data ({get_srs_repr(exp.srs)})"
         logger.warning(msg)
         return False
 
-    gtf1 = [round(_n, 2) for _n in haz.get_geotransform()]
-    gtf2 = [round(_n, 2) for _n in exp.get_geotransform()]
+    gtf1 = [round(_n, 2) for _n in haz.geotransform]
+    gtf2 = [round(_n, 2) for _n in exp.geotransform]
 
     if gtf1 != gtf2:
         msg = f"Geotransform of hazard data ({gtf1}) does not match geotransform of \

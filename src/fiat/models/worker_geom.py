@@ -113,7 +113,7 @@ of the [GeomSource](/api/GeomSource.qmd) object.
         out_geom = Path(cfg.get(f"output.geom.name{idx}"))
         out_writer = BufferedGeomWriter(
             Path(cfg.get("output.path"), out_geom),
-            gm.get_srs(),
+            gm.srs,
             buffer_size=cfg.get("global.geom.chunk"),
             lock=lock2,
         )
@@ -155,13 +155,13 @@ No data found in exposure database",
                     res = overlay.clip(
                         ft,
                         band,
-                        haz.get_geotransform(),
+                        haz.geotransform,
                     )
                 else:
                     res = overlay.pin(
                         geom.point_in_geom(ft),
                         band,
-                        haz.get_geotransform(),
+                        haz.geotransform,
                     )
 
                 res[res == band.nodata] = nan

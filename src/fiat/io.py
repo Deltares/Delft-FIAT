@@ -932,6 +932,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         info = None
         self._count = 0
         self._cur_index = 0
+        self._srs = None
 
         self.layer = self.src.GetLayer()
         if self.layer is not None:
@@ -973,6 +974,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         """Close the GeomSouce."""
         _BaseIO.close(self)
 
+        self._srs = None
         self.layer = None
         self.src = None
         self._driver = None
@@ -1094,6 +1096,24 @@ class GeomSource(_BaseIO, _BaseStruct):
             count = self.layer.GetFeatureCount()
             self._count = count
         return self._count
+
+    @property
+    @_BaseIO._check_state
+    def srs(
+        self,
+    ):
+        """Return the srs (Spatial Reference System)."""
+        _srs = self.layer.GetSpatialRef()
+        if _srs is None:
+            _srs = self._srs
+        return _srs
+
+    @srs.setter
+    def srs(
+        self,
+        srs,
+    ):
+        self._srs = srs
 
     @_BaseIO._check_mode
     @_BaseIO._check_state
@@ -1306,11 +1326,6 @@ class GeomSource(_BaseIO, _BaseStruct):
         """Get a layer from the datasource."""
         raise NotImplementedError(NOT_IMPLEMENTED)
 
-    @_BaseIO._check_state
-    def get_srs(self):
-        """Return the srs (Spatial Reference System)."""
-        return self.layer.GetSpatialRef()
-
     @_BaseIO._check_mode
     @_BaseIO._check_state
     def set_layer_from_defn(
@@ -1420,6 +1435,7 @@ multiple variables.
         self._driver = gdal.GetDriverByName(driver)
 
         self.src = None
+        self._srs = None
         self._chunk = None
         self._dtype = None
         self.subset_dict = None
@@ -1478,6 +1494,7 @@ multiple variables.
         _BaseIO.close(self)
 
         self.src = None
+        self._srs = None
         self._driver = None
 
         gc.collect()
@@ -1546,6 +1563,12 @@ multiple variables.
 
     @property
     @_BaseIO._check_state
+    def geotransform(self):
+        """Return the geo transform of the grid."""
+        return self.src.GetGeoTransform()
+
+    @property
+    @_BaseIO._check_state
     def shape(self):
         """Return the shape of the grid.
 
@@ -1585,6 +1608,24 @@ multiple variables.
         count = self.src.RasterCount
         self._count = count
         return self._count
+
+    @property
+    @_BaseIO._check_state
+    def srs(
+        self,
+    ):
+        """Return the srs (Spatial Reference System)."""
+        _srs = self.src.GetSpatialRef()
+        if _srs is None:
+            _srs = self._srs
+        return _srs
+
+    @srs.setter
+    def srs(
+        self,
+        srs,
+    ):
+        self._srs = srs
 
     @_BaseIO._check_mode
     @_BaseIO._check_state
@@ -1692,16 +1733,6 @@ multiple variables.
             _names.append(self.get_band_name(n + 1))
 
         return _names
-
-    @_BaseIO._check_state
-    def get_geotransform(self):
-        """Return the geo transform of the grid."""
-        return self.src.GetGeoTransform()
-
-    @_BaseIO._check_state
-    def get_srs(self):
-        """Return the srs (Spatial Reference System) of the grid."""
-        return self.src.GetSpatialRef()
 
     def set_chunk_size(
         self,

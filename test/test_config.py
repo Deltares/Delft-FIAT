@@ -2,7 +2,7 @@ from fiat.cfg import ConfigReader
 
 
 def test_settings(settings_files):
-    cfg = ConfigReader(settings_files["geom_risk"])
+    cfg = ConfigReader.from_file(settings_files["geom_risk"])
 
     # Assert path to itself
     assert cfg.filepath.name == "geom_risk.toml"

@@ -20,10 +20,20 @@ BLACKLIST = type, ModuleType, FunctionType
 DD_NEED_IMPLEMENTED = "Dunder method needs to be implemented."
 DD_NOT_IMPLEMENTED = "Dunder method not yet implemented."
 FILE_ATTRIBUTE_HIDDEN = 0x02
+MANDATORY_MODEL_ENTRIES = [
+    "^output.path$",
+    "^hazard.file$",
+    "^hazard.risk$",
+    "^vulnerability.file$",
+]
+MANDATORY_GEOM_ENTRIES = [
+    r"^output.geom.file\d+$",
+    r"^exposure.geom.file\d+$",
+]
+MANDATORY_GRID_ENTRIES = ["^exposure.grid.file$"]
 NEWLINE_CHAR = os.linesep
 NEED_IMPLEMENTED = "Method needs to be implemented."
 NOT_IMPLEMENTED = "Method not yet implemented."
-
 
 # Some widely used dictionaries
 _dtypes = {
