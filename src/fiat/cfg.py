@@ -24,7 +24,7 @@ MODEL_ENTRIES = (
     MANDATORY_MODEL_ENTRIES
     + MANDATORY_GEOM_ENTRIES
     + MANDATORY_GRID_ENTRIES
-    + ["^exposure.csv.file$"]  # Check for the only non mandatory file
+    + ["exposure.csv.file"]  # Check for the only non mandatory file
 )
 
 
@@ -66,7 +66,7 @@ class ConfigReader(dict):
 
         # Do some checking concerning the file paths in the settings file
         for key, item in self.items():
-            if not any([re.match(pattern, key) for pattern in MODEL_ENTRIES]):
+            if not any([re.match(f"^{pattern}$", key) for pattern in MODEL_ENTRIES]):
                 continue
             if (
                 key.endswith(("file",)) or key.rsplit(".", 1)[1].startswith("file")

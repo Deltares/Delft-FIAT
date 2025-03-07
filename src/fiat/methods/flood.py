@@ -9,7 +9,7 @@ from fiat.io import Table
 from fiat.methods.util import AREA_METHODS
 
 MANDATORY_COLUMNS = ["ground_flht", "ground_elevtn"]
-MANDATORY_ENTRIES = ["^hazard.elevation_reference$"]
+MANDATORY_ENTRIES = ["hazard.elevation_reference"]
 NEW_COLUMNS = ["inun_depth"]
 
 
