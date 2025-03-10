@@ -8,7 +8,6 @@ from typing import Any
 from osgeo import gdal
 
 from fiat.check import (
-    check_config_geom,
     check_config_grid,
 )
 from fiat.util import (
@@ -116,30 +115,6 @@ class ConfigReader(dict):
         # Create the object
         obj = cls(_root=path.parent, _name=path.name, **settings)
         return obj
-
-    def get_model_type(
-        self,
-    ):
-        """Get the types of models.
-
-        Inferred by the arguments in the settings file.
-        When enough arguments are present for one type of model, \
-the bool is set to True.
-
-        Returns
-        -------
-        tuple
-            Tuple containing booleans for each model.
-            Order is (GeomModel, GridModel).
-        """
-        _models = [False, False]
-
-        if check_config_geom(self):
-            _models[0] = True
-        if check_config_grid(self):
-            _models[1] = True
-
-        return _models
 
     def get_path(
         self,

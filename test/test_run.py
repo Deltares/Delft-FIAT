@@ -2,14 +2,18 @@ from pathlib import Path
 
 from osgeo import gdal
 
-from fiat import FIAT
 from fiat.io import open_csv
+from fiat.models import GeomModel, GridModel
 
 
 def run_model(cfg, p):
     # Execute
     cfg.setup_output_dir(str(p))
-    mod = FIAT(cfg)
+    model_type = cfg.get("global.model")
+    if model_type == "geom":
+        mod = GeomModel(cfg)
+    elif model_type == "grid":
+        mod = GridModel(cfg)
     mod.run()
 
 

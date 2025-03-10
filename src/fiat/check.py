@@ -26,7 +26,7 @@ def check_config_entries(
         _missing = [item for item, b in zip(mandatory_entries, _check) if not b]
         msg = f"Missing mandatory entries in the settings. Please fill in the \
 following missing entries: {_missing}"
-        FIATDataError(msg)
+        raise FIATDataError(msg)
 
 
 def check_config_geom(

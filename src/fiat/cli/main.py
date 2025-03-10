@@ -6,12 +6,23 @@ import sys
 from multiprocessing import freeze_support
 
 from fiat.cfg import ConfigReader
+from fiat.check import check_config_entries
 from fiat.cli.action import KeyValueAction
 from fiat.cli.formatter import MainHelpFormatter
 from fiat.cli.util import file_path_check, run_log, run_profiler
 from fiat.log import check_loglevel, setup_default_log
-from fiat.main import FIAT
+from fiat.models import GeomModel, GridModel
+from fiat.util import (
+    MANDATORY_GEOM_ENTRIES,
+    MANDATORY_GRID_ENTRIES,
+    MANDATORY_MODEL_ENTRIES,
+)
 from fiat.version import __version__
+
+_models = {
+    "geom": {"model": GeomModel, "input": MANDATORY_GEOM_ENTRIES},
+    "grid": {"model": GridModel, "input": MANDATORY_GRID_ENTRIES},
+}
 
 fiat_start_str = """
 ###############################################################
@@ -81,7 +92,12 @@ def run(args):
     logger.info(f"Delft-Fiat version: {__version__}")
 
     # Kickstart the model
-    obj = FIAT(cfg)
+    model_type = cfg.get("global.model", "geom")
+    check_config_entries(
+        cfg.keys(),
+        MANDATORY_MODEL_ENTRIES + _models[model_type]["input"],
+    )
+    obj = _models[model_type]["model"](cfg)
     if args.profile is not None:
         run_profiler(obj.run, profile=args.profile, cfg=cfg, logger=logger)
     else:

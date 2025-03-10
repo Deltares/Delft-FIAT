@@ -403,6 +403,7 @@ def create_settings_geom():
     doc = {
         "global": {
             "crs": "EPSG:4326",
+            "model": "geom",
         },
         "output": {
             "path": "output/geom_event",
@@ -492,6 +493,7 @@ def create_settings_grid():
     doc = {
         "global": {
             "crs": "EPSG:4326",
+            "model": "grid",
         },
         "output": {
             "path": "output/grid_event",

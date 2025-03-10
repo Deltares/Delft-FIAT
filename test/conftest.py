@@ -59,13 +59,13 @@ def grid_risk(configs):
     return model
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def geom_data():
     d = open_geom(Path(_PATH, ".testdata", "exposure", "spatial.geojson"))
     return d
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def geom_partial_data():
     d = open_csv(Path(_PATH, ".testdata", "exposure", "spatial_partial.csv"), lazy=True)
     return d
@@ -77,31 +77,45 @@ def grid_event_data():
     return d
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def grid_event_highres_data():
     d = open_grid(Path(_PATH, ".testdata", "hazard", "event_map_highres.nc"))
     return d
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def grid_exp_data():
     d = open_grid(Path(_PATH, ".testdata", "exposure", "spatial.nc"))
     return d
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def grid_risk_data():
     d = open_grid(Path(_PATH, ".testdata", "hazard", "risk_map.nc"))
     return d
 
 
-@pytest.fixture
-def vul_data():
-    d = open_csv(Path(_PATH, ".testdata", "vulnerability", "vulnerability_curves.csv"))
+@pytest.fixture(scope="session")
+def vul_path():
+    path = Path(_PATH, ".testdata", "vulnerability", "vulnerability_curves.csv")
+    assert path.exists()
+    return path
+
+
+@pytest.fixture(scope="session")
+def vul_raw_data(vul_path):
+    with open(vul_path, mode="rb") as f:
+        data = f.read()
+    return data
+
+
+@pytest.fixture(scope="session")
+def vul_data(vul_path):
+    d = open_csv(vul_path)
     return d
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def vul_data_win():
     d = open_csv(
         Path(_PATH, ".testdata", "vulnerability", "vulnerability_curves_win.csv"),

@@ -47,7 +47,6 @@ class GridModel(BaseModel):
 
         # Setup the model
         self.read_exposure_grid()
-        self.create_equal_grids()
 
     def __del__(self):
         BaseModel.__del__(self)
@@ -128,8 +127,7 @@ data to {prefer} data"
         data = open_grid(path, **kw)
         ## checks
         logger.info("Executing exposure data checks...")
-        # Check exact overlay of exposure and hazard
-        self.equal = check_grid_exact(self.hazard_grid, data)
+
         # Check if all damage functions are correct
         check_exp_grid_dmfs(
             data,
@@ -166,6 +164,10 @@ data to {prefer} data"
 
         Generates output in the specified `output.path` directory.
         """
+        # Check for equal hazard and exposure grids
+        self.equal = check_grid_exact(self.hazard_grid, self.exposure_grid)
+        self.create_equal_grids()
+
         # Setup the jobs
         jobs = generate_jobs(
             {
