@@ -78,7 +78,7 @@ def run(args):
 
     if args.set_entry is not None:
         cfg.update(args.set_entry)
-        cfg.setup_output_dir()
+    cfg.setup_output_dir()
 
     # Complete the setup of the logger
     loglevel = check_loglevel(cfg.get("global.loglevel", "INFO"))
