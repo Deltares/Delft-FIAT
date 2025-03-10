@@ -1,7 +1,22 @@
+import sys
+
 from numpy import mean
 
 from fiat.gis import geom, grid, overlay
 from fiat.gis.crs import get_srs_repr
+
+
+def test_get_srs_repr(geom_data):
+    out = get_srs_repr(geom_data.srs)
+    assert out == "EPSG:4326"
+
+    try:
+        out = get_srs_repr(None)
+    except ValueError:
+        t, v, tb = sys.exc_info()
+        assert v.args[0].endswith("'srs' can not be 'None'.")
+    finally:
+        assert v
 
 
 def test_clip(geom_data, grid_event_data):

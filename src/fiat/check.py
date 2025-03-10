@@ -29,32 +29,6 @@ following missing entries: {_missing}"
         raise FIATDataError(msg)
 
 
-def check_config_geom(
-    cfg: object,
-):
-    """Check the geometry entries."""
-    _req_fields = [
-        "exposure.geom.crs",
-        "exposure.geom.file1",
-    ]
-    _all_geom = [
-        item for item in cfg if item.startswith(("exposure.geom", "exposure.csv"))
-    ]
-    if len(_all_geom) == 0:
-        return False
-
-    _check = [item in _all_geom for item in _req_fields]
-    if not all(_check):
-        _missing = [item for item, b in zip(_req_fields, _check) if not b]
-        logger.warning(
-            f"Info for the geometry model was found, but not all. \
-{_missing} was/ were missing"
-        )
-        return False
-
-    return True
-
-
 def check_config_grid(
     cfg: object,
 ):

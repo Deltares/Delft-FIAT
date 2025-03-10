@@ -27,7 +27,7 @@ MANDATORY_MODEL_ENTRIES = [
     "vulnerability.file",
 ]
 MANDATORY_GEOM_ENTRIES = [
-    r"output.geom.file\d+",
+    r"output.geom.name\d+",
     r"exposure.geom.file\d+",
 ]
 MANDATORY_GRID_ENTRIES = ["exposure.grid.file"]

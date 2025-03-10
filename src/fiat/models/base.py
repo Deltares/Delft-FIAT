@@ -66,8 +66,8 @@ class BaseModel(metaclass=ABCMeta):
         self.threads = 1
         self.chunks = []
 
-        self._set_model_srs()
         self._set_num_threads()
+        self.set_model_srs()
         self.read_hazard_grid()
         self.read_vulnerability_data()
 
@@ -77,26 +77,6 @@ class BaseModel(metaclass=ABCMeta):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} object at {id(self):#018x}>"
-
-    def _set_model_srs(
-        self,
-        srs: str | None = None,
-    ):
-        """Set the model spatial reference system."""
-        if srs is not None:
-            _srs = srs
-        else:
-            _srs = self.cfg.get("global.crs")
-        if _srs is None:
-            return
-
-        # Infer the spatial reference system
-        self.srs = osr.SpatialReference()
-        self.srs.SetFromUserInput(_srs)
-
-        # Set crs for later use
-        self.cfg.set("global.crs", get_srs_repr(self.srs))
-        logger.info(f"Model srs set to: '{get_srs_repr(self.srs)}'")
 
     def _set_num_threads(self):
         """Set the number of threads.
@@ -122,9 +102,28 @@ exceeds machine thread count ('{max_threads}')"
         """Set up output files."""
         raise NotImplementedError(NEED_IMPLEMENTED)
 
+    def set_model_srs(
+        self,
+        srs: str | None = None,
+    ):
+        """Set the model spatial reference system."""
+        if srs is not None:
+            _srs = srs
+        else:
+            _srs = self.cfg.get("global.crs", "EPSG:4326")
+
+        # Infer the spatial reference system
+        self.srs = osr.SpatialReference()
+        self.srs.SetFromUserInput(_srs)
+
+        # Set crs for later use
+        self.cfg.set("global.crs", get_srs_repr(self.srs))
+        logger.info(f"Model srs set to: '{get_srs_repr(self.srs)}'")
+
     def read_hazard_grid(
         self,
         path: Path | str = None,
+        **kwargs: dict,
     ):
         """Read the hazard data.
 
@@ -135,6 +134,8 @@ exceeds machine thread count ('{max_threads}')"
         ----------
         path : Path | str, optional
             Path to the hazard gridded dataset, by default None
+        kwargs : dict, optional
+            Keyword arguments for reading.
         """
         file_entry = "hazard.file"
         path = check_file_for_read(self.cfg, file_entry, path)
@@ -150,6 +151,7 @@ exceeds machine thread count ('{max_threads}')"
         kw.update(
             self.cfg.generate_kwargs("global.grid.chunk"),
         )
+        kw.update(**kwargs)
         data = open_grid(path, **kw)
         ## checks
         logger.info("Executing hazard checks...")
@@ -172,9 +174,9 @@ from '{self.cfg.filepath.name}' ('{get_srs_repr(_int_srs)}')"
             )
             data.srs = _int_srs
 
-        if self.srs is None:
+        if self.cfg.get("global.crs_from_hazard", True):
             logger.warning("Setting the model srs from the hazard data.")
-            self._set_model_srs(get_srs_repr(data.srs))
+            self.set_model_srs(get_srs_repr(data.srs))
 
         # check if file srs is the same as the model srs
         if not check_vs_srs(self.srs, data.srs):

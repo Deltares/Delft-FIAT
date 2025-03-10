@@ -38,7 +38,8 @@ def test_check_exp_columns(configs):
     )
 
     try:
-        _ = GeomModel(cfg)
+        model = GeomModel(cfg)
+        model.get_exposure_meta()
     except FIATDataError:
         t, v, tb = sys.exc_info()
         assert v.msg == "Missing mandatory exposure columns: ['object_id']"

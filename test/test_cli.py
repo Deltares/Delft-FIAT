@@ -20,7 +20,9 @@ def test_parse_run(mocker, cli_parser):
     args = parser.parse_args(
         args=["run", "-d", "output.path=other", "-d", "some_var=some_value"]
     )
-    assert isinstance(args.set_value, dict)
+    assert isinstance(args.set_entry, dict)
+    assert len(args.set_entry) == 2
+    assert "output.path" in args.set_entry
 
 
 def test_cli_main():

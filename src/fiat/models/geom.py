@@ -6,6 +6,7 @@ import re
 import time
 from multiprocessing import Manager
 from pathlib import Path
+from typing import List
 
 from osgeo import ogr
 
@@ -66,7 +67,6 @@ class GeomModel(BaseModel):
 
         # Setup the geometry model
         self.read_exposure()
-        self.get_exposure_meta()
 
     def __del__(self):
         BaseModel.__del__(self)
@@ -240,21 +240,28 @@ class GeomModel(BaseModel):
         ## When all is done, add it
         self.exposure_data = data
 
-    def read_exposure_geoms(self):
+    def read_exposure_geoms(
+        self,
+        paths: List[Path] = None,
+    ):
         """Read the exposure geometries."""
         # Discover the files
         _d = {}
-        # TODO find maybe a better solution of defining this in the settings file
-        _found = [item for item in list(self.cfg) if "exposure.geom.file" in item]
-        _found = [item for item in _found if re.match(r"^(.*)file(\d+)", item)]
+
+        if paths is None:
+            # TODO find maybe a better solution of defining this in the settings file
+            files = [item for item in list(self.cfg) if "exposure.geom.file" in item]
+            files = [item for item in files if re.match(r"^(.*)file(\d+)", item)]
+            paths = [self.cfg.get(item) for item in files]
+        else:
+            files = [f"exposure.geom.file{idx+1}" for idx in range(len(paths))]
 
         # First check for the index_col
         index_col = self.cfg.get("exposure.geom.settings.index", "object_id")
         self.cfg.set("exposure.geom.settings.index", index_col)
 
         # For all that is found, try to read the data
-        for file in _found:
-            path = self.cfg.get(file)
+        for file, path in zip(files, paths):
             suffix = int(re.findall(r"\d+", file.rsplit(".", 1)[1])[0])
             logger.info(
                 f"Reading exposure geometry '{file.split('.')[-1]}' ('{path.name}')"
@@ -313,6 +320,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         self._set_chunking()
 
         # Create the output directory and files
+        self.get_exposure_meta()
         self.cfg.setup_output_dir()
         self._setup_output_files()
 
