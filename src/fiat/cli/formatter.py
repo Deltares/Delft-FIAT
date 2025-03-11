@@ -41,11 +41,11 @@ class MainHelpFormatter(HelpFormatter):
             prefix = "Usage: "
 
         # Program name
-        usage = [self._prog]
+        usage_args = [self._prog]
 
         # Add options string if there are actions (options)
         if actions:
-            usage.append("<options>")
+            usage_args.append("<options>")
 
         # Positional arguments
         positionals = [
@@ -53,10 +53,10 @@ class MainHelpFormatter(HelpFormatter):
             for action in actions
             if action.option_strings == []
         ]
-        usage.extend(positionals)
+        usage_args.extend(positionals)
 
         # Return the formatted string
-        return f"{prefix}{' '.join(usage)}\n"
+        return f"{prefix}{' '.join(usage_args)}\n"
 
     def start_section(self, heading):
         """Show start section."""
