@@ -6,6 +6,7 @@ from pathlib import Path
 from fiat.check import (
     check_exp_grid_dmfs,
     check_grid_exact,
+    check_internal_srs,
     check_vs_srs,
 )
 from fiat.gis import grid
@@ -138,6 +139,12 @@ data to {prefer} data"
         check_exp_grid_dmfs(
             data,
             self.vulnerability_data.columns,
+        )
+
+        # Check if there is a srs present
+        check_internal_srs(
+            data.srs,
+            path.name,
         )
 
         if not check_vs_srs(self.srs, data.srs):

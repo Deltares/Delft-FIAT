@@ -250,6 +250,7 @@ class GeomModel(BaseModel):
     def read_exposure_geoms(
         self,
         paths: List[Path] = None,
+        **kwargs: dict,
     ):
         """Read the exposure geometries.
 
@@ -259,6 +260,10 @@ class GeomModel(BaseModel):
         Parameters
         ----------
         paths : List[Path], optional
+            A list of paths to the vector files.
+        kwargs : dict, optional
+            Keyword arguments for reading. These are passed into [open_geom]\
+(/api/io/open_geom.qmd) after which into [GeomSource](/api/GeomSource.qmd)/
         """
         # Discover the files
         _d = {}
@@ -275,13 +280,19 @@ class GeomModel(BaseModel):
         index_col = self.cfg.get("exposure.geom.settings.index", "object_id")
         self.cfg.set("exposure.geom.settings.index", index_col)
 
+        kw = {}
+        kw.update(
+            {"srs": self.cfg.get("exposure.geom.settings.srs")},
+        )
+        kw.update(kwargs)
+
         # For all that is found, try to read the data
         for file, path in zip(files, paths):
             suffix = int(re.findall(r"\d+", file.rsplit(".", 1)[1])[0])
             logger.info(
                 f"Reading exposure geometry '{file.split('.')[-1]}' ('{path.name}')"
             )
-            data = open_geom(path.as_posix())
+            data = open_geom(path.as_posix(), **kw)
             ## checks
             logger.info("Executing exposure geometry checks...")
 
@@ -289,12 +300,10 @@ class GeomModel(BaseModel):
             check_exp_index_col(data, index_col=index_col)
 
             # check the internal srs of the file
-            _int_srs = check_internal_srs(
+            check_internal_srs(
                 data.srs,
                 path.name,
             )
-            if _int_srs is not None:
-                data.srs = _int_srs
 
             # check if file srs is the same as the model srs
             if not check_vs_srs(self.srs, data.srs):

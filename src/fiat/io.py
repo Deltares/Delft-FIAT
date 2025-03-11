@@ -30,6 +30,7 @@ from fiat.util import (
     _dtypes_reversed,
     deter_type,
     find_duplicates,
+    get_srs_repr,
     read_gridsource_layers,
     regex_pattern,
     replace_empty,
@@ -295,7 +296,7 @@ class BufferedGeomWriter:
         self.layer_defn = layer_defn
 
         # Create the buffer
-        self.buffer = open_geom(f"/vsimem/{file.stem}.gpkg", "w")
+        self.buffer = open_geom(f"/vsimem/{file.stem}.gpkg", mode="w")
         self.buffer.create_layer(
             srs,
             layer_defn.GetGeomType(),
@@ -876,6 +877,8 @@ class GeomSource(_BaseIO, _BaseStruct):
         The I/O mode. Either `r` for reading or `w` for writing.
     overwrite : bool, optional
         Whether or not to overwrite an existing dataset.
+    srs : str, optional
+        A Spatial reference system string in case the dataset has none.
 
     Examples
     --------
@@ -894,6 +897,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         file: str,
         mode: str = "r",
         overwrite: bool = False,
+        srs: str | None = None,
     ):
         """Create a GeomSource object."""
         obj = object.__new__(cls)
@@ -905,6 +909,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         file: str,
         mode: str = "r",
         overwrite: bool = False,
+        srs: str | None = None,
     ):
         _BaseStruct.__init__(self)
         _BaseIO.__init__(self, file, mode)
@@ -933,6 +938,9 @@ class GeomSource(_BaseIO, _BaseStruct):
         self._count = 0
         self._cur_index = 0
         self._srs = None
+        if srs is not None:
+            self._srs = osr.SpatialReference()
+            self._srs.SetFromUserInput(srs)
 
         self.layer = self.src.GetLayer()
         if self.layer is not None:
@@ -956,9 +964,14 @@ class GeomSource(_BaseIO, _BaseStruct):
         return self.layer.GetFeature(fid)
 
     def __reduce__(self):
+        srs = None
+        if self._srs is not None:
+            srs = (get_srs_repr(self._srs),)
         return self.__class__, (
             self.path,
             self._mode_str,
+            False,
+            srs,
         )
 
     def _retrieve_columns(self):
@@ -1354,6 +1367,10 @@ class GridSource(_BaseIO, _BaseStruct):
     ----------
     file : str
         The path to a file.
+    mode : str, optional
+        The I/O mode. Either `r` for reading or `w` for writing.
+    srs : str, optional
+        A Spatial reference system string in case the dataset has none.
     chunk : tuple, optional
         Chunking size of the data.
     subset : str, optional
@@ -1362,8 +1379,6 @@ multiple variables.
     var_as_band : bool, optional
         Whether to interpret the variables as bands.
         This is applicable to netCDF files containing multiple variables.
-    mode : str, optional
-        The I/O mode. Either `r` for reading or `w` for writing.
 
     Examples
     --------
@@ -1386,10 +1401,11 @@ multiple variables.
     def __new__(
         cls,
         file: str,
+        mode: str = "r",
+        srs: str | None = None,
         chunk: tuple = None,
         subset: str = None,
         var_as_band: bool = False,
-        mode: str = "r",
     ):
         """Create a new GridSource object."""
         obj = object.__new__(cls)
@@ -1399,10 +1415,11 @@ multiple variables.
     def __init__(
         self,
         file: str,
+        mode: str = "r",
+        srs: str | None = None,
         chunk: tuple = None,
         subset: str = None,
         var_as_band: bool = False,
-        mode: str = "r",
     ):
         _open_options = []
 
@@ -1435,12 +1452,15 @@ multiple variables.
         self._driver = gdal.GetDriverByName(driver)
 
         self.src = None
-        self._srs = None
         self._chunk = None
         self._dtype = None
         self.subset_dict = None
         self._count = 0
         self._cur_index = 1
+        self._srs = None
+        if srs is not None:
+            self._srs = osr.SpatialReference()
+            self._srs.SetFromUserInput(srs)
 
         if not self._mode:
             self.src = gdal.OpenEx(self._path.as_posix(), open_options=_open_options)
@@ -1481,12 +1501,16 @@ multiple variables.
         )
 
     def __reduce__(self):
+        srs = None
+        if self._srs is not None:
+            srs = (get_srs_repr(self._srs),)
         return self.__class__, (
             self.path,
+            self._mode_str,
+            srs,
             self.chunk,
             self.subset,
             self._var_as_band,
-            self._mode_str,
         )
 
     def close(self):
@@ -2247,6 +2271,7 @@ def open_geom(
     file: Path | str,
     mode: str = "r",
     overwrite: bool = False,
+    srs: str | None = None,
 ):
     """Open a geometry source file.
 
@@ -2260,6 +2285,8 @@ def open_geom(
         Open in `read` or `write` mode.
     overwrite : bool, optional
         Whether or not to overwrite an existing dataset.
+    srs : str, optional
+        A Spatial reference system string in case the dataset has none.
 
     Returns
     -------
@@ -2270,15 +2297,17 @@ def open_geom(
         file,
         mode,
         overwrite,
+        srs,
     )
 
 
 def open_grid(
     file: Path | str,
+    mode: str = "r",
+    srs: str | None = None,
     chunk: tuple = None,
     subset: str = None,
     var_as_band: bool = False,
-    mode: str = "r",
 ):
     """Open a grid source file.
 
@@ -2288,6 +2317,10 @@ def open_grid(
     ----------
     file : Path | str
         Path to the file.
+    mode : str, optional
+        Open in `read` or `write` mode.
+    srs : str, optional
+        A Spatial reference system string in case the dataset has none.
     chunk : tuple, optional
         Chunk size in x and y direction.
     subset : str, optional
@@ -2296,8 +2329,6 @@ def open_grid(
     var_as_band : bool, optional
         Again with netCDF files: if all variables have the same dimensions, set this
         flag to `True` to look the subsets as bands.
-    mode : str, optional
-        Open in `read` or `write` mode.
 
     Returns
     -------
@@ -2306,8 +2337,9 @@ def open_grid(
     """
     return GridSource(
         file,
+        mode,
+        srs,
         chunk,
         subset,
         var_as_band,
-        mode,
     )

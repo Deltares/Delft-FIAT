@@ -1,8 +1,6 @@
 import sys
 from pathlib import Path
 
-from osgeo import osr
-
 from fiat import ConfigReader, GeomModel, open_grid
 from fiat.check import (
     check_config_entries,
@@ -129,21 +127,9 @@ def test_check_hazard_subsets(grid_event_data, grid_risk_data):
 
 def test_check_internal_srs():
     try:
-        check_internal_srs(None, "file", None)
+        check_internal_srs(None, "file")
     except FIATDataError:
         t, v, tb = sys.exc_info()
         assert v.msg.startswith("Coordinate reference system is unknown for 'file'")
     finally:
         assert v
-
-    s = osr.SpatialReference()
-    s.ImportFromEPSG(4326)
-
-    int_srs = check_internal_srs(s, fname="")
-    assert int_srs is None
-    s = None
-
-    int_srs = check_internal_srs(None, "", "EPSG:4326")
-    assert int_srs is not None
-    assert int_srs.GetAuthorityCode(None) == "4326"
-    int_srs = None

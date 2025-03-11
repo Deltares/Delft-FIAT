@@ -109,14 +109,14 @@ exceeds machine thread count ('{max_threads}')"
         if srs is not None:
             _srs = srs
         else:
-            _srs = self.cfg.get("global.crs.value", "EPSG:4326")
+            _srs = self.cfg.get("global.srs.value", "EPSG:4326")
 
         # Infer the spatial reference system
         self.srs = osr.SpatialReference()
         self.srs.SetFromUserInput(_srs)
 
         # Set crs for later use
-        self.cfg.set("global.crs", get_srs_repr(self.srs))
+        self.cfg.set("global.srs.value", get_srs_repr(self.srs))
         logger.info(f"Model srs set to: '{get_srs_repr(self.srs)}'")
 
     def read_hazard_grid(
@@ -163,18 +163,12 @@ exceeds machine thread count ('{max_threads}')"
         )
 
         # check the internal srs of the file
-        _int_srs = check_internal_srs(
+        check_internal_srs(
             data.srs,
             path.name,
         )
-        if _int_srs is not None:
-            logger.info(
-                f"Setting spatial reference of '{path.name}' \
-from '{self.cfg.filepath.name}' ('{get_srs_repr(_int_srs)}')"
-            )
-            data.srs = _int_srs
 
-        if not self.cfg.get("global.crs.prefer_global", False):
+        if not self.cfg.get("global.srs.prefer_global", False):
             logger.warning("Setting the model srs from the hazard data.")
             self.set_model_srs(get_srs_repr(data.srs))
 

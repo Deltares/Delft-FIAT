@@ -33,7 +33,6 @@ def check_config_grid(
 ):
     """Check the grid config entries."""
     _req_fields = [
-        "exposure.grid.crs",
         "exposure.grid.file",
     ]
     _all_grid = [item for item in cfg if item.startswith("exposure.grid")]
@@ -111,23 +110,15 @@ exposure data ({exp.shape})"
 def check_internal_srs(
     source_srs: osr.SpatialReference,
     fname: str,
-    cfg_srs: str = None,
 ):
     """Check the internal spatial reference system.
 
     This also should exist.
     """
-    if source_srs is None and cfg_srs is None:
+    if source_srs is None:
         msg = f"Coordinate reference system is unknown for '{fname}', \
 cannot safely continue"
         raise FIATDataError(msg)
-
-    if source_srs is None:
-        source_srs = osr.SpatialReference()
-        source_srs.SetFromUserInput(cfg_srs)
-        return source_srs
-
-    return None
 
 
 def check_geom_extent(
