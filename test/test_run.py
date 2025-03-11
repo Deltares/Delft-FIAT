@@ -1,8 +1,9 @@
+import copy
 from pathlib import Path
 
 from osgeo import gdal
 
-from fiat.io import open_csv
+from fiat.io import open_csv, open_grid
 from fiat.models import GeomModel, GridModel
 
 
@@ -71,7 +72,26 @@ def test_grid_event(tmp_path, configs):
 
 
 def test_grid_unequal(tmp_path, configs):
-    run_model(configs["grid_unequal"], tmp_path)
+    # Run the model
+    cfg = copy.deepcopy(configs["grid_unequal"])
+    run_model(cfg, tmp_path)
+    # Assert the output
+    file = Path(tmp_path, "output.nc")
+    assert file.is_file()
+    # Check the output
+    gs = open_grid(file)
+    assert gs.shape == (10, 10)
+    gs.close()
+    gs = None
+
+    # Adjust to prefer the hazard data resolution
+    cfg = copy.deepcopy(configs["grid_unequal"])
+    cfg.set("global.grid.prefer", "hazard")
+    run_model(cfg, tmp_path)
+
+    # Check the output
+    gs = open_grid(file)
+    assert gs.shape == (100, 100)
 
 
 def test_grid_risk(tmp_path, configs):
