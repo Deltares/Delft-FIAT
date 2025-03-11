@@ -7,13 +7,10 @@ Welcome to Delft-FIAT. Here we present an overview of what's going on.
 ## Roadmap
 What are we up to and what are the goals.
 
-### 2024 - Q1
-In the first quarter of 2024 we will focus on:
-
-- Stabalizing existing code
-- This means moving to version `0.1.0`!
-- Implement better chunking and parallelization
-- Improving the documentation.
+### Q2/ Q3 2025
+- Further stabilize the api and cli
+- Improve the grid model performance
+- Probably port sections to Cython
 
 ## What's new...
 In order to see what has been done and what has been changed, please see the [changelog](../changelog.qmd).
@@ -23,4 +20,4 @@ We welcome contributions like bug reports, bug fixes, documentation improvements
 Our [developer guide](guide.qmd) explains how one can contribute to Delft-FIAT!
 
 ## Licencing
-The MIT [license](https://github.com/Deltares/Delft-FIAT/blob/master/LICENSE) applies to all contributions.
+The [MIT license](https://github.com/Deltares/Delft-FIAT/blob/master/LICENSE) applies to all contributions.

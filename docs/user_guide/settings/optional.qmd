@@ -7,13 +7,16 @@ Here we provide an overview of all optional/ non essential settings that the use
 | Field                                  | Type    | Default       |
 |:---------------------------------------|---------|---------------|
 | **[global]**                           |         |               |
-| [crs](#global)                         | string  | -             |
 | [loglevel](#global)                    | string  | INFO          |
 | [type](#global)                        | string  | flood         |
+| **[global.crs]**                       |         |               |
+| [value](#global.crs)                   | string  | EPSG:4326     |
+| [prefer_global](#global.crs)           | bool    | false         |
 | **[global.grid]**                      |         |               |
 | [prefer](#global.grid)                 | string  | exposure      |
 | **[hazard]**                           |         |               |
 | [crs](#hazard)                         | string  | -             |
+| [resampling_method](#hazard)           | int     | 0             |
 | [return_periods](#hazard)              | list    | -             |
 | **[hazard.settings]**                  |         |               |
 | [subset](#hazard.settings)             | string  | -             |
@@ -28,6 +31,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 | [index](#exposure.geom.settings)       | string  | object_id     |
 | **[exposure.grid]**                    |         |               |
 | [crs](#exposure.grid)                  | string  | -             |
+| [resampling_method](#exposure.grid)    | int     | 0             |
 | **[exposure.grid.settings]**           |         |               |
 | [var_as_band](#exposure.grid.settings) | boolean | false         |
 | **[vulnerability]**                    |         |               |
@@ -44,6 +48,12 @@ Here we provide an overview of all optional/ non essential settings that the use
 
 - `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.methods.flood`)
 
+#### [global.crs]
+
+- `value`: Global projection for the model and the output. If not defined, the default projection is set to WGS84.
+
+- `prefer_global`: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e. prefer the hazard projection.
+
 #### [global.grid]
 
 - `prefer`: Whether to spatially prefer exposure data or hazard data. The other will be warped when they are not equal. Chose 'exposure' or 'hazard'.
@@ -51,6 +61,8 @@ Here we provide an overview of all optional/ non essential settings that the use
 #### [hazard]
 
 - `crs`: Projection of the hazard data if it cannot be inferred from the dataset itself.
+
+- `resampling_method`: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see [this page](https://gdal.org/api/gdalwarp_cpp.html#_CPPv415GDALResampleAlg)
 
 - `return_periods`: Return periods for hazard calculation when they cannot be inferred from the data itself.
 
@@ -83,6 +95,8 @@ The entry `var_as_band` is only applicable to netCDF files.
 #### [exposure.grid]
 
 - `crs`: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.
+
+- `resampling_method`: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see [this page](https://gdal.org/api/gdalwarp_cpp.html#_CPPv415GDALResampleAlg)
 
 #### [exposure.grid.settings]
 

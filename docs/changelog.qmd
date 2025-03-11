@@ -9,14 +9,22 @@ These are the unreleased changes.
 - Build task for pixi
 
 ### Changed
-- CSV file output coupled with vector file output
+- Crs set in settings for a file will be used when no crs is present within the file
+- Csv file output coupled with vector file output
+- Cli: support for setting config entries
+- Cli: help messages have improved format
+- Default value for the model crs: "EPSG:4326" (WGS84)
 - Default vector output file format back to `GPKG`
+- Expanded api, not everything needs to be defined in the settings file
 - Fixed bug in newline sniffer
+- More flexible `Configurations` class
 - Optional CSV file output
 
 ### Deprecated
+- FIAT object
 
 ### Documentation
+- Added missing settings file entries
 - Fixed missing docstrings (API)
 
 ## v0.2.1 (2024-12-05)

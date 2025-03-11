@@ -21,8 +21,10 @@ File paths in the settings can be relative to the settings.toml file or absolute
 
 | Entry                          | Type    | Required | Default         |
 |:-------------------------------|---------|----------|-----------------|
+| **[global]**                   |         |          |                 |
+| [model](#global)               | string  | No       | geom            |
 | **[output]**                   |         |          |                 |
-| [path](#output)                | string  | Yes      |                 |
+| [path](#output)                | string  | No       | output          |
 | **[output.csv]**               |         |          |                 |
 | [name](#output.csv)            | string  | No       | output.csv      |
 | **[output.geom]**              |         |          |                 |
@@ -42,6 +44,10 @@ File paths in the settings can be relative to the settings.toml file or absolute
 | **[vulnerability]**            |         |          |                 |
 | [file](#vulnerability)         | string  | Yes      |                 |
 : Most basic settings file input {#tbl-toml .hover}
+
+#### [global]
+
+- `model`: The type of model. Choice between 'geom' and 'grid'.
 
 #### [output]
 
