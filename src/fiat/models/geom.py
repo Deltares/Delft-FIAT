@@ -146,9 +146,7 @@ class GeomModel(BaseModel):
         # Setup the geometry output files
         for key, gm in self.exposure_geoms.items():
             # Define outgoing dataset
-            out_geom = f"spatial{key}.gpkg"
-            if f"output.geom.name{key}" in self.cfg:
-                out_geom = self.cfg.get(f"output.geom.name{key}")
+            out_geom = self.cfg.get(f"output.geom.name{key}", f"spatial{key}.gpkg")
             self.cfg.set(f"output.geom.name{key}", out_geom)
             # Get the new fields per geometry file
             new_fields = tuple(self.cfg.get("_exposure_meta")[key]["new_fields"])
@@ -205,6 +203,7 @@ class GeomModel(BaseModel):
     def read_exposure_data(
         self,
         path: Path | str = None,
+        **kwargs: dict,
     ):
         """Read the exposure data file (csv).
 
@@ -215,6 +214,9 @@ class GeomModel(BaseModel):
         ----------
         path : Path | str, optional
             Path to the exposure data, by default None
+        kwargs : dict, optional
+            Keyword arguments for reading. These are passed into [open_csv]\
+(/api/io/open_csv.qmd) after which into [TableLazy](/api/TableLazy.qmd)/
         """
         file_entry = "exposure.csv.file"
         path = check_file_for_read(self.cfg, file_entry, path)
@@ -227,6 +229,7 @@ class GeomModel(BaseModel):
         kw.update(
             self.cfg.generate_kwargs("exposure.csv.settings"),
         )
+        kw.update(kwargs)
         self.cfg.set("exposure.csv.settings.index", kw["index"])
         data = open_csv(path, lazy=True, **kw)
         ##checks
@@ -244,7 +247,15 @@ class GeomModel(BaseModel):
         self,
         paths: List[Path] = None,
     ):
-        """Read the exposure geometries."""
+        """Read the exposure geometries.
+
+        If no path is provided the method tries to
+        infer it from the model configurations.
+
+        Parameters
+        ----------
+        paths : List[Path], optional
+        """
         # Discover the files
         _d = {}
 

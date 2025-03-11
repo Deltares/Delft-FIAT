@@ -32,7 +32,7 @@ class ConfigReader(dict):
 
     Parameters
     ----------
-    settings : dict,
+    settings : dict
         Model configuration in dictionary format.
     """
 

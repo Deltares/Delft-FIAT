@@ -110,7 +110,7 @@ exceeds machine thread count ('{max_threads}')"
         if srs is not None:
             _srs = srs
         else:
-            _srs = self.cfg.get("global.crs", "EPSG:4326")
+            _srs = self.cfg.get("global.crs.value", "EPSG:4326")
 
         # Infer the spatial reference system
         self.srs = osr.SpatialReference()
@@ -135,7 +135,8 @@ exceeds machine thread count ('{max_threads}')"
         path : Path | str, optional
             Path to the hazard gridded dataset, by default None
         kwargs : dict, optional
-            Keyword arguments for reading.
+            Keyword arguments for reading. These are passed into [open_geom]\
+(/api/io/open_geom.qmd) after which into [GridSouce](/api/GridSource.qmd)/
         """
         file_entry = "hazard.file"
         path = check_file_for_read(self.cfg, file_entry, path)
@@ -174,7 +175,7 @@ from '{self.cfg.filepath.name}' ('{get_srs_repr(_int_srs)}')"
             )
             data.srs = _int_srs
 
-        if self.cfg.get("global.crs_from_hazard", True):
+        if not self.cfg.get("global.crs.prefer_global", False):
             logger.warning("Setting the model srs from the hazard data.")
             self.set_model_srs(get_srs_repr(data.srs))
 
@@ -186,9 +187,7 @@ from '{self.cfg.filepath.name}' ('{get_srs_repr(_int_srs)}')"
 model spatial reference ('{get_srs_repr(self.srs)}')"
             )
             logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
-            _resalg = 0
-            if "hazard.resampling_method" in self.cfg:
-                _resalg = self.cfg.get("hazard.resampling_method")
+            _resalg = self.cfg.get("hazard.resampling_method", 0)
             data = grid.reproject(data, self.srs.ExportToWkt(), _resalg)
 
         # check risk return periods
@@ -221,6 +220,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
     def read_vulnerability_data(
         self,
         path: Path | str = None,
+        **kwargs: dict,
     ):
         """Read the vulnerability data.
 
@@ -231,6 +231,9 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         ----------
         path : Path | str, optional
             Path to the vulnerabulity data, by default None
+        kwargs : dict, optional
+            Keyword arguments for reading. These are passed into [open_csv]\
+(/api/io/open_csv.qmd) after which into [Table](/api/Table.qmd)/
         """
         file_entry = "vulnerability.file"
         path = check_file_for_read(self.cfg, file_entry, path)
@@ -243,6 +246,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         kw.update(
             self.cfg.generate_kwargs("vulnerability.settings"),
         )
+        kw.update(kwargs)  # Update with user defined method input
         data = open_csv(str(path), **kw)
         ## checks
         logger.info("Executing vulnerability checks...")

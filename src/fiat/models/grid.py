@@ -6,6 +6,7 @@ from pathlib import Path
 from fiat.check import (
     check_exp_grid_dmfs,
     check_grid_exact,
+    check_vs_srs,
 )
 from fiat.gis import grid
 from fiat.gis.crs import get_srs_repr
@@ -99,6 +100,7 @@ data to {prefer} data"
     def read_exposure_grid(
         self,
         path: Path | str = None,
+        **kwargs: dict,
     ):
         """Read the exposure grid.
 
@@ -109,6 +111,9 @@ data to {prefer} data"
         ----------
         path : Path | str, optional
             Path to an exposure grid, by default None
+        kwargs : dict, optional
+            Keyword arguments for reading. These are passed into [open_grid]\
+(/api/io/open_grid.qmd) after which into [GridSouce](/api/GridSource.qmd)/
         """
         file_entry = "exposure.grid.file"
         path = check_file_for_read(self.cfg, file_entry, path)
@@ -124,6 +129,7 @@ data to {prefer} data"
         kw.update(
             self.cfg.generate_kwargs("global.grid.chunk"),
         )
+        kw.update(kwargs)
         data = open_grid(path, **kw)
         ## checks
         logger.info("Executing exposure data checks...")
@@ -133,6 +139,16 @@ data to {prefer} data"
             data,
             self.vulnerability_data.columns,
         )
+
+        if not check_vs_srs(self.srs, data.srs):
+            logger.warning(
+                f"Spatial reference of '{path.name}' \
+('{get_srs_repr(data.srs)}') does not match the \
+model spatial reference ('{get_srs_repr(self.srs)}')"
+            )
+            logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
+            _resalg = self.cfg.get("exposure.grid.resampling_method", 0)
+            data = grid.reproject(data, self.srs.ExportToWkt(), _resalg)
 
         # Reset to ensure the entry is present
         self.cfg.set(file_entry, path)
