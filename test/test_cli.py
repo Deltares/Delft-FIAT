@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import Path
 
 
 def test_parse_run(mocker, cli_parser):
@@ -45,12 +46,27 @@ def test_cli_run():
     assert p.stdout.split("\n")[0].startswith("Usage: fiat run")
 
 
-def test_cli_run_exec(settings_files):
+def test_cli_run_exec(tmp_path, geom_tmp_model):
     p = subprocess.run(
-        ["fiat", "run", settings_files["geom_event"]],
+        ["fiat", "run", "-d", "output.path=output", geom_tmp_model],
         check=True,
         capture_output=True,
         text=True,
     )
     assert p.returncode == 0
     assert p.stdout.split("\n")[-2].endswith("Geom calculation are done!")
+    assert Path(tmp_path, "output", "spatial.gpkg").is_file()
+
+
+def test_cli_run_profile(tmp_path, geom_tmp_model):
+    p = subprocess.run(
+        ["fiat", "run", "-p", "-d", "output.path=output", geom_tmp_model],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert p.returncode == 0
+    assert p.stdout.split("\n")[-4].endswith("Geom calculation are done!")
+    assert p.stdout.split("\n")[-2].endswith("profile.txt")
+    assert Path(tmp_path, "output", "spatial.gpkg").is_file()
+    assert Path(tmp_path, "output", "profile.txt").is_file()

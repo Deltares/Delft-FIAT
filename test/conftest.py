@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import pytest
@@ -8,6 +9,12 @@ from fiat.io import open_csv, open_geom, open_grid
 from fiat.log import LogItem
 from fiat.models import GeomModel, GridModel
 
+_GEOM_FILES = [
+    "hazard.file",
+    "exposure.geom.file1",
+    "exposure.csv.file",
+    "vulnerability.file",
+]
 _MODELS = [
     "geom_event",
     "geom_event_2g",
@@ -47,6 +54,21 @@ def configs(settings_files):
     return _cfgs
 
 
+## Models
+@pytest.fixture
+def geom_tmp_model(tmp_path, configs):
+    cfg = configs["geom_event"]
+    settings_file = Path(tmp_path, "settings.toml")
+    shutil.copy2(cfg.filepath, settings_file)
+    for file in _GEOM_FILES:
+        path = cfg.get(file)
+        new_path = Path(tmp_path, path.parent.name)
+        new_path.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, Path(new_path, path.name))
+    assert settings_file.is_file()
+    return settings_file
+
+
 @pytest.fixture
 def geom_risk(configs):
     model = GeomModel(configs["geom_risk"])
@@ -59,6 +81,7 @@ def grid_risk(configs):
     return model
 
 
+## Data
 @pytest.fixture(scope="session")
 def geom_data():
     d = open_geom(Path(_PATH, ".testdata", "exposure", "spatial.geojson"))
