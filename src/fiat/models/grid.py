@@ -9,7 +9,6 @@ from fiat.check import (
     check_vs_srs,
 )
 from fiat.gis import grid
-from fiat.gis.crs import get_srs_repr
 from fiat.io import open_grid
 from fiat.log import spawn_logger
 from fiat.models import worker_grid
@@ -20,6 +19,7 @@ from fiat.models.util import (
     execute_pool,
     generate_jobs,
 )
+from fiat.util import get_srs_repr
 
 logger = spawn_logger("fiat.model.grid")
 

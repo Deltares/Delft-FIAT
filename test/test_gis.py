@@ -3,7 +3,7 @@ import sys
 from numpy import mean
 
 from fiat.gis import geom, grid, overlay
-from fiat.gis.crs import get_srs_repr
+from fiat.util import get_srs_repr
 
 
 def test_get_srs_repr(geom_data):

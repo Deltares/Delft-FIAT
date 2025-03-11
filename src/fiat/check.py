@@ -6,9 +6,8 @@ from pathlib import Path
 from osgeo import osr
 
 from fiat.error import FIATDataError
-from fiat.gis.crs import get_srs_repr
 from fiat.log import spawn_logger
-from fiat.util import deter_type
+from fiat.util import deter_type, get_srs_repr
 
 logger = spawn_logger("fiat.checks")
 

@@ -21,7 +21,6 @@ from fiat.check import (
     check_vs_srs,
 )
 from fiat.gis import geom
-from fiat.gis.crs import get_srs_repr
 from fiat.io import (
     open_csv,
     open_geom,
@@ -37,7 +36,12 @@ from fiat.models.util import (
     execute_pool,
     generate_jobs,
 )
-from fiat.util import create_1d_chunk, discover_exp_columns, generate_output_columns
+from fiat.util import (
+    create_1d_chunk,
+    discover_exp_columns,
+    generate_output_columns,
+    get_srs_repr,
+)
 
 logger = spawn_logger("fiat.model.geom")
 

@@ -13,7 +13,7 @@ from pathlib import Path
 from types import FunctionType, ModuleType
 
 import regex
-from osgeo import gdal, ogr
+from osgeo import gdal, ogr, osr
 
 # Define the variables for FIAT
 BLACKLIST = type, ModuleType, FunctionType
@@ -292,6 +292,32 @@ def generate_output_columns(
 
 
 # GIS related utility
+def get_srs_repr(
+    srs: osr.SpatialReference,
+) -> str:
+    """Get a representation of a spatial reference system object.
+
+    Parameters
+    ----------
+    srs : osr.SpatialReference
+        Spatial reference system.
+
+    Returns
+    -------
+    str
+        Representing string.
+    """
+    if srs is None:
+        raise ValueError("'srs' can not be 'None'.")
+    _auth_c = srs.GetAuthorityCode(None)
+    _auth_n = srs.GetAuthorityName(None)
+
+    if _auth_c is None or _auth_n is None:
+        return srs.ExportToProj4()
+
+    return f"{_auth_n}:{_auth_c}"
+
+
 def read_gridsource_info(
     gr: gdal.Dataset,
     format: str = "json",
