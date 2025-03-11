@@ -966,7 +966,7 @@ class GeomSource(_BaseIO, _BaseStruct):
     def __reduce__(self):
         srs = None
         if self._srs is not None:
-            srs = (get_srs_repr(self._srs),)
+            srs = get_srs_repr(self._srs)
         return self.__class__, (
             self.path,
             self._mode_str,
@@ -1503,7 +1503,7 @@ multiple variables.
     def __reduce__(self):
         srs = None
         if self._srs is not None:
-            srs = (get_srs_repr(self._srs),)
+            srs = get_srs_repr(self._srs)
         return self.__class__, (
             self.path,
             self._mode_str,
@@ -1537,12 +1537,17 @@ multiple variables.
             return self
         obj = GridSource.__new__(
             GridSource,
-            self.path,
-            self.chunk,
-            self.subset,
-            self._var_as_band,
+            file=self.path,
+            chunk=self.chunk,
+            subset=self.subset,
+            var_as_band=self._var_as_band,
         )
-        obj.__init__(self.path, self._chunk, self.subset, self._var_as_band)
+        obj.__init__(
+            file=self.path,
+            chunk=self._chunk,
+            subset=self.subset,
+            var_as_band=self._var_as_band,
+        )
         return obj
 
     @property
