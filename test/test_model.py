@@ -1,11 +1,11 @@
-from fiat import ConfigReader, GeomModel, GridModel
+from fiat import Configurations, GeomModel, GridModel
 
 
 def test_geommodel(tmp_path, settings_files):
-    cfg = ConfigReader.from_file(settings_files["geom_event"])
+    cfg = Configurations.from_file(settings_files["geom_event"])
 
     # With no config file
-    no_cfg = ConfigReader(_root=tmp_path)
+    no_cfg = Configurations(_root=tmp_path)
     model = GeomModel(no_cfg)
     assert model.exposure_data is None
     assert model.hazard_grid is None
@@ -31,10 +31,10 @@ def test_geommodel(tmp_path, settings_files):
 
 
 def test_gridmodel(tmp_path, settings_files):
-    cfg = ConfigReader.from_file(settings_files["grid_event"])
+    cfg = Configurations.from_file(settings_files["grid_event"])
 
     # Without config file
-    no_cfg = ConfigReader(_root=tmp_path)
+    no_cfg = Configurations(_root=tmp_path)
     model = GridModel(no_cfg)
     assert model.exposure_grid is None
     assert model.hazard_grid is None
@@ -42,7 +42,7 @@ def test_gridmodel(tmp_path, settings_files):
     model.read_vulnerability_data(cfg.get("vulnerability.file"))
     model.read_exposure_grid(cfg.get("exposure.grid.file"))
 
-    cfg = ConfigReader.from_file(settings_files["grid_event"])
+    cfg = Configurations.from_file(settings_files["grid_event"])
     model = GridModel(cfg)
     assert model.exposure_grid is not None
     assert model.vulnerability_data is not None

@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Callable
 
-from fiat.cfg import ConfigReader
+from fiat.cfg import Configurations
 from fiat.log import Logger
 
 
@@ -44,7 +44,7 @@ def run_log(
 def run_profiler(
     func: Callable,
     profile: str,
-    cfg: ConfigReader,
+    cfg: Configurations,
     logger: Logger,
 ):
     """Run the profiler from cli."""

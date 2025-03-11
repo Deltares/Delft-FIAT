@@ -8,7 +8,7 @@ from pathlib import Path
 
 from osgeo import osr
 
-from fiat.cfg import ConfigReader
+from fiat.cfg import Configurations
 from fiat.check import (
     check_duplicate_columns,
     check_hazard_band_names,
@@ -31,13 +31,13 @@ class BaseModel(metaclass=ABCMeta):
 
     Parameters
     ----------
-    cfg : ConfigReader
+    cfg : Configurations
         Configuration object, derived from dictionary.
     """
 
     def __init__(
         self,
-        cfg: ConfigReader,
+        cfg: Configurations,
     ):
         self.cfg = cfg
         logger.info(f"Using settings from '{self.cfg.filepath}'")

@@ -34,8 +34,8 @@ class GridModel(BaseModel):
 
     Parameters
     ----------
-    cfg : ConfigReader
-        ConfigReader object containing the settings.
+    cfg : Configurations
+        Configurations object containing the settings.
     """
 
     def __init__(

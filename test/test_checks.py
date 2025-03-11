@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from fiat import ConfigReader, GeomModel, open_grid
+from fiat import Configurations, GeomModel, open_grid
 from fiat.check import (
     check_config_entries,
     check_exp_derived_types,
@@ -18,7 +18,7 @@ def test_check_config_entries(settings_files):
     settings = settings_files["missing_hazard"]
 
     try:
-        cfg = ConfigReader.from_file(settings)
+        cfg = Configurations.from_file(settings)
         check_config_entries(cfg.keys(), MANDATORY_MODEL_ENTRIES)
     except FIATDataError:
         t, v, tb = sys.exc_info()

@@ -172,7 +172,7 @@ quartodoc:
       desc: Main components of working with FIAT.
       package: fiat
       contents:
-        - name: ConfigReader
+        - name: Configurations
           children: separate
         - name: GeomModel
           children: separate

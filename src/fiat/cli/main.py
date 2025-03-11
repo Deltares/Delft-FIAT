@@ -5,7 +5,7 @@ import importlib
 import sys
 from multiprocessing import freeze_support
 
-from fiat.cfg import ConfigReader
+from fiat.cfg import Configurations
 from fiat.check import check_config_entries
 from fiat.cli.action import KeyValueAction
 from fiat.cli.formatter import MainHelpFormatter
@@ -69,7 +69,7 @@ def run(args):
 
     # Setup the config reader
     cfg = file_path_check(args.config)
-    cfg = run_log(ConfigReader.from_file, logger, cfg)
+    cfg = run_log(Configurations.from_file, logger, cfg)
 
     # Set the threads is specified
     if args.threads is not None:

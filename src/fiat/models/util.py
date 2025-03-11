@@ -8,7 +8,7 @@ from typing import Callable, Generator
 
 from osgeo import ogr
 
-from fiat.cfg import ConfigReader
+from fiat.cfg import Configurations
 from fiat.io import TableLazy
 from fiat.util import NEWLINE_CHAR, generic_path_check, replace_empty
 
@@ -20,7 +20,7 @@ GRID_PREFER = {
 
 
 def check_file_for_read(
-    cfg: ConfigReader,
+    cfg: Configurations,
     entry: str,
     path: Path | str,
 ):

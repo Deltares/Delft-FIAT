@@ -27,7 +27,7 @@ MODEL_ENTRIES = (
 )
 
 
-class ConfigReader(dict):
+class Configurations(dict):
     """Object holding model configuration information.
 
     Parameters
@@ -99,7 +99,7 @@ class ConfigReader(dict):
         cls,
         path: Path | str,
     ):
-        """Initialize ConfigReader from a file.
+        """Initialize Configurations from a file.
 
         Parameters
         ----------

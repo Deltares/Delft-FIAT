@@ -10,7 +10,7 @@ from typing import List
 
 from osgeo import ogr
 
-from fiat.cfg import ConfigReader
+from fiat.cfg import Configurations
 from fiat.check import (
     check_duplicate_columns,
     check_exp_columns,
@@ -56,13 +56,13 @@ class GeomModel(BaseModel):
 
     Parameters
     ----------
-    cfg : ConfigReader
-        ConfigReader object containing the settings.
+    cfg : Configurations
+        Configurations object containing the settings.
     """
 
     def __init__(
         self,
-        cfg: ConfigReader,
+        cfg: Configurations,
     ):
         super().__init__(cfg)
 
