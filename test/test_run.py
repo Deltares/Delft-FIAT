@@ -70,6 +70,10 @@ def test_grid_event(tmp_path, configs):
     assert int(arr[7, 3] * 10) == 8700
 
 
+def test_grid_unequal(tmp_path, configs):
+    run_model(configs["grid_unequal"], tmp_path)
+
+
 def test_grid_risk(tmp_path, configs):
     # run the model
     run_model(configs["grid_risk"], tmp_path)

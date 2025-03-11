@@ -74,7 +74,7 @@ class GridModel(BaseModel):
         data = self.exposure_grid
         data_warp = self.hazard_grid
         if not prefer_bool:
-            data = (self.hazard_grid,)
+            data = self.hazard_grid
             data_warp = self.exposure_grid
 
         # Reproject the data
