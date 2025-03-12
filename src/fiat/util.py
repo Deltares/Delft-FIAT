@@ -13,17 +13,26 @@ from pathlib import Path
 from types import FunctionType, ModuleType
 
 import regex
-from osgeo import gdal, ogr
+from osgeo import gdal, ogr, osr
 
 # Define the variables for FIAT
 BLACKLIST = type, ModuleType, FunctionType
 DD_NEED_IMPLEMENTED = "Dunder method needs to be implemented."
 DD_NOT_IMPLEMENTED = "Dunder method not yet implemented."
 FILE_ATTRIBUTE_HIDDEN = 0x02
+MANDATORY_MODEL_ENTRIES = [
+    "output.path",
+    "hazard.file",
+    "hazard.risk",
+    "vulnerability.file",
+]
+MANDATORY_GEOM_ENTRIES = [
+    r"exposure.geom.file\d+",
+]
+MANDATORY_GRID_ENTRIES = ["exposure.grid.file"]
 NEWLINE_CHAR = os.linesep
 NEED_IMPLEMENTED = "Method needs to be implemented."
 NOT_IMPLEMENTED = "Method not yet implemented."
-
 
 # Some widely used dictionaries
 _dtypes = {
@@ -283,6 +292,32 @@ def generate_output_columns(
 
 
 # GIS related utility
+def get_srs_repr(
+    srs: osr.SpatialReference,
+) -> str:
+    """Get a representation of a spatial reference system object.
+
+    Parameters
+    ----------
+    srs : osr.SpatialReference
+        Spatial reference system.
+
+    Returns
+    -------
+    str
+        Representing string.
+    """
+    if srs is None:
+        raise ValueError("'srs' can not be 'None'.")
+    _auth_c = srs.GetAuthorityCode(None)
+    _auth_n = srs.GetAuthorityName(None)
+
+    if _auth_c is None or _auth_n is None:
+        return srs.ExportToProj4()
+
+    return f"{_auth_n}:{_auth_c}"
+
+
 def read_gridsource_info(
     gr: gdal.Dataset,
     format: str = "json",
@@ -385,6 +420,18 @@ GRID_DRIVER_MAP[""] = "MEM"
 
 
 # I/O stuff
+def create_dir(
+    root: Path | str,
+    path: Path | str,
+):
+    """Create directory when it does not yet exist."""
+    _p = Path(path)
+    if not _p.is_absolute():
+        _p = Path(root, _p)
+    generic_folder_check(_p)
+    return _p
+
+
 def generic_folder_check(
     path: Path | str,
 ):

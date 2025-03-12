@@ -104,6 +104,7 @@ env.bak/
 venv.bak/
 environment.yml
 pixi-hook.rc
+**/shell-hook.*
 
 # Rope project settings
 .ropeproject

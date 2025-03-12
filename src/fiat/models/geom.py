@@ -4,11 +4,13 @@ import copy
 import os
 import re
 import time
+from multiprocessing import Manager
 from pathlib import Path
+from typing import List
 
 from osgeo import ogr
 
-from fiat.cfg import ConfigReader
+from fiat.cfg import Configurations
 from fiat.check import (
     check_duplicate_columns,
     check_exp_columns,
@@ -19,7 +21,6 @@ from fiat.check import (
     check_vs_srs,
 )
 from fiat.gis import geom
-from fiat.gis.crs import get_srs_repr
 from fiat.io import (
     open_csv,
     open_geom,
@@ -30,11 +31,17 @@ from fiat.models.base import BaseModel
 from fiat.models.util import (
     EXPOSURE_FIELDS,
     GEOM_DEFAULT_CHUNK,
+    check_file_for_read,
     csv_def_file,
     execute_pool,
     generate_jobs,
 )
-from fiat.util import create_1d_chunk, discover_exp_columns, generate_output_columns
+from fiat.util import (
+    create_1d_chunk,
+    discover_exp_columns,
+    generate_output_columns,
+    get_srs_repr,
+)
 
 logger = spawn_logger("fiat.model.geom")
 
@@ -49,13 +56,13 @@ class GeomModel(BaseModel):
 
     Parameters
     ----------
-    cfg : ConfigReader
-        ConfigReader object containing the settings.
+    cfg : Configurations
+        Configurations object containing the settings.
     """
 
     def __init__(
         self,
-        cfg: ConfigReader | dict,
+        cfg: Configurations,
     ):
         super().__init__(cfg)
 
@@ -64,9 +71,6 @@ class GeomModel(BaseModel):
 
         # Setup the geometry model
         self.read_exposure()
-        self.get_exposure_meta()
-        self._set_chunking()
-        self._queue = self._mp_manager.Queue(maxsize=10000)
 
     def __del__(self):
         BaseModel.__del__(self)
@@ -146,9 +150,7 @@ class GeomModel(BaseModel):
         # Setup the geometry output files
         for key, gm in self.exposure_geoms.items():
             # Define outgoing dataset
-            out_geom = f"spatial{key}.gpkg"
-            if f"output.geom.name{key}" in self.cfg:
-                out_geom = self.cfg.get(f"output.geom.name{key}")
+            out_geom = self.cfg.get(f"output.geom.name{key}", f"spatial{key}.gpkg")
             self.cfg.set(f"output.geom.name{key}", out_geom)
             # Get the new fields per geometry file
             new_fields = tuple(self.cfg.get("_exposure_meta")[key]["new_fields"])
@@ -200,13 +202,30 @@ class GeomModel(BaseModel):
     def read_exposure(self):
         """Read all the exposure files."""
         self.read_exposure_geoms()
-        csv = self.cfg.get("exposure.csv.file")
-        if csv is not None:
-            self.read_exposure_data()
+        self.read_exposure_data()
 
-    def read_exposure_data(self):
-        """Read the exposure data file (csv)."""
-        path = self.cfg.get("exposure.csv.file")
+    def read_exposure_data(
+        self,
+        path: Path | str = None,
+        **kwargs: dict,
+    ):
+        """Read the exposure data file (csv).
+
+        If no path is provided the method tries to
+        infer it from the model configurations.
+
+        Parameters
+        ----------
+        path : Path | str, optional
+            Path to the exposure data, by default None
+        kwargs : dict, optional
+            Keyword arguments for reading. These are passed into [open_csv]\
+(/api/io/open_csv.qmd) after which into [TableLazy](/api/TableLazy.qmd)/
+        """
+        file_entry = "exposure.csv.file"
+        path = check_file_for_read(self.cfg, file_entry, path)
+        if path is None:
+            return
         logger.info(f"Reading exposure data ('{path.name}')")
 
         # Setting the keyword arguments from settings file
@@ -214,6 +233,7 @@ class GeomModel(BaseModel):
         kw.update(
             self.cfg.generate_kwargs("exposure.csv.settings"),
         )
+        kw.update(kwargs)
         self.cfg.set("exposure.csv.settings.index", kw["index"])
         data = open_csv(path, lazy=True, **kw)
         ##checks
@@ -222,29 +242,57 @@ class GeomModel(BaseModel):
         # Check for duplicate columns
         check_duplicate_columns(data.meta["dup_cols"])
 
+        # Reset to ensure the entry is present
+        self.cfg.set(file_entry, path)
         ## When all is done, add it
         self.exposure_data = data
 
-    def read_exposure_geoms(self):
-        """Read the exposure geometries."""
+    def read_exposure_geoms(
+        self,
+        paths: List[Path] = None,
+        **kwargs: dict,
+    ):
+        """Read the exposure geometries.
+
+        If no path is provided the method tries to
+        infer it from the model configurations.
+
+        Parameters
+        ----------
+        paths : List[Path], optional
+            A list of paths to the vector files.
+        kwargs : dict, optional
+            Keyword arguments for reading. These are passed into [open_geom]\
+(/api/io/open_geom.qmd) after which into [GeomSource](/api/GeomSource.qmd)/
+        """
         # Discover the files
         _d = {}
-        # TODO find maybe a better solution of defining this in the settings file
-        _found = [item for item in list(self.cfg) if "exposure.geom.file" in item]
-        _found = [item for item in _found if re.match(r"^(.*)file(\d+)", item)]
+
+        if paths is None:
+            # TODO find maybe a better solution of defining this in the settings file
+            files = [item for item in list(self.cfg) if "exposure.geom.file" in item]
+            files = [item for item in files if re.match(r"^(.*)file(\d+)", item)]
+            paths = [self.cfg.get(item) for item in files]
+        else:
+            files = [f"exposure.geom.file{idx+1}" for idx in range(len(paths))]
 
         # First check for the index_col
         index_col = self.cfg.get("exposure.geom.settings.index", "object_id")
         self.cfg.set("exposure.geom.settings.index", index_col)
 
+        kw = {}
+        kw.update(
+            {"srs": self.cfg.get("exposure.geom.settings.srs")},
+        )
+        kw.update(kwargs)
+
         # For all that is found, try to read the data
-        for file in _found:
-            path = self.cfg.get(file)
+        for file, path in zip(files, paths):
             suffix = int(re.findall(r"\d+", file.rsplit(".", 1)[1])[0])
             logger.info(
                 f"Reading exposure geometry '{file.split('.')[-1]}' ('{path.name}')"
             )
-            data = open_geom(str(path))
+            data = open_geom(path.as_posix(), **kw)
             ## checks
             logger.info("Executing exposure geometry checks...")
 
@@ -252,16 +300,16 @@ class GeomModel(BaseModel):
             check_exp_index_col(data, index_col=index_col)
 
             # check the internal srs of the file
-            _int_srs = check_internal_srs(
-                data.get_srs(),
+            check_internal_srs(
+                data.srs,
                 path.name,
             )
 
             # check if file srs is the same as the model srs
-            if not check_vs_srs(self.srs, data.get_srs()):
+            if not check_vs_srs(self.srs, data.srs):
                 logger.warning(
                     f"Spatial reference of '{path.name}' \
-('{get_srs_repr(data.get_srs())}') does not match \
+('{get_srs_repr(data.srs)}') does not match \
 the model spatial reference ('{get_srs_repr(self.srs)}')"
                 )
                 logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
@@ -275,6 +323,8 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
             # Add to the dict
             _d[suffix] = data
+            # And reset the entry
+            self.cfg.set(f"exposure.geom.file{suffix}", path)
         # When all is done, add it
         self.exposure_geoms = _d
 
@@ -285,11 +335,18 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         Generates output in the specified `output.path` directory.
         """
-        # Create the output files
-        self._setup_output_files()
+        # Setup the manager
+        if self._mp_manager is None:
+            self._mp_manager = Manager()
+        self._queue = self._mp_manager.Queue(maxsize=10000)
 
-        # Get band names for logging
-        _nms = self.cfg.get("hazard.band_names")
+        # Set the chunking
+        self._set_chunking()
+
+        # Create the output directory and files
+        self.get_exposure_meta()
+        self.cfg.setup_output_dir()
+        self._setup_output_files()
 
         # Setup the mp logger for missing stuff
         _receiver = setup_mp_log(
@@ -351,3 +408,6 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
         logger.info("Geom calculation are done!")
+
+        # Shutdown the manager
+        self._mp_manager.shutdown()

@@ -8,14 +8,28 @@ from typing import Callable, Generator
 
 from osgeo import ogr
 
+from fiat.cfg import Configurations
 from fiat.io import TableLazy
-from fiat.util import NEWLINE_CHAR, replace_empty
+from fiat.util import NEWLINE_CHAR, generic_path_check, replace_empty
 
 GEOM_DEFAULT_CHUNK = 50000
 GRID_PREFER = {
     False: "hazard",
     True: "exposure",
 }
+
+
+def check_file_for_read(
+    cfg: Configurations,
+    entry: str,
+    path: Path | str,
+):
+    """Quick check on the input for reading."""
+    if path is not None:
+        path = generic_path_check(path, cfg.path)
+    else:
+        path = cfg.get(entry)
+    return path
 
 
 def exposure_from_geom(

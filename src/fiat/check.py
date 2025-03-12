@@ -1,13 +1,13 @@
 """Checks for the data of FIAT."""
 
+import re
 from pathlib import Path
 
 from osgeo import osr
 
 from fiat.error import FIATDataError
-from fiat.gis.crs import get_srs_repr
 from fiat.log import spawn_logger
-from fiat.util import deter_type
+from fiat.util import deter_type, get_srs_repr
 
 logger = spawn_logger("fiat.checks")
 
@@ -15,49 +15,17 @@ logger = spawn_logger("fiat.checks")
 ## Config
 def check_config_entries(
     keys: tuple,
-    path: Path,
-    extra_entries: list,
+    mandatory_entries: list | tuple,
 ):
     """Check the mandatory config entries."""
-    _man_entries = [
-        "output.path",
-        "hazard.file",
-        "hazard.risk",
-        "vulnerability.file",
-    ] + extra_entries
-
-    _check = [item in keys for item in _man_entries]
+    _check = [
+        any([re.match(item, value) for value in keys]) for item in mandatory_entries
+    ]
     if not all(_check):
-        _missing = [item for item, b in zip(_man_entries, _check) if not b]
-        msg = f"Missing mandatory entries in '{path.name}'. Please fill in the \
+        _missing = [item for item, b in zip(mandatory_entries, _check) if not b]
+        msg = f"Missing mandatory entries in the settings. Please fill in the \
 following missing entries: {_missing}"
         raise FIATDataError(msg)
-
-
-def check_config_geom(
-    cfg: object,
-):
-    """Check the geometry entries."""
-    _req_fields = [
-        "exposure.geom.crs",
-        "exposure.geom.file1",
-    ]
-    _all_geom = [
-        item for item in cfg if item.startswith(("exposure.geom", "exposure.csv"))
-    ]
-    if len(_all_geom) == 0:
-        return False
-
-    _check = [item in _all_geom for item in _req_fields]
-    if not all(_check):
-        _missing = [item for item, b in zip(_req_fields, _check) if not b]
-        logger.warning(
-            f"Info for the geometry model was found, but not all. \
-{_missing} was/ were missing"
-        )
-        return False
-
-    return True
 
 
 def check_config_grid(
@@ -65,7 +33,6 @@ def check_config_grid(
 ):
     """Check the grid config entries."""
     _req_fields = [
-        "exposure.grid.crs",
         "exposure.grid.file",
     ]
     _all_grid = [item for item in cfg if item.startswith("exposure.grid")]
@@ -86,8 +53,6 @@ def check_config_grid(
 
 def check_global_crs(
     srs: osr.SpatialReference,
-    fname: str,
-    fname_haz: str,
 ):
     """Check the global spatial reference system.
 
@@ -116,16 +81,16 @@ def check_grid_exact(
 ):
     """Check whether the hazard and exposure grid align."""
     if not check_vs_srs(
-        haz.get_srs(),
-        exp.get_srs(),
+        haz.srs,
+        exp.srs,
     ):
-        msg = f"CRS of hazard data ({get_srs_repr(haz.get_srs())}) does not match the \
-CRS of the exposure data ({get_srs_repr(exp.get_srs())})"
+        msg = f"CRS of hazard data ({get_srs_repr(haz.srs)}) does not match the \
+CRS of the exposure data ({get_srs_repr(exp.srs)})"
         logger.warning(msg)
         return False
 
-    gtf1 = [round(_n, 2) for _n in haz.get_geotransform()]
-    gtf2 = [round(_n, 2) for _n in exp.get_geotransform()]
+    gtf1 = [round(_n, 2) for _n in haz.geotransform]
+    gtf2 = [round(_n, 2) for _n in exp.geotransform]
 
     if gtf1 != gtf2:
         msg = f"Geotransform of hazard data ({gtf1}) does not match geotransform of \
@@ -145,23 +110,15 @@ exposure data ({exp.shape})"
 def check_internal_srs(
     source_srs: osr.SpatialReference,
     fname: str,
-    cfg_srs: str = None,
 ):
     """Check the internal spatial reference system.
 
     This also should exist.
     """
-    if source_srs is None and cfg_srs is None:
+    if source_srs is None:
         msg = f"Coordinate reference system is unknown for '{fname}', \
 cannot safely continue"
         raise FIATDataError(msg)
-
-    if source_srs is None:
-        source_srs = osr.SpatialReference()
-        source_srs.SetFromUserInput(cfg_srs)
-        return source_srs
-
-    return None
 
 
 def check_geom_extent(

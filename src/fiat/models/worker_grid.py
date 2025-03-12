@@ -68,8 +68,8 @@ of the [GridSource](/api/GeomSource.qmd) object.
         exp.dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
-    out_src.set_srs(exp.get_srs())
-    out_src.set_geotransform(exp.get_geotransform())
+    out_src.set_srs(exp.srs)
+    out_src.set_geotransform(exp.geotransform)
     # Create the outgoing total damage grid
     td_out = open_grid(
         Path(
@@ -85,8 +85,8 @@ of the [GridSource](/api/GeomSource.qmd) object.
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
     # Set the neccesary attributes
-    td_out.set_geotransform(exp.get_geotransform())
-    td_out.set_srs(exp.get_srs())
+    td_out.set_geotransform(exp.geotransform)
+    td_out.set_srs(exp.srs)
     td_band = td_out[1]
     td_noval = -0.5 * 2**128
     td_band.src.SetNoDataValue(td_noval)
@@ -211,8 +211,8 @@ def worker_ead(
         rp[0].dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
-    ead_src.set_srs(rp[0].get_srs())
-    ead_src.set_geotransform(rp[0].get_geotransform())
+    ead_src.set_srs(rp[0].srs)
+    ead_src.set_geotransform(rp[0].geotransform)
 
     # Gather and set information before looping through windows.
     for idx in range(rp[0].size):
@@ -263,8 +263,8 @@ def worker_ead(
         td[0].dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
-    td_src.set_srs(td[0].get_srs())
-    td_src.set_geotransform(td[0].get_geotransform())
+    td_src.set_srs(td[0].srs)
+    td_src.set_geotransform(td[0].geotransform)
     td_band = td_src[1]
     td_noval = -0.5 * 2**128
     td_band.src.SetNoDataValue(td_noval)

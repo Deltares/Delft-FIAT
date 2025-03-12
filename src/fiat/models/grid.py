@@ -1,18 +1,26 @@
 """The FIAT grid model."""
 
 import time
+from pathlib import Path
 
 from fiat.check import (
     check_exp_grid_dmfs,
     check_grid_exact,
+    check_internal_srs,
+    check_vs_srs,
 )
 from fiat.gis import grid
-from fiat.gis.crs import get_srs_repr
 from fiat.io import open_grid
 from fiat.log import spawn_logger
 from fiat.models import worker_grid
 from fiat.models.base import BaseModel
-from fiat.models.util import GRID_PREFER, execute_pool, generate_jobs
+from fiat.models.util import (
+    GRID_PREFER,
+    check_file_for_read,
+    execute_pool,
+    generate_jobs,
+)
+from fiat.util import get_srs_repr
 
 logger = spawn_logger("fiat.model.grid")
 
@@ -26,8 +34,8 @@ class GridModel(BaseModel):
 
     Parameters
     ----------
-    cfg : ConfigReader
-        ConfigReader object containing the settings.
+    cfg : Configurations
+        Configurations object containing the settings.
     """
 
     def __init__(
@@ -41,7 +49,6 @@ class GridModel(BaseModel):
 
         # Setup the model
         self.read_exposure_grid()
-        self.create_equal_grids()
 
     def __del__(self):
         BaseModel.__del__(self)
@@ -68,7 +75,7 @@ class GridModel(BaseModel):
         data = self.exposure_grid
         data_warp = self.hazard_grid
         if not prefer_bool:
-            data = (self.hazard_grid,)
+            data = self.hazard_grid
             data_warp = self.exposure_grid
 
         # Reproject the data
@@ -78,8 +85,8 @@ data to {prefer} data"
         )
         data_warped = grid.reproject(
             data_warp,
-            get_srs_repr(data.get_srs()),
-            data.get_geotransform(),
+            get_srs_repr(data.srs),
+            data.geotransform,
             *data.shape_xy,
         )
 
@@ -91,10 +98,30 @@ data to {prefer} data"
             self.exposure_grid = data_warped
             self.cfg.set("exposure.grid.file", data_warped.path)
 
-    def read_exposure_grid(self):
-        """Read the exposure grid."""
-        file = self.cfg.get("exposure.grid.file")
-        logger.info(f"Reading exposure grid ('{file.name}')")
+    def read_exposure_grid(
+        self,
+        path: Path | str = None,
+        **kwargs: dict,
+    ):
+        """Read the exposure grid.
+
+        If no path is provided the method tries to
+        infer it from the model configurations.
+
+        Parameters
+        ----------
+        path : Path | str, optional
+            Path to an exposure grid, by default None
+        kwargs : dict, optional
+            Keyword arguments for reading. These are passed into [open_grid]\
+(/api/io/open_grid.qmd) after which into [GridSouce](/api/GridSource.qmd)/
+        """
+        file_entry = "exposure.grid.file"
+        path = check_file_for_read(self.cfg, file_entry, path)
+        if path is None:
+            return
+        logger.info(f"Reading exposure grid ('{path.name}')")
+
         # Set the extra arguments from the settings file
         kw = {}
         kw.update(
@@ -103,17 +130,36 @@ data to {prefer} data"
         kw.update(
             self.cfg.generate_kwargs("global.grid.chunk"),
         )
-        data = open_grid(file, **kw)
+        kw.update(kwargs)
+        data = open_grid(path, **kw)
         ## checks
         logger.info("Executing exposure data checks...")
-        # Check exact overlay of exposure and hazard
-        self.equal = check_grid_exact(self.hazard_grid, data)
+
         # Check if all damage functions are correct
         check_exp_grid_dmfs(
             data,
             self.vulnerability_data.columns,
         )
 
+        # Check if there is a srs present
+        check_internal_srs(
+            data.srs,
+            path.name,
+        )
+
+        if not check_vs_srs(self.srs, data.srs):
+            logger.warning(
+                f"Spatial reference of '{path.name}' \
+('{get_srs_repr(data.srs)}') does not match the \
+model spatial reference ('{get_srs_repr(self.srs)}')"
+            )
+            logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
+            _resalg = self.cfg.get("exposure.grid.resampling_method", 0)
+            data = grid.reproject(data, self.srs.ExportToWkt(), _resalg)
+
+        # Reset to ensure the entry is present
+        self.cfg.set(file_entry, path)
+        ## When all is done, add it
         self.exposure_grid = data
 
     def resolve(self):
@@ -141,7 +187,10 @@ data to {prefer} data"
 
         Generates output in the specified `output.path` directory.
         """
-        _nms = self.cfg.get("hazard.band_names")
+        # Check for equal hazard and exposure grids
+        self.equal = check_grid_exact(self.hazard_grid, self.exposure_grid)
+        self.create_equal_grids()
+
         # Setup the jobs
         jobs = generate_jobs(
             {
