@@ -268,18 +268,30 @@ ul.task-list li input[type="checkbox"] {
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
 <ul>
-<li>CSV file output coupled with vector file output</li>
+<li>Csv file output coupled with vector file output</li>
+<li>Cli: support for setting config entries</li>
+<li>Cli: help messages have improved format</li>
+<li>Default value for the model srs: “EPSG:4326” (WGS84)</li>
 <li>Default vector output file format back to <code>GPKG</code></li>
+<li>Expanded api, not everything needs to be defined in the settings file</li>
 <li>Fixed bug in newline sniffer</li>
+<li>More flexible <code>Configurations</code> class</li>
 <li>Optional CSV file output</li>
+<li>Rename <code>ConfigReader</code> to <code>Configurations</code></li>
+<li>Rename all ‘crs’ variables to ‘srs’</li>
+<li>Srs set in settings for a file will be used when no srs is present within the file</li>
 </ul>
 </section>
 <section id="deprecated" class="level3">
 <h3 class="anchored" data-anchor-id="deprecated">Deprecated</h3>
+<ul>
+<li>FIAT object</li>
+</ul>
 </section>
 <section id="documentation" class="level3">
 <h3 class="anchored" data-anchor-id="documentation">Documentation</h3>
 <ul>
+<li>Added missing settings file entries</li>
 <li>Fixed missing docstrings (API)</li>
 </ul>
 </section>
@@ -354,12 +366,12 @@ ul.task-list li input[type="checkbox"] {
 <li>Function (<code>execute_pool</code>) to execute code in parallel using <code>multiprocessing</code></li>
 <li>Flood hazard/ damage functions (<code>methods</code> submodule)</li>
 <li>General method of creating output files in <code>GeomModel</code> (<code>_setup_output_files</code>)</li>
-<li>Method <code>_create_model_dirs</code> of <code>ConfigReader</code> object for creating result directories in one go</li>
+<li>Method <code>_create_model_dirs</code> of <code>Configurations</code> object for creating result directories in one go</li>
 <li>Method <code>add_handler</code> of the <code>Log</code> object; user setting of custom stream</li>
 <li>Method <code>add_feature_with_map</code> of <code>GeomModel</code> to set features with extra info</li>
 <li>Method <code>create</code> of <code>GeomModel</code> to create an ogr.DataSource (new dataset)</li>
 <li>Method <code>create_equal_grids</code> of <code>GridModel</code> for making hazard and exposure grid spatially equal</li>
-<li>Method <code>set</code> of <code>ConfigReader</code> object</li>
+<li>Method <code>set</code> of <code>Configurations</code> object</li>
 <li>Not stopping when exposure and hazard grids (<code>GridModel</code>), but instead make them spatially equal</li>
 <li>Numpy &gt;= 2.0.0 support</li>
 <li>Python 3.12 support</li>
@@ -390,7 +402,7 @@ ul.task-list li input[type="checkbox"] {
 <li>Base object <code>_BaseHandler</code>; incompatible with Python 3.12</li>
 <li>Function <code>open_exp</code> from <code>fiat.io</code>, superseded by general use of <code>open_csv</code></li>
 <li>Method <code>add_c_handler</code> in favour of the more generalized <code>add_handler</code></li>
-<li>Methods <code>_create_output_dir</code>, <code>_create_tmp_dir</code> and <code>_create_risk_dir</code> of the <code>ConfigReader</code> object</li>
+<li>Methods <code>_create_output_dir</code>, <code>_create_tmp_dir</code> and <code>_create_risk_dir</code> of the <code>Configurations</code> object</li>
 <li>Object <code>ExposureTable</code>, now done via <code>TableLazy</code></li>
 <li>Resolve stage of <code>GeomModel</code>; now properly handled in <code>GeomModel.run</code></li>
 <li>Setting return period via the name of the hazard band (risk)</li>
@@ -469,7 +481,7 @@ ul.task-list li input[type="checkbox"] {
 <li>Main <code>FIAT</code> object from which it’s run</li>
 <li><code>GeomModel</code>; the vector based model</li>
 <li><code>GridModel</code>; the raster based model</li>
-<li><code>ConfigReader</code>; for reading the settings file</li>
+<li><code>Configurations</code>; for reading the settings file</li>
 <li>I/O methods and structs
 <ul>
 <li><code>open_csv</code> which returns e.g.&nbsp;<code>Table</code></li>

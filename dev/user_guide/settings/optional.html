@@ -331,19 +331,29 @@ Table&nbsp;1: Settings.toml input (required and optional fields)
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#global">crs</a></td>
-<td>string</td>
-<td>-</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;"><a href="#global">loglevel</a></td>
 <td>string</td>
 <td>INFO</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#global">type</a></td>
 <td>string</td>
 <td>flood</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>[global.srs]</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a href="#global.srs">value</a></td>
+<td>string</td>
+<td>EPSG:4326</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a href="#global.srs">prefer_global</a></td>
+<td>bool</td>
+<td>false</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><strong>[global.grid]</strong></td>
@@ -361,9 +371,9 @@ Table&nbsp;1: Settings.toml input (required and optional fields)
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#hazard">crs</a></td>
-<td>string</td>
-<td>-</td>
+<td style="text-align: left;"><a href="#hazard">resampling_method</a></td>
+<td>int</td>
+<td>0</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><a href="#hazard">return_periods</a></td>
@@ -376,54 +386,54 @@ Table&nbsp;1: Settings.toml input (required and optional fields)
 <td></td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;"><a href="#hazard">srs</a></td>
+<td>string</td>
+<td>-</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;"><a href="#hazard.settings">subset</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#hazard.settings">var_as_band</a></td>
 <td>boolean</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><strong>[exposure]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#exposure">types</a></td>
 <td>list</td>
 <td>[‘damage’]</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><strong>[exposure.csv.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#exposure.csv.settings">index</a></td>
 <td>string</td>
 <td>object_id</td>
 </tr>
-<tr class="odd">
-<td style="text-align: left;"><strong>[exposure.geom]</strong></td>
-<td></td>
-<td></td>
-</tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#exposure.geom">crs</a></td>
-<td>string</td>
-<td>-</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;"><strong>[exposure.geom.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#exposure.geom.settings">index</a></td>
 <td>string</td>
 <td>object_id</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a href="#exposure.geom.settings">srs</a></td>
+<td>string</td>
+<td>-</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><strong>[exposure.grid]</strong></td>
@@ -431,9 +441,9 @@ Table&nbsp;1: Settings.toml input (required and optional fields)
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#exposure.grid">crs</a></td>
-<td>string</td>
-<td>-</td>
+<td style="text-align: left;"><a href="#exposure.grid">resampling_method</a></td>
+<td>int</td>
+<td>0</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><strong>[exposure.grid.settings]</strong></td>
@@ -441,26 +451,31 @@ Table&nbsp;1: Settings.toml input (required and optional fields)
 <td></td>
 </tr>
 <tr class="even">
+<td style="text-align: left;"><a href="#exposure.grid.settings">srs</a></td>
+<td>string</td>
+<td>-</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;"><a href="#exposure.grid.settings">var_as_band</a></td>
 <td>boolean</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><strong>[vulnerability]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#vulnerability">step_size</a></td>
 <td>float</td>
 <td>0.01</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><strong>[vulnerability.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#vulnerability.settings">index</a></td>
 <td>string</td>
 <td>‘water depth’</td>
@@ -478,6 +493,13 @@ Table&nbsp;1: Settings.toml input (required and optional fields)
 <li><p><code>type</code>: Type of hazard. Should be the same name as the file containing the functions (e.g.&nbsp;‘flood’ -&gt; <code>fiat.methods.flood</code>)</p></li>
 </ul>
 </section>
+<section id="global.srs" class="level4">
+<h4 class="anchored" data-anchor-id="global.srs">[global.srs]</h4>
+<ul>
+<li><p><code>value</code>: Global projection for the model and the output. If not defined, the default projection is set to WGS84.</p></li>
+<li><p><code>prefer_global</code>: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e.&nbsp;prefer the hazard projection.</p></li>
+</ul>
+</section>
 <section id="global.grid" class="level4">
 <h4 class="anchored" data-anchor-id="global.grid">[global.grid]</h4>
 <ul>
@@ -487,13 +509,14 @@ Table&nbsp;1: Settings.toml input (required and optional fields)
 <section id="hazard" class="level4">
 <h4 class="anchored" data-anchor-id="hazard">[hazard]</h4>
 <ul>
-<li><p><code>crs</code>: Projection of the hazard data if it cannot be inferred from the dataset itself.</p></li>
+<li><p><code>resampling_method</code>: Method used during resampling/ reprojecting. Default is 0, i.e.&nbsp;nearest neighbour. For more info, see <a href="https://gdal.org/api/gdalwarp_cpp.html#_CPPv415GDALResampleAlg">this page</a></p></li>
 <li><p><code>return_periods</code>: Return periods for hazard calculation when they cannot be inferred from the data itself.</p></li>
 </ul>
 </section>
 <section id="hazard.settings" class="level4">
 <h4 class="anchored" data-anchor-id="hazard.settings">[hazard.settings]</h4>
 <ul>
+<li><p><code>srs</code>: Projection of the hazard data if it cannot be inferred from the dataset itself.</p></li>
 <li><p><code>subset</code>: Select a specific subdataset by supplying it’s ID (name) here.</p></li>
 <li><p><code>var_as_band</code>: Whether or not to read the subdatasets as classic raster band.</p></li>
 </ul>
@@ -523,28 +546,24 @@ Note
 <li><code>index</code>: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to ‘object_id’.</li>
 </ul>
 </section>
-<section id="exposure.geom" class="level4">
-<h4 class="anchored" data-anchor-id="exposure.geom">[exposure.geom]</h4>
-<ul>
-<li><code>crs</code>: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.</li>
-</ul>
-</section>
 <section id="exposure.geom.settings" class="level4">
 <h4 class="anchored" data-anchor-id="exposure.geom.settings">[exposure.geom.settings]</h4>
 <ul>
-<li><code>index</code>: Set the index column of the geom file(s). In case nothing is provided, the default value ‘object_id’ is used.</li>
+<li><p><code>index</code>: Set the index column of the geom file(s). In case nothing is provided, the default value ‘object_id’ is used.</p></li>
+<li><p><code>srs</code>: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.</p></li>
 </ul>
 </section>
 <section id="exposure.grid" class="level4">
 <h4 class="anchored" data-anchor-id="exposure.grid">[exposure.grid]</h4>
 <ul>
-<li><code>crs</code>: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.</li>
+<li><code>resampling_method</code>: Method used during resampling/ reprojecting. Default is 0, i.e.&nbsp;nearest neighbour. For more info, see <a href="https://gdal.org/api/gdalwarp_cpp.html#_CPPv415GDALResampleAlg">this page</a></li>
 </ul>
 </section>
 <section id="exposure.grid.settings" class="level4">
 <h4 class="anchored" data-anchor-id="exposure.grid.settings">[exposure.grid.settings]</h4>
 <ul>
-<li><code>var_as_band</code>: Whether or not to read the subdatasets as classic raster band.</li>
+<li><p><code>srs</code>: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.</p></li>
+<li><p><code>var_as_band</code>: Whether or not to read the subdatasets as classic raster band.</p></li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">

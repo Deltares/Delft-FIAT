@@ -355,7 +355,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(settings)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[global]
-crs = "EPSG:4326"
+model = "geom"
+
+[global.srs]
+value = "EPSG:4326"
 
 [output]
 path = "output/geom_event"
@@ -368,16 +371,20 @@ name1 = "spatial.gpkg"
 
 [hazard]
 file = "hazard/event_map.nc"
-crs = "EPSG:4326"
 risk = false
 elevation_reference = "DEM"
+
+[hazard.settings]
+srs = "EPSG:4326"
 
 [exposure.csv]
 file = "exposure/spatial.csv"
 
 [exposure.geom]
 file1 = "exposure/spatial.geojson"
-crs = "EPSG:4326"
+
+[exposure.geom.settings]
+srs = "EPSG:4326"
 
 [vulnerability]
 file = "vulnerability/vulnerability_curves.csv"
@@ -407,25 +414,26 @@ step_size = 0.01
                 Fast Impact Assessment Tool
                 © Deltares
 
-2025-03-03 13:25:10 INFO    Delft-Fiat version: 0.3.0.dev
-2025-03-03 13:25:10 INFO    Setting up geom model..
-2025-03-03 13:25:10 INFO    Using settings from '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/geom_event.toml'
-2025-03-03 13:25:10 INFO    Model srs set to: 'EPSG:4326'
-2025-03-03 13:25:10 INFO    Using number of threads: 1
-2025-03-03 13:25:10 INFO    Reading hazard data ('event_map.nc')
-2025-03-03 13:25:10 INFO    Executing hazard checks...
-2025-03-03 13:25:10 INFO    Reading vulnerability curves ('vulnerability_curves.csv')
-2025-03-03 13:25:10 INFO    Executing vulnerability checks...
-2025-03-03 13:25:10 INFO    Upscaling vulnerability curves, using a step size of: 0.01
-2025-03-03 13:25:10 INFO    Reading exposure geometry 'file1' ('spatial.geojson')
-2025-03-03 13:25:10 INFO    Executing exposure geometry checks...
-2025-03-03 13:25:10 INFO    Reading exposure data ('spatial.csv')
-2025-03-03 13:25:10 INFO    Executing exposure data checks...
-2025-03-03 13:25:10 INFO    Starting the calculations
-2025-03-03 13:25:10 INFO    Busy...
-2025-03-03 13:25:10 INFO    Calculations time: 0.05 seconds
-2025-03-03 13:25:10 INFO    Output generated in: '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/output/geom_event'
-2025-03-03 13:25:10 INFO    Geom calculation are done!</code></pre>
+2025-03-12 10:51:45 INFO    Delft-Fiat version: 0.3.0.dev
+2025-03-12 10:51:45 INFO    Using settings from '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/geom_event.toml'
+2025-03-12 10:51:45 INFO    Using number of threads: 1
+2025-03-12 10:51:45 INFO    Model srs set to: 'EPSG:4326'
+2025-03-12 10:51:45 INFO    Reading hazard data ('event_map.nc')
+2025-03-12 10:51:45 INFO    Executing hazard checks...
+2025-03-12 10:51:45 WARNING Setting the model srs from the hazard data.
+2025-03-12 10:51:45 INFO    Model srs set to: 'EPSG:4326'
+2025-03-12 10:51:45 INFO    Reading vulnerability curves ('vulnerability_curves.csv')
+2025-03-12 10:51:45 INFO    Executing vulnerability checks...
+2025-03-12 10:51:45 INFO    Upscaling vulnerability curves, using a step size of: 0.01
+2025-03-12 10:51:45 INFO    Reading exposure geometry 'file1' ('spatial.geojson')
+2025-03-12 10:51:45 INFO    Executing exposure geometry checks...
+2025-03-12 10:51:45 INFO    Reading exposure data ('spatial.csv')
+2025-03-12 10:51:45 INFO    Executing exposure data checks...
+2025-03-12 10:51:45 INFO    Starting the calculations
+2025-03-12 10:51:45 INFO    Busy...
+2025-03-12 10:51:45 INFO    Calculations time: 0.07 seconds
+2025-03-12 10:51:45 INFO    Output generated in: '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/output/geom_event'
+2025-03-12 10:51:45 INFO    Geom calculation are done!</code></pre>
 </div>
 </div>
 <p>Let’s take a quick look at the output.</p>

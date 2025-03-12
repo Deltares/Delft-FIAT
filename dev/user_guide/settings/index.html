@@ -396,6 +396,18 @@ Table&nbsp;1: Most basic settings file input
 </thead>
 <tbody>
 <tr class="odd">
+<td style="text-align: left;"><strong>[global]</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a href="#global">model</a></td>
+<td>string</td>
+<td>No</td>
+<td>geom</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;"><strong>[output]</strong></td>
 <td></td>
 <td></td>
@@ -404,8 +416,8 @@ Table&nbsp;1: Most basic settings file input
 <tr class="even">
 <td style="text-align: left;"><a href="#output">path</a></td>
 <td>string</td>
-<td>Yes</td>
-<td></td>
+<td>No</td>
+<td>output</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><strong>[output.csv]</strong></td>
@@ -520,6 +532,12 @@ Table&nbsp;1: Most basic settings file input
 </div>
 </figure>
 </div>
+<section id="global" class="level4">
+<h4 class="anchored" data-anchor-id="global">[global]</h4>
+<ul>
+<li><code>model</code>: The type of model. Choice between ‘geom’ and ‘grid’.</li>
+</ul>
+</section>
 <section id="output" class="level4">
 <h4 class="anchored" data-anchor-id="output">[output]</h4>
 <ul>
