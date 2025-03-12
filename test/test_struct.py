@@ -13,7 +13,7 @@ def test_geomsource(geom_data):
 
     assert geom_data.fields == ["object_id", "object_name"]
 
-    srs = geom_data.get_srs()
+    srs = geom_data.srs
     assert srs.GetAuthorityCode(None) == "4326"
 
     # Stucture should be able to be pickled
@@ -34,7 +34,7 @@ def test_gridsource(grid_event_data):
     assert grid_event_data.chunk == (10, 10)
     assert grid_event_data.shape == (10, 10)
 
-    srs = grid_event_data.get_srs()
+    srs = grid_event_data.srs
     assert srs.GetAuthorityCode(None) == "4326"
 
     # Stucture should be able to be pickled

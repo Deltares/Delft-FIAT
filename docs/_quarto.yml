@@ -168,18 +168,12 @@ quartodoc:
   # Basics of FIAT
   sections:
     - title: Basics
-    - subtitle: Core
-      desc: Two main components of working with FIAT.
+    - subtitle: Main
+      desc: Main components of working with FIAT.
       package: fiat
       contents:
-        - name: FIAT
+        - name: Configurations
           children: separate
-        - name: ConfigReader
-          children: separate
-    - subtitle: Models
-      desc: The individual models of FIAT.
-      package: fiat.models
-      contents:
         - name: GeomModel
           children: separate
         - name: GridModel

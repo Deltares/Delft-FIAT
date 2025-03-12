@@ -17,8 +17,6 @@ def world2pixel(
     ----------
     gtf : tuple
         The geotransform of a grid dataset.
-        Can be optained via the [get_geotransform]\
-(/api/GridSource/get_geotransform.qmd) method.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
     x : float | int
         The x coordinates of a point
@@ -36,7 +34,7 @@ def world2pixel(
     # Load a dataset
     gs = fiat.io.GridSource(<some raster file>)
     # Get the geotransform
-    gtf = gs.get_geotransform()
+    gtf = gs.geotransform
     # Calculate the indices
     row, col = world2pixel(gtf, <x>, <y>)
     ```
@@ -64,8 +62,6 @@ def pixel2world(
     ----------
     gtf : tuple
         The geotransform of a grid dataset.
-        Can be optained via the [get_geotransform]\
-(/api/GridSource/get_geotransform.qmd) method.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
     x : int
         Column number of the pixel
@@ -83,7 +79,7 @@ def pixel2world(
     # Load a dataset
     gs = fiat.io.GridSource(<some raster file>)
     # Get the geotransform
-    gtf = gs.get_geotransform()
+    gtf = gs.geotransform
     # Calculate the coordinates
     x, y = pixel2world(gtf, <column>, <row>)
     ```

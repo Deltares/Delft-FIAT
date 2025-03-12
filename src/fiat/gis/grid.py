@@ -98,7 +98,7 @@ def reproject(
     dst_src = gdal.Warp(
         str(fname_int),
         gs.src,
-        srcSRS=gs.get_srs(),
+        srcSRS=gs.srs,
         dstSRS=out_srs,
         resampleAlg=resample,
         **warp_kw,

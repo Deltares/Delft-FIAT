@@ -453,7 +453,10 @@ def create_settings_geom():
     """_summary_."""
     doc = {
         "global": {
-            "crs": "EPSG:4326",
+            "model": "geom",
+            "srs": {
+                "value": "EPSG:4326",
+            },
         },
         "output": {
             "path": "output/geom_event",
@@ -464,9 +467,11 @@ def create_settings_geom():
         },
         "hazard": {
             "file": "hazard/event_map.nc",
-            "crs": "EPSG:4326",
             "risk": False,
             "elevation_reference": "DEM",
+            "settings": {
+                "srs": "EPSG:4326",
+            },
         },
         "exposure": {
             "csv": {
@@ -474,7 +479,9 @@ def create_settings_geom():
             },
             "geom": {
                 "file1": "exposure/spatial.geojson",
-                "crs": "EPSG:4326",
+                "settings": {
+                    "srs": "EPSG:4326",
+                },
             },
         },
         "vulnerability": {
@@ -511,7 +518,7 @@ def create_settings_geom():
     doc_r["hazard"]["file"] = "hazard/risk_map.nc"
     doc_r["hazard"]["risk"] = True
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
-    doc_r["hazard"]["settings"] = {"var_as_band": True}
+    doc_r["hazard"]["settings"].update({"var_as_band": True})
 
     with open(Path(p, "geom_risk.toml"), "wb") as f:
         tomli_w.dump(doc_r, f)
@@ -542,7 +549,10 @@ def create_settings_grid():
     """_summary_."""
     doc = {
         "global": {
-            "crs": "EPSG:4326",
+            "model": "grid",
+            "srs": {
+                "value": "EPSG:4326",
+            },
         },
         "output": {
             "path": "output/grid_event",
@@ -550,14 +560,18 @@ def create_settings_grid():
         },
         "hazard": {
             "file": "hazard/event_map.nc",
-            "crs": "EPSG:4326",
             "risk": False,
             "elevation_reference": "DEM",
+            "settings": {
+                "srs": "EPSG:4326",
+            },
         },
         "exposure": {
             "grid": {
                 "file": "exposure/spatial.nc",
-                "crs": "EPSG:4326",
+                "settings": {
+                    "srs": "EPSG:4326",
+                },
             },
         },
         "vulnerability": {
@@ -573,7 +587,7 @@ def create_settings_grid():
     doc_r["output"]["path"] = "output/grid_risk"
     doc_r["hazard"]["file"] = "hazard/risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
-    doc_r["hazard"]["settings"] = {"var_as_band": True}
+    doc_r["hazard"]["settings"].update({"var_as_band": True})
     doc_r["hazard"]["risk"] = True
 
     with open(Path(p, "grid_risk.toml"), "wb") as f:

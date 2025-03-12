@@ -63,8 +63,6 @@ def clip(
         information, see [Grid](/api/Grid.qmd)!
     gtf : tuple
         The geotransform of a grid dataset.
-        Can be optained via the [get_geotransform]\
-(/api/GridSource/get_geotransform.qmd) method.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
 
     Returns
@@ -132,8 +130,6 @@ cells that are touched by the feature.
         information, see [Grid](/api/Grid.qmd)!
     gtf : tuple
         The geotransform of a grid dataset.
-        Can be optained via the [get_geotransform]\
-(/api/GridSource/get_geotransform.qmd) method.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
     upscale : int, optional
         How much the underlying grid will be upscaled.
@@ -191,8 +187,6 @@ def pin(
         Input object. This holds a connection to the specified band.
     gtf : tuple
         The geotransform of a grid dataset.
-        Can be optained via the [get_geotransform]\
-(/api/GridSource/get_geotransform.qmd) method.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
 
     Returns

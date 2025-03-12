@@ -94,7 +94,7 @@ def reproject(
     out_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
     transform = osr.CoordinateTransformation(
-        gs.get_srs(),
+        gs.srs,
         out_srs,
     )
 

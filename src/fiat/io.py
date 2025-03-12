@@ -30,6 +30,7 @@ from fiat.util import (
     _dtypes_reversed,
     deter_type,
     find_duplicates,
+    get_srs_repr,
     read_gridsource_layers,
     regex_pattern,
     replace_empty,
@@ -295,7 +296,7 @@ class BufferedGeomWriter:
         self.layer_defn = layer_defn
 
         # Create the buffer
-        self.buffer = open_geom(f"/vsimem/{file.stem}.gpkg", "w")
+        self.buffer = open_geom(f"/vsimem/{file.stem}.gpkg", mode="w")
         self.buffer.create_layer(
             srs,
             layer_defn.GetGeomType(),
@@ -876,6 +877,8 @@ class GeomSource(_BaseIO, _BaseStruct):
         The I/O mode. Either `r` for reading or `w` for writing.
     overwrite : bool, optional
         Whether or not to overwrite an existing dataset.
+    srs : str, optional
+        A Spatial reference system string in case the dataset has none.
 
     Examples
     --------
@@ -894,6 +897,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         file: str,
         mode: str = "r",
         overwrite: bool = False,
+        srs: str | None = None,
     ):
         """Create a GeomSource object."""
         obj = object.__new__(cls)
@@ -905,6 +909,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         file: str,
         mode: str = "r",
         overwrite: bool = False,
+        srs: str | None = None,
     ):
         _BaseStruct.__init__(self)
         _BaseIO.__init__(self, file, mode)
@@ -932,6 +937,10 @@ class GeomSource(_BaseIO, _BaseStruct):
         info = None
         self._count = 0
         self._cur_index = 0
+        self._srs = None
+        if srs is not None:
+            self._srs = osr.SpatialReference()
+            self._srs.SetFromUserInput(srs)
 
         self.layer = self.src.GetLayer()
         if self.layer is not None:
@@ -955,9 +964,14 @@ class GeomSource(_BaseIO, _BaseStruct):
         return self.layer.GetFeature(fid)
 
     def __reduce__(self):
+        srs = None
+        if self._srs is not None:
+            srs = get_srs_repr(self._srs)
         return self.__class__, (
             self.path,
             self._mode_str,
+            False,
+            srs,
         )
 
     def _retrieve_columns(self):
@@ -973,6 +987,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         """Close the GeomSouce."""
         _BaseIO.close(self)
 
+        self._srs = None
         self.layer = None
         self.src = None
         self._driver = None
@@ -1094,6 +1109,24 @@ class GeomSource(_BaseIO, _BaseStruct):
             count = self.layer.GetFeatureCount()
             self._count = count
         return self._count
+
+    @property
+    @_BaseIO._check_state
+    def srs(
+        self,
+    ):
+        """Return the srs (Spatial Reference System)."""
+        _srs = self.layer.GetSpatialRef()
+        if _srs is None:
+            _srs = self._srs
+        return _srs
+
+    @srs.setter
+    def srs(
+        self,
+        srs,
+    ):
+        self._srs = srs
 
     @_BaseIO._check_mode
     @_BaseIO._check_state
@@ -1306,11 +1339,6 @@ class GeomSource(_BaseIO, _BaseStruct):
         """Get a layer from the datasource."""
         raise NotImplementedError(NOT_IMPLEMENTED)
 
-    @_BaseIO._check_state
-    def get_srs(self):
-        """Return the srs (Spatial Reference System)."""
-        return self.layer.GetSpatialRef()
-
     @_BaseIO._check_mode
     @_BaseIO._check_state
     def set_layer_from_defn(
@@ -1339,6 +1367,10 @@ class GridSource(_BaseIO, _BaseStruct):
     ----------
     file : str
         The path to a file.
+    mode : str, optional
+        The I/O mode. Either `r` for reading or `w` for writing.
+    srs : str, optional
+        A Spatial reference system string in case the dataset has none.
     chunk : tuple, optional
         Chunking size of the data.
     subset : str, optional
@@ -1347,8 +1379,6 @@ multiple variables.
     var_as_band : bool, optional
         Whether to interpret the variables as bands.
         This is applicable to netCDF files containing multiple variables.
-    mode : str, optional
-        The I/O mode. Either `r` for reading or `w` for writing.
 
     Examples
     --------
@@ -1371,10 +1401,11 @@ multiple variables.
     def __new__(
         cls,
         file: str,
+        mode: str = "r",
+        srs: str | None = None,
         chunk: tuple = None,
         subset: str = None,
         var_as_band: bool = False,
-        mode: str = "r",
     ):
         """Create a new GridSource object."""
         obj = object.__new__(cls)
@@ -1384,10 +1415,11 @@ multiple variables.
     def __init__(
         self,
         file: str,
+        mode: str = "r",
+        srs: str | None = None,
         chunk: tuple = None,
         subset: str = None,
         var_as_band: bool = False,
-        mode: str = "r",
     ):
         _open_options = []
 
@@ -1425,6 +1457,10 @@ multiple variables.
         self.subset_dict = None
         self._count = 0
         self._cur_index = 1
+        self._srs = None
+        if srs is not None:
+            self._srs = osr.SpatialReference()
+            self._srs.SetFromUserInput(srs)
 
         if not self._mode:
             self.src = gdal.OpenEx(self._path.as_posix(), open_options=_open_options)
@@ -1465,12 +1501,16 @@ multiple variables.
         )
 
     def __reduce__(self):
+        srs = None
+        if self._srs is not None:
+            srs = get_srs_repr(self._srs)
         return self.__class__, (
             self.path,
+            self._mode_str,
+            srs,
             self.chunk,
             self.subset,
             self._var_as_band,
-            self._mode_str,
         )
 
     def close(self):
@@ -1478,6 +1518,7 @@ multiple variables.
         _BaseIO.close(self)
 
         self.src = None
+        self._srs = None
         self._driver = None
 
         gc.collect()
@@ -1496,12 +1537,17 @@ multiple variables.
             return self
         obj = GridSource.__new__(
             GridSource,
-            self.path,
-            self.chunk,
-            self.subset,
-            self._var_as_band,
+            file=self.path,
+            chunk=self.chunk,
+            subset=self.subset,
+            var_as_band=self._var_as_band,
         )
-        obj.__init__(self.path, self._chunk, self.subset, self._var_as_band)
+        obj.__init__(
+            file=self.path,
+            chunk=self._chunk,
+            subset=self.subset,
+            var_as_band=self._var_as_band,
+        )
         return obj
 
     @property
@@ -1546,6 +1592,12 @@ multiple variables.
 
     @property
     @_BaseIO._check_state
+    def geotransform(self):
+        """Return the geo transform of the grid."""
+        return self.src.GetGeoTransform()
+
+    @property
+    @_BaseIO._check_state
     def shape(self):
         """Return the shape of the grid.
 
@@ -1585,6 +1637,24 @@ multiple variables.
         count = self.src.RasterCount
         self._count = count
         return self._count
+
+    @property
+    @_BaseIO._check_state
+    def srs(
+        self,
+    ):
+        """Return the srs (Spatial Reference System)."""
+        _srs = self.src.GetSpatialRef()
+        if _srs is None:
+            _srs = self._srs
+        return _srs
+
+    @srs.setter
+    def srs(
+        self,
+        srs,
+    ):
+        self._srs = srs
 
     @_BaseIO._check_mode
     @_BaseIO._check_state
@@ -1692,16 +1762,6 @@ multiple variables.
             _names.append(self.get_band_name(n + 1))
 
         return _names
-
-    @_BaseIO._check_state
-    def get_geotransform(self):
-        """Return the geo transform of the grid."""
-        return self.src.GetGeoTransform()
-
-    @_BaseIO._check_state
-    def get_srs(self):
-        """Return the srs (Spatial Reference System) of the grid."""
-        return self.src.GetSpatialRef()
 
     def set_chunk_size(
         self,
@@ -2216,6 +2276,7 @@ def open_geom(
     file: Path | str,
     mode: str = "r",
     overwrite: bool = False,
+    srs: str | None = None,
 ):
     """Open a geometry source file.
 
@@ -2229,6 +2290,8 @@ def open_geom(
         Open in `read` or `write` mode.
     overwrite : bool, optional
         Whether or not to overwrite an existing dataset.
+    srs : str, optional
+        A Spatial reference system string in case the dataset has none.
 
     Returns
     -------
@@ -2239,15 +2302,17 @@ def open_geom(
         file,
         mode,
         overwrite,
+        srs,
     )
 
 
 def open_grid(
     file: Path | str,
+    mode: str = "r",
+    srs: str | None = None,
     chunk: tuple = None,
     subset: str = None,
     var_as_band: bool = False,
-    mode: str = "r",
 ):
     """Open a grid source file.
 
@@ -2257,6 +2322,10 @@ def open_grid(
     ----------
     file : Path | str
         Path to the file.
+    mode : str, optional
+        Open in `read` or `write` mode.
+    srs : str, optional
+        A Spatial reference system string in case the dataset has none.
     chunk : tuple, optional
         Chunk size in x and y direction.
     subset : str, optional
@@ -2265,8 +2334,6 @@ def open_grid(
     var_as_band : bool, optional
         Again with netCDF files: if all variables have the same dimensions, set this
         flag to `True` to look the subsets as bands.
-    mode : str, optional
-        Open in `read` or `write` mode.
 
     Returns
     -------
@@ -2275,8 +2342,9 @@ def open_grid(
     """
     return GridSource(
         file,
+        mode,
+        srs,
         chunk,
         subset,
         var_as_band,
-        mode,
     )

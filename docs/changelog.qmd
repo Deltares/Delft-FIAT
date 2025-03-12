@@ -9,14 +9,24 @@ These are the unreleased changes.
 - Build task for pixi
 
 ### Changed
-- CSV file output coupled with vector file output
+- Csv file output coupled with vector file output
+- Cli: support for setting config entries
+- Cli: help messages have improved format
+- Default value for the model srs: "EPSG:4326" (WGS84)
 - Default vector output file format back to `GPKG`
+- Expanded api, not everything needs to be defined in the settings file
 - Fixed bug in newline sniffer
+- More flexible `Configurations` class
 - Optional CSV file output
+- Rename `ConfigReader` to `Configurations`
+- Rename all 'crs' variables to 'srs'
+- Srs set in settings for a file will be used when no srs is present within the file
 
 ### Deprecated
+- FIAT object
 
 ### Documentation
+- Added missing settings file entries
 - Fixed missing docstrings (API)
 
 ## v0.2.1 (2024-12-05)
@@ -70,12 +80,12 @@ The first full release of Delft-FIAT.
 - Function (`execute_pool`) to execute code in parallel using `multiprocessing`
 - Flood hazard/ damage functions (`methods` submodule)
 - General method of creating output files in `GeomModel` (`_setup_output_files`)
-- Method `_create_model_dirs` of `ConfigReader` object for creating result directories in one go
+- Method `_create_model_dirs` of `Configurations` object for creating result directories in one go
 - Method `add_handler` of the `Log` object; user setting of custom stream
 - Method `add_feature_with_map` of `GeomModel` to set features with extra info
 - Method `create` of `GeomModel` to create an ogr.DataSource (new dataset)
 - Method `create_equal_grids` of `GridModel` for making hazard and exposure grid spatially equal
-- Method `set` of `ConfigReader` object
+- Method `set` of `Configurations` object
 - Not stopping when exposure and hazard grids (`GridModel`), but instead make them spatially equal
 - Numpy >= 2.0.0 support
 - Python 3.12 support
@@ -100,7 +110,7 @@ The first full release of Delft-FIAT.
 - Base object `_BaseHandler`; incompatible with Python 3.12
 - Function `open_exp` from `fiat.io`, superseded by general use of `open_csv`
 - Method `add_c_handler` in favour of the more generalized `add_handler`
-- Methods `_create_output_dir`, `_create_tmp_dir` and `_create_risk_dir` of the `ConfigReader` object
+- Methods `_create_output_dir`, `_create_tmp_dir` and `_create_risk_dir` of the `Configurations` object
 - Object `ExposureTable`, now done via `TableLazy`
 - Resolve stage of `GeomModel`; now properly handled in `GeomModel.run`
 - Setting return period via the name of the hazard band (risk)
@@ -159,7 +169,7 @@ This is the first and pre-release of Delft-FIAT. It aims to have a stable versio
 - Main `FIAT` object from which it's run
 - `GeomModel`; the vector based model
 - `GridModel`; the raster based model
-- `ConfigReader`; for reading the settings file
+- `Configurations`; for reading the settings file
 - I/O methods and structs
     - `open_csv` which returns e.g. `Table`
     - `open_geom` which returns a `GeomSource`

@@ -1,44 +1,31 @@
 import sys
 from pathlib import Path
 
-from osgeo import osr
-
-from fiat import ConfigReader, GeomModel, GridModel
+from fiat import Configurations, GeomModel, open_grid
 from fiat.check import (
+    check_config_entries,
     check_exp_derived_types,
+    check_grid_exact,
     check_hazard_rp,
     check_hazard_subsets,
     check_internal_srs,
 )
 from fiat.error import FIATDataError
-from fiat.util import discover_exp_columns
+from fiat.util import MANDATORY_MODEL_ENTRIES, discover_exp_columns
 
 
 def test_check_config_entries(settings_files):
     settings = settings_files["missing_hazard"]
 
     try:
-        _ = ConfigReader(settings)
+        cfg = Configurations.from_file(settings)
+        check_config_entries(cfg.keys(), MANDATORY_MODEL_ENTRIES)
     except FIATDataError:
         t, v, tb = sys.exc_info()
         assert v.msg.startswith("Missing mandatory entries")
         assert v.msg.endswith("['hazard.file']")
     finally:
         assert v
-
-
-def test_check_config_models(settings_files):
-    neither = settings_files["missing_models"]
-    cfg = ConfigReader(neither)
-    assert cfg.get_model_type() == [False, False]
-
-    geom = settings_files["geom_event"]
-    cfg = ConfigReader(geom)
-    assert cfg.get_model_type() == [True, False]
-
-    geom = settings_files["grid_event"]
-    cfg = ConfigReader(geom)
-    assert cfg.get_model_type() == [False, True]
 
 
 def test_check_exp_columns(configs):
@@ -49,7 +36,8 @@ def test_check_exp_columns(configs):
     )
 
     try:
-        _ = GeomModel(cfg)
+        model = GeomModel(cfg)
+        model.get_exposure_meta()
     except FIATDataError:
         t, v, tb = sys.exc_info()
         assert v.msg == "Missing mandatory exposure columns: ['object_id']"
@@ -89,13 +77,19 @@ def test_check_exp_index_col(configs):
 
 def test_check_grid_exact(configs):
     exact = configs["grid_event"]
-    model = GridModel(exact)
-    assert model.equal == True
+    equal = check_grid_exact(
+        open_grid(exact.get("hazard.file")),
+        open_grid(exact.get("exposure.grid.file")),
+    )
+    assert equal == True
 
     unequal = configs["grid_unequal"]
-    model = GridModel(unequal)
-    assert model.equal == False
-    assert model.cfg.get("hazard.file").exists()
+    equal = check_grid_exact(
+        open_grid(unequal.get("hazard.file")),
+        open_grid(unequal.get("exposure.grid.file")),
+    )
+    assert equal == False
+    assert unequal.get("hazard.file").exists()
 
 
 def test_check_hazard_rp():
@@ -133,21 +127,9 @@ def test_check_hazard_subsets(grid_event_data, grid_risk_data):
 
 def test_check_internal_srs():
     try:
-        check_internal_srs(None, "file", None)
+        check_internal_srs(None, "file")
     except FIATDataError:
         t, v, tb = sys.exc_info()
         assert v.msg.startswith("Coordinate reference system is unknown for 'file'")
     finally:
         assert v
-
-    s = osr.SpatialReference()
-    s.ImportFromEPSG(4326)
-
-    int_srs = check_internal_srs(s, fname="")
-    assert int_srs is None
-    s = None
-
-    int_srs = check_internal_srs(None, "", "EPSG:4326")
-    assert int_srs is not None
-    assert int_srs.GetAuthorityCode(None) == "4326"
-    int_srs = None

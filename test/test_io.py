@@ -7,7 +7,7 @@ def test_bufferedgeom(tmp_path, geom_data):
     out_path = Path(str(tmp_path))
     writer = BufferedGeomWriter(
         Path(out_path, "bufferedgeoms.gpkg"),
-        geom_data.get_srs(),
+        geom_data.srs,
         geom_data.layer.GetLayerDefn(),
         buffer_size=2,
     )
