@@ -512,6 +512,13 @@ def create_settings_geom():
     with open(Path(p, "geom_event_missing.toml"), "wb") as f:
         tomli_w.dump(doc_m, f)
 
+    # Setup toml with geometries lying outside hazard are
+    doc_o = copy.deepcopy(doc)
+    doc_o["exposure"]["geom"]["file1"] = "exposure/spatial_outside.geojson"
+
+    with open(Path(p, "geom_event_outside.toml"), "wb") as f:
+        tomli_w.dump(doc_o, f)
+
     # Setup toml for risk calculation
     doc_r = copy.deepcopy(doc)
     doc_r["output"]["path"] = "output/geom_risk"

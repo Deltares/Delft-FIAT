@@ -38,6 +38,15 @@ def test_geom_missing(tmp_path, configs):
     assert sum(1 for _ in missing) == 1
 
 
+def test_geom_outside(tmp_path, configs):
+    # run the model
+    run_model(configs["geom_event_outside"], tmp_path)
+
+    # Check the output for this specific case
+    data = open_csv(Path(tmp_path, "output.csv"))
+    assert data is not None
+
+
 def test_geom_risk(tmp_path, configs):
     # run the model
     run_model(configs["geom_risk"], tmp_path)

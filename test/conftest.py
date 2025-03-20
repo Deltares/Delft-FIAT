@@ -19,6 +19,7 @@ _MODELS = [
     "geom_event",
     "geom_event_2g",
     "geom_event_missing",
+    "geom_event_outside",
     "geom_risk",
     "geom_risk_2g",
     "grid_event",
@@ -85,6 +86,13 @@ def grid_risk(configs):
 @pytest.fixture(scope="session")
 def geom_data():
     d = open_geom(Path(_PATH, ".testdata", "exposure", "spatial.geojson"))
+    return d
+
+
+## Data
+@pytest.fixture(scope="session")
+def geom_outside_data():
+    d = open_geom(Path(_PATH, ".testdata", "exposure", "spatial_outside.geojson"))
     return d
 
 
