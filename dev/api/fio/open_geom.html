@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>open_csv – Delft FIAT</title>
+<title>open_geom – Delft FIAT</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -186,7 +186,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item">I/O</li><li class="breadcrumb-item"><a href="../../api/io/merge_geom_layers.html">Methods</a></li><li class="breadcrumb-item"><a href="../../api/io/open_csv.html">open_csv</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item">I/O</li><li class="breadcrumb-item"><a href="../../api/fio/merge_geom_layers.html">Methods</a></li><li class="breadcrumb-item"><a href="../../api/fio/open_geom.html">open_geom</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -669,25 +669,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-17" class="collapse list-unstyled sidebar-section depth3 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/io/merge_geom_layers.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/fio/merge_geom_layers.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">merge_geom_layers</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/io/open_csv.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../api/fio/open_csv.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">open_csv</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/io/open_geom.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/fio/open_geom.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">open_geom</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/io/open_grid.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/fio/open_grid.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">open_grid</span></a>
   </div>
 </li>
@@ -977,7 +977,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#fiat.io.open_csv" id="toc-fiat.io.open_csv" class="nav-link active" data-scroll-target="#fiat.io.open_csv">open_csv</a>
+  <li><a href="#fiat.fio.open_geom" id="toc-fiat.fio.open_geom" class="nav-link active" data-scroll-target="#fiat.fio.open_geom">open_geom</a>
   <ul class="collapse">
   <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
   <li><a href="#returns" id="toc-returns" class="nav-link" data-scroll-target="#returns">Returns</a></li>
@@ -991,10 +991,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="fiat.io.open_csv" class="level1">
-<h1>open_csv</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>io.open_csv(<span class="bu">file</span>, delimiter<span class="op">=</span><span class="st">','</span>, header<span class="op">=</span><span class="va">True</span>, index<span class="op">=</span><span class="va">None</span>, lazy<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Open a csv file.</p>
+<section id="fiat.fio.open_geom" class="level1">
+<h1>open_geom</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>fio.open_geom(<span class="bu">file</span>, mode<span class="op">=</span><span class="st">'r'</span>, overwrite<span class="op">=</span><span class="va">False</span>, srs<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Open a geometry source file.</p>
+<p>This source file is lazily read.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
 <table class="caption-top table">
@@ -1014,28 +1015,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><em>required</em></td>
 </tr>
 <tr class="even">
-<td>delimiter</td>
+<td>mode</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
-<td>Column seperating character, either something like <code>','</code> or <code>';'</code>.</td>
-<td><code>','</code></td>
+<td>Open in <code>read</code> or <code>write</code> mode.</td>
+<td><code>'r'</code></td>
 </tr>
 <tr class="odd">
-<td>header</td>
+<td>overwrite</td>
 <td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
-<td>Whether or not to use headers.</td>
-<td><code>True</code></td>
+<td>Whether or not to overwrite an existing dataset.</td>
+<td><code>False</code></td>
 </tr>
 <tr class="even">
-<td>index</td>
+<td>srs</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
-<td>Name of the index column.</td>
+<td>A Spatial reference system string in case the dataset has none.</td>
 <td><code>None</code></td>
-</tr>
-<tr class="odd">
-<td>lazy</td>
-<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
-<td>If <code>True</code>, a lazy read is executed.</td>
-<td><code>False</code></td>
 </tr>
 </tbody>
 </table>
@@ -1044,9 +1039,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 7%">
-<col style="width: 60%">
-<col style="width: 32%">
+<col style="width: 8%">
+<col style="width: 38%">
+<col style="width: 53%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1058,8 +1053,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td></td>
-<td><code>Table</code> | <code>TableLazy</code></td>
-<td>Object holding parsed csv data.</td>
+<td><code>GeomSource</code></td>
+<td>Object that holds a connection to the source file.</td>
 </tr>
 </tbody>
 </table>

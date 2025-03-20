@@ -669,25 +669,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-17" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/io/merge_geom_layers.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/fio/merge_geom_layers.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">merge_geom_layers</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/io/open_csv.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/fio/open_csv.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">open_csv</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/io/open_geom.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/fio/open_geom.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">open_geom</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/io/open_grid.html" class="sidebar-item-text sidebar-link">
+  <a href="../../api/fio/open_grid.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">open_grid</span></a>
   </div>
 </li>
@@ -1052,7 +1052,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="examples" class="level2 doc-section doc-section-examples">
 <h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load a dataset</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>gs <span class="op">=</span> fiat.io.GridSource(<span class="op">&lt;</span>some raster <span class="bu">file</span><span class="op">&gt;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>gs <span class="op">=</span> fiat.fio.GridSource(<span class="op">&lt;</span>some raster <span class="bu">file</span><span class="op">&gt;</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the geotransform</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>gtf <span class="op">=</span> gs.geotransform</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the indices</span></span>

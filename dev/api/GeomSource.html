@@ -669,25 +669,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-17" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/io/merge_geom_layers.html" class="sidebar-item-text sidebar-link">
+  <a href="../api/fio/merge_geom_layers.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">merge_geom_layers</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/io/open_csv.html" class="sidebar-item-text sidebar-link">
+  <a href="../api/fio/open_csv.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">open_csv</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/io/open_geom.html" class="sidebar-item-text sidebar-link">
+  <a href="../api/fio/open_geom.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">open_geom</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/io/open_grid.html" class="sidebar-item-text sidebar-link">
+  <a href="../api/fio/open_grid.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">open_grid</span></a>
   </div>
 </li>
@@ -977,7 +977,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#fiat.io.GeomSource" id="toc-fiat.io.GeomSource" class="nav-link active" data-scroll-target="#fiat.io.GeomSource">GeomSource</a>
+  <li><a href="#fiat.fio.GeomSource" id="toc-fiat.fio.GeomSource" class="nav-link active" data-scroll-target="#fiat.fio.GeomSource">GeomSource</a>
   <ul class="collapse">
   <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
   <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
@@ -993,9 +993,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="fiat.io.GeomSource" class="level1">
+<section id="fiat.fio.GeomSource" class="level1">
 <h1>GeomSource</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>io.GeomSource(<span class="va">self</span>, <span class="bu">file</span>, mode<span class="op">=</span><span class="st">'r'</span>, overwrite<span class="op">=</span><span class="va">False</span>, srs<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>fio.GeomSource(<span class="va">self</span>, <span class="bu">file</span>, mode<span class="op">=</span><span class="st">'r'</span>, overwrite<span class="op">=</span><span class="va">False</span>, srs<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>A source object for geospatial vector data.</p>
 <p>Essentially an OGR DataSource wrapper.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
@@ -1057,31 +1057,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#fiat.io.GeomSource.bounds">bounds</a></td>
+<td><a href="#fiat.fio.GeomSource.bounds">bounds</a></td>
 <td>Return the bounds of the GridSource.</td>
 </tr>
 <tr class="even">
-<td><a href="#fiat.io.GeomSource.columns">columns</a></td>
+<td><a href="#fiat.fio.GeomSource.columns">columns</a></td>
 <td>Return the columns header of the attribute tabel.</td>
 </tr>
 <tr class="odd">
-<td><a href="#fiat.io.GeomSource.dtypes">dtypes</a></td>
+<td><a href="#fiat.fio.GeomSource.dtypes">dtypes</a></td>
 <td>Return the data types of the fields.</td>
 </tr>
 <tr class="even">
-<td><a href="#fiat.io.GeomSource.fields">fields</a></td>
+<td><a href="#fiat.fio.GeomSource.fields">fields</a></td>
 <td>Return the names of the fields.</td>
 </tr>
 <tr class="odd">
-<td><a href="#fiat.io.GeomSource.geom_type">geom_type</a></td>
+<td><a href="#fiat.fio.GeomSource.geom_type">geom_type</a></td>
 <td>Return the geometry type.</td>
 </tr>
 <tr class="even">
-<td><a href="#fiat.io.GeomSource.size">size</a></td>
+<td><a href="#fiat.fio.GeomSource.size">size</a></td>
 <td>Return the size (geometry count).</td>
 </tr>
 <tr class="odd">
-<td><a href="#fiat.io.GeomSource.srs">srs</a></td>
+<td><a href="#fiat.fio.GeomSource.srs">srs</a></td>
 <td>Return the srs (Spatial Reference System).</td>
 </tr>
 </tbody>
@@ -1098,59 +1098,59 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../api/GeomSource/add_feature.html#fiat.io.GeomSource.add_feature">add_feature</a></td>
+<td><a href="../api/GeomSource/add_feature.html#fiat.fio.GeomSource.add_feature">add_feature</a></td>
 <td>Add a feature to the layer.</td>
 </tr>
 <tr class="even">
-<td><a href="../api/GeomSource/add_feature_from_defn.html#fiat.io.GeomSource.add_feature_from_defn">add_feature_from_defn</a></td>
+<td><a href="../api/GeomSource/add_feature_from_defn.html#fiat.fio.GeomSource.add_feature_from_defn">add_feature_from_defn</a></td>
 <td>Add a feature to a layer by using properties from another.</td>
 </tr>
 <tr class="odd">
-<td><a href="../api/GeomSource/add_feature_with_map.html#fiat.io.GeomSource.add_feature_with_map">add_feature_with_map</a></td>
+<td><a href="../api/GeomSource/add_feature_with_map.html#fiat.fio.GeomSource.add_feature_with_map">add_feature_with_map</a></td>
 <td>Add a feature with extra field data.</td>
 </tr>
 <tr class="even">
-<td><a href="../api/GeomSource/close.html#fiat.io.GeomSource.close">close</a></td>
+<td><a href="../api/GeomSource/close.html#fiat.fio.GeomSource.close">close</a></td>
 <td>Close the GeomSouce.</td>
 </tr>
 <tr class="odd">
-<td><a href="../api/GeomSource/copy_layer.html#fiat.io.GeomSource.copy_layer">copy_layer</a></td>
+<td><a href="../api/GeomSource/copy_layer.html#fiat.fio.GeomSource.copy_layer">copy_layer</a></td>
 <td>Copy a layer to an existing dataset.</td>
 </tr>
 <tr class="even">
-<td><a href="../api/GeomSource/create.html#fiat.io.GeomSource.create">create</a></td>
+<td><a href="../api/GeomSource/create.html#fiat.fio.GeomSource.create">create</a></td>
 <td>Create a data source.</td>
 </tr>
 <tr class="odd">
-<td><a href="../api/GeomSource/create_field.html#fiat.io.GeomSource.create_field">create_field</a></td>
+<td><a href="../api/GeomSource/create_field.html#fiat.fio.GeomSource.create_field">create_field</a></td>
 <td>Add a new field.</td>
 </tr>
 <tr class="even">
-<td><a href="../api/GeomSource/create_fields.html#fiat.io.GeomSource.create_fields">create_fields</a></td>
+<td><a href="../api/GeomSource/create_fields.html#fiat.fio.GeomSource.create_fields">create_fields</a></td>
 <td>Add multiple fields at once.</td>
 </tr>
 <tr class="odd">
-<td><a href="../api/GeomSource/create_layer.html#fiat.io.GeomSource.create_layer">create_layer</a></td>
+<td><a href="../api/GeomSource/create_layer.html#fiat.fio.GeomSource.create_layer">create_layer</a></td>
 <td>Create a new vector layer.</td>
 </tr>
 <tr class="even">
-<td><a href="../api/GeomSource/create_layer_from_copy.html#fiat.io.GeomSource.create_layer_from_copy">create_layer_from_copy</a></td>
+<td><a href="../api/GeomSource/create_layer_from_copy.html#fiat.fio.GeomSource.create_layer_from_copy">create_layer_from_copy</a></td>
 <td>Create a new layer by copying another layer.</td>
 </tr>
 <tr class="odd">
-<td><a href="../api/GeomSource/flush.html#fiat.io.GeomSource.flush">flush</a></td>
+<td><a href="../api/GeomSource/flush.html#fiat.fio.GeomSource.flush">flush</a></td>
 <td>Flush the data.</td>
 </tr>
 <tr class="even">
-<td><a href="../api/GeomSource/reduced_iter.html#fiat.io.GeomSource.reduced_iter">reduced_iter</a></td>
+<td><a href="../api/GeomSource/reduced_iter.html#fiat.fio.GeomSource.reduced_iter">reduced_iter</a></td>
 <td>Yield items on an interval.</td>
 </tr>
 <tr class="odd">
-<td><a href="../api/GeomSource/reopen.html#fiat.io.GeomSource.reopen">reopen</a></td>
+<td><a href="../api/GeomSource/reopen.html#fiat.fio.GeomSource.reopen">reopen</a></td>
 <td>Reopen a closed GeomSource.</td>
 </tr>
 <tr class="even">
-<td><a href="../api/GeomSource/set_layer_from_defn.html#fiat.io.GeomSource.set_layer_from_defn">set_layer_from_defn</a></td>
+<td><a href="../api/GeomSource/set_layer_from_defn.html#fiat.fio.GeomSource.set_layer_from_defn">set_layer_from_defn</a></td>
 <td>Set layer meta from another layer’s meta.</td>
 </tr>
 </tbody>
