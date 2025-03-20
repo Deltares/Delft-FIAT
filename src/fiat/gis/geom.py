@@ -5,7 +5,7 @@ from pathlib import Path
 
 from osgeo import ogr, osr
 
-from fiat.io import GeomSource, open_geom
+from fiat.fio import GeomSource, open_geom
 
 
 def point_in_geom(

@@ -165,14 +165,12 @@ class Configurations(dict):
     ):
         """Set a value in the configuration data.
 
-        _extended_summary_
-
         Parameters
         ----------
         key : str
-            _description_
+            The name of the entry. Can be a joined string by periods ('.').
         value : Any
-            _description_
+            The value corresponding to the entry.
         """
         self[key] = value
 
@@ -203,7 +201,13 @@ class Configurations(dict):
             )
             self.set("output.damages.path", _p)
 
-    def update(self, other):
-        """Update the config settings object."""
+    def update(self, other: dict):
+        """Update the config settings object.
+
+        Parameters
+        ----------
+        other : dict
+            Dictionary (or Configurations) used to update current object.
+        """
         dict.__init__(self, other)
         self._ensure_output_path()

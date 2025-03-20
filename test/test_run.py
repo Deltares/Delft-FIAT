@@ -3,7 +3,7 @@ from pathlib import Path
 
 from osgeo import gdal
 
-from fiat.io import open_csv, open_grid
+from fiat.fio import open_csv, open_grid
 from fiat.models import GeomModel, GridModel
 
 
@@ -36,6 +36,18 @@ def test_geom_missing(tmp_path, configs):
     assert Path(str(tmp_path), "missing.log").exists()
     missing = open(Path(str(tmp_path), "missing.log"), "r")
     assert sum(1 for _ in missing) == 1
+
+
+def test_geom_outside(tmp_path, configs):
+    # run the model
+    run_model(configs["geom_event_outside"], tmp_path)
+
+    # Check the output for this specific case
+    data = open_csv(Path(tmp_path, "output.csv"))
+
+    assert data[0, "damage_structure"] == "nan"
+    assert float(data[0, "total_damage"]) == 0.0
+    assert float(data[1, "damage_structure"]) == 1804.0
 
 
 def test_geom_risk(tmp_path, configs):

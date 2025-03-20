@@ -9,7 +9,7 @@ from typing import Callable, Generator
 from osgeo import ogr
 
 from fiat.cfg import Configurations
-from fiat.io import TableLazy
+from fiat.fio import TableLazy
 from fiat.util import NEWLINE_CHAR, generic_path_check, replace_empty
 
 GEOM_DEFAULT_CHUNK = 50000

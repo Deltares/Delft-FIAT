@@ -32,6 +32,29 @@ def test_clip(geom_data, grid_event_data):
     assert int(round(mean(hazard) * 100, 0)) == 170
 
 
+def test_clip_outside(geom_outside_data, grid_event_data):
+    ft = geom_outside_data[0]
+    hazard = overlay.clip(
+        ft,
+        grid_event_data[1],
+        grid_event_data.geotransform,
+    )
+    ft = None
+
+    assert len(hazard) == 0
+
+    ft = geom_outside_data[1]
+    hazard = overlay.clip(
+        ft,
+        grid_event_data[1],
+        grid_event_data.geotransform,
+    )
+    ft = None
+
+    assert len(hazard) == 2
+    assert int(round(mean(hazard) * 100, 0)) == 270
+
+
 def test_clip_weighted(geom_data, grid_event_data):
     ft = geom_data[3]
     _, weights = overlay.clip_weighted(
@@ -62,6 +85,31 @@ def test_pin(geom_data, grid_event_data):
         )
 
     assert int(round(hazard[0] * 100, 0)) == 160
+
+
+def test_pin_outside(geom_outside_data, grid_event_data):
+    ft = geom_outside_data[0]
+    XY = geom.point_in_geom(ft)
+    hazard = overlay.pin(
+        XY,
+        grid_event_data[1],
+        grid_event_data.geotransform,
+    )
+    ft = None
+
+    assert len(hazard) == 0
+
+    ft = geom_outside_data[2]
+    XY = geom.point_in_geom(ft)
+    hazard = overlay.pin(
+        XY,
+        grid_event_data[1],
+        grid_event_data.geotransform,
+    )
+    ft = None
+
+    assert len(hazard) == 1
+    assert int(round(hazard[0] * 100, 0)) == 180
 
 
 def test_geom_reproject(tmp_path, geom_data):

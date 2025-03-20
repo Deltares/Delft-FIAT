@@ -17,8 +17,8 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
+from fiat.fio import open_csv, open_grid
 from fiat.gis import grid
-from fiat.io import open_csv, open_grid
 from fiat.log import spawn_logger
 from fiat.models.util import check_file_for_read
 from fiat.util import NEED_IMPLEMENTED, deter_dec, get_srs_repr
@@ -135,7 +135,7 @@ exceeds machine thread count ('{max_threads}')"
             Path to the hazard gridded dataset, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_geom]\
-(/api/io/open_geom.qmd) after which into [GridSouce](/api/GridSource.qmd)/
+(/api/fio/open_geom.qmd) after which into [GridSouce](/api/GridSource.qmd)/
         """
         file_entry = "hazard.file"
         path = check_file_for_read(self.cfg, file_entry, path)
@@ -226,7 +226,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             Path to the vulnerabulity data, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_csv]\
-(/api/io/open_csv.qmd) after which into [Table](/api/Table.qmd)/
+(/api/fio/open_csv.qmd) after which into [Table](/api/Table.qmd)/
         """
         file_entry = "vulnerability.file"
         path = check_file_for_read(self.cfg, file_entry, path)

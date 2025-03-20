@@ -1,5 +1,7 @@
 """Util of GIS module."""
 
+from math import floor
+
 
 def world2pixel(
     gtf: tuple,
@@ -30,7 +32,7 @@ def world2pixel(
     --------
     ```Python
     # Load a dataset
-    gs = fiat.io.GridSource(<some raster file>)
+    gs = fiat.fio.GridSource(<some raster file>)
     # Get the geotransform
     gtf = gs.geotransform
     # Calculate the indices
@@ -41,8 +43,8 @@ def world2pixel(
     ulY = gtf[3]
     xDist = gtf[1]
     yDist = gtf[5]
-    coorX = int((x - ulX) / xDist)
-    coorY = int((y - ulY) / yDist)
+    coorX = floor((x - ulX) / xDist)
+    coorY = floor((y - ulY) / yDist)
     return (coorX, coorY)
 
 
@@ -75,7 +77,7 @@ def pixel2world(
     --------
     ```Python
     # Load a dataset
-    gs = fiat.io.GridSource(<some raster file>)
+    gs = fiat.fio.GridSource(<some raster file>)
     # Get the geotransform
     gtf = gs.geotransform
     # Calculate the coordinates

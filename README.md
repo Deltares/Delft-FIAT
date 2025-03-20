@@ -15,7 +15,7 @@ Although the package is called `Delft-FIAT`, the package name in Python is `fiat
 ```
 # A minimalistic example
 import fiat
-from fiat.io import *
+from fiat.fio import *
 ```
 
 ## License

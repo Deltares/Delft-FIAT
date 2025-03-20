@@ -20,11 +20,11 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
-from fiat.gis import geom
-from fiat.io import (
+from fiat.fio import (
     open_csv,
     open_geom,
 )
+from fiat.gis import geom
 from fiat.log import setup_mp_log, spawn_logger
 from fiat.models import worker_geom
 from fiat.models.base import BaseModel
@@ -220,7 +220,7 @@ class GeomModel(BaseModel):
             Path to the exposure data, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_csv]\
-(/api/io/open_csv.qmd) after which into [TableLazy](/api/TableLazy.qmd)/
+(/api/fio/open_csv.qmd) after which into [TableLazy](/api/TableLazy.qmd)/
         """
         file_entry = "exposure.csv.file"
         path = check_file_for_read(self.cfg, file_entry, path)
@@ -263,7 +263,7 @@ class GeomModel(BaseModel):
             A list of paths to the vector files.
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_geom]\
-(/api/io/open_geom.qmd) after which into [GeomSource](/api/GeomSource.qmd)/
+(/api/fio/open_geom.qmd) after which into [GeomSource](/api/GeomSource.qmd)/
         """
         # Discover the files
         _d = {}

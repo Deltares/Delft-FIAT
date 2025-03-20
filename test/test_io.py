@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fiat.io import BufferedGeomWriter, BufferedTextWriter
+from fiat.fio import BufferedGeomWriter, BufferedTextWriter
 
 
 def test_bufferedgeom(tmp_path, geom_data):

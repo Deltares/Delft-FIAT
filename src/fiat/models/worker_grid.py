@@ -5,7 +5,7 @@ from pathlib import Path
 
 from numpy import full, ravel, unravel_index, where
 
-from fiat.io import (
+from fiat.fio import (
     GridSource,
     Table,
     open_grid,

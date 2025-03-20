@@ -5,7 +5,7 @@ import pytest
 
 from fiat.cfg import Configurations
 from fiat.cli.main import args_parser
-from fiat.io import open_csv, open_geom, open_grid
+from fiat.fio import open_csv, open_geom, open_grid
 from fiat.log import LogItem
 from fiat.models import GeomModel, GridModel
 
@@ -19,6 +19,7 @@ _MODELS = [
     "geom_event",
     "geom_event_2g",
     "geom_event_missing",
+    "geom_event_outside",
     "geom_risk",
     "geom_risk_2g",
     "grid_event",
@@ -85,6 +86,13 @@ def grid_risk(configs):
 @pytest.fixture(scope="session")
 def geom_data():
     d = open_geom(Path(_PATH, ".testdata", "exposure", "spatial.geojson"))
+    return d
+
+
+## Data
+@pytest.fixture(scope="session")
+def geom_outside_data():
+    d = open_geom(Path(_PATH, ".testdata", "exposure", "spatial_outside.geojson"))
     return d
 
 

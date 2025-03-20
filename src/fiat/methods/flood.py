@@ -5,7 +5,7 @@ import math
 from numpy import isnan
 from osgeo import ogr
 
-from fiat.io import Table
+from fiat.fio import Table
 from fiat.methods.util import AREA_METHODS
 
 MANDATORY_COLUMNS = ["ground_flht", "ground_elevtn"]

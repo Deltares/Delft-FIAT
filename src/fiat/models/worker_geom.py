@@ -7,14 +7,14 @@ from multiprocessing.synchronize import Lock
 from pathlib import Path
 from typing import Callable
 
-from fiat.gis import geom, overlay
-from fiat.io import (
+from fiat.fio import (
     BufferedGeomWriter,
     BufferedTextWriter,
     GridSource,
     Table,
     TableLazy,
 )
+from fiat.gis import geom, overlay
 from fiat.log import LogItem, Sender
 from fiat.methods.ead import calc_ead, risk_density
 from fiat.util import DummyWriter, regex_pattern

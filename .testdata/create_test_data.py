@@ -236,6 +236,57 @@ def create_exposure_geoms_3():
     dr = None
 
 
+def create_exposure_geoms_4():
+    """_summary_."""
+    geoms = (
+        "POLYGON ((4.355 52.065, 4.355 52.055, 4.365 52.055, \
+4.365 52.065, 4.355 52.065))",
+        "POLYGON ((4.395 52.055, 4.395 52.045, 4.405 52.045, \
+4.405 52.055, 4.395 52.055))",
+        "POLYGON ((4.435 52.045, 4.435 52.035, 4.445 52.035, \
+4.445 52.045, 4.435 52.045))",
+    )
+    srs = osr.SpatialReference()
+    srs.ImportFromEPSG(4326)
+    dr = ogr.GetDriverByName("GeoJSON")
+    src = dr.CreateDataSource(str(Path(p, "exposure", "spatial_outside.geojson")))
+    layer = src.CreateLayer(
+        "spatial",
+        srs,
+        3,
+    )
+
+    field = ogr.FieldDefn(
+        "object_id",
+        ogr.OFTInteger,
+    )
+    layer.CreateField(field)
+
+    field = ogr.FieldDefn(
+        "object_name",
+        ogr.OFTString,
+    )
+    field.SetWidth(50)
+    layer.CreateField(field)
+
+    for idx, geom in enumerate(geoms):
+        geom = ogr.CreateGeometryFromWkt(geom)
+        ft = ogr.Feature(layer.GetLayerDefn())
+        ft.SetField("object_id", idx + 1)
+        ft.SetField("object_name", f"fp_{idx+1}")
+        ft.SetGeometry(geom)
+
+        layer.CreateFeature(ft)
+
+    srs = None
+    field = None
+    geom = None
+    ft = None
+    layer = None
+    src = None
+    dr = None
+
+
 def create_exposure_grid():
     """_summary_."""
     srs = osr.SpatialReference()
@@ -461,6 +512,13 @@ def create_settings_geom():
     with open(Path(p, "geom_event_missing.toml"), "wb") as f:
         tomli_w.dump(doc_m, f)
 
+    # Setup toml with geometries lying outside hazard are
+    doc_o = copy.deepcopy(doc)
+    doc_o["exposure"]["geom"]["file1"] = "exposure/spatial_outside.geojson"
+
+    with open(Path(p, "geom_event_outside.toml"), "wb") as f:
+        tomli_w.dump(doc_o, f)
+
     # Setup toml for risk calculation
     doc_r = copy.deepcopy(doc)
     doc_r["output"]["path"] = "output/geom_risk"
@@ -600,6 +658,7 @@ if __name__ == "__main__":
     create_exposure_geoms()
     create_exposure_geoms_2()
     create_exposure_geoms_3()
+    create_exposure_geoms_4()
     create_exposure_grid()
     create_hazard_map()
     create_hazard_map_highres()
