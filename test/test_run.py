@@ -3,7 +3,7 @@ from pathlib import Path
 
 from osgeo import gdal
 
-from fiat.io import open_csv, open_grid
+from fiat.fio import open_csv, open_grid
 from fiat.models import GeomModel, GridModel
 
 

@@ -17,8 +17,8 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
+from fiat.fio import open_csv, open_grid
 from fiat.gis import grid
-from fiat.io import open_csv, open_grid
 from fiat.log import spawn_logger
 from fiat.models.util import check_file_for_read
 from fiat.util import NEED_IMPLEMENTED, deter_dec, get_srs_repr

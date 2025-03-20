@@ -9,8 +9,8 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
+from fiat.fio import open_grid
 from fiat.gis import grid
-from fiat.io import open_grid
 from fiat.log import spawn_logger
 from fiat.models import worker_grid
 from fiat.models.base import BaseModel

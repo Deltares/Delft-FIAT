@@ -21,6 +21,7 @@ These are the unreleased changes.
 - Optional CSV file output
 - Rename `ConfigReader` to `Configurations`
 - Rename all 'crs' variables to 'srs'
+- Rename `io` submodule to `fio`
 - Srs set in settings for a file will be used when no srs is present within the file
 
 ### Deprecated

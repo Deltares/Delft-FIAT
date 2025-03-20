@@ -6,7 +6,7 @@ from pathlib import Path
 
 from osgeo import gdal, osr
 
-from fiat.io import Grid, GridSource, open_grid
+from fiat.fio import Grid, GridSource, open_grid
 from fiat.util import NOT_IMPLEMENTED
 
 

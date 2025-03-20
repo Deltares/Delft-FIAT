@@ -5,7 +5,7 @@ import pytest
 
 from fiat.cfg import Configurations
 from fiat.cli.main import args_parser
-from fiat.io import open_csv, open_geom, open_grid
+from fiat.fio import open_csv, open_geom, open_grid
 from fiat.log import LogItem
 from fiat.models import GeomModel, GridModel
 

@@ -32,7 +32,7 @@ def world2pixel(
     --------
     ```Python
     # Load a dataset
-    gs = fiat.io.GridSource(<some raster file>)
+    gs = fiat.fio.GridSource(<some raster file>)
     # Get the geotransform
     gtf = gs.geotransform
     # Calculate the indices
@@ -77,7 +77,7 @@ def pixel2world(
     --------
     ```Python
     # Load a dataset
-    gs = fiat.io.GridSource(<some raster file>)
+    gs = fiat.fio.GridSource(<some raster file>)
     # Get the geotransform
     gtf = gs.geotransform
     # Calculate the coordinates

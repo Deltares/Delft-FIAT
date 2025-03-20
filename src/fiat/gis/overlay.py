@@ -5,8 +5,8 @@ from itertools import product
 from numpy import ndarray, ones
 from osgeo import ogr
 
+from fiat.fio import Grid
 from fiat.gis.util import pixel2world, world2pixel
-from fiat.io import Grid
 
 
 def intersect_cell(

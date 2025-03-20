@@ -20,11 +20,11 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
-from fiat.gis import geom
-from fiat.io import (
+from fiat.fio import (
     open_csv,
     open_geom,
 )
+from fiat.gis import geom
 from fiat.log import setup_mp_log, spawn_logger
 from fiat.models import worker_geom
 from fiat.models.base import BaseModel
