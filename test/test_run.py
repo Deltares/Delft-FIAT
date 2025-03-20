@@ -44,7 +44,10 @@ def test_geom_outside(tmp_path, configs):
 
     # Check the output for this specific case
     data = open_csv(Path(tmp_path, "output.csv"))
-    assert data is not None
+
+    assert data[0, "damage_structure"] == "nan"
+    assert float(data[0, "total_damage"]) == 0.0
+    assert float(data[1, "damage_structure"]) == 1804.0
 
 
 def test_geom_risk(tmp_path, configs):
