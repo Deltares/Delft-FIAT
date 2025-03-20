@@ -8,6 +8,8 @@ foreach package $packages {
     spawn quarto add $package
     expect "Do you trust the authors of this extension"
     send -- "y\r"
+    expect "Install extension into project"
+    send -- "y\r"
     expect "Would you like to continue"
     send -- "y\r"
     expect "View documentation using default browser"

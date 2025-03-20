@@ -26,7 +26,7 @@ File paths in the settings can be relative to the settings.toml file or absolute
 | **[output]**                   |         |          |                 |
 | [path](#output)                | string  | No       | output          |
 | **[output.csv]**               |         |          |                 |
-| [name](#output.csv)            | string  | No       | output.csv      |
+| [name[n]](#output.csv)         | string  | No       | -               |
 | **[output.geom]**              |         |          |                 |
 | [name[n]](#output.geom)        | string  | No       | spatial[n].gpkg |
 | **[output.grid]**              |         |          |                 |
@@ -55,7 +55,7 @@ File paths in the settings can be relative to the settings.toml file or absolute
 
 #### [output.csv]
 
-- `name`: The path to the output CSV file that will be created, that contains the information from the exposure.csv and the damages per asset.
+- `name[n]`: The path to the output CSV file(s) that will be created. These are linked to the input geometry files.
 
 #### [output.geom]
 
