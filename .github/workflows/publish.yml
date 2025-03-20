@@ -36,7 +36,7 @@ jobs:
           python -m build --wheel
           python -m twine check dist/*
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: releases
           path: dist
@@ -71,7 +71,7 @@ jobs:
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
 
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: releases
           path: dist
@@ -102,7 +102,7 @@ jobs:
 
     steps:
       - name: Download the sdist and wheel
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: releases
           path: dist/
@@ -126,7 +126,7 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: releases
           path: dist
