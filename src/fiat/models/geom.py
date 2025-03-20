@@ -220,7 +220,7 @@ class GeomModel(BaseModel):
             Path to the exposure data, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_csv]\
-(/api/io/open_csv.qmd) after which into [TableLazy](/api/TableLazy.qmd)/
+(/api/fio/open_csv.qmd) after which into [TableLazy](/api/TableLazy.qmd)/
         """
         file_entry = "exposure.csv.file"
         path = check_file_for_read(self.cfg, file_entry, path)
@@ -263,7 +263,7 @@ class GeomModel(BaseModel):
             A list of paths to the vector files.
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_geom]\
-(/api/io/open_geom.qmd) after which into [GeomSource](/api/GeomSource.qmd)/
+(/api/fio/open_geom.qmd) after which into [GeomSource](/api/GeomSource.qmd)/
         """
         # Discover the files
         _d = {}
