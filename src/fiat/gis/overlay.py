@@ -117,6 +117,7 @@ cells that are touched by the feature.
     Warnings
     --------
     A high upscale value comes with a calculation penalty!
+    Geometry needs to be inside the grid!
 
     Parameters
     ----------
@@ -194,8 +195,15 @@ def pin(
     ndarray
         A NumPy array containing one value.
     """
+    # Get metadata
+    ow, oh = band.shape_xy
+
+    # Get the coordinates
     x, y = world2pixel(gtf, *point)
+    xn = int(0 <= x < ow)
+    yn = int(0 <= y <= oh)
 
-    value = band[x, y, 1, 1]
+    value = band[x, y, xn, yn]
+    mask = ones(value.shape)  # This really is a dummy mask, but makes my life easy
 
-    return value[0]
+    return value[mask == 1]
