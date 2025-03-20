@@ -2,8 +2,8 @@
 title: "What's new?"
 ---
 
-# Unreleased
-These are the unreleased changes.
+## v0.3.0 (2025-03-20)
+Improved API and CLI
 
 ### Added
 - Build task for pixi
