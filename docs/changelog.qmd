@@ -8,6 +8,7 @@ These contain the unreleased changes
 ### Added
 
 ### Changed
+- Allow based type (e.g. 'fn_damage' instead of only 'fn_damage_structure') as column header
 
 ### Deprecated
 
