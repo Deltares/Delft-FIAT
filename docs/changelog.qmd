@@ -2,7 +2,7 @@
 title: "What's new?"
 ---
 
-## v0.3.1
+## v0.3.1 (2025-04-01)
 Small patch.
 
 ### Changed
