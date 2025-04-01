@@ -1,6 +1,5 @@
 """Base FIAT utility."""
 
-import fnmatch
 import importlib
 import math
 import os
@@ -236,11 +235,15 @@ missing values.
     # Get column values
     column_vals = list(columns.keys())
 
+    # Patterns
+    fn_pat = rf"^fn_{type}(_\w+)?$"
+    max_pat = rf"^max_{type}(_\w+)?$"
+
     # Filter the current columns
-    dmg = fnmatch.filter(column_vals, f"fn_{type}_*")
-    dmg_suffix = [item.split("_")[-1].strip() for item in dmg]
-    mpd = fnmatch.filter(column_vals, f"max_{type}_*")
-    mpd_suffix = [item.split("_")[-1].strip() for item in mpd]
+    dmg = re_filter(column_vals, fn_pat)
+    dmg_suffix = [re.findall(fn_pat, item)[0] for item in dmg]
+    mpd = re_filter(column_vals, max_pat)
+    mpd_suffix = [re.findall(max_pat, item)[0] for item in mpd]
 
     # Check the overlap
     _check = [item in mpd_suffix for item in dmg_suffix]
@@ -253,8 +256,8 @@ missing values.
     fn = {}
     maxv = {}
     for val in dmg_suffix:
-        fn.update({val: columns[f"fn_{type}_{val}"]})
-        maxv.update({val: columns[f"max_{type}_{val}"]})
+        fn.update({val: columns[f"fn_{type}{val}"]})
+        maxv.update({val: columns[f"max_{type}{val}"]})
     dmg_idx.update({"fn": fn, "max": maxv})
 
     return dmg_suffix, dmg_idx, missing
@@ -272,7 +275,7 @@ def generate_output_columns(
 
     # Loop over the exposure types
     for key, value in exposure_types.items():
-        default += [f"{key}_{item}" for item in value["fn"].keys()]
+        default += [f"{key}{item}" for item in value["fn"].keys()]
         total_idx.append(len(default))
         default += [f"total_{key}"]
 
@@ -513,6 +516,17 @@ def find_duplicates(elements: tuple | list):
     if not dup:
         return None
     return dup
+
+
+def re_filter(values, pat):
+    """Quickly filter values based on a pattern match."""
+    result = []
+    pat = os.path.normcase(pat)
+    match = re.compile(pat).match
+    for val in values:
+        if match(val):
+            result.append(val)
+    return result
 
 
 def get_module_attr(module: str, attr: str):

@@ -49,7 +49,7 @@ def test_check_exp_derived_types(geom_partial_data):
     found, found_idx, missing = discover_exp_columns(
         geom_partial_data._columns, type="damage"
     )
-    assert missing == ["content"]
+    assert missing == ["_content"]
     check_exp_derived_types("damage", found, missing)
 
     found = []

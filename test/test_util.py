@@ -22,6 +22,7 @@ from fiat.util import (
     get_module_attr,
     mean,
     object_size,
+    re_filter,
     read_gridsource_info,
     read_gridsource_layers,
     regex_pattern,
@@ -96,14 +97,14 @@ def test_deter_type():
 def test_discover_columns(geom_partial_data):
     cols = copy.deepcopy(geom_partial_data._columns)
     dmg_suffix, dmg_idx, missing = discover_exp_columns(cols, type="damage")
-    assert dmg_suffix == ["structure"]
-    assert dmg_idx["fn"]["structure"] == 4
-    assert dmg_idx["max"]["structure"] == 6
-    assert missing == ["content"]
+    assert dmg_suffix == ["_structure"]
+    assert dmg_idx["fn"]["_structure"] == 4
+    assert dmg_idx["max"]["_structure"] == 6
+    assert missing == ["_content"]
 
     cols["max_damage_content"] = 7
     dmg_suffix, dmg_idx, missing = discover_exp_columns(cols, type="damage")
-    assert dmg_suffix == ["structure", "content"]
+    assert dmg_suffix == ["_structure", "_content"]
     assert len(missing) == 0
 
 
@@ -231,6 +232,23 @@ def test_object_size():
 
     size = object_size(np.array([2, 2, 2]))
     assert size == 136
+
+
+def test_re_filter():
+    # Set up testing vars
+    pattern = r"^fn_damage(_\w+)?$"
+    values = ["fn_damage", "fn_damage_structure", "something_else"]
+    # Filter
+    filt = re_filter(values, pattern)
+    assert len(filt) == 2
+    assert "fn_damage" in filt
+
+    # Edge case: only underscore after the normal characters
+    values = ["fn_damage", "fn_damage_"]
+    # Filter
+    filt = re_filter(values, pattern)
+    assert len(filt) == 1
+    assert "fn_damage_" not in filt
 
 
 def test_regex_pattern(vul_raw_data):
