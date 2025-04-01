@@ -2,17 +2,11 @@
 title: "What's new?"
 ---
 
-## Unreleased
-These contain the unreleased changes
-
-### Added
+## v0.3.1 (2025-04-01)
+Small patch.
 
 ### Changed
 - Allow based type (e.g. 'fn_damage' instead of only 'fn_damage_structure') as column header
-
-### Deprecated
-
-### Documentation
 
 ## v0.3.0 (2025-03-20)
 Improved API and CLI
