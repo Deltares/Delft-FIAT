@@ -345,6 +345,24 @@ class BufferedGeomWriter:
         self._clear_cache()
         self.buffer.close()
 
+    def add_feature(
+        self,
+        ft: ogr.Feature,
+    ):
+        """Add a feature to the buffer.
+
+        Parameters
+        ----------
+        ft : ogr.Feature
+            The feature.
+        """
+        self.buffer.add_feature(ft)
+
+        if self.size + 1 > self.max_size:
+            self.to_drive()
+
+        self.size += 1
+
     def add_feature_with_map(
         self,
         ft: ogr.Feature,

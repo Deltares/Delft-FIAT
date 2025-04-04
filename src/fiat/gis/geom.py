@@ -5,7 +5,7 @@ from pathlib import Path
 
 from osgeo import ogr, osr
 
-from fiat.fio import GeomSource, open_geom
+from fiat.fio import BufferedGeomWriter, GeomSource, open_geom
 
 
 def point_in_geom(
@@ -66,6 +66,7 @@ def reproject_feature(
 def reproject(
     gs: GeomSource,
     crs: str,
+    chunk: int = 200000,
     out_dir: Path | str = None,
 ):
     """Reproject a geometry layer.
@@ -76,6 +77,8 @@ def reproject(
         Input object.
     crs : str
         Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
+    chunk : int, optional
+        The size of the chunks used during reprojecting.
     out_dir : Path | str, optional
         Output directory. If not defined, if will be inferred from the input object.
 
@@ -92,42 +95,44 @@ def reproject(
     out_srs = osr.SpatialReference()
     out_srs.SetFromUserInput(crs)
     out_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+    layer_defn = gs.layer.GetLayerDefn()
 
     transform = osr.CoordinateTransformation(
         gs.srs,
         out_srs,
     )
 
-    mem_gs = open_geom(
-        file="memset",
-        mode="w",
-    )
+    with open_geom(fname, mode="w", overwrite=True) as new_gs:
+        new_gs.create_layer(out_srs, layer_defn.GetGeomType())
+        new_gs.set_layer_from_defn(layer_defn)
 
-    mem_gs.create_layer(
-        out_srs,
-        gs.layer.GetGeomType(),
-    )
-    mem_gs.set_layer_from_defn(
-        gs.layer.GetLayerDefn(),
+    mem_gs = BufferedGeomWriter(
+        fname,
+        srs=out_srs,
+        layer_defn=gs.layer.GetLayerDefn(),
+        buffer_size=chunk,
     )
 
     for ft in gs.layer:
         geom = ft.GetGeometryRef()
         geom.Transform(transform)
 
-        ft.SetGeometry(geom)
-        mem_gs.layer.CreateFeature(ft)
+        new_ft = ogr.Feature(mem_gs.buffer.layer.GetLayerDefn())
+        new_ft.SetFrom(ft)
+        new_ft.SetGeometry(geom)
+        mem_gs.add_feature(new_ft)
 
     geom = None
     ft = None
+    new_ft = None
     out_srs = None
     transform = None
-
-    with open_geom(fname, mode="w") as new_gs:
-        new_gs.create_layer_from_copy(mem_gs.layer)
+    layer_defn = None
 
     mem_gs.close()
-    del mem_gs
+    mem_gs = None
+    gs.close()
+    gs = None
     gc.collect()
 
-    return new_gs.reopen()
+    return open_geom(fname)
