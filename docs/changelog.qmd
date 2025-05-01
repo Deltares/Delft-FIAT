@@ -11,7 +11,8 @@ These are the unreleased changes
 
 ### Deprecated
 
-### Documentation
+### Fixed
+- `Pin` function when the point is exactly on the border of the grid
 
 ## v0.3.1 (2025-04-01)
 Small patch.
