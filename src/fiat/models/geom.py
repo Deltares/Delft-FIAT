@@ -25,6 +25,7 @@ from fiat.fio import (
     open_geom,
 )
 from fiat.gis import geom
+from fiat.job import execute_pool, generate_jobs
 from fiat.log import setup_mp_log, spawn_logger
 from fiat.models import worker_geom
 from fiat.models.base import BaseModel
@@ -33,8 +34,6 @@ from fiat.models.util import (
     GEOM_DEFAULT_CHUNK,
     check_file_for_read,
     csv_def_file,
-    execute_pool,
-    generate_jobs,
 )
 from fiat.util import (
     create_1d_chunk,
