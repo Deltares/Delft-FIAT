@@ -201,7 +201,7 @@ def pin(
     # Get the coordinates
     x, y = world2pixel(gtf, *point)
     xn = int(0 <= x < ow)
-    yn = int(0 <= y <= oh)
+    yn = int(0 <= y < oh)
 
     value = band[x, y, xn, yn]
     mask = ones(value.shape)  # This really is a dummy mask, but makes my life easy
