@@ -2,14 +2,8 @@
 title: "What's new?"
 ---
 
-## Unreleased
-These are the unreleased changes
-
-### Added
-
-### Changed
-
-### Deprecated
+## v0.3.2 (2025-05-01)
+Small patch.
 
 ### Fixed
 - `Pin` function when the point is exactly on the border of the grid
