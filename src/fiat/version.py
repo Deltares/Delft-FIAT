@@ -2,7 +2,7 @@
 
 main = 0
 major = 3
-minor = 2
+minor = 3
 build = 0
 suffix = ".dev"
 
