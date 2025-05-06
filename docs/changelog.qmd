@@ -8,10 +8,12 @@ These are the unreleased changes.
 ### Added
 
 ### Changed
+- Vector reproject chunking now available
 
 ### Deprecated
 
 ### Fixed
+- Vector reproject dataset creation error
 
 ## v0.3.2 (2025-05-01)
 Small patch.

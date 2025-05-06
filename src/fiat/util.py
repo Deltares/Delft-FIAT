@@ -20,7 +20,6 @@ DD_NEED_IMPLEMENTED = "Dunder method needs to be implemented."
 DD_NOT_IMPLEMENTED = "Dunder method not yet implemented."
 FILE_ATTRIBUTE_HIDDEN = 0x02
 MANDATORY_MODEL_ENTRIES = [
-    "output.path",
     "hazard.file",
     "hazard.risk",
     "vulnerability.file",
