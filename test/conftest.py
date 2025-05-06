@@ -83,7 +83,7 @@ def grid_risk(configs):
 
 
 ## Data
-@pytest.fixture(scope="session")
+@pytest.fixture
 def geom_data():
     d = open_geom(Path(_PATH, ".testdata", "exposure", "spatial.geojson"))
     return d
