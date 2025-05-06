@@ -194,7 +194,7 @@ class Configurations(dict):
         self.set("output.path", _p)
 
         # Damage directory for grid risk calculations
-        if self.get("hazard.risk") and check_config_grid(self):
+        if self.get("global.risk") and check_config_grid(self):
             _p = create_dir(
                 _p,
                 "damages",

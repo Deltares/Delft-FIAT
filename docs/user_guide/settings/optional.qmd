@@ -8,6 +8,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 |:---------------------------------------|---------|---------------|
 | **[global]**                           |         |               |
 | [loglevel](#global)                    | string  | INFO          |
+| [risk](#global)                        | boolean | false         |
 | [type](#global)                        | string  | flood         |
 | **[global.srs]**                       |         |               |
 | [value](#global.srs)                   | string  | EPSG:4326     |
@@ -41,9 +42,9 @@ Here we provide an overview of all optional/ non essential settings that the use
 
 #### [global]
 
-- `crs`: Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.
-
 - `loglevel`: Set the loglevel of the fiat logger from the settings file. Choose from 'DEBUG', 'INFO', 'WARNING', 'ERROR' or 'DEAD'.
+
+- `risk`: In case of a risk calculation this must be set to "true", for a single events this must be set to "false".
 
 - `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.methods.flood`)
 

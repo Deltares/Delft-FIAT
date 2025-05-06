@@ -170,7 +170,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
 
         - This method might become private.
         """
-        if self.cfg.get("hazard.risk"):
+        if self.risk:
             logger.info("Setting up risk calculations..")
 
             # Time the function

@@ -75,6 +75,7 @@ class GeomModel(BaseModel):
     def __del__(self):
         BaseModel.__del__(self)
 
+    ## Set(up) methods
     def _discover_exposure_meta(
         self,
         columns: dict,
@@ -104,7 +105,7 @@ class GeomModel(BaseModel):
 
             ## Information for output
             extra = []
-            if self.cfg.get("hazard.risk"):
+            if self.risk:
                 extra = ["ead"]
             new_fields, len1, total_idx = generate_output_columns(
                 getattr(self.module, "NEW_COLUMNS"),
@@ -199,6 +200,7 @@ class GeomModel(BaseModel):
             )
         self.cfg.set("_exposure_meta", meta)
 
+    ## Read data methods
     def read_exposure(self):
         """Read all the exposure files."""
         self.read_exposure_geoms()
@@ -328,6 +330,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         # When all is done, add it
         self.exposure_geoms = _d
 
+    ## Run model method
     def run(
         self,
     ):

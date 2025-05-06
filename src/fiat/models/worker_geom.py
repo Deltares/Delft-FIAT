@@ -74,7 +74,7 @@ of the [GeomSource](/api/GeomSource.qmd) object.
     # More meta data
     cfg_entries = [cfg.get(item) for item in man_entries]
     index_col = cfg.get("exposure.geom.settings.index")
-    risk = cfg.get("hazard.risk", False)
+    risk = cfg.get("global.risk")
     rounding = cfg.get("vulnerability.round")
     vul_min = min(vul.index)
     vul_max = max(vul.index)

@@ -21,7 +21,6 @@ DD_NOT_IMPLEMENTED = "Dunder method not yet implemented."
 FILE_ATTRIBUTE_HIDDEN = 0x02
 MANDATORY_MODEL_ENTRIES = [
     "hazard.file",
-    "hazard.risk",
     "vulnerability.file",
 ]
 MANDATORY_GEOM_ENTRIES = [
