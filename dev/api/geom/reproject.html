@@ -993,7 +993,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="fiat.gis.geom.reproject" class="level1">
 <h1>reproject</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>gis.geom.reproject(gs, crs, out_dir<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>gis.geom.reproject(gs, crs, chunk<span class="op">=</span><span class="dv">200000</span>, out_dir<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Reproject a geometry layer.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
@@ -1020,6 +1020,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><em>required</em></td>
 </tr>
 <tr class="odd">
+<td>chunk</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The size of the chunks used during reprojecting.</td>
+<td><code>200000</code></td>
+</tr>
+<tr class="even">
 <td>out_dir</td>
 <td><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
 <td>Output directory. If not defined, if will be inferred from the input object.</td>
