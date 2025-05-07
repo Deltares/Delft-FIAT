@@ -371,13 +371,14 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         jobs = generate_jobs(
             {
                 "cfg": self.cfg,
-                "queue": self._queue,
+                "risk": self.risk,
                 "haz": self.hazard_grid,
                 "vul": self.vulnerability_data,
                 "exp_func": field_func,
                 "exp_data": self.exposure_data,
                 "exp_geom": self.exposure_geoms,
                 "chunk": self.chunks,
+                "queue": self._queue,
                 "lock1": lock1,
                 "lock2": lock2,
             },
