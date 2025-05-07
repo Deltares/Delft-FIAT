@@ -329,6 +329,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">set_model_srs</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GeomModel/set_num_threads.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">set_num_threads</span></a>
+  </div>
+</li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
@@ -380,6 +386,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="../../api/GridModel/set_model_srs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">set_model_srs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GridModel/set_num_threads.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">set_num_threads</span></a>
   </div>
 </li>
       </ul>
@@ -977,7 +989,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#fiat.GeomModel.set_model_srs" id="toc-fiat.GeomModel.set_model_srs" class="nav-link active" data-scroll-target="#fiat.GeomModel.set_model_srs">set_model_srs</a></li>
+  <li><a href="#fiat.GeomModel.set_model_srs" id="toc-fiat.GeomModel.set_model_srs" class="nav-link active" data-scroll-target="#fiat.GeomModel.set_model_srs">set_model_srs</a>
+  <ul class="collapse">
+  <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -991,8 +1006,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>set_model_srs</h1>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>GeomModel.set_model_srs(srs<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Set the model spatial reference system.</p>
+<section id="parameters" class="level2 doc-section doc-section-parameters">
+<h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>srs</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The spatial reference system described by a string (e.g.&nbsp;‘EPSG:4326’), by default None</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
 
 
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->

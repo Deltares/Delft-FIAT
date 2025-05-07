@@ -326,156 +326,161 @@ Table&nbsp;1: Settings.toml input (required and optional fields)
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;"><strong>[global]</strong></td>
+<td style="text-align: left;"><strong>[model]</strong></td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#global">loglevel</a></td>
+<td style="text-align: left;"><a href="#model">loglevel</a></td>
 <td>string</td>
 <td>INFO</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><a href="#global">type</a></td>
+<td style="text-align: left;"><a href="#model">risk</a></td>
+<td>boolean</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a href="#model">type</a></td>
 <td>string</td>
 <td>flood</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"><strong>[global.srs]</strong></td>
+<tr class="odd">
+<td style="text-align: left;"><strong>[model.srs]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="odd">
-<td style="text-align: left;"><a href="#global.srs">value</a></td>
+<tr class="even">
+<td style="text-align: left;"><a href="#model.srs">value</a></td>
 <td>string</td>
 <td>EPSG:4326</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#global.srs">prefer_global</a></td>
+<tr class="odd">
+<td style="text-align: left;"><a href="#model.srs">prefer_global</a></td>
 <td>bool</td>
 <td>false</td>
 </tr>
-<tr class="odd">
-<td style="text-align: left;"><strong>[global.grid]</strong></td>
+<tr class="even">
+<td style="text-align: left;"><strong>[model.grid]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#global.grid">prefer</a></td>
+<tr class="odd">
+<td style="text-align: left;"><a href="#model.grid">prefer</a></td>
 <td>string</td>
 <td>exposure</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><strong>[hazard]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#hazard">resampling_method</a></td>
 <td>int</td>
 <td>0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><a href="#hazard">return_periods</a></td>
 <td>list</td>
 <td>-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><strong>[hazard.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><a href="#hazard">srs</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#hazard.settings">subset</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><a href="#hazard.settings">var_as_band</a></td>
 <td>boolean</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><strong>[exposure]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><a href="#exposure">types</a></td>
 <td>list</td>
 <td>[‘damage’]</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><strong>[exposure.csv.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><a href="#exposure.csv.settings">index</a></td>
 <td>string</td>
 <td>object_id</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><strong>[exposure.geom.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><a href="#exposure.geom.settings">index</a></td>
 <td>string</td>
 <td>object_id</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#exposure.geom.settings">srs</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><strong>[exposure.grid]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#exposure.grid">resampling_method</a></td>
 <td>int</td>
 <td>0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><strong>[exposure.grid.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#exposure.grid.settings">srs</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><a href="#exposure.grid.settings">var_as_band</a></td>
 <td>boolean</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><strong>[vulnerability]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><a href="#vulnerability">step_size</a></td>
 <td>float</td>
 <td>0.01</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><strong>[vulnerability.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><a href="#vulnerability.settings">index</a></td>
 <td>string</td>
 <td>‘water depth’</td>
@@ -485,23 +490,23 @@ Table&nbsp;1: Settings.toml input (required and optional fields)
 </div>
 </figure>
 </div>
-<section id="global" class="level4">
-<h4 class="anchored" data-anchor-id="global">[global]</h4>
+<section id="model" class="level4">
+<h4 class="anchored" data-anchor-id="model">[model]</h4>
 <ul>
-<li><p><code>crs</code>: Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.</p></li>
 <li><p><code>loglevel</code>: Set the loglevel of the fiat logger from the settings file. Choose from ‘DEBUG’, ‘INFO’, ‘WARNING’, ‘ERROR’ or ‘DEAD’.</p></li>
+<li><p><code>risk</code>: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.</p></li>
 <li><p><code>type</code>: Type of hazard. Should be the same name as the file containing the functions (e.g.&nbsp;‘flood’ -&gt; <code>fiat.methods.flood</code>)</p></li>
 </ul>
 </section>
-<section id="global.srs" class="level4">
-<h4 class="anchored" data-anchor-id="global.srs">[global.srs]</h4>
+<section id="model.srs" class="level4">
+<h4 class="anchored" data-anchor-id="model.srs">[model.srs]</h4>
 <ul>
 <li><p><code>value</code>: Global projection for the model and the output. If not defined, the default projection is set to WGS84.</p></li>
 <li><p><code>prefer_global</code>: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e.&nbsp;prefer the hazard projection.</p></li>
 </ul>
 </section>
-<section id="global.grid" class="level4">
-<h4 class="anchored" data-anchor-id="global.grid">[global.grid]</h4>
+<section id="model.grid" class="level4">
+<h4 class="anchored" data-anchor-id="model.grid">[model.grid]</h4>
 <ul>
 <li><code>prefer</code>: Whether to spatially prefer exposure data or hazard data. The other will be warped when they are not equal. Chose ‘exposure’ or ‘hazard’.</li>
 </ul>

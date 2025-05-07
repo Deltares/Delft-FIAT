@@ -326,32 +326,32 @@ Table&nbsp;1: Computational FIAT input settings
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;"><strong>[global]</strong></td>
+<td style="text-align: left;"><strong>[model]</strong></td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#global">threads</a></td>
+<td style="text-align: left;"><a href="#model">threads</a></td>
 <td>integer</td>
 <td>1</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><strong>[global.geom]</strong></td>
+<td style="text-align: left;"><strong>[model.geom]</strong></td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#global.geom">chunk</a></td>
+<td style="text-align: left;"><a href="#model.geom">chunk</a></td>
 <td>integer</td>
 <td>-</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><strong>[global.grid]</strong></td>
+<td style="text-align: left;"><strong>[model.grid]</strong></td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#global.grid">chunk</a></td>
+<td style="text-align: left;"><a href="#model.grid">chunk</a></td>
 <td>list</td>
 <td>-</td>
 </tr>
@@ -373,14 +373,14 @@ Warning
 <p>All settings that are not globally defined (e.g.&nbsp;settings chunk size via <code>hazard.settings</code>) are ill-advised. Please use the global chunking settings.</p>
 </div>
 </div>
-<section id="global" class="level4">
-<h4 class="anchored" data-anchor-id="global">[global]</h4>
+<section id="model" class="level4">
+<h4 class="anchored" data-anchor-id="model">[model]</h4>
 <ul>
 <li><code>threads</code>: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.</li>
 </ul>
 </section>
-<section id="global.geom" class="level4">
-<h4 class="anchored" data-anchor-id="global.geom">[global.geom]</h4>
+<section id="model.geom" class="level4">
+<h4 class="anchored" data-anchor-id="model.geom">[model.geom]</h4>
 <ul>
 <li><code>chunk</code>: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.</li>
 </ul>
@@ -411,8 +411,8 @@ Note
 </div>
 </div>
 </section>
-<section id="global.grid" class="level4">
-<h4 class="anchored" data-anchor-id="global.grid">[global.grid]</h4>
+<section id="model.grid" class="level4">
+<h4 class="anchored" data-anchor-id="model.grid">[model.grid]</h4>
 <ul>
 <li><code>chunk</code>: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be <code>[1024, 1024,]</code>.</li>
 </ul>

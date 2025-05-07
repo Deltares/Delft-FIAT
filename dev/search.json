@@ -96,7 +96,7 @@
     "href": "user_guide/settings/optional.html",
     "title": "Optional input",
     "section": "",
-    "text": "Here we provide an overview of all optional/ non essential settings that the user can provide to FIAT. These are listed in the table (Table 1) below.\n\n\n\nTable 1: Settings.toml input (required and optional fields)\n\n\n\n\n\nField\nType\nDefault\n\n\n\n\n[global]\n\n\n\n\nloglevel\nstring\nINFO\n\n\ntype\nstring\nflood\n\n\n[global.srs]\n\n\n\n\nvalue\nstring\nEPSG:4326\n\n\nprefer_global\nbool\nfalse\n\n\n[global.grid]\n\n\n\n\nprefer\nstring\nexposure\n\n\n[hazard]\n\n\n\n\nresampling_method\nint\n0\n\n\nreturn_periods\nlist\n-\n\n\n[hazard.settings]\n\n\n\n\nsrs\nstring\n-\n\n\nsubset\nstring\n-\n\n\nvar_as_band\nboolean\nfalse\n\n\n[exposure]\n\n\n\n\ntypes\nlist\n[‘damage’]\n\n\n[exposure.csv.settings]\n\n\n\n\nindex\nstring\nobject_id\n\n\n[exposure.geom.settings]\n\n\n\n\nindex\nstring\nobject_id\n\n\nsrs\nstring\n-\n\n\n[exposure.grid]\n\n\n\n\nresampling_method\nint\n0\n\n\n[exposure.grid.settings]\n\n\n\n\nsrs\nstring\n-\n\n\nvar_as_band\nboolean\nfalse\n\n\n[vulnerability]\n\n\n\n\nstep_size\nfloat\n0.01\n\n\n[vulnerability.settings]\n\n\n\n\nindex\nstring\n‘water depth’\n\n\n\n\n\n\n\n[global]\n\ncrs: Global projection for the model and the output. If not defined, the default crs for the model output is the same as the hazard map.\nloglevel: Set the loglevel of the fiat logger from the settings file. Choose from ‘DEBUG’, ‘INFO’, ‘WARNING’, ‘ERROR’ or ‘DEAD’.\ntype: Type of hazard. Should be the same name as the file containing the functions (e.g. ‘flood’ -&gt; fiat.methods.flood)\n\n\n\n[global.srs]\n\nvalue: Global projection for the model and the output. If not defined, the default projection is set to WGS84.\nprefer_global: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e. prefer the hazard projection.\n\n\n\n[global.grid]\n\nprefer: Whether to spatially prefer exposure data or hazard data. The other will be warped when they are not equal. Chose ‘exposure’ or ‘hazard’.\n\n\n\n[hazard]\n\nresampling_method: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see this page\nreturn_periods: Return periods for hazard calculation when they cannot be inferred from the data itself.\n\n\n\n[hazard.settings]\n\nsrs: Projection of the hazard data if it cannot be inferred from the dataset itself.\nsubset: Select a specific subdataset by supplying it’s ID (name) here.\nvar_as_band: Whether or not to read the subdatasets as classic raster band.\n\n\n\n\n\n\n\nNote\n\n\n\nThe entry var_as_band is only applicable to netCDF files.\n\n\n\n\n[exposure]\n\ntypes: Types of exposure. This could be monetary damages (‘damage’), affected people (‘affected’) etc.\n\n\n\n[exposure.csv.settings]\n\nindex: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to ‘object_id’.\n\n\n\n[exposure.geom.settings]\n\nindex: Set the index column of the geom file(s). In case nothing is provided, the default value ‘object_id’ is used.\nsrs: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.\n\n\n\n[exposure.grid]\n\nresampling_method: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see this page\n\n\n\n[exposure.grid.settings]\n\nsrs: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.\nvar_as_band: Whether or not to read the subdatasets as classic raster band.\n\n\n\n\n\n\n\nNote\n\n\n\nThe entry var_as_band is only applicable to netCDF files.\n\n\n\n\n[vulnerability]\n\nstep_size: The internal step size of the vulnerability data. The supplied data is interpolated or averaged depending on the minimal step size of the supplied dataset.\n\n\n\n[vulnerability.settings]\n\nindex: Set the index column of the csv file. In case of the vulnerability csv, if no entry is provided then FIAT will default to ‘water depth’.\n\n\n\n\n\n Back to top",
+    "text": "Here we provide an overview of all optional/ non essential settings that the user can provide to FIAT. These are listed in the table (Table 1) below.\n\n\n\nTable 1: Settings.toml input (required and optional fields)\n\n\n\n\n\nField\nType\nDefault\n\n\n\n\n[model]\n\n\n\n\nloglevel\nstring\nINFO\n\n\nrisk\nboolean\nfalse\n\n\ntype\nstring\nflood\n\n\n[model.srs]\n\n\n\n\nvalue\nstring\nEPSG:4326\n\n\nprefer_global\nbool\nfalse\n\n\n[model.grid]\n\n\n\n\nprefer\nstring\nexposure\n\n\n[hazard]\n\n\n\n\nresampling_method\nint\n0\n\n\nreturn_periods\nlist\n-\n\n\n[hazard.settings]\n\n\n\n\nsrs\nstring\n-\n\n\nsubset\nstring\n-\n\n\nvar_as_band\nboolean\nfalse\n\n\n[exposure]\n\n\n\n\ntypes\nlist\n[‘damage’]\n\n\n[exposure.csv.settings]\n\n\n\n\nindex\nstring\nobject_id\n\n\n[exposure.geom.settings]\n\n\n\n\nindex\nstring\nobject_id\n\n\nsrs\nstring\n-\n\n\n[exposure.grid]\n\n\n\n\nresampling_method\nint\n0\n\n\n[exposure.grid.settings]\n\n\n\n\nsrs\nstring\n-\n\n\nvar_as_band\nboolean\nfalse\n\n\n[vulnerability]\n\n\n\n\nstep_size\nfloat\n0.01\n\n\n[vulnerability.settings]\n\n\n\n\nindex\nstring\n‘water depth’\n\n\n\n\n\n\n\n[model]\n\nloglevel: Set the loglevel of the fiat logger from the settings file. Choose from ‘DEBUG’, ‘INFO’, ‘WARNING’, ‘ERROR’ or ‘DEAD’.\nrisk: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.\ntype: Type of hazard. Should be the same name as the file containing the functions (e.g. ‘flood’ -&gt; fiat.methods.flood)\n\n\n\n[model.srs]\n\nvalue: Global projection for the model and the output. If not defined, the default projection is set to WGS84.\nprefer_global: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e. prefer the hazard projection.\n\n\n\n[model.grid]\n\nprefer: Whether to spatially prefer exposure data or hazard data. The other will be warped when they are not equal. Chose ‘exposure’ or ‘hazard’.\n\n\n\n[hazard]\n\nresampling_method: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see this page\nreturn_periods: Return periods for hazard calculation when they cannot be inferred from the data itself.\n\n\n\n[hazard.settings]\n\nsrs: Projection of the hazard data if it cannot be inferred from the dataset itself.\nsubset: Select a specific subdataset by supplying it’s ID (name) here.\nvar_as_band: Whether or not to read the subdatasets as classic raster band.\n\n\n\n\n\n\n\nNote\n\n\n\nThe entry var_as_band is only applicable to netCDF files.\n\n\n\n\n[exposure]\n\ntypes: Types of exposure. This could be monetary damages (‘damage’), affected people (‘affected’) etc.\n\n\n\n[exposure.csv.settings]\n\nindex: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to ‘object_id’.\n\n\n\n[exposure.geom.settings]\n\nindex: Set the index column of the geom file(s). In case nothing is provided, the default value ‘object_id’ is used.\nsrs: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.\n\n\n\n[exposure.grid]\n\nresampling_method: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see this page\n\n\n\n[exposure.grid.settings]\n\nsrs: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.\nvar_as_band: Whether or not to read the subdatasets as classic raster band.\n\n\n\n\n\n\n\nNote\n\n\n\nThe entry var_as_band is only applicable to netCDF files.\n\n\n\n\n[vulnerability]\n\nstep_size: The internal step size of the vulnerability data. The supplied data is interpolated or averaged depending on the minimal step size of the supplied dataset.\n\n\n\n[vulnerability.settings]\n\nindex: Set the index column of the csv file. In case of the vulnerability csv, if no entry is provided then FIAT will default to ‘water depth’.\n\n\n\n\n\n Back to top",
     "crumbs": [
       "User guide",
       "Settings",
@@ -108,7 +108,7 @@
     "href": "user_guide/settings/computation.html",
     "title": "Computational input",
     "section": "",
-    "text": "The inputs give the user a bit more control over the computational aspects of FIAT.\n\n\n\nTable 1: Computational FIAT input settings\n\n\n\n\n\nEntry\nType\nDefault\n\n\n\n\n[global]\n\n\n\n\nthreads\ninteger\n1\n\n\n[global.geom]\n\n\n\n\nchunk\ninteger\n-\n\n\n[global.grid]\n\n\n\n\nchunk\nlist\n-\n\n\n\n\n\n\n\n\n\n\n\n\nWarning\n\n\n\nAll settings that are not globally defined (e.g. settings chunk size via hazard.settings) are ill-advised. Please use the global chunking settings.\n\n\n\n[global]\n\nthreads: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.\n\n\n\n[global.geom]\n\nchunk: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.\n\n\n\n\n\n\n\nTip\n\n\n\nThis input benefits from multiple threads.\n\n\n\n\n\n\n\n\nNote\n\n\n\nThis input is only applicable to the GeomModel\n\n\n\n\n[global.grid]\n\nchunk: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be [1024, 1024,].\n\n\n\n\n\n\n\nNote\n\n\n\nThis input is only applicable to the GridModel\n\n\n\n\n\n\n Back to top",
+    "text": "The inputs give the user a bit more control over the computational aspects of FIAT.\n\n\n\nTable 1: Computational FIAT input settings\n\n\n\n\n\nEntry\nType\nDefault\n\n\n\n\n[model]\n\n\n\n\nthreads\ninteger\n1\n\n\n[model.geom]\n\n\n\n\nchunk\ninteger\n-\n\n\n[model.grid]\n\n\n\n\nchunk\nlist\n-\n\n\n\n\n\n\n\n\n\n\n\n\nWarning\n\n\n\nAll settings that are not globally defined (e.g. settings chunk size via hazard.settings) are ill-advised. Please use the global chunking settings.\n\n\n\n[model]\n\nthreads: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.\n\n\n\n[model.geom]\n\nchunk: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.\n\n\n\n\n\n\n\nTip\n\n\n\nThis input benefits from multiple threads.\n\n\n\n\n\n\n\n\nNote\n\n\n\nThis input is only applicable to the GeomModel\n\n\n\n\n[model.grid]\n\nchunk: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be [1024, 1024,].\n\n\n\n\n\n\n\nNote\n\n\n\nThis input is only applicable to the GridModel\n\n\n\n\n\n\n Back to top",
     "crumbs": [
       "User guide",
       "Settings",
@@ -311,7 +311,7 @@
     "href": "changelog.html",
     "title": "What’s new?",
     "section": "",
-    "text": "These are the unreleased changes.\n\n\n\n\n\n\nVector reproject chunking now available\n\n\n\n\n\n\n\n\nVector reproject dataset creation error",
+    "text": "These are the unreleased changes.\n\n\n\nModel type (type) and calculation modus (risk) as model properties\n\n\n\n\n\n‘hazard.risk’ entry is renamed to ‘global.risk’ in the settings file\nRenamed ‘global’ section to ‘model’\nRenamed ‘global.model’ to ‘model.model_type’\nVector reproject chunking now available\n\n\n\n\n\n\n\n\nVector reproject dataset creation error",
     "crumbs": [
       "Developments",
       "What's new?"
@@ -322,7 +322,7 @@
     "href": "changelog.html#unreleased",
     "title": "What’s new?",
     "section": "",
-    "text": "These are the unreleased changes.\n\n\n\n\n\n\nVector reproject chunking now available\n\n\n\n\n\n\n\n\nVector reproject dataset creation error",
+    "text": "These are the unreleased changes.\n\n\n\nModel type (type) and calculation modus (risk) as model properties\n\n\n\n\n\n‘hazard.risk’ entry is renamed to ‘global.risk’ in the settings file\nRenamed ‘global’ section to ‘model’\nRenamed ‘global.model’ to ‘model.model_type’\nVector reproject chunking now available\n\n\n\n\n\n\n\n\nVector reproject dataset creation error",
     "crumbs": [
       "Developments",
       "What's new?"
@@ -1199,418 +1199,443 @@
     ]
   },
   {
-    "objectID": "api/GridModel/set_model_srs.html",
-    "href": "api/GridModel/set_model_srs.html",
-    "title": "set_model_srs",
+    "objectID": "api/GridModel/set_num_threads.html",
+    "href": "api/GridModel/set_num_threads.html",
+    "title": "set_num_threads",
     "section": "",
-    "text": "set_model_srs\nGridModel.set_model_srs(srs=None)\nSet the model spatial reference system.\n\n\n\n\n Back to top",
+    "text": "GridModel.set_num_threads(threads=None)\nSet the number of threads.\nEither through the config file, cli or directly.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nthreads\nint\nNumber of threads, by default None\nNone",
     "crumbs": [
       "API Reference",
       "Basics",
       "Main",
       "GridModel",
-      "set_model_srs"
+      "set_num_threads"
     ]
   },
   {
-    "objectID": "api/GridModel/resolve.html",
-    "href": "api/GridModel/resolve.html",
-    "title": "resolve",
+    "objectID": "api/GridModel/set_num_threads.html#parameters",
+    "href": "api/GridModel/set_num_threads.html#parameters",
+    "title": "set_num_threads",
     "section": "",
-    "text": "resolve\nGridModel.resolve()\nCreate EAD output from the outputs of different return periods.\nThis is done but reading, loading and iterating over the those files. In contrary to the geometry model, this does not concern temporary data.\n\nThis method might become private.\n\n\n\n\n\n Back to top",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nthreads\nint\nNumber of threads, by default None\nNone",
     "crumbs": [
       "API Reference",
       "Basics",
       "Main",
       "GridModel",
-      "resolve"
+      "set_num_threads"
     ]
   },
   {
-    "objectID": "api/GridModel/read_hazard_grid.html",
-    "href": "api/GridModel/read_hazard_grid.html",
-    "title": "read_hazard_grid",
+    "objectID": "api/GridModel/run.html",
+    "href": "api/GridModel/run.html",
+    "title": "run",
     "section": "",
-    "text": "GridModel.read_hazard_grid(path=None, **kwargs)\nRead the hazard data.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the hazard gridded dataset, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_geom after which into GridSouce/\n{}",
+    "text": "run\nGridModel.run()\nRun the grid model with provided settings.\nGenerates output in the specified output.path directory.\n\n\n\n\n Back to top",
     "crumbs": [
       "API Reference",
       "Basics",
       "Main",
       "GridModel",
-      "read_hazard_grid"
+      "run"
     ]
   },
   {
-    "objectID": "api/GridModel/read_hazard_grid.html#parameters",
-    "href": "api/GridModel/read_hazard_grid.html#parameters",
-    "title": "read_hazard_grid",
+    "objectID": "api/GridModel/read_vulnerability_data.html",
+    "href": "api/GridModel/read_vulnerability_data.html",
+    "title": "read_vulnerability_data",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the hazard gridded dataset, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_geom after which into GridSouce/\n{}",
+    "text": "GridModel.read_vulnerability_data(path=None, **kwargs)\nRead the vulnerability data.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the vulnerabulity data, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_csv after which into Table/\n{}",
     "crumbs": [
       "API Reference",
       "Basics",
       "Main",
       "GridModel",
-      "read_hazard_grid"
+      "read_vulnerability_data"
     ]
   },
   {
-    "objectID": "api/GridModel/create_equal_grids.html",
-    "href": "api/GridModel/create_equal_grids.html",
-    "title": "create_equal_grids",
+    "objectID": "api/GridModel/read_vulnerability_data.html#parameters",
+    "href": "api/GridModel/read_vulnerability_data.html#parameters",
+    "title": "read_vulnerability_data",
     "section": "",
-    "text": "create_equal_grids\nGridModel.create_equal_grids()\nMake the hazard and exposure grid equal spatially if necessary.\n\n\n\n\n Back to top",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the vulnerabulity data, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_csv after which into Table/\n{}",
     "crumbs": [
       "API Reference",
       "Basics",
       "Main",
       "GridModel",
-      "create_equal_grids"
+      "read_vulnerability_data"
     ]
   },
   {
-    "objectID": "api/Grid/write_chunk.html",
-    "href": "api/Grid/write_chunk.html",
-    "title": "write_chunk",
+    "objectID": "api/GridModel/read_exposure_grid.html",
+    "href": "api/GridModel/read_exposure_grid.html",
+    "title": "read_exposure_grid",
     "section": "",
-    "text": "fio.Grid.write_chunk(chunk, upper_left)\nWrite a chunk of data to the band.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nchunk\narray\nArray of data.\nrequired\n\n\nupper_left\ntuple | list\nUpper left corner of the chunk. N.b. these are not coordinates, but indices.\nrequired",
+    "text": "GridModel.read_exposure_grid(path=None, **kwargs)\nRead the exposure grid.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to an exposure grid, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_grid after which into GridSouce/\n{}",
+    "crumbs": [
+      "API Reference",
+      "Basics",
+      "Main",
+      "GridModel",
+      "read_exposure_grid"
+    ]
+  },
+  {
+    "objectID": "api/GridModel/read_exposure_grid.html#parameters",
+    "href": "api/GridModel/read_exposure_grid.html#parameters",
+    "title": "read_exposure_grid",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to an exposure grid, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_grid after which into GridSouce/\n{}",
+    "crumbs": [
+      "API Reference",
+      "Basics",
+      "Main",
+      "GridModel",
+      "read_exposure_grid"
+    ]
+  },
+  {
+    "objectID": "api/GridModel.html",
+    "href": "api/GridModel.html",
+    "title": "GridModel",
+    "section": "",
+    "text": "GridModel(self, cfg)\nGrid model.\nNeeds the following settings in order to be run:\n\nexposure.grid.file\noutput.grid.file\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigurations\nConfigurations object containing the settings.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nrisk\nReturn the calculation modus.\n\n\ntype\nReturn the hazard type.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\ncreate_equal_grids\nMake the hazard and exposure grid equal spatially if necessary.\n\n\nread_exposure_grid\nRead the exposure grid.\n\n\nread_hazard_grid\nRead the hazard data.\n\n\nread_vulnerability_data\nRead the vulnerability data.\n\n\nresolve\nCreate EAD output from the outputs of different return periods.\n\n\nrun\nRun the grid model with provided settings.\n\n\nset_model_srs\nSet the model spatial reference system.\n\n\nset_num_threads\nSet the number of threads.",
+    "crumbs": [
+      "API Reference",
+      "Basics",
+      "Main",
+      "GridModel"
+    ]
+  },
+  {
+    "objectID": "api/GridModel.html#parameters",
+    "href": "api/GridModel.html#parameters",
+    "title": "GridModel",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigurations\nConfigurations object containing the settings.\nrequired",
+    "crumbs": [
+      "API Reference",
+      "Basics",
+      "Main",
+      "GridModel"
+    ]
+  },
+  {
+    "objectID": "api/GridModel.html#attributes",
+    "href": "api/GridModel.html#attributes",
+    "title": "GridModel",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nrisk\nReturn the calculation modus.\n\n\ntype\nReturn the hazard type.",
+    "crumbs": [
+      "API Reference",
+      "Basics",
+      "Main",
+      "GridModel"
+    ]
+  },
+  {
+    "objectID": "api/GridModel.html#methods",
+    "href": "api/GridModel.html#methods",
+    "title": "GridModel",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\ncreate_equal_grids\nMake the hazard and exposure grid equal spatially if necessary.\n\n\nread_exposure_grid\nRead the exposure grid.\n\n\nread_hazard_grid\nRead the hazard data.\n\n\nread_vulnerability_data\nRead the vulnerability data.\n\n\nresolve\nCreate EAD output from the outputs of different return periods.\n\n\nrun\nRun the grid model with provided settings.\n\n\nset_model_srs\nSet the model spatial reference system.\n\n\nset_num_threads\nSet the number of threads.",
+    "crumbs": [
+      "API Reference",
+      "Basics",
+      "Main",
+      "GridModel"
+    ]
+  },
+  {
+    "objectID": "api/Grid/set_chunk_size.html",
+    "href": "api/Grid/set_chunk_size.html",
+    "title": "set_chunk_size",
+    "section": "",
+    "text": "fio.Grid.set_chunk_size(chunk)\nSet the chunking size.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nchunk\ntuple\nSize in x direction, size in y direction.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "Grid",
-      "write_chunk"
+      "set_chunk_size"
     ]
   },
   {
-    "objectID": "api/Grid/write_chunk.html#parameters",
-    "href": "api/Grid/write_chunk.html#parameters",
-    "title": "write_chunk",
+    "objectID": "api/Grid/set_chunk_size.html#parameters",
+    "href": "api/Grid/set_chunk_size.html#parameters",
+    "title": "set_chunk_size",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nchunk\narray\nArray of data.\nrequired\n\n\nupper_left\ntuple | list\nUpper left corner of the chunk. N.b. these are not coordinates, but indices.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nchunk\ntuple\nSize in x direction, size in y direction.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "Grid",
-      "write_chunk"
+      "set_chunk_size"
     ]
   },
   {
-    "objectID": "api/Grid/get_metadata_item.html",
-    "href": "api/Grid/get_metadata_item.html",
-    "title": "get_metadata_item",
+    "objectID": "api/Grid/flush.html",
+    "href": "api/Grid/flush.html",
+    "title": "flush",
     "section": "",
-    "text": "fio.Grid.get_metadata_item(entry)\nGet specific metadata item.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nentry\nstr\nIdentifier of item.\nrequired\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nobject\nInformation is present.",
+    "text": "flush\nfio.Grid.flush()\nFlush the grid object.\n\n\n\n\n Back to top",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "Grid",
-      "get_metadata_item"
+      "flush"
     ]
   },
   {
-    "objectID": "api/Grid/get_metadata_item.html#parameters",
-    "href": "api/Grid/get_metadata_item.html#parameters",
-    "title": "get_metadata_item",
+    "objectID": "api/Grid.html",
+    "href": "api/Grid.html",
+    "title": "Grid",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nentry\nstr\nIdentifier of item.\nrequired",
+    "text": "fio.Grid(self, band, chunk=None, mode='r')\nA source object for a specific raster band.\nAcquired by indexing a GridSource object.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nband\ngdal.Band\nA band defined by GDAL.\nrequired\n\n\nchunk\ntuple\nChunk size in x direction and y direction.\nNone\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nchunk\nReturn the chunk size.\n\n\nshape\nReturn the shape of the grid.\n\n\nshape_xy\nReturn the shape of the grid.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nclose\nClose the Grid object.\n\n\nflush\nFlush the grid object.\n\n\nget_metadata_item\nGet specific metadata item.\n\n\nset_chunk_size\nSet the chunking size.\n\n\nwrite_chunk\nWrite a chunk of data to the band.",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
-      "Grid",
-      "get_metadata_item"
+      "Grid"
     ]
   },
   {
-    "objectID": "api/Grid/get_metadata_item.html#returns",
-    "href": "api/Grid/get_metadata_item.html#returns",
-    "title": "get_metadata_item",
+    "objectID": "api/Grid.html#parameters",
+    "href": "api/Grid.html#parameters",
+    "title": "Grid",
     "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nobject\nInformation is present.",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nband\ngdal.Band\nA band defined by GDAL.\nrequired\n\n\nchunk\ntuple\nChunk size in x direction and y direction.\nNone\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
-      "Grid",
-      "get_metadata_item"
+      "Grid"
     ]
   },
   {
-    "objectID": "api/Grid/close.html",
-    "href": "api/Grid/close.html",
-    "title": "close",
+    "objectID": "api/Grid.html#attributes",
+    "href": "api/Grid.html#attributes",
+    "title": "Grid",
     "section": "",
-    "text": "close\nfio.Grid.close()\nClose the Grid object.\n\n\n\n\n Back to top",
+    "text": "Name\nDescription\n\n\n\n\nchunk\nReturn the chunk size.\n\n\nshape\nReturn the shape of the grid.\n\n\nshape_xy\nReturn the shape of the grid.",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
-      "Grid",
-      "close"
+      "Grid"
     ]
   },
   {
-    "objectID": "api/GeomSource/set_layer_from_defn.html",
-    "href": "api/GeomSource/set_layer_from_defn.html",
-    "title": "set_layer_from_defn",
+    "objectID": "api/Grid.html#methods",
+    "href": "api/Grid.html#methods",
+    "title": "Grid",
     "section": "",
-    "text": "fio.GeomSource.set_layer_from_defn(ref)\nSet layer meta from another layer’s meta.\nOnly in write ('w') mode.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nref\nogr.FeatureDefn\nThe definition of a layer. Defined by OGR.\nrequired",
+    "text": "Name\nDescription\n\n\n\n\nclose\nClose the Grid object.\n\n\nflush\nFlush the grid object.\n\n\nget_metadata_item\nGet specific metadata item.\n\n\nset_chunk_size\nSet the chunking size.\n\n\nwrite_chunk\nWrite a chunk of data to the band.",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
-      "GeomSource",
-      "set_layer_from_defn"
+      "Grid"
     ]
   },
   {
-    "objectID": "api/GeomSource/set_layer_from_defn.html#parameters",
-    "href": "api/GeomSource/set_layer_from_defn.html#parameters",
-    "title": "set_layer_from_defn",
+    "objectID": "api/GeomSource/reopen.html",
+    "href": "api/GeomSource/reopen.html",
+    "title": "reopen",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nref\nogr.FeatureDefn\nThe definition of a layer. Defined by OGR.\nrequired",
-    "crumbs": [
-      "API Reference",
-      "I/O",
-      "Objects",
-      "GeomSource",
-      "set_layer_from_defn"
-    ]
-  },
-  {
-    "objectID": "api/GeomSource/reduced_iter.html",
-    "href": "api/GeomSource/reduced_iter.html",
-    "title": "reduced_iter",
-    "section": "",
-    "text": "fio.GeomSource.reduced_iter(si, ei)\nYield items on an interval.\nCreates a python generator.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsi\nint\nStarting index.\nrequired\n\n\nei\nint\nEnding index.\nrequired\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nogr.Feature\nFeatures from the vector layer.",
+    "text": "reopen\nfio.GeomSource.reopen(mode='r')\nReopen a closed GeomSource.\n\n\n\n\n Back to top",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "reduced_iter"
+      "reopen"
     ]
   },
   {
-    "objectID": "api/GeomSource/reduced_iter.html#parameters",
-    "href": "api/GeomSource/reduced_iter.html#parameters",
-    "title": "reduced_iter",
+    "objectID": "api/GeomSource/flush.html",
+    "href": "api/GeomSource/flush.html",
+    "title": "flush",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsi\nint\nStarting index.\nrequired\n\n\nei\nint\nEnding index.\nrequired",
+    "text": "flush\nfio.GeomSource.flush()\nFlush the data.\nThis only serves a purpose in write mode (mode = 'w').\n\n\n\n\n Back to top",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "reduced_iter"
+      "flush"
     ]
   },
   {
-    "objectID": "api/GeomSource/reduced_iter.html#returns",
-    "href": "api/GeomSource/reduced_iter.html#returns",
-    "title": "reduced_iter",
+    "objectID": "api/GeomSource/create_layer.html",
+    "href": "api/GeomSource/create_layer.html",
+    "title": "create_layer",
     "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nogr.Feature\nFeatures from the vector layer.",
+    "text": "fio.GeomSource.create_layer(srs, geom_type)\nCreate a new vector layer.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsrs\nosr.SpatialReference\nSpatial Reference System.\nrequired\n\n\ngeom_type\nint\nType of geometry. E.g. ‘POINT’ or ‘POLYGON’. It is supplied as an integer that complies with a specific geometry type according to GDAL.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "reduced_iter"
+      "create_layer"
     ]
   },
   {
-    "objectID": "api/GeomSource/create_layer_from_copy.html",
-    "href": "api/GeomSource/create_layer_from_copy.html",
-    "title": "create_layer_from_copy",
+    "objectID": "api/GeomSource/create_layer.html#parameters",
+    "href": "api/GeomSource/create_layer.html#parameters",
+    "title": "create_layer",
     "section": "",
-    "text": "fio.GeomSource.create_layer_from_copy(layer, overwrite=True)\nCreate a new layer by copying another layer.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\nA layer defined by OGR.\nrequired\n\n\noverwrite\nbool\nIf set to True, it will overwrite an existing layer.\nTrue",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsrs\nosr.SpatialReference\nSpatial Reference System.\nrequired\n\n\ngeom_type\nint\nType of geometry. E.g. ‘POINT’ or ‘POLYGON’. It is supplied as an integer that complies with a specific geometry type according to GDAL.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "create_layer_from_copy"
+      "create_layer"
     ]
   },
   {
-    "objectID": "api/GeomSource/create_layer_from_copy.html#parameters",
-    "href": "api/GeomSource/create_layer_from_copy.html#parameters",
-    "title": "create_layer_from_copy",
+    "objectID": "api/GeomSource/create_field.html",
+    "href": "api/GeomSource/create_field.html",
+    "title": "create_field",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\nA layer defined by OGR.\nrequired\n\n\noverwrite\nbool\nIf set to True, it will overwrite an existing layer.\nTrue",
+    "text": "fio.GeomSource.create_field(name, type)\nAdd a new field.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nName of the new field.\nrequired\n\n\ntype\nint\nType of the new field.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "create_layer_from_copy"
+      "create_field"
     ]
   },
   {
-    "objectID": "api/GeomSource/create_fields.html",
-    "href": "api/GeomSource/create_fields.html",
-    "title": "create_fields",
+    "objectID": "api/GeomSource/create_field.html#parameters",
+    "href": "api/GeomSource/create_field.html#parameters",
+    "title": "create_field",
     "section": "",
-    "text": "fio.GeomSource.create_fields(fmap)\nAdd multiple fields at once.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfmap\ndict\nA dictionary where the keys are the names of the new fields and the values are the data types of the new field.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nName of the new field.\nrequired\n\n\ntype\nint\nType of the new field.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "create_fields"
+      "create_field"
     ]
   },
   {
-    "objectID": "api/GeomSource/create_fields.html#parameters",
-    "href": "api/GeomSource/create_fields.html#parameters",
-    "title": "create_fields",
+    "objectID": "api/GeomSource/copy_layer.html",
+    "href": "api/GeomSource/copy_layer.html",
+    "title": "copy_layer",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfmap\ndict\nA dictionary where the keys are the names of the new fields and the values are the data types of the new field.\nrequired",
+    "text": "fio.GeomSource.copy_layer(layer, layer_fn)\nCopy a layer to an existing dataset.\nBit of a spoof off of create_layer_from_copy. This method is a bit more forcing and allows to set it’s own variable as layer name. Only in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\ndescription\nrequired\n\n\nlayer_fn\nstr\ndescription\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "create_fields"
+      "copy_layer"
     ]
   },
   {
-    "objectID": "api/GeomSource/create.html",
-    "href": "api/GeomSource/create.html",
-    "title": "create",
+    "objectID": "api/GeomSource/copy_layer.html#parameters",
+    "href": "api/GeomSource/copy_layer.html#parameters",
+    "title": "copy_layer",
     "section": "",
-    "text": "fio.GeomSource.create(path)\nCreate a data source.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the data source.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\ndescription\nrequired\n\n\nlayer_fn\nstr\ndescription\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "create"
+      "copy_layer"
     ]
   },
   {
-    "objectID": "api/GeomSource/create.html#parameters",
-    "href": "api/GeomSource/create.html#parameters",
-    "title": "create",
+    "objectID": "api/GeomSource/add_feature_with_map.html",
+    "href": "api/GeomSource/add_feature_with_map.html",
+    "title": "add_feature_with_map",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the data source.\nrequired",
+    "text": "fio.GeomSource.add_feature_with_map(in_ft, fmap)\nAdd a feature with extra field data.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nin_ft\nogr.Feature\nThe feature to be added.\nrequired\n\n\nfmap\nzip\nExtra fields data, i.e. a zip object of fields id’s and the correspondingv alues\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "create"
+      "add_feature_with_map"
     ]
   },
   {
-    "objectID": "api/GeomSource/close.html",
-    "href": "api/GeomSource/close.html",
-    "title": "close",
+    "objectID": "api/GeomSource/add_feature_with_map.html#parameters",
+    "href": "api/GeomSource/add_feature_with_map.html#parameters",
+    "title": "add_feature_with_map",
     "section": "",
-    "text": "close\nfio.GeomSource.close()\nClose the GeomSouce.\n\n\n\n\n Back to top",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nin_ft\nogr.Feature\nThe feature to be added.\nrequired\n\n\nfmap\nzip\nExtra fields data, i.e. a zip object of fields id’s and the correspondingv alues\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "close"
+      "add_feature_with_map"
     ]
   },
   {
-    "objectID": "api/GeomSource/add_feature_from_defn.html",
-    "href": "api/GeomSource/add_feature_from_defn.html",
-    "title": "add_feature_from_defn",
+    "objectID": "api/GeomSource/add_feature.html",
+    "href": "api/GeomSource/add_feature.html",
+    "title": "add_feature",
     "section": "",
-    "text": "fio.GeomSource.add_feature_from_defn(geom, in_ft, out_ft)\nAdd a feature to a layer by using properties from another.\nOnly in write ('w') mode.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ngeom\nogr.Geometry\nThe geometry of the new feature. Defined by OGR.\nrequired\n\n\nin_ft\nogr.Feature\nThe input feature. The properties and fieldinfo are used from this one to set information on the new feature. Defined by OGR.\nrequired\n\n\nout_ft\nogr.Feature\nNew feature. Empty. Defined by OGR.\nrequired",
+    "text": "fio.GeomSource.add_feature(ft)\nAdd a feature to the layer.\nOnly in write ('w') mode.\nNote! Everything needs to already be compliant with the created/ edited dataset.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nft\nogr.Feature\nA feature object defined by OGR.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "add_feature_from_defn"
+      "add_feature"
     ]
   },
   {
-    "objectID": "api/GeomSource/add_feature_from_defn.html#parameters",
-    "href": "api/GeomSource/add_feature_from_defn.html#parameters",
-    "title": "add_feature_from_defn",
+    "objectID": "api/GeomSource/add_feature.html#parameters",
+    "href": "api/GeomSource/add_feature.html#parameters",
+    "title": "add_feature",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ngeom\nogr.Geometry\nThe geometry of the new feature. Defined by OGR.\nrequired\n\n\nin_ft\nogr.Feature\nThe input feature. The properties and fieldinfo are used from this one to set information on the new feature. Defined by OGR.\nrequired\n\n\nout_ft\nogr.Feature\nNew feature. Empty. Defined by OGR.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nft\nogr.Feature\nA feature object defined by OGR.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "add_feature_from_defn"
+      "add_feature"
     ]
   },
   {
-    "objectID": "api/GeomSource.html",
-    "href": "api/GeomSource.html",
-    "title": "GeomSource",
+    "objectID": "api/GeomModel/set_num_threads.html",
+    "href": "api/GeomModel/set_num_threads.html",
+    "title": "set_num_threads",
     "section": "",
-    "text": "fio.GeomSource(self, file, mode='r', overwrite=False, srs=None)\nA source object for geospatial vector data.\nEssentially an OGR DataSource wrapper.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nPath to a file.\nrequired\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'\n\n\noverwrite\nbool\nWhether or not to overwrite an existing dataset.\nFalse\n\n\nsrs\nstr\nA Spatial reference system string in case the dataset has none.\nNone\n\n\n\n\n\n\nIndex the GeomSource directly to get features.\n# Load a file\ngm = GeomSource(&lt; path-to-file &gt;)\n\n# Index it!\nfeature = gm[1]\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nbounds\nReturn the bounds of the GridSource.\n\n\ncolumns\nReturn the columns header of the attribute tabel.\n\n\ndtypes\nReturn the data types of the fields.\n\n\nfields\nReturn the names of the fields.\n\n\ngeom_type\nReturn the geometry type.\n\n\nsize\nReturn the size (geometry count).\n\n\nsrs\nReturn the srs (Spatial Reference System).\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nadd_feature\nAdd a feature to the layer.\n\n\nadd_feature_from_defn\nAdd a feature to a layer by using properties from another.\n\n\nadd_feature_with_map\nAdd a feature with extra field data.\n\n\nclose\nClose the GeomSouce.\n\n\ncopy_layer\nCopy a layer to an existing dataset.\n\n\ncreate\nCreate a data source.\n\n\ncreate_field\nAdd a new field.\n\n\ncreate_fields\nAdd multiple fields at once.\n\n\ncreate_layer\nCreate a new vector layer.\n\n\ncreate_layer_from_copy\nCreate a new layer by copying another layer.\n\n\nflush\nFlush the data.\n\n\nreduced_iter\nYield items on an interval.\n\n\nreopen\nReopen a closed GeomSource.\n\n\nset_layer_from_defn\nSet layer meta from another layer’s meta.",
+    "text": "GeomModel.set_num_threads(threads=None)\nSet the number of threads.\nEither through the config file, cli or directly.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nthreads\nint\nNumber of threads, by default None\nNone",
     "crumbs": [
       "API Reference",
-      "I/O",
-      "Objects",
-      "GeomSource"
+      "Basics",
+      "Main",
+      "GeomModel",
+      "set_num_threads"
     ]
   },
   {
-    "objectID": "api/GeomSource.html#parameters",
-    "href": "api/GeomSource.html#parameters",
-    "title": "GeomSource",
+    "objectID": "api/GeomModel/set_num_threads.html#parameters",
+    "href": "api/GeomModel/set_num_threads.html#parameters",
+    "title": "set_num_threads",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nPath to a file.\nrequired\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'\n\n\noverwrite\nbool\nWhether or not to overwrite an existing dataset.\nFalse\n\n\nsrs\nstr\nA Spatial reference system string in case the dataset has none.\nNone",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nthreads\nint\nNumber of threads, by default None\nNone",
     "crumbs": [
       "API Reference",
-      "I/O",
-      "Objects",
-      "GeomSource"
-    ]
-  },
-  {
-    "objectID": "api/GeomSource.html#examples",
-    "href": "api/GeomSource.html#examples",
-    "title": "GeomSource",
-    "section": "",
-    "text": "Index the GeomSource directly to get features.\n# Load a file\ngm = GeomSource(&lt; path-to-file &gt;)\n\n# Index it!\nfeature = gm[1]",
-    "crumbs": [
-      "API Reference",
-      "I/O",
-      "Objects",
-      "GeomSource"
-    ]
-  },
-  {
-    "objectID": "api/GeomSource.html#attributes",
-    "href": "api/GeomSource.html#attributes",
-    "title": "GeomSource",
-    "section": "",
-    "text": "Name\nDescription\n\n\n\n\nbounds\nReturn the bounds of the GridSource.\n\n\ncolumns\nReturn the columns header of the attribute tabel.\n\n\ndtypes\nReturn the data types of the fields.\n\n\nfields\nReturn the names of the fields.\n\n\ngeom_type\nReturn the geometry type.\n\n\nsize\nReturn the size (geometry count).\n\n\nsrs\nReturn the srs (Spatial Reference System).",
-    "crumbs": [
-      "API Reference",
-      "I/O",
-      "Objects",
-      "GeomSource"
-    ]
-  },
-  {
-    "objectID": "api/GeomSource.html#methods",
-    "href": "api/GeomSource.html#methods",
-    "title": "GeomSource",
-    "section": "",
-    "text": "Name\nDescription\n\n\n\n\nadd_feature\nAdd a feature to the layer.\n\n\nadd_feature_from_defn\nAdd a feature to a layer by using properties from another.\n\n\nadd_feature_with_map\nAdd a feature with extra field data.\n\n\nclose\nClose the GeomSouce.\n\n\ncopy_layer\nCopy a layer to an existing dataset.\n\n\ncreate\nCreate a data source.\n\n\ncreate_field\nAdd a new field.\n\n\ncreate_fields\nAdd multiple fields at once.\n\n\ncreate_layer\nCreate a new vector layer.\n\n\ncreate_layer_from_copy\nCreate a new layer by copying another layer.\n\n\nflush\nFlush the data.\n\n\nreduced_iter\nYield items on an interval.\n\n\nreopen\nReopen a closed GeomSource.\n\n\nset_layer_from_defn\nSet layer meta from another layer’s meta.",
-    "crumbs": [
-      "API Reference",
-      "I/O",
-      "Objects",
-      "GeomSource"
+      "Basics",
+      "Main",
+      "GeomModel",
+      "set_num_threads"
     ]
   },
   {
@@ -1839,7 +1864,7 @@
     "href": "examples/single_event.html",
     "title": "Single event",
     "section": "",
-    "text": "This is a an example of running a tiny single event FIAT model.\nFirst of all, let’s make sure that there is some actual testdata.\n\n! python ../../.testdata/create_test_data.py\n\nNow that we have some testdata, let’s take a look at the settings file.\n\nwith open(\"../../.testdata/geom_event.toml\", \"r\") as r:\n    settings = r.read()\nprint(settings)\n\n[global]\nmodel = \"geom\"\n\n[global.srs]\nvalue = \"EPSG:4326\"\n\n[output]\npath = \"output/geom_event\"\n\n[output.csv]\nname1 = \"output.csv\"\n\n[output.geom]\nname1 = \"spatial.gpkg\"\n\n[hazard]\nfile = \"hazard/event_map.nc\"\nrisk = false\nelevation_reference = \"DEM\"\n\n[hazard.settings]\nsrs = \"EPSG:4326\"\n\n[exposure.csv]\nfile = \"exposure/spatial.csv\"\n\n[exposure.geom]\nfile1 = \"exposure/spatial.geojson\"\n\n[exposure.geom.settings]\nsrs = \"EPSG:4326\"\n\n[vulnerability]\nfile = \"vulnerability/vulnerability_curves.csv\"\nstep_size = 0.01\n\n\n\nNow let’s execute the model!\n\n! fiat run ../../.testdata/geom_event.toml\n\n\n###############################################################\n\n        #########    ##          ##      ##############\n        ##           ##         ####         ######\n        ##           ##         ####           ##\n        ##           ##        ##  ##          ##\n        ######       ##        ##  ##          ##\n        ##           ##       ########         ##\n        ##           ##      ##      ##        ##\n        ##           ##     ##        ##       ##\n        ##           ##    ##          ##      ##\n\n###############################################################\n\n                Fast Impact Assessment Tool\n                © Deltares\n\n2025-05-06 14:13:40 INFO    Delft-Fiat version: 0.3.3.dev\n2025-05-06 14:13:40 INFO    Using settings from '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/geom_event.toml'\n2025-05-06 14:13:40 INFO    Using number of threads: 1\n2025-05-06 14:13:40 INFO    Model srs set to: 'EPSG:4326'\n2025-05-06 14:13:40 INFO    Reading hazard data ('event_map.nc')\n2025-05-06 14:13:40 INFO    Executing hazard checks...\n2025-05-06 14:13:40 WARNING Setting the model srs from the hazard data.\n2025-05-06 14:13:40 INFO    Model srs set to: 'EPSG:4326'\n2025-05-06 14:13:40 INFO    Reading vulnerability curves ('vulnerability_curves.csv')\n2025-05-06 14:13:40 INFO    Executing vulnerability checks...\n2025-05-06 14:13:40 INFO    Upscaling vulnerability curves, using a step size of: 0.01\n2025-05-06 14:13:40 INFO    Reading exposure geometry 'file1' ('spatial.geojson')\n2025-05-06 14:13:40 INFO    Executing exposure geometry checks...\n2025-05-06 14:13:40 INFO    Reading exposure data ('spatial.csv')\n2025-05-06 14:13:40 INFO    Executing exposure data checks...\n2025-05-06 14:13:40 INFO    Starting the calculations\n2025-05-06 14:13:40 INFO    Busy...\n2025-05-06 14:13:40 INFO    Calculations time: 0.05 seconds\n2025-05-06 14:13:40 INFO    Output generated in: '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/output/geom_event'\n2025-05-06 14:13:40 INFO    Geom calculation are done!\n\n\nLet’s take a quick look at the output.\n\n# Import a method\nfrom fiat.fio import open_csv\nfrom pathlib import Path\n\n# check the output\nout = open_csv(Path(\"../../.testdata/output/geom_event\", \"output.csv\"), index=\"object_id\")\nprint(out.columns)\n\n('extract_method', 'ground_flht', 'ground_elevtn', 'fn_damage_structure', 'max_damage_structure', 'inun_depth', 'red_fact', 'damage_structure', 'total_damage')\n\n\nAssert that the output is what we would expect.\n\nassert float(out[2, \"total_damage\"]) == 740\nassert float(out[3, \"total_damage\"]) == 1038\n\n\n\n\n Back to top",
+    "text": "This is a an example of running a tiny single event FIAT model.\nFirst of all, let’s make sure that there is some actual testdata.\n\n! python ../../.testdata/create_test_data.py\n\nNow that we have some testdata, let’s take a look at the settings file.\n\nwith open(\"../../.testdata/geom_event.toml\", \"r\") as r:\n    settings = r.read()\nprint(settings)\n\n[model]\nmodel_type = \"geom\"\n\n[model.srs]\nvalue = \"EPSG:4326\"\n\n[output]\npath = \"output/geom_event\"\n\n[output.csv]\nname1 = \"output.csv\"\n\n[output.geom]\nname1 = \"spatial.gpkg\"\n\n[hazard]\nfile = \"hazard/event_map.nc\"\nelevation_reference = \"DEM\"\n\n[hazard.settings]\nsrs = \"EPSG:4326\"\n\n[exposure.csv]\nfile = \"exposure/spatial.csv\"\n\n[exposure.geom]\nfile1 = \"exposure/spatial.geojson\"\n\n[exposure.geom.settings]\nsrs = \"EPSG:4326\"\n\n[vulnerability]\nfile = \"vulnerability/vulnerability_curves.csv\"\nstep_size = 0.01\n\n\n\nNow let’s execute the model!\n\n! fiat run ../../.testdata/geom_event.toml\n\n\n###############################################################\n\n        #########    ##          ##      ##############\n        ##           ##         ####         ######\n        ##           ##         ####           ##\n        ##           ##        ##  ##          ##\n        ######       ##        ##  ##          ##\n        ##           ##       ########         ##\n        ##           ##      ##      ##        ##\n        ##           ##     ##        ##       ##\n        ##           ##    ##          ##      ##\n\n###############################################################\n\n                Fast Impact Assessment Tool\n                © Deltares\n\n2025-05-07 08:40:52 INFO    Delft-Fiat version: 0.3.3.dev\n2025-05-07 08:40:52 INFO    Using settings from '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/geom_event.toml'\n2025-05-07 08:40:52 INFO    Model srs set to: 'EPSG:4326'\n2025-05-07 08:40:52 INFO    Using number of threads: 1\n2025-05-07 08:40:52 INFO    Reading hazard data ('event_map.nc')\n2025-05-07 08:40:52 INFO    Executing hazard checks...\n2025-05-07 08:40:52 WARNING Setting the model srs from the hazard data.\n2025-05-07 08:40:52 INFO    Model srs set to: 'EPSG:4326'\n2025-05-07 08:40:52 INFO    Reading vulnerability curves ('vulnerability_curves.csv')\n2025-05-07 08:40:52 INFO    Executing vulnerability checks...\n2025-05-07 08:40:52 INFO    Upscaling vulnerability curves, using a step size of: 0.01\n2025-05-07 08:40:52 INFO    Reading exposure geometry 'file1' ('spatial.geojson')\n2025-05-07 08:40:52 INFO    Executing exposure geometry checks...\n2025-05-07 08:40:52 INFO    Reading exposure data ('spatial.csv')\n2025-05-07 08:40:52 INFO    Executing exposure data checks...\n2025-05-07 08:40:52 INFO    Starting the calculations\n2025-05-07 08:40:52 INFO    Busy...\n2025-05-07 08:40:52 INFO    Calculations time: 0.05 seconds\n2025-05-07 08:40:52 INFO    Output generated in: '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/output/geom_event'\n2025-05-07 08:40:52 INFO    Geom calculation are done!\n\n\nLet’s take a quick look at the output.\n\n# Import a method\nfrom fiat.fio import open_csv\nfrom pathlib import Path\n\n# check the output\nout = open_csv(Path(\"../../.testdata/output/geom_event\", \"output.csv\"), index=\"object_id\")\nprint(out.columns)\n\n('extract_method', 'ground_flht', 'ground_elevtn', 'fn_damage_structure', 'max_damage_structure', 'inun_depth', 'red_fact', 'damage_structure', 'total_damage')\n\n\nAssert that the output is what we would expect.\n\nassert float(out[2, \"total_damage\"]) == 740\nassert float(out[3, \"total_damage\"]) == 1038\n\n\n\n\n Back to top",
     "crumbs": [
       "User guide",
       "Examples",
@@ -1949,7 +1974,7 @@
     "href": "api/GeomModel.html",
     "title": "GeomModel",
     "section": "",
-    "text": "GeomModel(self, cfg)\nGeometry model.\nNeeds the following settings in order to be run:\n\nexposure.csv.file\nexposure.geom.file1\noutput.geom.file1\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigurations\nConfigurations object containing the settings.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nget_exposure_meta\nGet the exposure meta regarding the data itself (fields etc.).\n\n\nread_exposure\nRead all the exposure files.\n\n\nread_exposure_data\nRead the exposure data file (csv).\n\n\nread_exposure_geoms\nRead the exposure geometries.\n\n\nread_hazard_grid\nRead the hazard data.\n\n\nread_vulnerability_data\nRead the vulnerability data.\n\n\nrun\nRun the geometry model with provided settings.\n\n\nset_model_srs\nSet the model spatial reference system.",
+    "text": "GeomModel(self, cfg)\nGeometry model.\nNeeds the following settings in order to be run:\n\nexposure.csv.file\nexposure.geom.file1\noutput.geom.file1\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigurations\nConfigurations object containing the settings.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nrisk\nReturn the calculation modus.\n\n\ntype\nReturn the hazard type.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nget_exposure_meta\nGet the exposure meta regarding the data itself (fields etc.).\n\n\nread_exposure\nRead all the exposure files.\n\n\nread_exposure_data\nRead the exposure data file (csv).\n\n\nread_exposure_geoms\nRead the exposure geometries.\n\n\nread_hazard_grid\nRead the hazard data.\n\n\nread_vulnerability_data\nRead the vulnerability data.\n\n\nrun\nRun the geometry model with provided settings.\n\n\nset_model_srs\nSet the model spatial reference system.\n\n\nset_num_threads\nSet the number of threads.",
     "crumbs": [
       "API Reference",
       "Basics",
@@ -1971,11 +1996,24 @@
     ]
   },
   {
+    "objectID": "api/GeomModel.html#attributes",
+    "href": "api/GeomModel.html#attributes",
+    "title": "GeomModel",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nrisk\nReturn the calculation modus.\n\n\ntype\nReturn the hazard type.",
+    "crumbs": [
+      "API Reference",
+      "Basics",
+      "Main",
+      "GeomModel"
+    ]
+  },
+  {
     "objectID": "api/GeomModel.html#methods",
     "href": "api/GeomModel.html#methods",
     "title": "GeomModel",
     "section": "",
-    "text": "Name\nDescription\n\n\n\n\nget_exposure_meta\nGet the exposure meta regarding the data itself (fields etc.).\n\n\nread_exposure\nRead all the exposure files.\n\n\nread_exposure_data\nRead the exposure data file (csv).\n\n\nread_exposure_geoms\nRead the exposure geometries.\n\n\nread_hazard_grid\nRead the hazard data.\n\n\nread_vulnerability_data\nRead the vulnerability data.\n\n\nrun\nRun the geometry model with provided settings.\n\n\nset_model_srs\nSet the model spatial reference system.",
+    "text": "Name\nDescription\n\n\n\n\nget_exposure_meta\nGet the exposure meta regarding the data itself (fields etc.).\n\n\nread_exposure\nRead all the exposure files.\n\n\nread_exposure_data\nRead the exposure data file (csv).\n\n\nread_exposure_geoms\nRead the exposure geometries.\n\n\nread_hazard_grid\nRead the hazard data.\n\n\nread_vulnerability_data\nRead the vulnerability data.\n\n\nrun\nRun the geometry model with provided settings.\n\n\nset_model_srs\nSet the model spatial reference system.\n\n\nset_num_threads\nSet the number of threads.",
     "crumbs": [
       "API Reference",
       "Basics",
@@ -2058,7 +2096,7 @@
     "href": "api/GeomModel/set_model_srs.html",
     "title": "set_model_srs",
     "section": "",
-    "text": "set_model_srs\nGeomModel.set_model_srs(srs=None)\nSet the model spatial reference system.\n\n\n\n\n Back to top",
+    "text": "GeomModel.set_model_srs(srs=None)\nSet the model spatial reference system.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsrs\nstr\nThe spatial reference system described by a string (e.g. ‘EPSG:4326’), by default None\nNone",
     "crumbs": [
       "API Reference",
       "Basics",
@@ -2068,374 +2106,446 @@
     ]
   },
   {
-    "objectID": "api/GeomSource/add_feature.html",
-    "href": "api/GeomSource/add_feature.html",
-    "title": "add_feature",
+    "objectID": "api/GeomModel/set_model_srs.html#parameters",
+    "href": "api/GeomModel/set_model_srs.html#parameters",
+    "title": "set_model_srs",
     "section": "",
-    "text": "fio.GeomSource.add_feature(ft)\nAdd a feature to the layer.\nOnly in write ('w') mode.\nNote! Everything needs to already be compliant with the created/ edited dataset.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nft\nogr.Feature\nA feature object defined by OGR.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsrs\nstr\nThe spatial reference system described by a string (e.g. ‘EPSG:4326’), by default None\nNone",
+    "crumbs": [
+      "API Reference",
+      "Basics",
+      "Main",
+      "GeomModel",
+      "set_model_srs"
+    ]
+  },
+  {
+    "objectID": "api/GeomSource.html",
+    "href": "api/GeomSource.html",
+    "title": "GeomSource",
+    "section": "",
+    "text": "fio.GeomSource(self, file, mode='r', overwrite=False, srs=None)\nA source object for geospatial vector data.\nEssentially an OGR DataSource wrapper.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nPath to a file.\nrequired\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'\n\n\noverwrite\nbool\nWhether or not to overwrite an existing dataset.\nFalse\n\n\nsrs\nstr\nA Spatial reference system string in case the dataset has none.\nNone\n\n\n\n\n\n\nIndex the GeomSource directly to get features.\n# Load a file\ngm = GeomSource(&lt; path-to-file &gt;)\n\n# Index it!\nfeature = gm[1]\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nbounds\nReturn the bounds of the GridSource.\n\n\ncolumns\nReturn the columns header of the attribute tabel.\n\n\ndtypes\nReturn the data types of the fields.\n\n\nfields\nReturn the names of the fields.\n\n\ngeom_type\nReturn the geometry type.\n\n\nsize\nReturn the size (geometry count).\n\n\nsrs\nReturn the srs (Spatial Reference System).\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nadd_feature\nAdd a feature to the layer.\n\n\nadd_feature_from_defn\nAdd a feature to a layer by using properties from another.\n\n\nadd_feature_with_map\nAdd a feature with extra field data.\n\n\nclose\nClose the GeomSouce.\n\n\ncopy_layer\nCopy a layer to an existing dataset.\n\n\ncreate\nCreate a data source.\n\n\ncreate_field\nAdd a new field.\n\n\ncreate_fields\nAdd multiple fields at once.\n\n\ncreate_layer\nCreate a new vector layer.\n\n\ncreate_layer_from_copy\nCreate a new layer by copying another layer.\n\n\nflush\nFlush the data.\n\n\nreduced_iter\nYield items on an interval.\n\n\nreopen\nReopen a closed GeomSource.\n\n\nset_layer_from_defn\nSet layer meta from another layer’s meta.",
+    "crumbs": [
+      "API Reference",
+      "I/O",
+      "Objects",
+      "GeomSource"
+    ]
+  },
+  {
+    "objectID": "api/GeomSource.html#parameters",
+    "href": "api/GeomSource.html#parameters",
+    "title": "GeomSource",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfile\nstr\nPath to a file.\nrequired\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'\n\n\noverwrite\nbool\nWhether or not to overwrite an existing dataset.\nFalse\n\n\nsrs\nstr\nA Spatial reference system string in case the dataset has none.\nNone",
+    "crumbs": [
+      "API Reference",
+      "I/O",
+      "Objects",
+      "GeomSource"
+    ]
+  },
+  {
+    "objectID": "api/GeomSource.html#examples",
+    "href": "api/GeomSource.html#examples",
+    "title": "GeomSource",
+    "section": "",
+    "text": "Index the GeomSource directly to get features.\n# Load a file\ngm = GeomSource(&lt; path-to-file &gt;)\n\n# Index it!\nfeature = gm[1]",
+    "crumbs": [
+      "API Reference",
+      "I/O",
+      "Objects",
+      "GeomSource"
+    ]
+  },
+  {
+    "objectID": "api/GeomSource.html#attributes",
+    "href": "api/GeomSource.html#attributes",
+    "title": "GeomSource",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nbounds\nReturn the bounds of the GridSource.\n\n\ncolumns\nReturn the columns header of the attribute tabel.\n\n\ndtypes\nReturn the data types of the fields.\n\n\nfields\nReturn the names of the fields.\n\n\ngeom_type\nReturn the geometry type.\n\n\nsize\nReturn the size (geometry count).\n\n\nsrs\nReturn the srs (Spatial Reference System).",
+    "crumbs": [
+      "API Reference",
+      "I/O",
+      "Objects",
+      "GeomSource"
+    ]
+  },
+  {
+    "objectID": "api/GeomSource.html#methods",
+    "href": "api/GeomSource.html#methods",
+    "title": "GeomSource",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\nadd_feature\nAdd a feature to the layer.\n\n\nadd_feature_from_defn\nAdd a feature to a layer by using properties from another.\n\n\nadd_feature_with_map\nAdd a feature with extra field data.\n\n\nclose\nClose the GeomSouce.\n\n\ncopy_layer\nCopy a layer to an existing dataset.\n\n\ncreate\nCreate a data source.\n\n\ncreate_field\nAdd a new field.\n\n\ncreate_fields\nAdd multiple fields at once.\n\n\ncreate_layer\nCreate a new vector layer.\n\n\ncreate_layer_from_copy\nCreate a new layer by copying another layer.\n\n\nflush\nFlush the data.\n\n\nreduced_iter\nYield items on an interval.\n\n\nreopen\nReopen a closed GeomSource.\n\n\nset_layer_from_defn\nSet layer meta from another layer’s meta.",
+    "crumbs": [
+      "API Reference",
+      "I/O",
+      "Objects",
+      "GeomSource"
+    ]
+  },
+  {
+    "objectID": "api/GeomSource/add_feature_from_defn.html",
+    "href": "api/GeomSource/add_feature_from_defn.html",
+    "title": "add_feature_from_defn",
+    "section": "",
+    "text": "fio.GeomSource.add_feature_from_defn(geom, in_ft, out_ft)\nAdd a feature to a layer by using properties from another.\nOnly in write ('w') mode.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ngeom\nogr.Geometry\nThe geometry of the new feature. Defined by OGR.\nrequired\n\n\nin_ft\nogr.Feature\nThe input feature. The properties and fieldinfo are used from this one to set information on the new feature. Defined by OGR.\nrequired\n\n\nout_ft\nogr.Feature\nNew feature. Empty. Defined by OGR.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "add_feature"
+      "add_feature_from_defn"
     ]
   },
   {
-    "objectID": "api/GeomSource/add_feature.html#parameters",
-    "href": "api/GeomSource/add_feature.html#parameters",
-    "title": "add_feature",
+    "objectID": "api/GeomSource/add_feature_from_defn.html#parameters",
+    "href": "api/GeomSource/add_feature_from_defn.html#parameters",
+    "title": "add_feature_from_defn",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nft\nogr.Feature\nA feature object defined by OGR.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ngeom\nogr.Geometry\nThe geometry of the new feature. Defined by OGR.\nrequired\n\n\nin_ft\nogr.Feature\nThe input feature. The properties and fieldinfo are used from this one to set information on the new feature. Defined by OGR.\nrequired\n\n\nout_ft\nogr.Feature\nNew feature. Empty. Defined by OGR.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "add_feature"
+      "add_feature_from_defn"
     ]
   },
   {
-    "objectID": "api/GeomSource/add_feature_with_map.html",
-    "href": "api/GeomSource/add_feature_with_map.html",
-    "title": "add_feature_with_map",
+    "objectID": "api/GeomSource/close.html",
+    "href": "api/GeomSource/close.html",
+    "title": "close",
     "section": "",
-    "text": "fio.GeomSource.add_feature_with_map(in_ft, fmap)\nAdd a feature with extra field data.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nin_ft\nogr.Feature\nThe feature to be added.\nrequired\n\n\nfmap\nzip\nExtra fields data, i.e. a zip object of fields id’s and the correspondingv alues\nrequired",
+    "text": "close\nfio.GeomSource.close()\nClose the GeomSouce.\n\n\n\n\n Back to top",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "add_feature_with_map"
+      "close"
     ]
   },
   {
-    "objectID": "api/GeomSource/add_feature_with_map.html#parameters",
-    "href": "api/GeomSource/add_feature_with_map.html#parameters",
-    "title": "add_feature_with_map",
+    "objectID": "api/GeomSource/create.html",
+    "href": "api/GeomSource/create.html",
+    "title": "create",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nin_ft\nogr.Feature\nThe feature to be added.\nrequired\n\n\nfmap\nzip\nExtra fields data, i.e. a zip object of fields id’s and the correspondingv alues\nrequired",
+    "text": "fio.GeomSource.create(path)\nCreate a data source.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the data source.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "add_feature_with_map"
+      "create"
     ]
   },
   {
-    "objectID": "api/GeomSource/copy_layer.html",
-    "href": "api/GeomSource/copy_layer.html",
-    "title": "copy_layer",
+    "objectID": "api/GeomSource/create.html#parameters",
+    "href": "api/GeomSource/create.html#parameters",
+    "title": "create",
     "section": "",
-    "text": "fio.GeomSource.copy_layer(layer, layer_fn)\nCopy a layer to an existing dataset.\nBit of a spoof off of create_layer_from_copy. This method is a bit more forcing and allows to set it’s own variable as layer name. Only in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\ndescription\nrequired\n\n\nlayer_fn\nstr\ndescription\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the data source.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "copy_layer"
+      "create"
     ]
   },
   {
-    "objectID": "api/GeomSource/copy_layer.html#parameters",
-    "href": "api/GeomSource/copy_layer.html#parameters",
-    "title": "copy_layer",
+    "objectID": "api/GeomSource/create_fields.html",
+    "href": "api/GeomSource/create_fields.html",
+    "title": "create_fields",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\ndescription\nrequired\n\n\nlayer_fn\nstr\ndescription\nrequired",
+    "text": "fio.GeomSource.create_fields(fmap)\nAdd multiple fields at once.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfmap\ndict\nA dictionary where the keys are the names of the new fields and the values are the data types of the new field.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "copy_layer"
+      "create_fields"
     ]
   },
   {
-    "objectID": "api/GeomSource/create_field.html",
-    "href": "api/GeomSource/create_field.html",
-    "title": "create_field",
+    "objectID": "api/GeomSource/create_fields.html#parameters",
+    "href": "api/GeomSource/create_fields.html#parameters",
+    "title": "create_fields",
     "section": "",
-    "text": "fio.GeomSource.create_field(name, type)\nAdd a new field.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nName of the new field.\nrequired\n\n\ntype\nint\nType of the new field.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfmap\ndict\nA dictionary where the keys are the names of the new fields and the values are the data types of the new field.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "create_field"
+      "create_fields"
     ]
   },
   {
-    "objectID": "api/GeomSource/create_field.html#parameters",
-    "href": "api/GeomSource/create_field.html#parameters",
-    "title": "create_field",
+    "objectID": "api/GeomSource/create_layer_from_copy.html",
+    "href": "api/GeomSource/create_layer_from_copy.html",
+    "title": "create_layer_from_copy",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nname\nstr\nName of the new field.\nrequired\n\n\ntype\nint\nType of the new field.\nrequired",
+    "text": "fio.GeomSource.create_layer_from_copy(layer, overwrite=True)\nCreate a new layer by copying another layer.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\nA layer defined by OGR.\nrequired\n\n\noverwrite\nbool\nIf set to True, it will overwrite an existing layer.\nTrue",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "create_field"
+      "create_layer_from_copy"
     ]
   },
   {
-    "objectID": "api/GeomSource/create_layer.html",
-    "href": "api/GeomSource/create_layer.html",
-    "title": "create_layer",
+    "objectID": "api/GeomSource/create_layer_from_copy.html#parameters",
+    "href": "api/GeomSource/create_layer_from_copy.html#parameters",
+    "title": "create_layer_from_copy",
     "section": "",
-    "text": "fio.GeomSource.create_layer(srs, geom_type)\nCreate a new vector layer.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsrs\nosr.SpatialReference\nSpatial Reference System.\nrequired\n\n\ngeom_type\nint\nType of geometry. E.g. ‘POINT’ or ‘POLYGON’. It is supplied as an integer that complies with a specific geometry type according to GDAL.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nlayer\nogr.Layer\nA layer defined by OGR.\nrequired\n\n\noverwrite\nbool\nIf set to True, it will overwrite an existing layer.\nTrue",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "create_layer"
+      "create_layer_from_copy"
     ]
   },
   {
-    "objectID": "api/GeomSource/create_layer.html#parameters",
-    "href": "api/GeomSource/create_layer.html#parameters",
-    "title": "create_layer",
+    "objectID": "api/GeomSource/reduced_iter.html",
+    "href": "api/GeomSource/reduced_iter.html",
+    "title": "reduced_iter",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsrs\nosr.SpatialReference\nSpatial Reference System.\nrequired\n\n\ngeom_type\nint\nType of geometry. E.g. ‘POINT’ or ‘POLYGON’. It is supplied as an integer that complies with a specific geometry type according to GDAL.\nrequired",
+    "text": "fio.GeomSource.reduced_iter(si, ei)\nYield items on an interval.\nCreates a python generator.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsi\nint\nStarting index.\nrequired\n\n\nei\nint\nEnding index.\nrequired\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nogr.Feature\nFeatures from the vector layer.",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "create_layer"
+      "reduced_iter"
     ]
   },
   {
-    "objectID": "api/GeomSource/flush.html",
-    "href": "api/GeomSource/flush.html",
-    "title": "flush",
+    "objectID": "api/GeomSource/reduced_iter.html#parameters",
+    "href": "api/GeomSource/reduced_iter.html#parameters",
+    "title": "reduced_iter",
     "section": "",
-    "text": "flush\nfio.GeomSource.flush()\nFlush the data.\nThis only serves a purpose in write mode (mode = 'w').\n\n\n\n\n Back to top",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsi\nint\nStarting index.\nrequired\n\n\nei\nint\nEnding index.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "flush"
+      "reduced_iter"
     ]
   },
   {
-    "objectID": "api/GeomSource/reopen.html",
-    "href": "api/GeomSource/reopen.html",
-    "title": "reopen",
+    "objectID": "api/GeomSource/reduced_iter.html#returns",
+    "href": "api/GeomSource/reduced_iter.html#returns",
+    "title": "reduced_iter",
     "section": "",
-    "text": "reopen\nfio.GeomSource.reopen(mode='r')\nReopen a closed GeomSource.\n\n\n\n\n Back to top",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nogr.Feature\nFeatures from the vector layer.",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "GeomSource",
-      "reopen"
+      "reduced_iter"
     ]
   },
   {
-    "objectID": "api/Grid.html",
-    "href": "api/Grid.html",
-    "title": "Grid",
+    "objectID": "api/GeomSource/set_layer_from_defn.html",
+    "href": "api/GeomSource/set_layer_from_defn.html",
+    "title": "set_layer_from_defn",
     "section": "",
-    "text": "fio.Grid(self, band, chunk=None, mode='r')\nA source object for a specific raster band.\nAcquired by indexing a GridSource object.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nband\ngdal.Band\nA band defined by GDAL.\nrequired\n\n\nchunk\ntuple\nChunk size in x direction and y direction.\nNone\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nchunk\nReturn the chunk size.\n\n\nshape\nReturn the shape of the grid.\n\n\nshape_xy\nReturn the shape of the grid.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nclose\nClose the Grid object.\n\n\nflush\nFlush the grid object.\n\n\nget_metadata_item\nGet specific metadata item.\n\n\nset_chunk_size\nSet the chunking size.\n\n\nwrite_chunk\nWrite a chunk of data to the band.",
+    "text": "fio.GeomSource.set_layer_from_defn(ref)\nSet layer meta from another layer’s meta.\nOnly in write ('w') mode.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nref\nogr.FeatureDefn\nThe definition of a layer. Defined by OGR.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
-      "Grid"
+      "GeomSource",
+      "set_layer_from_defn"
     ]
   },
   {
-    "objectID": "api/Grid.html#parameters",
-    "href": "api/Grid.html#parameters",
-    "title": "Grid",
+    "objectID": "api/GeomSource/set_layer_from_defn.html#parameters",
+    "href": "api/GeomSource/set_layer_from_defn.html#parameters",
+    "title": "set_layer_from_defn",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nband\ngdal.Band\nA band defined by GDAL.\nrequired\n\n\nchunk\ntuple\nChunk size in x direction and y direction.\nNone\n\n\nmode\nstr\nThe I/O mode. Either r for reading or w for writing.\n'r'",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nref\nogr.FeatureDefn\nThe definition of a layer. Defined by OGR.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
-      "Grid"
+      "GeomSource",
+      "set_layer_from_defn"
     ]
   },
   {
-    "objectID": "api/Grid.html#attributes",
-    "href": "api/Grid.html#attributes",
-    "title": "Grid",
+    "objectID": "api/Grid/close.html",
+    "href": "api/Grid/close.html",
+    "title": "close",
     "section": "",
-    "text": "Name\nDescription\n\n\n\n\nchunk\nReturn the chunk size.\n\n\nshape\nReturn the shape of the grid.\n\n\nshape_xy\nReturn the shape of the grid.",
-    "crumbs": [
-      "API Reference",
-      "I/O",
-      "Objects",
-      "Grid"
-    ]
-  },
-  {
-    "objectID": "api/Grid.html#methods",
-    "href": "api/Grid.html#methods",
-    "title": "Grid",
-    "section": "",
-    "text": "Name\nDescription\n\n\n\n\nclose\nClose the Grid object.\n\n\nflush\nFlush the grid object.\n\n\nget_metadata_item\nGet specific metadata item.\n\n\nset_chunk_size\nSet the chunking size.\n\n\nwrite_chunk\nWrite a chunk of data to the band.",
-    "crumbs": [
-      "API Reference",
-      "I/O",
-      "Objects",
-      "Grid"
-    ]
-  },
-  {
-    "objectID": "api/Grid/flush.html",
-    "href": "api/Grid/flush.html",
-    "title": "flush",
-    "section": "",
-    "text": "flush\nfio.Grid.flush()\nFlush the grid object.\n\n\n\n\n Back to top",
+    "text": "close\nfio.Grid.close()\nClose the Grid object.\n\n\n\n\n Back to top",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "Grid",
-      "flush"
+      "close"
     ]
   },
   {
-    "objectID": "api/Grid/set_chunk_size.html",
-    "href": "api/Grid/set_chunk_size.html",
-    "title": "set_chunk_size",
+    "objectID": "api/Grid/get_metadata_item.html",
+    "href": "api/Grid/get_metadata_item.html",
+    "title": "get_metadata_item",
     "section": "",
-    "text": "fio.Grid.set_chunk_size(chunk)\nSet the chunking size.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nchunk\ntuple\nSize in x direction, size in y direction.\nrequired",
+    "text": "fio.Grid.get_metadata_item(entry)\nGet specific metadata item.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nentry\nstr\nIdentifier of item.\nrequired\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nobject\nInformation is present.",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "Grid",
-      "set_chunk_size"
+      "get_metadata_item"
     ]
   },
   {
-    "objectID": "api/Grid/set_chunk_size.html#parameters",
-    "href": "api/Grid/set_chunk_size.html#parameters",
-    "title": "set_chunk_size",
+    "objectID": "api/Grid/get_metadata_item.html#parameters",
+    "href": "api/Grid/get_metadata_item.html#parameters",
+    "title": "get_metadata_item",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nchunk\ntuple\nSize in x direction, size in y direction.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nentry\nstr\nIdentifier of item.\nrequired",
     "crumbs": [
       "API Reference",
       "I/O",
       "Objects",
       "Grid",
-      "set_chunk_size"
+      "get_metadata_item"
     ]
   },
   {
-    "objectID": "api/GridModel.html",
-    "href": "api/GridModel.html",
-    "title": "GridModel",
+    "objectID": "api/Grid/get_metadata_item.html#returns",
+    "href": "api/Grid/get_metadata_item.html#returns",
+    "title": "get_metadata_item",
     "section": "",
-    "text": "GridModel(self, cfg)\nGrid model.\nNeeds the following settings in order to be run:\n\nexposure.grid.file\noutput.grid.file\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigurations\nConfigurations object containing the settings.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\ncreate_equal_grids\nMake the hazard and exposure grid equal spatially if necessary.\n\n\nread_exposure_grid\nRead the exposure grid.\n\n\nread_hazard_grid\nRead the hazard data.\n\n\nread_vulnerability_data\nRead the vulnerability data.\n\n\nresolve\nCreate EAD output from the outputs of different return periods.\n\n\nrun\nRun the grid model with provided settings.\n\n\nset_model_srs\nSet the model spatial reference system.",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nobject\nInformation is present.",
     "crumbs": [
       "API Reference",
-      "Basics",
-      "Main",
-      "GridModel"
+      "I/O",
+      "Objects",
+      "Grid",
+      "get_metadata_item"
     ]
   },
   {
-    "objectID": "api/GridModel.html#parameters",
-    "href": "api/GridModel.html#parameters",
-    "title": "GridModel",
+    "objectID": "api/Grid/write_chunk.html",
+    "href": "api/Grid/write_chunk.html",
+    "title": "write_chunk",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigurations\nConfigurations object containing the settings.\nrequired",
+    "text": "fio.Grid.write_chunk(chunk, upper_left)\nWrite a chunk of data to the band.\nOnly in write ('w') mode.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nchunk\narray\nArray of data.\nrequired\n\n\nupper_left\ntuple | list\nUpper left corner of the chunk. N.b. these are not coordinates, but indices.\nrequired",
     "crumbs": [
       "API Reference",
-      "Basics",
-      "Main",
-      "GridModel"
+      "I/O",
+      "Objects",
+      "Grid",
+      "write_chunk"
     ]
   },
   {
-    "objectID": "api/GridModel.html#methods",
-    "href": "api/GridModel.html#methods",
-    "title": "GridModel",
+    "objectID": "api/Grid/write_chunk.html#parameters",
+    "href": "api/Grid/write_chunk.html#parameters",
+    "title": "write_chunk",
     "section": "",
-    "text": "Name\nDescription\n\n\n\n\ncreate_equal_grids\nMake the hazard and exposure grid equal spatially if necessary.\n\n\nread_exposure_grid\nRead the exposure grid.\n\n\nread_hazard_grid\nRead the hazard data.\n\n\nread_vulnerability_data\nRead the vulnerability data.\n\n\nresolve\nCreate EAD output from the outputs of different return periods.\n\n\nrun\nRun the grid model with provided settings.\n\n\nset_model_srs\nSet the model spatial reference system.",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nchunk\narray\nArray of data.\nrequired\n\n\nupper_left\ntuple | list\nUpper left corner of the chunk. N.b. these are not coordinates, but indices.\nrequired",
     "crumbs": [
       "API Reference",
-      "Basics",
-      "Main",
-      "GridModel"
+      "I/O",
+      "Objects",
+      "Grid",
+      "write_chunk"
     ]
   },
   {
-    "objectID": "api/GridModel/read_exposure_grid.html",
-    "href": "api/GridModel/read_exposure_grid.html",
-    "title": "read_exposure_grid",
+    "objectID": "api/GridModel/create_equal_grids.html",
+    "href": "api/GridModel/create_equal_grids.html",
+    "title": "create_equal_grids",
     "section": "",
-    "text": "GridModel.read_exposure_grid(path=None, **kwargs)\nRead the exposure grid.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to an exposure grid, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_grid after which into GridSouce/\n{}",
-    "crumbs": [
-      "API Reference",
-      "Basics",
-      "Main",
-      "GridModel",
-      "read_exposure_grid"
-    ]
-  },
-  {
-    "objectID": "api/GridModel/read_exposure_grid.html#parameters",
-    "href": "api/GridModel/read_exposure_grid.html#parameters",
-    "title": "read_exposure_grid",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to an exposure grid, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_grid after which into GridSouce/\n{}",
+    "text": "create_equal_grids\nGridModel.create_equal_grids()\nMake the hazard and exposure grid equal spatially if necessary.\n\n\n\n\n Back to top",
     "crumbs": [
       "API Reference",
       "Basics",
       "Main",
       "GridModel",
-      "read_exposure_grid"
+      "create_equal_grids"
     ]
   },
   {
-    "objectID": "api/GridModel/read_vulnerability_data.html",
-    "href": "api/GridModel/read_vulnerability_data.html",
-    "title": "read_vulnerability_data",
+    "objectID": "api/GridModel/read_hazard_grid.html",
+    "href": "api/GridModel/read_hazard_grid.html",
+    "title": "read_hazard_grid",
     "section": "",
-    "text": "GridModel.read_vulnerability_data(path=None, **kwargs)\nRead the vulnerability data.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the vulnerabulity data, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_csv after which into Table/\n{}",
+    "text": "GridModel.read_hazard_grid(path=None, **kwargs)\nRead the hazard data.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the hazard gridded dataset, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_geom after which into GridSouce/\n{}",
     "crumbs": [
       "API Reference",
       "Basics",
       "Main",
       "GridModel",
-      "read_vulnerability_data"
+      "read_hazard_grid"
     ]
   },
   {
-    "objectID": "api/GridModel/read_vulnerability_data.html#parameters",
-    "href": "api/GridModel/read_vulnerability_data.html#parameters",
-    "title": "read_vulnerability_data",
+    "objectID": "api/GridModel/read_hazard_grid.html#parameters",
+    "href": "api/GridModel/read_hazard_grid.html#parameters",
+    "title": "read_hazard_grid",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the vulnerabulity data, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_csv after which into Table/\n{}",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the hazard gridded dataset, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_geom after which into GridSouce/\n{}",
     "crumbs": [
       "API Reference",
       "Basics",
       "Main",
       "GridModel",
-      "read_vulnerability_data"
+      "read_hazard_grid"
     ]
   },
   {
-    "objectID": "api/GridModel/run.html",
-    "href": "api/GridModel/run.html",
-    "title": "run",
+    "objectID": "api/GridModel/resolve.html",
+    "href": "api/GridModel/resolve.html",
+    "title": "resolve",
     "section": "",
-    "text": "run\nGridModel.run()\nRun the grid model with provided settings.\nGenerates output in the specified output.path directory.\n\n\n\n\n Back to top",
+    "text": "resolve\nGridModel.resolve()\nCreate EAD output from the outputs of different return periods.\nThis is done but reading, loading and iterating over the those files. In contrary to the geometry model, this does not concern temporary data.\n\nThis method might become private.\n\n\n\n\n\n Back to top",
     "crumbs": [
       "API Reference",
       "Basics",
       "Main",
       "GridModel",
-      "run"
+      "resolve"
+    ]
+  },
+  {
+    "objectID": "api/GridModel/set_model_srs.html",
+    "href": "api/GridModel/set_model_srs.html",
+    "title": "set_model_srs",
+    "section": "",
+    "text": "GridModel.set_model_srs(srs=None)\nSet the model spatial reference system.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsrs\nstr\nThe spatial reference system described by a string (e.g. ‘EPSG:4326’), by default None\nNone",
+    "crumbs": [
+      "API Reference",
+      "Basics",
+      "Main",
+      "GridModel",
+      "set_model_srs"
+    ]
+  },
+  {
+    "objectID": "api/GridModel/set_model_srs.html#parameters",
+    "href": "api/GridModel/set_model_srs.html#parameters",
+    "title": "set_model_srs",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsrs\nstr\nThe spatial reference system described by a string (e.g. ‘EPSG:4326’), by default None\nNone",
+    "crumbs": [
+      "API Reference",
+      "Basics",
+      "Main",
+      "GridModel",
+      "set_model_srs"
     ]
   },
   {
@@ -3489,7 +3599,7 @@
     "href": "user_guide/settings/index.html",
     "title": "Settings",
     "section": "",
-    "text": "The user must set the model settings in the settings.toml configuration file.\nBesides the necessary/ required setttings one can set:\n\ninput in regard to the computational side of FIAT (e.g. chunking, number of threads etc),\n\nsee this page\n\noptional/ additional input that is not necessary or more data specific,\n\nsee this page\n\n\n\nBasic input\nThis section pertains to all input that is vital for running a FIAT model.\nThese inputs/ entries are listed in the table down below with more detailed information per entry underneath the table.\n\n\n\n\n\n\nNote\n\n\n\nFile paths in the settings can be relative to the settings.toml file or absolute.\n\n\n\n\n\nTable 1: Most basic settings file input\n\n\n\n\n\nEntry\nType\nRequired\nDefault\n\n\n\n\n[global]\n\n\n\n\n\nmodel\nstring\nNo\ngeom\n\n\n[output]\n\n\n\n\n\npath\nstring\nNo\noutput\n\n\n[output.csv]\n\n\n\n\n\nname[n]\nstring\nNo\n-\n\n\n[output.geom]\n\n\n\n\n\nname[n]\nstring\nNo\nspatial[n].gpkg\n\n\n[output.grid]\n\n\n\n\n\nname\nstring\nNo\nead.nc\n\n\n[hazard]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\nelevation_reference\nstring\nYes\n\n\n\nrisk\nboolean\nNo\nfalse\n\n\n[exposure.csv]\n\n\n\n\n\nfile\nstring\nNo\n-\n\n\n[exposure.geom]\n\n\n\n\n\nfile[n]\nstring\nYes\n\n\n\n[exposure.grid]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\n[vulnerability]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\n\n\n\n\n\n[global]\n\nmodel: The type of model. Choice between ‘geom’ and ‘grid’.\n\n\n\n[output]\n\npath: The path to the output folder in the working directory.\n\n\n\n[output.csv]\n\nname[n]: The path to the output CSV file(s) that will be created. These are linked to the input geometry files.\n\n\n\n[output.geom]\n\nname[n]: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.\n\n\n\n\n\n\n\nWarning\n\n\n\nIf provided, the suffix is mandatory. The suffix should match the suffix of the input geometry file for which it is set.\n\n\n\n\n[output.grid]\n\nname: This sets the name and location of the output raster file that contains damages per grid cell.\n\n\n\n[hazard]\n\nfile: The file path to the hazard file.\nelevation_reference: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be “DEM” while in case of a flood-elevation map this should be “datum”.\nrisk: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.\n\n\n\n[exposure.csv]\n\nfile: The path to the exposure CSV file (recommended to be within the exposure folder) that contains the required information per asset. There can only be one exposure CSV file.\n\n\n\n[exposure.geom]\n\nfile[n]: The path to the exposure vector file (recommended to be within the exposure folder) with the assets’ geometry and object_id. The user can provide multiple vector files. Therefore the ‘[n]’ suffix, as the user can create mulitple entries for vector files (e.g. file1, file2 etc.).\n\n\n\n\n\n\n\nWarning\n\n\n\nThe suffix is mandatory. So if only one file is provided, name it file1.\n\n\n\n\n\n\n\n\nNote\n\n\n\nOnly required when running the geometry based model.\n\n\n\n\n[exposure.grid]\n\nfile: The path to the exposure raster file (recommended to be within the exposure folder).\n\n\n\n\n\n\n\nNote\n\n\n\nOnly required when running the raster based model.\n\n\n\n\n[vulnerability]\n\nfile: The path to the vulnerability curves CSV file within the vulnerability folder that contains the damage curves. Only one vulnerability curves file is allowed.\n\n\n\n\nExample\nAn example of settings file for running a geometry model is given below:\n[output]\npath = \"output\"\n\n[output.csv]\nname = \"output.csv\"\n\n[output.geom]\nname1 = \"spatial.gpkg\"\n\n[hazard]\nfile = \"hazard/SL_10yr_reprojected.tif\"\nelevation_reference = \"DEM\"\nrisk = false\n\n[exposure.geom]\nfile1 = \"./exposure/buildings.gpkg\"\n\n[exposure.csv]\nfile = \"./exposure/exposure.csv\"\n\n[vulnerability]\nfile = \"./vulnerability/vulnerability_curves.csv\"\n\n\n\n\n Back to top",
+    "text": "The user must set the model settings in the settings.toml configuration file.\nBesides the necessary/ required setttings one can set:\n\ninput in regard to the computational side of FIAT (e.g. chunking, number of threads etc),\n\nsee this page\n\noptional/ additional input that is not necessary or more data specific,\n\nsee this page\n\n\n\nBasic input\nThis section pertains to all input that is vital for running a FIAT model.\nThese inputs/ entries are listed in the table down below with more detailed information per entry underneath the table.\n\n\n\n\n\n\nNote\n\n\n\nFile paths in the settings can be relative to the settings.toml file or absolute.\n\n\n\n\n\nTable 1: Most basic settings file input\n\n\n\n\n\nEntry\nType\nRequired\nDefault\n\n\n\n\n[model]\n\n\n\n\n\nmodel\nstring\nNo\ngeom\n\n\n[output]\n\n\n\n\n\npath\nstring\nNo\noutput\n\n\n[output.csv]\n\n\n\n\n\nname[n]\nstring\nNo\n-\n\n\n[output.geom]\n\n\n\n\n\nname[n]\nstring\nNo\nspatial[n].gpkg\n\n\n[output.grid]\n\n\n\n\n\nname\nstring\nNo\nead.nc\n\n\n[hazard]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\nelevation_reference\nstring\nYes\n\n\n\n[exposure.csv]\n\n\n\n\n\nfile\nstring\nNo\n-\n\n\n[exposure.geom]\n\n\n\n\n\nfile[n]\nstring\nYes\n\n\n\n[exposure.grid]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\n[vulnerability]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\n\n\n\n\n\n[model]\n\nmodel_type: The type of model. Choice between ‘geom’ and ‘grid’.\n\n\n\n[output]\n\npath: The path to the output folder in the working directory.\n\n\n\n[output.csv]\n\nname[n]: The path to the output CSV file(s) that will be created. These are linked to the input geometry files.\n\n\n\n[output.geom]\n\nname[n]: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.\n\n\n\n\n\n\n\nWarning\n\n\n\nIf provided, the suffix is mandatory. The suffix should match the suffix of the input geometry file for which it is set.\n\n\n\n\n[output.grid]\n\nname: This sets the name and location of the output raster file that contains damages per grid cell.\n\n\n\n[hazard]\n\nfile: The file path to the hazard file.\nelevation_reference: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be “DEM” while in case of a flood-elevation map this should be “datum”.\n\n\n\n[exposure.csv]\n\nfile: The path to the exposure CSV file (recommended to be within the exposure folder) that contains the required information per asset. There can only be one exposure CSV file.\n\n\n\n[exposure.geom]\n\nfile[n]: The path to the exposure vector file (recommended to be within the exposure folder) with the assets’ geometry and object_id. The user can provide multiple vector files. Therefore the ‘[n]’ suffix, as the user can create mulitple entries for vector files (e.g. file1, file2 etc.).\n\n\n\n\n\n\n\nWarning\n\n\n\nThe suffix is mandatory. So if only one file is provided, name it file1.\n\n\n\n\n\n\n\n\nNote\n\n\n\nOnly required when running the geometry based model.\n\n\n\n\n[exposure.grid]\n\nfile: The path to the exposure raster file (recommended to be within the exposure folder).\n\n\n\n\n\n\n\nNote\n\n\n\nOnly required when running the raster based model.\n\n\n\n\n[vulnerability]\n\nfile: The path to the vulnerability curves CSV file within the vulnerability folder that contains the damage curves. Only one vulnerability curves file is allowed.\n\n\n\n\nExample\nAn example of settings file for running a geometry model is given below:\n[output]\npath = \"output\"\n\n[output.csv]\nname = \"output.csv\"\n\n[output.geom]\nname1 = \"spatial.gpkg\"\n\n[hazard]\nfile = \"hazard/SL_10yr_reprojected.tif\"\nelevation_reference = \"DEM\"\nrisk = false\n\n[exposure.geom]\nfile1 = \"./exposure/buildings.gpkg\"\n\n[exposure.csv]\nfile = \"./exposure/exposure.csv\"\n\n[vulnerability]\nfile = \"./vulnerability/vulnerability_curves.csv\"\n\n\n\n\n Back to top",
     "crumbs": [
       "User guide",
       "Settings"
@@ -3567,7 +3677,7 @@
     "href": "user_guide/data/hazard_maps.html#event",
     "title": "Types of hazard maps",
     "section": "Event",
-    "text": "Event\nEvent maps are generally supplied in singular fashion (i.e. one band per event map). This band just simply contains the hazard values per cell. Let’s have a quick peek at the data using gdalinfo:\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/event_map.nc\nSize is 10, 10\nCoordinate System is:\nGEOGCRS[\"WGS 84\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    ID[\"EPSG\",4326]]\nData axis to CRS axis mapping: 2,1\nOrigin = (4.350000000000000,52.049999999999997)\nPixel Size = (0.010000000000000,-0.010000000000000)\nMetadata:\n  Band1#grid_mapping=crs\n  Band1#long_name=GDAL Band Number 1\n  Band1#_FillValue=9.96921e+36\n  crs#crs_wkt=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  crs#GeoTransform=4.35 0.01 0 52.05 0 -0.01 \n  crs#grid_mapping_name=latitude_longitude\n  crs#inverse_flattening=298.257223563\n  crs#longitude_of_prime_meridian=0\n  crs#long_name=CRS definition\n  crs#semi_major_axis=6378137\n  crs#spatial_ref=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  lat#long_name=latitude\n  lat#standard_name=latitude\n  lat#units=degrees_north\n  lon#long_name=longitude\n  lon#standard_name=longitude\n  lon#units=degrees_east\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.10.3, released 2025/04/01\n  NC_GLOBAL#history=Tue May 06 14:13:39 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/event_map.nc, ... )\nCorner Coordinates:\nUpper Left  (   4.3500000,  52.0500000) (  4d21' 0.00\"E, 52d 3' 0.00\"N)\nLower Left  (   4.3500000,  51.9500000) (  4d21' 0.00\"E, 51d57' 0.00\"N)\nUpper Right (   4.4500000,  52.0500000) (  4d27' 0.00\"E, 52d 3' 0.00\"N)\nLower Right (   4.4500000,  51.9500000) (  4d27' 0.00\"E, 51d57' 0.00\"N)\nCenter      (   4.4000000,  52.0000000) (  4d24' 0.00\"E, 52d 0' 0.00\"N)\nBand 1 Block=10x1 Type=Float32, ColorInterp=Undefined\n  NoData Value=9.96921e+36\n  Metadata:\n    NETCDF_VARNAME=Band1\n    long_name=GDAL Band Number 1\n    _FillValue=9.96921e+36\n    grid_mapping=crs\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nAllthough netCDF is the preferred format, GeoTIFF’s are also very handy for single events.\n\n\nAs one can see, this dataset has only one band (variable).\nWhen created, it is preferred that the event map is compressed to prevent unneccessary data on the hard drive. More information regarding the compression and others settings can be found here.",
+    "text": "Event\nEvent maps are generally supplied in singular fashion (i.e. one band per event map). This band just simply contains the hazard values per cell. Let’s have a quick peek at the data using gdalinfo:\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/event_map.nc\nSize is 10, 10\nCoordinate System is:\nGEOGCRS[\"WGS 84\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    ID[\"EPSG\",4326]]\nData axis to CRS axis mapping: 2,1\nOrigin = (4.350000000000000,52.049999999999997)\nPixel Size = (0.010000000000000,-0.010000000000000)\nMetadata:\n  Band1#grid_mapping=crs\n  Band1#long_name=GDAL Band Number 1\n  Band1#_FillValue=9.96921e+36\n  crs#crs_wkt=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  crs#GeoTransform=4.35 0.01 0 52.05 0 -0.01 \n  crs#grid_mapping_name=latitude_longitude\n  crs#inverse_flattening=298.257223563\n  crs#longitude_of_prime_meridian=0\n  crs#long_name=CRS definition\n  crs#semi_major_axis=6378137\n  crs#spatial_ref=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  lat#long_name=latitude\n  lat#standard_name=latitude\n  lat#units=degrees_north\n  lon#long_name=longitude\n  lon#standard_name=longitude\n  lon#units=degrees_east\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.10.3, released 2025/04/01\n  NC_GLOBAL#history=Wed May 07 08:40:52 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/event_map.nc, ... )\nCorner Coordinates:\nUpper Left  (   4.3500000,  52.0500000) (  4d21' 0.00\"E, 52d 3' 0.00\"N)\nLower Left  (   4.3500000,  51.9500000) (  4d21' 0.00\"E, 51d57' 0.00\"N)\nUpper Right (   4.4500000,  52.0500000) (  4d27' 0.00\"E, 52d 3' 0.00\"N)\nLower Right (   4.4500000,  51.9500000) (  4d27' 0.00\"E, 51d57' 0.00\"N)\nCenter      (   4.4000000,  52.0000000) (  4d24' 0.00\"E, 52d 0' 0.00\"N)\nBand 1 Block=10x1 Type=Float32, ColorInterp=Undefined\n  NoData Value=9.96921e+36\n  Metadata:\n    NETCDF_VARNAME=Band1\n    long_name=GDAL Band Number 1\n    _FillValue=9.96921e+36\n    grid_mapping=crs\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nAllthough netCDF is the preferred format, GeoTIFF’s are also very handy for single events.\n\n\nAs one can see, this dataset has only one band (variable).\nWhen created, it is preferred that the event map is compressed to prevent unneccessary data on the hard drive. More information regarding the compression and others settings can be found here.",
     "crumbs": [
       "User guide",
       "Data",
@@ -3580,7 +3690,7 @@
     "href": "user_guide/data/hazard_maps.html#risk",
     "title": "Types of hazard maps",
     "section": "Risk",
-    "text": "Risk\nRisk maps in gerenal should contain multiple bands.\nThese bands can be either supplied in either one of two ways:\n\nMultiple variables (like normal bands)\nAs a subdataset\n\nLets take a look quick look at the data (again with gdalinfo):\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/risk_map.nc\nSize is 512, 512\nMetadata:\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.10.3, released 2025/04/01\n  NC_GLOBAL#history=Tue May 06 14:13:39 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/risk_map.nc, ... )\nSubdatasets:\n  SUBDATASET_1_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band1\n  SUBDATASET_1_DESC=[10x10] Band1 (32-bit floating-point)\n  SUBDATASET_2_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band2\n  SUBDATASET_2_DESC=[10x10] Band2 (32-bit floating-point)\n  SUBDATASET_3_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band3\n  SUBDATASET_3_DESC=[10x10] Band3 (32-bit floating-point)\n  SUBDATASET_4_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band4\n  SUBDATASET_4_DESC=[10x10] Band4 (32-bit floating-point)\nCorner Coordinates:\nUpper Left  (    0.0,    0.0)\nLower Left  (    0.0,  512.0)\nUpper Right (  512.0,    0.0)\nLower Right (  512.0,  512.0)\nCenter      (  256.0,  256.0)\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nInstead of seeing normal metadata, we only get an overview of the available subdatasets.\n\n\nMultiple netCDF variables are normally not recognized as bands by the netCDF driver of GDAL. Instead they are interpreted as subdatasets (!). One can set the key var_as_band to true within the settings file to read the subdatasets as bands.\n[hazard]\nfile = &lt;your-file&gt;\nrisk = true\n[hazard.settings]\nvar_as_band = true\nWhen supplied in one subdataset (all bands are within that subdataset), the subset variable within the settings file should be set under the header hazard.settings. The value set to subset should be the name of the desired subdataset.\n[hazard]\nfile = &lt;your-file&gt;\nrisk = true\n[hazard.settings]\nvar_as_band = false\nsubset = &lt;your-wanted-subdataset&gt;\n\nReturn periods\nThe return periods can be set in the settings file by supplying a list via the hazard.return_periods entry. However, the return periods can also be set via the hazard bands directly from the return_period attribute of the bands. This attribute is simply set using either xarray, gdal or hydromt.\nWhen present in all bands, this attribute will be preferred over the return periods specified in the settings file. The reason being that the return period is directly linked to the corresponding band, whereas it is inferred in the case of setting it via the settings file.\nLet’s have a quick peek at the data using gdalinfo (it will be at the bottom):\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/risk_map.nc\nSize is 10, 10\nCoordinate System is:\nGEOGCRS[\"WGS 84\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    ID[\"EPSG\",4326]]\nData axis to CRS axis mapping: 2,1\nOrigin = (4.350000000000000,52.049999999999997)\nPixel Size = (0.010000000000000,-0.010000000000000)\nMetadata:\n  Band1#grid_mapping=crs\n  Band1#long_name=GDAL Band Number 1\n  Band1#return_period=2\n  Band1#_FillValue=9.96921e+36\n  crs#crs_wkt=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  crs#GeoTransform=4.35 0.01 0 52.05 0 -0.01 \n  crs#grid_mapping_name=latitude_longitude\n  crs#inverse_flattening=298.257223563\n  crs#longitude_of_prime_meridian=0\n  crs#long_name=CRS definition\n  crs#semi_major_axis=6378137\n  crs#spatial_ref=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  lat#long_name=latitude\n  lat#standard_name=latitude\n  lat#units=degrees_north\n  lon#long_name=longitude\n  lon#standard_name=longitude\n  lon#units=degrees_east\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.10.3, released 2025/04/01\n  NC_GLOBAL#history=Tue May 06 14:13:39 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/risk_map.nc, ... )\nCorner Coordinates:\nUpper Left  (   4.3500000,  52.0500000) (  4d21' 0.00\"E, 52d 3' 0.00\"N)\nLower Left  (   4.3500000,  51.9500000) (  4d21' 0.00\"E, 51d57' 0.00\"N)\nUpper Right (   4.4500000,  52.0500000) (  4d27' 0.00\"E, 52d 3' 0.00\"N)\nLower Right (   4.4500000,  51.9500000) (  4d27' 0.00\"E, 51d57' 0.00\"N)\nCenter      (   4.4000000,  52.0000000) (  4d24' 0.00\"E, 52d 0' 0.00\"N)\nBand 1 Block=10x1 Type=Float32, ColorInterp=Undefined\n  NoData Value=9.96921e+36\n  Metadata:\n    NETCDF_VARNAME=Band1\n    long_name=GDAL Band Number 1\n    _FillValue=9.96921e+36\n    grid_mapping=crs\n    return_period=2",
+    "text": "Risk\nRisk maps in gerenal should contain multiple bands.\nThese bands can be either supplied in either one of two ways:\n\nMultiple variables (like normal bands)\nAs a subdataset\n\nLets take a look quick look at the data (again with gdalinfo):\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/risk_map.nc\nSize is 512, 512\nMetadata:\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.10.3, released 2025/04/01\n  NC_GLOBAL#history=Wed May 07 08:40:52 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/risk_map.nc, ... )\nSubdatasets:\n  SUBDATASET_1_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band1\n  SUBDATASET_1_DESC=[10x10] Band1 (32-bit floating-point)\n  SUBDATASET_2_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band2\n  SUBDATASET_2_DESC=[10x10] Band2 (32-bit floating-point)\n  SUBDATASET_3_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band3\n  SUBDATASET_3_DESC=[10x10] Band3 (32-bit floating-point)\n  SUBDATASET_4_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band4\n  SUBDATASET_4_DESC=[10x10] Band4 (32-bit floating-point)\nCorner Coordinates:\nUpper Left  (    0.0,    0.0)\nLower Left  (    0.0,  512.0)\nUpper Right (  512.0,    0.0)\nLower Right (  512.0,  512.0)\nCenter      (  256.0,  256.0)\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nInstead of seeing normal metadata, we only get an overview of the available subdatasets.\n\n\nMultiple netCDF variables are normally not recognized as bands by the netCDF driver of GDAL. Instead they are interpreted as subdatasets (!). One can set the key var_as_band to true within the settings file to read the subdatasets as bands.\n[hazard]\nfile = &lt;your-file&gt;\nrisk = true\n[hazard.settings]\nvar_as_band = true\nWhen supplied in one subdataset (all bands are within that subdataset), the subset variable within the settings file should be set under the header hazard.settings. The value set to subset should be the name of the desired subdataset.\n[hazard]\nfile = &lt;your-file&gt;\nrisk = true\n[hazard.settings]\nvar_as_band = false\nsubset = &lt;your-wanted-subdataset&gt;\n\nReturn periods\nThe return periods can be set in the settings file by supplying a list via the hazard.return_periods entry. However, the return periods can also be set via the hazard bands directly from the return_period attribute of the bands. This attribute is simply set using either xarray, gdal or hydromt.\nWhen present in all bands, this attribute will be preferred over the return periods specified in the settings file. The reason being that the return period is directly linked to the corresponding band, whereas it is inferred in the case of setting it via the settings file.\nLet’s have a quick peek at the data using gdalinfo (it will be at the bottom):\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/risk_map.nc\nSize is 10, 10\nCoordinate System is:\nGEOGCRS[\"WGS 84\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    ID[\"EPSG\",4326]]\nData axis to CRS axis mapping: 2,1\nOrigin = (4.350000000000000,52.049999999999997)\nPixel Size = (0.010000000000000,-0.010000000000000)\nMetadata:\n  Band1#grid_mapping=crs\n  Band1#long_name=GDAL Band Number 1\n  Band1#return_period=2\n  Band1#_FillValue=9.96921e+36\n  crs#crs_wkt=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  crs#GeoTransform=4.35 0.01 0 52.05 0 -0.01 \n  crs#grid_mapping_name=latitude_longitude\n  crs#inverse_flattening=298.257223563\n  crs#longitude_of_prime_meridian=0\n  crs#long_name=CRS definition\n  crs#semi_major_axis=6378137\n  crs#spatial_ref=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  lat#long_name=latitude\n  lat#standard_name=latitude\n  lat#units=degrees_north\n  lon#long_name=longitude\n  lon#standard_name=longitude\n  lon#units=degrees_east\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.10.3, released 2025/04/01\n  NC_GLOBAL#history=Wed May 07 08:40:52 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/risk_map.nc, ... )\nCorner Coordinates:\nUpper Left  (   4.3500000,  52.0500000) (  4d21' 0.00\"E, 52d 3' 0.00\"N)\nLower Left  (   4.3500000,  51.9500000) (  4d21' 0.00\"E, 51d57' 0.00\"N)\nUpper Right (   4.4500000,  52.0500000) (  4d27' 0.00\"E, 52d 3' 0.00\"N)\nLower Right (   4.4500000,  51.9500000) (  4d27' 0.00\"E, 51d57' 0.00\"N)\nCenter      (   4.4000000,  52.0000000) (  4d24' 0.00\"E, 52d 0' 0.00\"N)\nBand 1 Block=10x1 Type=Float32, ColorInterp=Undefined\n  NoData Value=9.96921e+36\n  Metadata:\n    NETCDF_VARNAME=Band1\n    long_name=GDAL Band Number 1\n    _FillValue=9.96921e+36\n    grid_mapping=crs\n    return_period=2",
     "crumbs": [
       "User guide",
       "Data",

@@ -396,13 +396,13 @@ Table&nbsp;1: Most basic settings file input
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;"><strong>[global]</strong></td>
+<td style="text-align: left;"><strong>[model]</strong></td>
 <td></td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#global">model</a></td>
+<td style="text-align: left;"><a href="#model_type">model</a></td>
 <td>string</td>
 <td>No</td>
 <td>geom</td>
@@ -474,54 +474,48 @@ Table&nbsp;1: Most basic settings file input
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#hazard">risk</a></td>
-<td>boolean</td>
-<td>No</td>
-<td>false</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;"><strong>[exposure.csv]</strong></td>
 <td></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#exposure.csv">file</a></td>
 <td>string</td>
 <td>No</td>
 <td>-</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><strong>[exposure.geom]</strong></td>
 <td></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#exposure.geom">file[n]</a></td>
 <td>string</td>
 <td>Yes</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><strong>[exposure.grid]</strong></td>
 <td></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#exposure.grid">file</a></td>
 <td>string</td>
 <td>Yes</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><strong>[vulnerability]</strong></td>
 <td></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><a href="#vulnerability">file</a></td>
 <td>string</td>
 <td>Yes</td>
@@ -532,10 +526,10 @@ Table&nbsp;1: Most basic settings file input
 </div>
 </figure>
 </div>
-<section id="global" class="level4">
-<h4 class="anchored" data-anchor-id="global">[global]</h4>
+<section id="model" class="level4">
+<h4 class="anchored" data-anchor-id="model">[model]</h4>
 <ul>
-<li><code>model</code>: The type of model. Choice between ‘geom’ and ‘grid’.</li>
+<li><code>model_type</code>: The type of model. Choice between ‘geom’ and ‘grid’.</li>
 </ul>
 </section>
 <section id="output" class="level4">
@@ -580,7 +574,6 @@ Warning
 <ul>
 <li><p><code>file</code>: The file path to the hazard file.</p></li>
 <li><p><code>elevation_reference</code>: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be “DEM” while in case of a flood-elevation map this should be “datum”.</p></li>
-<li><p><code>risk</code>: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.</p></li>
 </ul>
 </section>
 <section id="exposure.csv" class="level4">
