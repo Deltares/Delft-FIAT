@@ -71,10 +71,12 @@ def execute_pool(
         Number of threads.
     """
     # If there is only one thread needed, execute in the main process
+    res = []
     if threads == 1:
         for job in jobs:
-            func(**job)
-        return
+            r = func(**job)
+            res.append(r)
+        return res
 
     # If there are more threads needed however
     processes = []
@@ -95,4 +97,11 @@ def execute_pool(
     # wait for all jobs to conclude
     wait(processes)
 
+    # Ask for the result to see if everything went well
+    for pr in processes:
+        r = pr.result()
+        res.append(r)
+
     pool.shutdown(wait=False)
+
+    return res

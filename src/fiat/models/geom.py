@@ -3,6 +3,7 @@
 import copy
 import os
 import re
+import sys
 import time
 from multiprocessing import Manager
 from pathlib import Path
@@ -150,7 +151,10 @@ class GeomModel(BaseModel):
         # Setup the geometry output files
         for key, gm in self.exposure_geoms.items():
             # Define outgoing dataset
-            out_geom = self.cfg.get(f"output.geom.name{key}", f"spatial{key}.gpkg")
+            out_geom = self.cfg.get(
+                f"output.geom.name{key}",
+                f"spatial{key}{gm.path.suffix}",
+            )
             self.cfg.set(f"output.geom.name{key}", out_geom)
             # Get the new fields per geometry file
             new_fields = tuple(self.cfg.get("_exposure_meta")[key]["new_fields"])
@@ -385,18 +389,30 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         )
 
         # Execute the jobs in a multiprocessing pool
-        _s = time.time()
-        logger.info("Busy...")
-        execute_pool(
-            ctx=self._mp_ctx,
-            func=worker_geom.worker,
-            jobs=jobs,
-            threads=self.threads,
-        )
-        _e = time.time() - _s
+        # Wrap to prevent weird error propagation with the pipes
+        try:
+            _s = time.time()
+            logger.info("Busy...")
+            execute_pool(
+                ctx=self._mp_ctx,
+                func=worker_geom.worker,
+                jobs=jobs,
+                threads=self.threads,
+            )
+            _e = time.time() - _s
 
-        logger.info(f"Calculations time: {round(_e, 2)} seconds")
-        # After the calculations are done, close the receiver
+            logger.info(f"Calculations time: {round(_e, 2)} seconds")
+
+        except BaseException:
+            exc_info = sys.exc_info()
+            msg = ",".join([str(item) for item in exc_info[1].args])
+            logger.error(msg)
+            exc_info = None
+
+        else:
+            logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
+            logger.info("Geom calculation are done!")
+
         _receiver.close()
         _receiver.close_handlers()
         if _receiver.count > 0:
@@ -408,9 +424,6 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
             os.unlink(
                 Path(self.cfg.get("output.path"), "missing.log"),
             )
-
-        logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
-        logger.info("Geom calculation are done!")
 
         # Shutdown the manager
         self._mp_manager.shutdown()
