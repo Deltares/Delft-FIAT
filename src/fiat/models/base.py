@@ -51,12 +51,12 @@ class BaseModel(metaclass=ABCMeta):
         self.hazard_grid = None
         self.vulnerability_data = None
         # Type of calculations
-        type = self.cfg.get("global.type", "flood")
+        type = self.cfg.get("model.type", "flood")
         self.module = importlib.import_module(f"fiat.methods.{type}")
-        self.cfg.set("global.type", type)
+        self.cfg.set("model.type", type)
         # Risk or event based
-        risk = self.cfg.get("global.risk", False)
-        self.cfg.set("global.risk", risk)
+        risk = self.cfg.get("model.risk", False)
+        self.cfg.set("model.risk", risk)
         # Vulnerability data
         self._vul_step_size = 0.01
         self._rounding = 2
@@ -85,22 +85,22 @@ class BaseModel(metaclass=ABCMeta):
     @property
     def risk(self):
         """Return the calculation modus."""
-        return self.cfg.get("global.risk")
+        return self.cfg.get("model.risk")
 
     @risk.setter
     def risk(self, value: bool):
         """Set the calculation modus."""
-        self.cfg.set("global.risk", value)
+        self.cfg.set("model.risk", value)
 
     @property
     def type(self):
         """Return the hazard type."""
-        return self.cfg.get("global.type")
+        return self.cfg.get("model.type")
 
     @type.setter
     def type(self, value: str):
         """Set the hazard type."""
-        self.cfg.set("global.type", value)
+        self.cfg.set("model.type", value)
         self.module = importlib.import_module(f"fiat.methods.{value}")
 
     ## Set(up) methods.
@@ -126,14 +126,14 @@ class BaseModel(metaclass=ABCMeta):
         if srs is not None:
             _srs = srs
         else:
-            _srs = self.cfg.get("global.srs.value", "EPSG:4326")
+            _srs = self.cfg.get("model.srs.value", "EPSG:4326")
 
         # Infer the spatial reference system
         self.srs = osr.SpatialReference()
         self.srs.SetFromUserInput(_srs)
 
         # Set crs for later use
-        self.cfg.set("global.srs.value", get_srs_repr(self.srs))
+        self.cfg.set("model.srs.value", get_srs_repr(self.srs))
         logger.info(f"Model srs set to: '{get_srs_repr(self.srs)}'")
 
     def set_num_threads(
@@ -150,7 +150,7 @@ class BaseModel(metaclass=ABCMeta):
             Number of threads, by default None
         """
         max_threads = cpu_count()
-        user_threads = threads or self.cfg.get("global.threads")
+        user_threads = threads or self.cfg.get("model.threads")
         if user_threads is not None:
             if user_threads > max_threads:
                 logger.warning(
@@ -192,7 +192,7 @@ exceeds machine thread count ('{max_threads}')"
             self.cfg.generate_kwargs("hazard.settings"),
         )
         kw.update(
-            self.cfg.generate_kwargs("global.grid.chunk"),
+            self.cfg.generate_kwargs("model.grid.chunk"),
         )
         kw.update(**kwargs)
         data = open_grid(path, **kw)
@@ -211,7 +211,7 @@ exceeds machine thread count ('{max_threads}')"
             path.name,
         )
 
-        if not self.cfg.get("global.srs.prefer_global", False):
+        if not self.cfg.get("model.srs.prefer_global", False):
             logger.warning("Setting the model srs from the hazard data.")
             self.set_model_srs(get_srs_repr(data.srs))
 

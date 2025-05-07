@@ -63,7 +63,7 @@ class GridModel(BaseModel):
             return
 
         # Get which way is preferred to reproject
-        prefer = self.cfg.get("global.grid.prefer", "exposure")
+        prefer = self.cfg.get("model.grid.prefer", "exposure")
         if prefer not in ["hazard", "exposure"]:
             raise ValueError(
                 f"Preference value {prefer} not known. Chose from \
@@ -128,7 +128,7 @@ data to {prefer} data"
             self.cfg.generate_kwargs("exposure.grid.settings"),
         )
         kw.update(
-            self.cfg.generate_kwargs("global.grid.chunk"),
+            self.cfg.generate_kwargs("model.grid.chunk"),
         )
         kw.update(kwargs)
         data = open_grid(path, **kw)

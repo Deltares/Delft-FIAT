@@ -452,8 +452,8 @@ def create_risk_map():
 def create_settings_geom():
     """_summary_."""
     doc = {
-        "global": {
-            "model": "geom",
+        "model": {
+            "model_type": "geom",
             "srs": {
                 "value": "EPSG:4326",
             },
@@ -520,7 +520,7 @@ def create_settings_geom():
 
     # Setup toml for risk calculation
     doc_r = copy.deepcopy(doc)
-    doc_r["global"]["risk"] = True
+    doc_r["model"]["risk"] = True
     doc_r["output"]["path"] = "output/geom_risk"
     doc_r["hazard"]["file"] = "hazard/risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
@@ -554,8 +554,8 @@ def create_settings_geom():
 def create_settings_grid():
     """_summary_."""
     doc = {
-        "global": {
-            "model": "grid",
+        "model": {
+            "model_type": "grid",
             "srs": {
                 "value": "EPSG:4326",
             },
@@ -590,7 +590,7 @@ def create_settings_grid():
         tomli_w.dump(doc, f)
 
     doc_r = copy.deepcopy(doc)
-    doc_r["global"]["risk"] = True
+    doc_r["model"]["risk"] = True
     doc_r["output"]["path"] = "output/grid_risk"
     doc_r["hazard"]["file"] = "hazard/risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]

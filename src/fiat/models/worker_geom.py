@@ -62,7 +62,7 @@ of the [GeomSource](/api/GeomSource.qmd) object.
     """
     # Setup the hazard type module
     sender = Sender(queue=queue)
-    module = importlib.import_module(f"fiat.methods.{cfg.get('global.type')}")
+    module = importlib.import_module(f"fiat.methods.{cfg.get('model.type')}")
     func_hazard = getattr(module, "calculate_hazard")
     func_damage = getattr(module, "calculate_damage")
     man_columns = getattr(module, "MANDATORY_COLUMNS")
@@ -74,7 +74,7 @@ of the [GeomSource](/api/GeomSource.qmd) object.
     # More meta data
     cfg_entries = [cfg.get(item) for item in man_entries]
     index_col = cfg.get("exposure.geom.settings.index")
-    risk = cfg.get("global.risk")
+    risk = cfg.get("model.risk")
     rounding = cfg.get("vulnerability.round")
     vul_min = min(vul.index)
     vul_max = max(vul.index)
@@ -114,7 +114,7 @@ of the [GeomSource](/api/GeomSource.qmd) object.
         out_writer = BufferedGeomWriter(
             Path(cfg.get("output.path"), out_geom),
             gm.srs,
-            buffer_size=cfg.get("global.geom.chunk"),
+            buffer_size=cfg.get("model.geom.chunk"),
             lock=lock2,
         )
 

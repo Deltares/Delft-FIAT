@@ -140,8 +140,8 @@ class GeomModel(BaseModel):
             self.threads,
         )
         # Set the write size chunking
-        chunk_int = self.cfg.get("global.geom.chunk", GEOM_DEFAULT_CHUNK)
-        self.cfg.set("global.geom.chunk", chunk_int)
+        chunk_int = self.cfg.get("model.geom.chunk", GEOM_DEFAULT_CHUNK)
+        self.cfg.set("model.geom.chunk", chunk_int)
 
     def _setup_output_files(self):
         """Set up the output files.

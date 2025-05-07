@@ -5,8 +5,6 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-from osgeo import gdal
-
 from fiat.check import (
     check_config_grid,
 )
@@ -57,11 +55,11 @@ class Configurations(dict):
         dict.__init__(self, flatten_dict(settings, "", "."))
 
         # Set the cache size per GDAL object
-        _cache_size = self.get("global.gdal_cache")
-        if _cache_size is not None:
-            gdal.SetCacheMax(_cache_size * 1024**2)
-        else:
-            gdal.SetCacheMax(50 * 1024**2)
+        # _cache_size = self.get("model.gdal_cache")
+        # if _cache_size is not None:
+        #     gdal.SetCacheMax(_cache_size * 1024**2)
+        # else:
+        #     gdal.SetCacheMax(50 * 1024**2)
 
         # Do some checking concerning the file paths in the settings file
         for key, item in self.items():
@@ -194,7 +192,7 @@ class Configurations(dict):
         self.set("output.path", _p)
 
         # Damage directory for grid risk calculations
-        if self.get("global.risk") and check_config_grid(self):
+        if self.get("model.risk") and check_config_grid(self):
             _p = create_dir(
                 _p,
                 "damages",

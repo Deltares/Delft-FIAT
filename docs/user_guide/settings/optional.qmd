@@ -6,15 +6,15 @@ Here we provide an overview of all optional/ non essential settings that the use
 
 | Field                                  | Type    | Default       |
 |:---------------------------------------|---------|---------------|
-| **[global]**                           |         |               |
-| [loglevel](#global)                    | string  | INFO          |
-| [risk](#global)                        | boolean | false         |
-| [type](#global)                        | string  | flood         |
-| **[global.srs]**                       |         |               |
-| [value](#global.srs)                   | string  | EPSG:4326     |
-| [prefer_global](#global.srs)           | bool    | false         |
-| **[global.grid]**                      |         |               |
-| [prefer](#global.grid)                 | string  | exposure      |
+| **[model]**                            |         |               |
+| [loglevel](#model)                     | string  | INFO          |
+| [risk](#model)                         | boolean | false         |
+| [type](#model)                         | string  | flood         |
+| **[model.srs]**                        |         |               |
+| [value](#model.srs)                    | string  | EPSG:4326     |
+| [prefer_global](#model.srs)            | bool    | false         |
+| **[model.grid]**                       |         |               |
+| [prefer](#model.grid)                  | string  | exposure      |
 | **[hazard]**                           |         |               |
 | [resampling_method](#hazard)           | int     | 0             |
 | [return_periods](#hazard)              | list    | -             |
@@ -40,7 +40,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 | [index](#vulnerability.settings)       | string  | 'water depth' |
 : Settings.toml input (required and optional fields) {#tbl-toml .hover}
 
-#### [global]
+#### [model]
 
 - `loglevel`: Set the loglevel of the fiat logger from the settings file. Choose from 'DEBUG', 'INFO', 'WARNING', 'ERROR' or 'DEAD'.
 
@@ -48,13 +48,13 @@ Here we provide an overview of all optional/ non essential settings that the use
 
 - `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.methods.flood`)
 
-#### [global.srs]
+#### [model.srs]
 
 - `value`: Global projection for the model and the output. If not defined, the default projection is set to WGS84.
 
 - `prefer_global`: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e. prefer the hazard projection.
 
-#### [global.grid]
+#### [model.grid]
 
 - `prefer`: Whether to spatially prefer exposure data or hazard data. The other will be warped when they are not equal. Chose 'exposure' or 'hazard'.
 
