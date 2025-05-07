@@ -30,11 +30,12 @@ def run_log(
     try:
         out = func(*args)
     except BaseException:
-        t, v, tb = sys.exc_info()
-        msg = ",".join([str(item) for item in v.args])
-        if t is KeyboardInterrupt:
+        exc_info = sys.exc_info()
+        msg = ",".join([str(item) for item in exc_info[1].args])
+        if exc_info[0] is KeyboardInterrupt:
             msg = "KeyboardInterrupt"
         logger.error(msg)
+        exc_info = None
         # Exit with code 1
         sys.exit(1)
     else:

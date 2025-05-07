@@ -190,7 +190,7 @@ def test_generic_path_check(tmp_path, vul_path):
         assert v
 
 
-def test_get_model_attr():
+def test_get_module_attr():
     module = "fiat.methods.flood"
     attr = get_module_attr(module, "NEW_COLUMNS")
     assert attr == ["inun_depth"]

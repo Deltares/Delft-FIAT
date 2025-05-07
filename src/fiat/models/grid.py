@@ -11,14 +11,13 @@ from fiat.check import (
 )
 from fiat.fio import open_grid
 from fiat.gis import grid
+from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.models import worker_grid
 from fiat.models.base import BaseModel
 from fiat.models.util import (
     GRID_PREFER,
     check_file_for_read,
-    execute_pool,
-    generate_jobs,
 )
 from fiat.util import get_srs_repr
 

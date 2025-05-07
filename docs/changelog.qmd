@@ -17,6 +17,9 @@ These are the unreleased changes.
 ### Deprecated
 
 ### Fixed
+- Better handling of errors during calculations
+- Check for module specific (e.g. 'flood') settings entries
+- Default output vector file format (driver) matches input file format
 - Vector reproject dataset creation error
 
 ## v0.3.2 (2025-05-01)
