@@ -6,6 +6,7 @@ title: "What's new?"
 These are the unreleased changes.
 
 ### Added
+- Model type (`type`) and calculation modus (`risk`) as model properties
 
 ### Changed
 - 'hazard.risk' entry is renamed to 'global.risk' in the settings file
