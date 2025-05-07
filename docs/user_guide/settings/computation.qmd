@@ -6,23 +6,23 @@ The inputs give the user a bit more control over the computational aspects of FI
 
 | Entry                            | Type    | Default     |
 |:---------------------------------|---------|-------------|
-| **[global]**                     |         |             |
-| [threads](#global)               | integer | 1           |
-| **[global.geom]**                |         |             |
-| [chunk](#global.geom)            | integer | -           |
-| **[global.grid]**                |         |             |
-| [chunk](#global.grid)            | list    | -           |
+| **[model]**                      |         |             |
+| [threads](#model)                | integer | 1           |
+| **[model.geom]**                 |         |             |
+| [chunk](#model.geom)             | integer | -           |
+| **[model.grid]**                 |         |             |
+| [chunk](#model.grid)             | list    | -           |
 : Computational FIAT input settings {#tbl-toml .hover}
 
 ::: {.callout-warning}
 All settings that are not globally defined (e.g. settings chunk size via `hazard.settings`) are ill-advised. Please use the global chunking settings.
 :::
 
-#### [global]
+#### [model]
 
 - `threads`: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.
 
-#### [global.geom]
+#### [model.geom]
 
 - `chunk`: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.
 
@@ -34,7 +34,7 @@ This input benefits from multiple threads.
 This input is only applicable to the [GeomModel](../../info/models.qmd#geommodel)
 :::
 
-#### [global.grid]
+#### [model.grid]
 
 - `chunk`: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be `[1024, 1024,]`.
 

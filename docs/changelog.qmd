@@ -6,8 +6,12 @@ title: "What's new?"
 These are the unreleased changes.
 
 ### Added
+- Model type (`type`) and calculation modus (`risk`) as model properties
 
 ### Changed
+- 'hazard.risk' entry is renamed to 'global.risk' in the settings file
+- Renamed 'global' section to 'model'
+- Renamed 'global.model' to 'model.model_type'
 - Vector reproject chunking now available
 
 ### Deprecated

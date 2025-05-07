@@ -51,9 +51,12 @@ class BaseModel(metaclass=ABCMeta):
         self.hazard_grid = None
         self.vulnerability_data = None
         # Type of calculations
-        self.type = self.cfg.get("global.type", "flood")
-        self.module = importlib.import_module(f"fiat.methods.{self.type}")
-        self.cfg.set("global.type", self.type)
+        type = self.cfg.get("model.type", "flood")
+        self.module = importlib.import_module(f"fiat.methods.{type}")
+        self.cfg.set("model.type", type)
+        # Risk or event based
+        risk = self.cfg.get("model.risk", False)
+        self.cfg.set("model.risk", risk)
         # Vulnerability data
         self._vul_step_size = 0.01
         self._rounding = 2
@@ -65,8 +68,9 @@ class BaseModel(metaclass=ABCMeta):
         self.threads = 1
         self.chunks = []
 
-        self._set_num_threads()
+        # Call the necessary methods at init
         self.set_model_srs()
+        self.set_num_threads()
         self.read_hazard_grid()
         self.read_vulnerability_data()
 
@@ -77,23 +81,29 @@ class BaseModel(metaclass=ABCMeta):
     def __repr__(self):
         return f"<{self.__class__.__name__} object at {id(self):#018x}>"
 
-    def _set_num_threads(self):
-        """Set the number of threads.
+    ## Properties
+    @property
+    def risk(self):
+        """Return the calculation modus."""
+        return self.cfg.get("model.risk")
 
-        Either through the config file or cli.
-        """
-        max_threads = cpu_count()
-        user_threads = self.cfg.get("global.threads")
-        if user_threads is not None:
-            if user_threads > max_threads:
-                logger.warning(
-                    f"Given number of threads ('{user_threads}') \
-exceeds machine thread count ('{max_threads}')"
-                )
-            self.threads = min(max_threads, user_threads)
+    @risk.setter
+    def risk(self, value: bool):
+        """Set the calculation modus."""
+        self.cfg.set("model.risk", value)
 
-        logger.info(f"Using number of threads: {self.threads}")
+    @property
+    def type(self):
+        """Return the hazard type."""
+        return self.cfg.get("model.type")
 
+    @type.setter
+    def type(self, value: str):
+        """Set the hazard type."""
+        self.cfg.set("model.type", value)
+        self.module = importlib.import_module(f"fiat.methods.{value}")
+
+    ## Set(up) methods.
     @abstractmethod
     def _setup_output_files(
         self,
@@ -104,26 +114,59 @@ exceeds machine thread count ('{max_threads}')"
     def set_model_srs(
         self,
         srs: str | None = None,
-    ):
-        """Set the model spatial reference system."""
+    ) -> None:
+        """Set the model spatial reference system.
+
+        Parameters
+        ----------
+        srs : str, optional
+            The spatial reference system described by a string (e.g. 'EPSG:4326'),
+            by default None
+        """
         if srs is not None:
             _srs = srs
         else:
-            _srs = self.cfg.get("global.srs.value", "EPSG:4326")
+            _srs = self.cfg.get("model.srs.value", "EPSG:4326")
 
         # Infer the spatial reference system
         self.srs = osr.SpatialReference()
         self.srs.SetFromUserInput(_srs)
 
         # Set crs for later use
-        self.cfg.set("global.srs.value", get_srs_repr(self.srs))
+        self.cfg.set("model.srs.value", get_srs_repr(self.srs))
         logger.info(f"Model srs set to: '{get_srs_repr(self.srs)}'")
 
+    def set_num_threads(
+        self,
+        threads: int | None = None,
+    ) -> None:
+        """Set the number of threads.
+
+        Either through the config file, cli or directly.
+
+        Parameters
+        ----------
+        threads : int, optional
+            Number of threads, by default None
+        """
+        max_threads = cpu_count()
+        user_threads = threads or self.cfg.get("model.threads")
+        if user_threads is not None:
+            if user_threads > max_threads:
+                logger.warning(
+                    f"Given number of threads ('{user_threads}') \
+exceeds machine thread count ('{max_threads}')"
+                )
+            self.threads = min(max_threads, user_threads)
+
+        logger.info(f"Using number of threads: {self.threads}")
+
+    ## Read data methods
     def read_hazard_grid(
         self,
         path: Path | str = None,
         **kwargs: dict,
-    ):
+    ) -> None:
         """Read the hazard data.
 
         If no path is provided the method tries to
@@ -149,7 +192,7 @@ exceeds machine thread count ('{max_threads}')"
             self.cfg.generate_kwargs("hazard.settings"),
         )
         kw.update(
-            self.cfg.generate_kwargs("global.grid.chunk"),
+            self.cfg.generate_kwargs("model.grid.chunk"),
         )
         kw.update(**kwargs)
         data = open_grid(path, **kw)
@@ -168,7 +211,7 @@ exceeds machine thread count ('{max_threads}')"
             path.name,
         )
 
-        if not self.cfg.get("global.srs.prefer_global", False):
+        if not self.cfg.get("model.srs.prefer_global", False):
             logger.warning("Setting the model srs from the hazard data.")
             self.set_model_srs(get_srs_repr(data.srs))
 
@@ -184,7 +227,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             data = grid.reproject(data, self.srs.ExportToWkt(), _resalg)
 
         # check risk return periods
-        if self.cfg.get("hazard.risk"):
+        if self.risk:
             band_rps = [
                 data[idx + 1].get_metadata_item("return_period")
                 for idx in range(data.size)
@@ -199,7 +242,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         # Information for output
         ns = check_hazard_band_names(
             data.deter_band_names(),
-            self.cfg.get("hazard.risk"),
+            self.risk,
             self.cfg.get("hazard.return_periods"),
             data.size,
         )
@@ -264,6 +307,7 @@ using a step size of: {self._vul_step_size}"
         # When all is done, add it
         self.vulnerability_data = data
 
+    ## Run
     @abstractmethod
     def run(
         self,

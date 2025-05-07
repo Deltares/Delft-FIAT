@@ -74,14 +74,14 @@ def run(args):
     # Set the threads is specified
     if args.threads is not None:
         assert int(args.threads)
-        cfg.set("global.threads", int(args.threads))
+        cfg.set("model.threads", int(args.threads))
 
     if args.set_entry is not None:
         cfg.update(args.set_entry)
     cfg.setup_output_dir()
 
     # Complete the setup of the logger
-    loglevel = check_loglevel(cfg.get("global.loglevel", "INFO"))
+    loglevel = check_loglevel(cfg.get("model.loglevel", "INFO"))
     logger.add_file_handler(
         dst=cfg.get("output.path"),
         filename="fiat",
@@ -92,7 +92,7 @@ def run(args):
     logger.info(f"Delft-Fiat version: {__version__}")
 
     # Kickstart the model
-    model_type = cfg.get("global.model", "geom")
+    model_type = cfg.get("model.model_type", "geom")
     check_config_entries(
         cfg.keys(),
         MANDATORY_MODEL_ENTRIES + _models[model_type]["input"],

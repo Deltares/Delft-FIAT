@@ -22,13 +22,14 @@ from fiat.util import DummyWriter, regex_pattern
 
 def worker(
     cfg: dict,
-    queue: Queue,
+    risk: bool,
     haz: GridSource,
     vul: Table,
     exp_func: Callable,
     exp_data: TableLazy,
     exp_geom: dict,
     chunk: tuple | list,
+    queue: Queue,
     lock1: Lock,
     lock2: Lock,
 ):
@@ -41,8 +42,8 @@ of the [GeomSource](/api/GeomSource.qmd) object.
     ----------
     cfg : dict
         The configurations.
-    queue : Queue
-        A Queue for logging back to the main thread.
+    risk : bool
+        Whether to run in risk-mode.
     haz : GridSource
         The hazard data.
     vul : Table
@@ -55,6 +56,8 @@ of the [GeomSource](/api/GeomSource.qmd) object.
         The exposure geometries.
     chunk : tuple | list
         The chunk to run through.
+    queue : Queue
+        A Queue for logging back to the main thread.
     lock1 : Lock
         The lock for the csv output.
     lock2 : Lock
@@ -62,7 +65,7 @@ of the [GeomSource](/api/GeomSource.qmd) object.
     """
     # Setup the hazard type module
     sender = Sender(queue=queue)
-    module = importlib.import_module(f"fiat.methods.{cfg.get('global.type')}")
+    module = importlib.import_module(f"fiat.methods.{cfg.get('model.type')}")
     func_hazard = getattr(module, "calculate_hazard")
     func_damage = getattr(module, "calculate_damage")
     man_columns = getattr(module, "MANDATORY_COLUMNS")
@@ -74,7 +77,6 @@ of the [GeomSource](/api/GeomSource.qmd) object.
     # More meta data
     cfg_entries = [cfg.get(item) for item in man_entries]
     index_col = cfg.get("exposure.geom.settings.index")
-    risk = cfg.get("hazard.risk", False)
     rounding = cfg.get("vulnerability.round")
     vul_min = min(vul.index)
     vul_max = max(vul.index)
@@ -114,7 +116,7 @@ of the [GeomSource](/api/GeomSource.qmd) object.
         out_writer = BufferedGeomWriter(
             Path(cfg.get("output.path"), out_geom),
             gm.srs,
-            buffer_size=cfg.get("global.geom.chunk"),
+            buffer_size=cfg.get("model.geom.chunk"),
             lock=lock2,
         )
 
