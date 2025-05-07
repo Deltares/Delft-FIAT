@@ -74,6 +74,7 @@ class GeomModel(BaseModel):
     def __del__(self):
         BaseModel.__del__(self)
 
+    ## Set(up) methods
     def _discover_exposure_meta(
         self,
         columns: dict,
@@ -103,7 +104,7 @@ class GeomModel(BaseModel):
 
             ## Information for output
             extra = []
-            if self.cfg.get("hazard.risk"):
+            if self.risk:
                 extra = ["ead"]
             new_fields, len1, total_idx = generate_output_columns(
                 getattr(self.module, "NEW_COLUMNS"),
@@ -138,8 +139,8 @@ class GeomModel(BaseModel):
             self.threads,
         )
         # Set the write size chunking
-        chunk_int = self.cfg.get("global.geom.chunk", GEOM_DEFAULT_CHUNK)
-        self.cfg.set("global.geom.chunk", chunk_int)
+        chunk_int = self.cfg.get("model.geom.chunk", GEOM_DEFAULT_CHUNK)
+        self.cfg.set("model.geom.chunk", chunk_int)
 
     def _setup_output_files(self):
         """Set up the output files.
@@ -198,6 +199,7 @@ class GeomModel(BaseModel):
             )
         self.cfg.set("_exposure_meta", meta)
 
+    ## Read data methods
     def read_exposure(self):
         """Read all the exposure files."""
         self.read_exposure_geoms()
@@ -327,6 +329,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         # When all is done, add it
         self.exposure_geoms = _d
 
+    ## Run model method
     def run(
         self,
     ):
@@ -367,13 +370,14 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         jobs = generate_jobs(
             {
                 "cfg": self.cfg,
-                "queue": self._queue,
+                "risk": self.risk,
                 "haz": self.hazard_grid,
                 "vul": self.vulnerability_data,
                 "exp_func": field_func,
                 "exp_data": self.exposure_data,
                 "exp_geom": self.exposure_geoms,
                 "chunk": self.chunks,
+                "queue": self._queue,
                 "lock1": lock1,
                 "lock2": lock2,
             },

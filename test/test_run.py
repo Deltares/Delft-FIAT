@@ -10,7 +10,7 @@ from fiat.models import GeomModel, GridModel
 def run_model(cfg, p):
     # Execute
     cfg.setup_output_dir(str(p))
-    model_type = cfg.get("global.model")
+    model_type = cfg.get("model.model_type")
     if model_type == "geom":
         mod = GeomModel(cfg)
     elif model_type == "grid":
@@ -98,7 +98,7 @@ def test_grid_unequal(tmp_path, configs):
 
     # Adjust to prefer the hazard data resolution
     cfg = copy.deepcopy(configs["grid_unequal"])
-    cfg.set("global.grid.prefer", "hazard")
+    cfg.set("model.grid.prefer", "hazard")
     run_model(cfg, tmp_path)
 
     # Check the output

@@ -38,14 +38,14 @@ The user can input as many damage functions and related max potential damages as
 The ground floor height column indicates the height of the ground floor of an asset above the ground elevation. For example, when a building is built on poles, the ground floor (finished floor in the US) is lifted off the ground with a certain height. Usually, buildings are at least a certain amount above ground elevation because of the road and sidewalk. This value is used to calculate the water depth inside of the asset, for buildings.
 
 ::: {.callout-important}
- Required for flood damage calculation, see [global model types](../../settings/optional.qmd#global)
+ Required for flood damage calculation, see [global model types](../../settings/optional.qmd#model)
 :::
 
 #### Ground Elevation
 The ground elevation is the value of a digital elevation model (DEM) at the location of the asset.
 
 ::: {.callout-important}
- Required for flood damage calculation, see [global model types](../../settings/optional.qmd#global)
+ Required for flood damage calculation, see [global model types](../../settings/optional.qmd#model)
 :::
 
 #### Max Potential Damage

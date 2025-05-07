@@ -21,8 +21,8 @@ File paths in the settings can be relative to the settings.toml file or absolute
 
 | Entry                          | Type    | Required | Default         |
 |:-------------------------------|---------|----------|-----------------|
-| **[global]**                   |         |          |                 |
-| [model](#global)               | string  | No       | geom            |
+| **[model]**                    |         |          |                 |
+| [model](#model_type)           | string  | No       | geom            |
 | **[output]**                   |         |          |                 |
 | [path](#output)                | string  | No       | output          |
 | **[output.csv]**               |         |          |                 |
@@ -34,7 +34,6 @@ File paths in the settings can be relative to the settings.toml file or absolute
 | **[hazard]**                   |         |          |                 |
 | [file](#hazard)                | string  | Yes      |                 |
 | [elevation_reference](#hazard) | string  | Yes      |                 |
-| [risk](#hazard)                | boolean | No       | false           |
 | **[exposure.csv]**             |         |          |                 |
 | [file](#exposure.csv)          | string  | No       | -               |
 | **[exposure.geom]**            |         |          |                 |
@@ -45,9 +44,9 @@ File paths in the settings can be relative to the settings.toml file or absolute
 | [file](#vulnerability)         | string  | Yes      |                 |
 : Most basic settings file input {#tbl-toml .hover}
 
-#### [global]
+#### [model]
 
-- `model`: The type of model. Choice between 'geom' and 'grid'.
+- `model_type`: The type of model. Choice between 'geom' and 'grid'.
 
 #### [output]
 
@@ -74,8 +73,6 @@ If provided, the suffix is mandatory. The suffix should match the suffix of the 
 - `file`: The file path to the hazard file.
 
 - `elevation_reference`: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be "DEM" while in case of a flood-elevation map this should be "datum".
-
-- `risk`: In case of a risk calculation this must be set to "true", for a single events this must be set to "false".
 
 #### [exposure.csv]
 

@@ -54,7 +54,7 @@ of the [GridSource](/api/GeomSource.qmd) object.
     haz_band = haz[idx]
     # Set the output directory
     _out = cfg.get("output.path")
-    if cfg.get("hazard.risk"):
+    if cfg.get("model.risk"):
         _out = cfg.get("output.damages.path")
 
     # Create the outgoing netcdf containing every exposure damages

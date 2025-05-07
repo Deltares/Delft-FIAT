@@ -24,7 +24,7 @@ def test_geommodel(tmp_path, settings_files):
     assert len(model.exposure_geoms) == 1
 
     _ = cfg.pop("exposure.csv.file")
-    cfg.set("global.threads", 4)
+    cfg.set("model.threads", 4)
     model = GeomModel(cfg)
     assert model.exposure_data is None
     assert model.threads == 4
