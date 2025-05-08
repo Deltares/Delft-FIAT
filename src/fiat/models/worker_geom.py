@@ -10,6 +10,7 @@ from typing import Callable
 from fiat.fio import (
     BufferedGeomWriter,
     BufferedTextWriter,
+    GeomSource,
     GridSource,
     Table,
     TableLazy,
@@ -27,7 +28,7 @@ def worker(
     vul: Table,
     exp_func: Callable,
     exp_data: TableLazy,
-    exp_geom: dict,
+    exp_geom: GeomSource,
     chunk: tuple | list,
     queue: Queue,
     lock1: Lock,
@@ -52,7 +53,7 @@ of the [GeomSource](/api/GeomSource.qmd) object.
         The function to get information from a feature.
     exp_data : TableLazy
         The exposure data.
-    exp_geom : dict
+    exp_geom : GeomSource
         The exposure geometries.
     chunk : tuple | list
         The chunk to run through.
