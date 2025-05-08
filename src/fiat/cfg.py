@@ -21,7 +21,7 @@ MODEL_ENTRIES = (
     MANDATORY_MODEL_ENTRIES
     + MANDATORY_GEOM_ENTRIES
     + MANDATORY_GRID_ENTRIES
-    + ["exposure.csv.file"]  # Check for the only non mandatory file
+    + [r"exposure.csv.file\d+"]  # Check for the only non mandatory file
 )
 
 
