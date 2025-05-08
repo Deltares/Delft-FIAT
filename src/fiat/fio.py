@@ -610,10 +610,7 @@ class CSVParser:
         _pat_multi = regex_pattern(self.delimiter, multi=True, nchar=self.data.nchar)
 
         if index is not None:
-            try:
-                idcol = self.columns.index(index)
-            except Exception:
-                idcol = 0
+            idcol = self.columns.index(index)
             self.meta["index_col"] = idcol
             self.meta["index_name"] = self.columns[idcol]
             _index = []
@@ -915,6 +912,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         file: str,
         mode: str = "r",
         overwrite: bool = False,
+        index: str | None = None,
         srs: str | None = None,
     ):
         """Create a GeomSource object."""
@@ -927,6 +925,7 @@ class GeomSource(_BaseIO, _BaseStruct):
         file: str,
         mode: str = "r",
         overwrite: bool = False,
+        index: str | None = None,
         srs: str | None = None,
     ):
         _BaseStruct.__init__(self)
@@ -1011,10 +1010,6 @@ class GeomSource(_BaseIO, _BaseStruct):
         self._driver = None
 
         gc.collect()
-
-    # @property
-    # def count(self):
-    #     return self.layer.GetFeatureCount()
 
     def flush(self):
         """Flush the data.
@@ -2294,6 +2289,7 @@ def open_geom(
     file: Path | str,
     mode: str = "r",
     overwrite: bool = False,
+    index: str | None = None,
     srs: str | None = None,
 ):
     """Open a geometry source file.
@@ -2308,6 +2304,8 @@ def open_geom(
         Open in `read` or `write` mode.
     overwrite : bool, optional
         Whether or not to overwrite an existing dataset.
+    index : str, optional
+        The index column/ field of the dataset.
     srs : str, optional
         A Spatial reference system string in case the dataset has none.
 
@@ -2320,6 +2318,7 @@ def open_geom(
         file,
         mode,
         overwrite,
+        index,
         srs,
     )
 
