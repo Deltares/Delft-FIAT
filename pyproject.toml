@@ -162,10 +162,7 @@ ignore = ["B904", "D105", "D211", "D213", "D301", "E712", "E741"]
 "test/**" = ["D100", "D101", "D102", "D103", "D104"]
 "test/conftest.py" = ["E402"]
 "src/fiat/__init__.py" = ["E402", "F401", "F403"]
-"src/fiat/cli/__init__.py" = ["F403"]
-"src/fiat/gis/__init__.py" = ["F403"]
-"src/fiat/methods/__init__.py" = ["F403"]
-"src/fiat/models/__init__.py" = ["F403"]
+"src/fiat/**/__init__.py" = ["F403"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

@@ -5,7 +5,7 @@ from pathlib import Path
 from osgeo import ogr
 
 from fiat.cfg import Configurations
-from fiat.fio import TableLazy
+from fiat.struct import TableLazy
 from fiat.util import NEWLINE_CHAR, generic_path_check, replace_empty
 
 GEOM_DEFAULT_CHUNK = 50000

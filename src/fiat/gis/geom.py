@@ -5,7 +5,7 @@ from pathlib import Path
 
 from osgeo import ogr, osr
 
-from fiat.fio import BufferedGeomWriter, GeomSource, open_geom
+from fiat.fio import BufferedGeomWriter, GeomIO, open_geom
 
 
 def point_in_geom(
@@ -64,7 +64,7 @@ def reproject_feature(
 
 
 def reproject(
-    gs: GeomSource,
+    gs: GeomIO,
     crs: str,
     chunk: int = 200000,
     out_dir: Path | str = None,
@@ -73,7 +73,7 @@ def reproject(
 
     Parameters
     ----------
-    gs : GeomSource
+    gs : GeomIO
         Input object.
     crs : str
         Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
@@ -84,7 +84,7 @@ def reproject(
 
     Returns
     -------
-    GeomSource
+    GeomIO
         Output object. A lazy reading of the just creating geometry file.
     """
     if not Path(str(out_dir)).is_dir():
@@ -95,21 +95,21 @@ def reproject(
     out_srs = osr.SpatialReference()
     out_srs.SetFromUserInput(crs)
     out_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
-    layer_defn = gs.layer.GetLayerDefn()
+    layer_defn = gs.layer.defn
 
     transform = osr.CoordinateTransformation(
-        gs.srs,
+        gs.layer.srs,
         out_srs,
     )
 
     with open_geom(fname, mode="w", overwrite=True) as new_gs:
-        new_gs.create_layer(out_srs, layer_defn.GetGeomType())
-        new_gs.set_layer_from_defn(layer_defn)
+        new_gs.create_layer(out_srs, gs.layer.geom_type)
+        new_gs.layer.set_from_defn(layer_defn)
 
     mem_gs = BufferedGeomWriter(
         fname,
         srs=out_srs,
-        layer_defn=gs.layer.GetLayerDefn(),
+        layer_defn=layer_defn,
         buffer_size=chunk,
     )
 
@@ -117,7 +117,7 @@ def reproject(
         geom = ft.GetGeometryRef()
         geom.Transform(transform)
 
-        new_ft = ogr.Feature(mem_gs.buffer.layer.GetLayerDefn())
+        new_ft = ogr.Feature(mem_gs.buffer.layer.defn)
         new_ft.SetFrom(ft)
         new_ft.SetGeometry(geom)
         mem_gs.add_feature(new_ft)

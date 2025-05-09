@@ -11,12 +11,11 @@ from fiat.fio import (
     BufferedGeomWriter,
     BufferedTextWriter,
     GridSource,
-    Table,
-    TableLazy,
 )
 from fiat.gis import geom, overlay
 from fiat.log import LogItem, Sender
 from fiat.methods.ead import calc_ead, risk_density
+from fiat.struct import Table, TableLazy
 from fiat.util import DummyWriter, regex_pattern
 
 
@@ -95,11 +94,11 @@ of the [GeomSource](/api/GeomSource.qmd) object.
     # Loop through the different files
     for idx, gm in exp_geom.items():
         # Check if there actually is data for this chunk
-        if chunk[0] > gm._count:
+        if chunk[0] > gm.layer._count:
             continue
 
         # Get the object id column index
-        oid = gm.fields.index(index_col)
+        oid = gm.layer.fields.index(index_col)
 
         # Some meta for the specific geometry file
         field_meta = cfg.get("_exposure_meta")[idx]
@@ -108,14 +107,14 @@ of the [GeomSource](/api/GeomSource.qmd) object.
         types = field_meta["types"]
         idxs = field_meta["idxs"]
         if exp_data is None:
-            man_columns_idxs = [gm.fields.index(item) for item in man_columns]
-            mid = gm.fields.index("extract_method")
+            man_columns_idxs = [gm.layer.fields.index(item) for item in man_columns]
+            mid = gm.layer.fields.index("extract_method")
 
         # Setup the dataset buffer writer
         out_geom = Path(cfg.get(f"output.geom.name{idx}"))
         out_writer = BufferedGeomWriter(
             Path(cfg.get("output.path"), out_geom),
-            gm.srs,
+            gm.layer.srs,
             buffer_size=cfg.get("model.geom.chunk"),
             lock=lock2,
         )
@@ -132,7 +131,7 @@ of the [GeomSource](/api/GeomSource.qmd) object.
             )
 
         # Loop over all the geometries in a reduced manner
-        for ft in gm.reduced_iter(*chunk):
+        for ft in gm.layer.reduced_iter(*chunk):
             out = []
             in_info, out_info, method, haz_kwargs = exp_func(
                 ft,

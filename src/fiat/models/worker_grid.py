@@ -7,10 +7,10 @@ from numpy import full, ravel, unravel_index, where
 
 from fiat.fio import (
     GridSource,
-    Table,
     open_grid,
 )
 from fiat.methods.ead import calc_ead, risk_density
+from fiat.struct import Table
 from fiat.util import create_windows
 
 

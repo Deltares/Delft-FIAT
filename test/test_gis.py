@@ -7,7 +7,7 @@ from fiat.util import get_srs_repr
 
 
 def test_get_srs_repr(geom_data):
-    out = get_srs_repr(geom_data.srs)
+    out = get_srs_repr(geom_data.layer.srs)
     assert out == "EPSG:4326"
 
     try:
@@ -20,7 +20,7 @@ def test_get_srs_repr(geom_data):
 
 
 def test_clip(geom_data, grid_event_data):
-    ft = geom_data[3]
+    ft = geom_data.layer[3]
     hazard = overlay.clip(
         ft,
         grid_event_data[1],
@@ -33,7 +33,7 @@ def test_clip(geom_data, grid_event_data):
 
 
 def test_clip_outside(geom_outside_data, grid_event_data):
-    ft = geom_outside_data[0]
+    ft = geom_outside_data.layer[0]
     hazard = overlay.clip(
         ft,
         grid_event_data[1],
@@ -43,7 +43,7 @@ def test_clip_outside(geom_outside_data, grid_event_data):
 
     assert len(hazard) == 0
 
-    ft = geom_outside_data[1]
+    ft = geom_outside_data.layer[1]
     hazard = overlay.clip(
         ft,
         grid_event_data[1],
@@ -56,7 +56,7 @@ def test_clip_outside(geom_outside_data, grid_event_data):
 
 
 def test_clip_weighted(geom_data, grid_event_data):
-    ft = geom_data[3]
+    ft = geom_data.layer[3]
     _, weights = overlay.clip_weighted(
         ft,
         grid_event_data[1],
@@ -75,7 +75,7 @@ def test_clip_weighted(geom_data, grid_event_data):
 
 
 def test_pin(geom_data, grid_event_data):
-    for ft in geom_data:
+    for ft in geom_data.layer:
         XY = geom.point_in_geom(ft)
 
         hazard = overlay.pin(
@@ -88,7 +88,7 @@ def test_pin(geom_data, grid_event_data):
 
 
 def test_pin_outside(geom_outside_data, grid_event_data):
-    ft = geom_outside_data[0]
+    ft = geom_outside_data.layer[0]
     XY = geom.point_in_geom(ft)
     hazard = overlay.pin(
         XY,
@@ -99,7 +99,7 @@ def test_pin_outside(geom_outside_data, grid_event_data):
 
     assert len(hazard) == 0
 
-    ft = geom_outside_data[2]
+    ft = geom_outside_data.layer[2]
     XY = geom.point_in_geom(ft)
     hazard = overlay.pin(
         XY,
@@ -120,11 +120,11 @@ def test_geom_reproject(tmp_path, geom_data):
         out_dir=str(tmp_path),
     )
 
-    assert new_gm.srs.GetAuthorityCode(None) == "3857"
+    assert new_gm.layer.srs.GetAuthorityCode(None) == "3857"
 
 
 def test_geom_reproject_single(geom_data):
-    ft = geom_data[1]
+    ft = geom_data.layer[1]
     geometry = ft.GetGeometryRef()
 
     vertices = geometry.GetGeometryRef(0).GetPoints()

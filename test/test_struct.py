@@ -5,22 +5,22 @@ import pickle
 
 def test_geomsource(geom_data):
     # Do Attribute checks
-    assert geom_data.size == 4
+    assert geom_data.layer.size == 4
 
-    bounds = geom_data.bounds
+    bounds = geom_data.layer.bounds
     bounds = [round(item * 10000) for item in bounds]
     assert bounds == [43550, 44395, 519605, 520450]
 
-    assert geom_data.fields == ["object_id", "object_name"]
+    assert geom_data.layer.fields == ["object_id", "object_name"]
 
-    srs = geom_data.srs
+    srs = geom_data.layer.srs
     assert srs.GetAuthorityCode(None) == "4326"
 
     # Stucture should be able to be pickled
     reduced = pickle.dumps(geom_data)
     # Rebuild it
     rebuild = pickle.loads(reduced)
-    assert rebuild.size == 4
+    assert rebuild.layer.size == 4
 
 
 def test_gridsource(grid_event_data):
