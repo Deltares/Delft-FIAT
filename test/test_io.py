@@ -7,26 +7,26 @@ def test_bufferedgeom(tmp_path, geom_data):
     out_path = Path(str(tmp_path))
     writer = BufferedGeomWriter(
         Path(out_path, "bufferedgeoms.gpkg"),
-        geom_data.srs,
-        geom_data.layer.GetLayerDefn(),
+        geom_data.layer.srs,
+        geom_data.layer.defn,
         buffer_size=2,
     )
     assert writer.size == 0
 
     writer.add_feature_with_map(
-        geom_data.layer.GetFeature(1),
+        geom_data.layer[1],
         {},
     )
     assert writer.size == 1
 
     writer.add_feature_with_map(
-        geom_data.layer.GetFeature(2),
+        geom_data.layer[2],
         {},
     )
     assert writer.size == 2
 
     writer.add_feature_with_map(
-        geom_data.layer.GetFeature(3),
+        geom_data.layer[3],
         {},
     )
     assert writer.size == 1

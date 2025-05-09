@@ -5,8 +5,8 @@ import math
 from numpy import isnan
 from osgeo import ogr
 
-from fiat.fio import Table
 from fiat.methods.util import AREA_METHODS
+from fiat.struct import Table
 
 MANDATORY_COLUMNS = ["ground_flht", "ground_elevtn"]
 MANDATORY_ENTRIES = ["hazard.elevation_reference"]
