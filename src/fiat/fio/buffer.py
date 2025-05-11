@@ -121,10 +121,9 @@ class BufferedGeomWriter:
         ft : ogr.Feature
             The feature.
         """
-        self.buffer.layer.add_feature(ft)
-
         if self.size + 1 > self.max_size:
             self.to_drive()
+        self.buffer.layer.add_feature(ft)
 
         self.size += 1
 
@@ -143,13 +142,12 @@ class BufferedGeomWriter:
             Additional field information, the keys must align with \
 the fields in the buffer.
         """
+        if self.size + 1 > self.max_size:
+            self.to_drive()
         self.buffer.layer.add_feature_with_map(
             ft,
             fmap=fmap,
         )
-
-        if self.size + 1 > self.max_size:
-            self.to_drive()
 
         self.size += 1
 
@@ -251,7 +249,7 @@ class BufferedTextWriter(BytesIO):
         b : bytes
             Bytes to write.
         """
-        if self.__sizeof__() + len(b) > self.max_size:
+        if self.tell() + len(b) > self.max_size:
             self.to_drive()
         BytesIO.write(self, b)
 
