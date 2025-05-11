@@ -89,6 +89,9 @@ class GeomIO(BaseIO):
         info = None
         self._layer = None
         self._srs = None
+        if srs is not None:
+            self._srs = osr.SpatialReference()
+            self._srs.SetFromUserInput(srs)
 
     def __reduce__(self):
         srs = None
@@ -112,6 +115,24 @@ class GeomIO(BaseIO):
         if obj is not None:
             self._layer = GeomStruct._create(self.src, obj, self.mode)
             return self._layer
+
+    @property
+    @BaseIO.check_state
+    def srs(
+        self,
+    ):
+        """Return the srs (Spatial Reference System)."""
+        _srs = self.layer.srs
+        if _srs is None:
+            _srs = self._srs
+        return _srs
+
+    @srs.setter
+    def srs(
+        self,
+        srs,
+    ):
+        self._srs = srs
 
     ## Basic I/O methods
     def close(self):

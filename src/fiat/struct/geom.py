@@ -172,17 +172,7 @@ class GeomStruct(BaseStruct):
         self,
     ):
         """Return the srs (Spatial Reference System)."""
-        _srs = self._obj.GetSpatialRef()
-        if _srs is None:
-            _srs = self._srs
-        return _srs
-
-    @srs.setter
-    def srs(
-        self,
-        srs,
-    ):
-        self._srs = srs
+        return self._obj.GetSpatialRef()
 
     ## Set methods
     def add_feature(
