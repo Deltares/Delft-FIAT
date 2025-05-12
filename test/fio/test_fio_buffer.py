@@ -1,10 +1,11 @@
 from pathlib import Path
 
 import pytest
+from osgeo import ogr
 
 from fiat.fio.buffer import BufferedGeomWriter, BufferedTextWriter
 from fiat.fio.geom import GeomIO
-from fiat.util import DummyLock
+from fiat.util import NEWLINE_CHAR, DummyLock
 
 
 def test_buffered_geom_writer_create(tmp_path: Path, exposure_geom_dataset: GeomIO):
@@ -24,7 +25,7 @@ def test_buffered_geom_writer_create(tmp_path: Path, exposure_geom_dataset: Geom
     assert w.buffer.path.as_posix() == "/vsimem/tmp.gpkg"
 
     # Check for the error when there is no file and no layer defn is given
-    with pytest.raises(OSError, match=f"Cannot create {p} in 'read' mode."):
+    with pytest.raises(OSError, match=f"Cannot create {p.as_posix()} in 'read' mode."):
         w = BufferedGeomWriter(
             p,
             srs=exposure_geom_dataset.srs,
@@ -62,21 +63,13 @@ def test_buffered_geom_writer_create_fields(
     w.close()
 
 
-def test_buffered_geom_writer_write(tmp_path: Path, exposure_geom_dataset: GeomIO):
-    p = Path(tmp_path, "tmp.geojson")
-    # Create the dataset to write to
-    with GeomIO(
-        p,
-        mode="w",
-    ) as _w:
-        _w.create_layer(
-            exposure_geom_dataset.srs,
-            geom_type=exposure_geom_dataset.layer.geom_type,
-        )
-        _w.layer.set_from_defn(exposure_geom_dataset.layer.defn)
+def test_buffered_geom_writer_write(
+    exposure_geom_dataset: GeomIO,
+    exposure_geom_empty_tmp_path: Path,
+):
     # Create the writer
     w = BufferedGeomWriter(
-        p,
+        exposure_geom_empty_tmp_path,
         srs=exposure_geom_dataset.srs,
         layer_defn=None,  # Infer from the dataset on the drive
         buffer_size=2,  # two features
@@ -93,7 +86,7 @@ def test_buffered_geom_writer_write(tmp_path: Path, exposure_geom_dataset: GeomI
     # Assert size of the buffer
     assert w.buffer.layer.size == 2
     w.add_feature_with_map(exposure_geom_dataset.layer[2], fmap={})
-    # Assert size of the buffer
+    # Assert size of the buffer after dumping
     assert w.buffer.layer.size == 1
 
     # Close the data
@@ -101,11 +94,26 @@ def test_buffered_geom_writer_write(tmp_path: Path, exposure_geom_dataset: GeomI
 
 
 def test_buffered_geom_writer_write_direct(
-    tmp_path: Path, exposure_geom_dataset: GeomIO
+    exposure_geom_dataset: GeomIO,
+    exposure_geom_empty_tmp_path: Path,
 ):
-    p = Path(tmp_path, "tmp.geojson")
-    # Create the dataset to write to
-    assert p.is_file()
+    # Create the writer
+    w = BufferedGeomWriter(
+        exposure_geom_empty_tmp_path,
+        srs=exposure_geom_dataset.srs,
+        layer_defn=None,  # Infer from the dataset on the drive
+        buffer_size=2,  # two features
+    )
+
+    # Create a feature that can be written directly
+    ft = ogr.Feature(w.buffer.layer.defn)
+    ft.SetFrom(exposure_geom_dataset.layer[0])
+
+    # Set directly
+    w.add_feature(ft)
+
+    # Assert that it is in the buffer
+    assert w.buffer.layer.size == 1
 
 
 def test_buffered_text_writer_create(tmp_path: Path):
@@ -161,10 +169,10 @@ def test_buffered_text_writer_write_iterable(tmp_path: Path):
     w.write_iterable(["foo", "bar", "baz", "var"])  # 16 chars (newline included)
 
     # Assert its in the buffer
-    assert w.tell() == 16
-    assert w.getbuffer().nbytes == 16  # Or more technical
+    assert w.tell() == 15 + len(NEWLINE_CHAR)
+    assert w.getbuffer().nbytes == 15 + len(NEWLINE_CHAR)  # Or more technical
 
     # Verify the content
     w.seek(0)  # Go the the start of the buffer
     content = w.read()
-    assert content == b"foo,bar,baz,var\n"
+    assert content == f"foo,bar,baz,var{NEWLINE_CHAR}".encode()

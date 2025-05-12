@@ -1,3 +1,4 @@
+import platform
 from pathlib import Path
 
 import pytest
@@ -6,6 +7,17 @@ TEST_MODULE = Path(__file__).parent
 
 
 ## Globally defined fixtures (for easy access)
+@pytest.fixture(scope="session")
+def os_type() -> int:
+    s = platform.system()
+    if s.lower() == "linux":
+        return 0
+    elif s.lower() == "windows":
+        return 1
+    else:
+        raise OSError("Non")
+
+
 @pytest.fixture(scope="session")
 def testdata_dir() -> Path:
     p = Path(TEST_MODULE, "..", ".testdata").resolve()
