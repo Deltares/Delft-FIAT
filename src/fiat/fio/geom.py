@@ -83,7 +83,7 @@ class GeomIO(BaseIO):
             self.src = self.driver.Open(self.path.as_posix(), self.mode)
         else:
             if not self.mode:
-                raise OSError(f"Cannot create {self.path} in 'read' mode.")
+                raise OSError(f"Cannot create {self.path.as_posix()} in 'read' mode.")
             self.create(self.path)
 
         info = None
