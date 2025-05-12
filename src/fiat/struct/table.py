@@ -2,14 +2,14 @@
 
 from math import floor, log10
 
-from numpy import arange, delete, empty, interp, ndarray
+from numpy import arange, delete, empty, float64, interp, ndarray
 
-from fiat.fio.handler import BufferHandler
 from fiat.fio.parser import CSVParser
 from fiat.struct.base import TableBase
 from fiat.util import (
     DD_NOT_IMPLEMENTED,
     NOT_IMPLEMENTED,
+    _dtypes_to_numpy,
     regex_pattern,
     replace_empty,
     text_chunk_gen,
@@ -105,22 +105,34 @@ class Table(TableBase):
         index : list | tuple, optional
             The index column.
         """
+        # Set up the pattern for parsing the data over multiple lines
         _pat_multi = regex_pattern(
             parser.delimiter,
             multi=True,
             nchar=parser.data.nchar,
         )
+        # Split all the data into separate entries (row + column values)
         with parser.data as h:
             _d = _pat_multi.split(h.read().strip())
 
-        data = empty((parser.nrow, parser.ncol), dtype=object)
+        # Determine the dtype of the underlying dataset
+        dtype_set = set(parser.dtypes)
+        if len(dtype_set) != 1:
+            dtype = object
+        else:
+            dtype = _dtypes_to_numpy[dtype_set.pop().__name__]
 
+        # Create an empty numpy array to set the data in
+        data = empty((parser.nrow, parser.ncol), dtype=dtype)
+
+        # Fill the array with the column parsed to their dtype
         for idx in range(parser.ncol):
             data[:, idx] = [
                 parser.dtypes[idx](item)
                 for item in replace_empty(_d[idx :: parser.ncol])
             ]
 
+        # Return the object
         return cls(
             data=data,
             index=parser.index,
@@ -133,17 +145,19 @@ class Table(TableBase):
         self,
         index_col: int,
     ):
-        """_summary_.
+        """Set the index of the Table to a specific column.
 
         Parameters
         ----------
         index_col : int
-            _description_
+            The index of column to be set as the index of the Table.
         """
         cols = list(range(len(self.columns)))
 
         # Check whether the index column index is valid
-        if index_col < 0 or index_col not in cols:
+        if index_col < 0:
+            return
+        elif index_col >= 0 and index_col not in cols:
             raise ValueError(f"Index column index not present: ({index_col})")
 
         # Remove the necessary data
@@ -153,9 +167,9 @@ class Table(TableBase):
 
         # Modify the data and get the index value
         new_index = self.data[:, index_col].tolist()
-        self.data = delete(self.data, 0, index_col)
+        self.data = delete(self.data, index_col, 1)
 
-        # Set the new variables
+        # Set the new variable
         self.index_name = index_name
         self._ncol -= 1
 
@@ -179,8 +193,6 @@ class Table(TableBase):
             By default True
 
         """
-        meta = self.meta.copy()
-
         # Set the rounding
         rnd = abs(floor(log10(delta)))
         # Set the new index
@@ -192,26 +204,32 @@ class Table(TableBase):
         x = list(set(x + self.index))
         x.sort()
 
-        data = empty((len(x), self.ncol), dtype=object)
+        # Create a new empty numpy array with dtype float64 as its interpolated data
+        data = empty((len(x), self.ncol), dtype=float64)
 
+        # Fill the columns of the array
         for idx, c in enumerate(self.columns):
             data[:, idx] = interp(x, self.index, self[:, c]).tolist()
 
+        # Set it in place
+        index_name = self.index_name  # To preserve the index name
         if inplace:
             self.__init__(
                 data=data,
                 index=x,
                 columns=self.columns,
-                **meta,
             )
+            self.index_name = index_name
             return None
 
-        return Table(
+        # Return a new object
+        obj = Table(
             data=data,
             index=x,
-            columns=list(self.columns),
-            **meta,
+            columns=self.columns,
         )
+        obj.index_name = index_name
+        return obj
 
 
 class TableLazy(TableBase):
@@ -236,32 +254,38 @@ class TableLazy(TableBase):
 
     def __init__(
         self,
-        data: BufferHandler,
+        parser: CSVParser,
         index: str | tuple = None,
         columns: list = None,
-        **kwargs,
-    ) -> object:
-        self.data = data
+    ):
+        # Set the stream as the data
+        self.data = parser.data
+        self.delimiter = parser.delimiter
 
         # Get internal indexing
-        index_int = [None] * kwargs["nrow"]
+        index_int = [None] * parser.nrow
         _c = 0
 
         with self.data as h:
             while True:
                 index_int[_c] = h.tell()
                 _c += 1
-                if not h.readline() or _c == kwargs["nrow"]:
+                if not h.readline() or _c == parser.nrow:
                     break
 
-        kwargs["_index_int"] = index_int
-        del index_int
+        # Set the index and column
+        columns = columns or parser.columns
+        index = index or parser.index
 
+        # Supercharge with the base table class
         TableBase.__init__(
             self,
-            index,
-            columns,
-            **kwargs,
+            parser.nrow,
+            parser.ncol,
+            dtypes=parser.dtypes,
+            index=index,
+            columns=columns,
+            internal_index=index_int,
         )
 
     def __iter__(self):
@@ -301,30 +325,34 @@ class TableLazy(TableBase):
 
     def set_index(
         self,
-        key: str,
+        index_col: str,
+        inplace: bool = True,
     ):
         """Set the index of the table.
 
         Parameters
         ----------
-        key : str
-            Column header.
-            View available headers via <object>.columns.
+        index_col : str
+            Column header. View available headers via <object>.columns.
+        inplace : bool, optional
+            Whether to adjust the current object or return a new one, by default True
         """
-        if key not in self.columns:
-            raise ValueError("")
+        if index_col not in self.columns:
+            raise ValueError(f"Given column ({index_col}) not found")
 
-        if key == self.index_col:
+        if index_col == self.index_name:
             return
 
-        _pat_multi = regex_pattern(self.delimiter, multi=True, nchar=self.nchar)
-        idx = self.header_index[key]
+        # Set up the pattern for parsing the data over multiple lines
+        _pat_multi = regex_pattern(self.delimiter, multi=True, nchar=self.data.nchar)
+        # Find the index of the index column
+        idx = self.columns.index(index_col)
         new_index = [None] * self.data.size
 
+        # Go through the data and collect all the index column data
         with self.data as h:
             c = 0
-
-            for _nlines, sd in text_chunk_gen(h, _pat_multi, nchar=self.nchar):
+            for _nlines, sd in text_chunk_gen(h, _pat_multi, nchar=self.data.nchar):
                 new_index[c:_nlines] = [
                     *map(
                         self.dtypes[idx],
@@ -333,4 +361,8 @@ class TableLazy(TableBase):
                 ]
                 c += _nlines
             del sd
-        self._index = dict(zip(new_index, self.data.values()))
+
+        if inplace:
+            self._index = dict(zip(new_index, self._index.values()))
+            self.index_name = index_col
+            return

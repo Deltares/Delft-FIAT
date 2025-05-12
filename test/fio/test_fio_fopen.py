@@ -63,7 +63,7 @@ def test_open_csv_index(exposure_data_path: Path):
     ds = open_csv(exposure_data_path, index=None)  # Which is default
 
     # Assert the index and name
-    assert ds.index_name is None
+    assert ds.index_name == "index"
     assert ds.index == (0, 1, 2, 3, 4)  # Default
 
     # Open with selected header

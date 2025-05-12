@@ -81,12 +81,11 @@ class TableBase(BaseStruct, metaclass=ABCMeta):
         columns: list | tuple,
     ):
         """Set the columns at a base level."""
+        if columns is None:
+            columns = [f"col_{num}" for num in range(self.ncol)]
         if len(columns) != self.ncol:
             raise ValueError(f"Size of columns ({len(columns)}) not the same \
 as the data ({self.ncol})")
-
-        if columns is None:
-            columns = [f"col_{num}" for num in range(self.ncol)]
 
         # Some checking in regards to duplicates in column headers
         self.columns_raw = columns

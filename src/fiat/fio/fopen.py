@@ -49,12 +49,7 @@ def open_csv(
     )
 
     if lazy:
-        return TableLazy(
-            data=parser.data,
-            index=parser.index,
-            columns=parser.columns,
-            **parser.meta,
-        )
+        return TableLazy(parser=parser)
 
     return Table.from_parser(
         parser=parser,
