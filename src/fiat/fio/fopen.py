@@ -39,10 +39,10 @@ def open_csv(
     Table | TableLazy
         Object holding parsed csv data.
     """
-    _handler = BufferHandler(file)
+    handler = BufferHandler(file)
 
     parser = CSVParser(
-        _handler,
+        handler,
         delimiter,
         header,
         index,
@@ -56,11 +56,8 @@ def open_csv(
             **parser.meta,
         )
 
-    return Table.from_stream(
-        data=parser.data,
-        index=parser.index,
-        columns=parser.columns,
-        **parser.meta,
+    return Table.from_parser(
+        parser=parser,
     )
 
 

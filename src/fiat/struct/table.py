@@ -2,9 +2,10 @@
 
 from math import floor, log10
 
-from numpy import arange, column_stack, interp, ndarray
+from numpy import arange, delete, empty, interp, ndarray
 
 from fiat.fio.handler import BufferHandler
+from fiat.fio.parser import CSVParser
 from fiat.struct.base import TableBase
 from fiat.util import (
     DD_NOT_IMPLEMENTED,
@@ -41,17 +42,29 @@ class Table(TableBase):
         data: ndarray,
         index: list | tuple = None,
         columns: list | tuple = None,
+        index_col: int = -1,
+        dtypes: list | tuple | None = None,
         **kwargs,
-    ) -> object:
+    ):
+        # Set the data directly
         self.data = data
+
+        # Check for the dtypes
+        if dtypes is None:
+            dtypes = [str] * data.shape[1]
 
         # Supercharge with _Table
         TableBase.__init__(
             self,
-            index,
-            columns,
+            *data.shape,
+            dtypes=dtypes,
+            index=index,
+            columns=columns,
             **kwargs,
         )
+
+        # Set the index
+        self.set_index(index_col)
 
     def __iter__(self):
         raise NotImplementedError(DD_NOT_IMPLEMENTED)
@@ -77,12 +90,9 @@ class Table(TableBase):
         return NotImplemented
 
     @classmethod
-    def from_stream(
+    def from_parser(
         cls,
-        data: BufferHandler,
-        columns: list | tuple,
-        index: list | tuple = None,
-        **kwargs,
+        parser: CSVParser,
     ):
         """Create the Table from a data steam (file).
 
@@ -95,38 +105,63 @@ class Table(TableBase):
         index : list | tuple, optional
             The index column.
         """
-        dtypes = kwargs["dtypes"]
-        ncol = kwargs["ncol"]
-        index_col = kwargs["index_col"]
-        nchar = kwargs["nchar"]
         _pat_multi = regex_pattern(
-            kwargs["delimiter"],
+            parser.delimiter,
             multi=True,
-            nchar=nchar,
+            nchar=parser.data.nchar,
         )
-        with data as h:
+        with parser.data as h:
             _d = _pat_multi.split(h.read().strip())
 
-        _f = []
-        cols = list(range(ncol))
+        data = empty((parser.nrow, parser.ncol), dtype=object)
 
-        if kwargs["index_name"] is not None:
-            columns.remove(kwargs["index_name"])
-            kwargs["ncol"] -= 1
+        for idx in range(parser.ncol):
+            data[:, idx] = [
+                parser.dtypes[idx](item)
+                for item in replace_empty(_d[idx :: parser.ncol])
+            ]
 
-        if index_col >= 0 and index_col in cols:
-            if index is not None:
-                index = [
-                    dtypes[index_col](item)
-                    for item in replace_empty(_d[index_col::ncol])
-                ]
-            cols.remove(index_col)
+        return cls(
+            data=data,
+            index=parser.index,
+            columns=parser.columns,
+            index_col=parser.index_col,
+            dtypes=parser.dtypes,
+        )
 
-        for c in cols:
-            _f.append([dtypes[c](item) for item in replace_empty(_d[c::ncol])])
+    def set_index(
+        self,
+        index_col: int,
+    ):
+        """_summary_.
 
-        data = column_stack((*_f,))
-        return cls(data=data, index=index, columns=columns, **kwargs)
+        Parameters
+        ----------
+        index_col : int
+            _description_
+        """
+        cols = list(range(len(self.columns)))
+
+        # Check whether the index column index is valid
+        if index_col < 0 or index_col not in cols:
+            raise ValueError(f"Index column index not present: ({index_col})")
+
+        # Remove the necessary data
+        index_name = self.columns[index_col]
+        _ = self._columns.pop(index_name)
+        _ = self.dtypes.pop(index_col)
+
+        # Modify the data and get the index value
+        new_index = self.data[:, index_col].tolist()
+        self.data = delete(self.data, 0, index_col)
+
+        # Set the new variables
+        self.index_name = index_name
+        self._ncol -= 1
+
+        # Recall the set index and column methods
+        self._set_index(new_index, self._index.values())
+        self._set_columns(self.columns)
 
     def upscale(
         self,
@@ -146,35 +181,26 @@ class Table(TableBase):
         """
         meta = self.meta.copy()
 
-        _rnd = abs(floor(log10(delta)))
-
-        _x = tuple(
+        # Set the rounding
+        rnd = abs(floor(log10(delta)))
+        # Set the new index
+        x = tuple(
             arange(min(self.index), max(self.index) + delta / 2, delta)
-            .round(_rnd)
+            .round(rnd)
             .tolist()
         )
+        x = list(set(x + self.index))
+        x.sort()
 
-        _x = list(set(_x + self.index))
-        _x.sort()
+        data = empty((len(x), self.ncol), dtype=object)
 
-        _f = []
-
-        for c in self.columns:
-            _f.append(interp(_x, self.index, self[:, c]).tolist())
-
-        data = column_stack(_f)
-
-        meta.update(
-            {
-                "ncol": self.meta["ncol"],
-                "nrow": len(data),
-            }
-        )
+        for idx, c in enumerate(self.columns):
+            data[:, idx] = interp(x, self.index, self[:, c]).tolist()
 
         if inplace:
             self.__init__(
                 data=data,
-                index=_x,
+                index=x,
                 columns=self.columns,
                 **meta,
             )
@@ -182,7 +208,7 @@ class Table(TableBase):
 
         return Table(
             data=data,
-            index=_x,
+            index=x,
             columns=list(self.columns),
             **meta,
         )
@@ -285,7 +311,7 @@ class TableLazy(TableBase):
             Column header.
             View available headers via <object>.columns.
         """
-        if key not in self.headers:
+        if key not in self.columns:
             raise ValueError("")
 
         if key == self.index_col:
@@ -293,9 +319,9 @@ class TableLazy(TableBase):
 
         _pat_multi = regex_pattern(self.delimiter, multi=True, nchar=self.nchar)
         idx = self.header_index[key]
-        new_index = [None] * self.handler.size
+        new_index = [None] * self.data.size
 
-        with self.handler as h:
+        with self.data as h:
             c = 0
 
             for _nlines, sd in text_chunk_gen(h, _pat_multi, nchar=self.nchar):
@@ -307,4 +333,4 @@ class TableLazy(TableBase):
                 ]
                 c += _nlines
             del sd
-        self.data = dict(zip(new_index, self.data.values()))
+        self._index = dict(zip(new_index, self.data.values()))
