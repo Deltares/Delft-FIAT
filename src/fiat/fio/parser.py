@@ -17,7 +17,7 @@ class CSVParser:
     Parameters
     ----------
     handler : BufferHandler
-
+        The handler of the stream to the file.
     delimiter : str
         The delimiter of the textfile, e.g. ',' or ';'
     header : bool
@@ -31,21 +31,21 @@ class CSVParser:
         handler: BufferHandler,
         delimiter: str,
         header: bool,
-        index: str = None,
+        index: str | None = None,
     ):
+        # The internal variables
+        self.columns = None
         self.delimiter = delimiter
         self.data = handler
-        self.meta = {}
-        self.meta["index_col"] = -1
-        self.meta["index_name"] = None
-        self.meta["delimiter"] = delimiter
-        self.meta["dup_cols"] = None
-        self.meta["nchar"] = self.data.nchar
+        self.dtypes = None
+        self.duplicates = None
         self.index = None
-        self.columns = None
-        self._nrow = self.data.size
-        self._ncol = 0
+        self.index_col = -1
+        self.meta = {}
+        self.ncol = 0
+        self.nrow = self.data.size
 
+        # Execute the parsing directly
         self.parse_meta(header)
         self.parse_structure(index=index)
 
@@ -60,123 +60,136 @@ class CSVParser:
         header : bool
             Whether there is a header or not.
         """
+        # Setup the pattern and reset the stream to the beginning
         _pat = regex_pattern(self.delimiter)
         self.data.stream.seek(0)
 
         while True:
-            self._nrow -= 1
+            # Loop through the lines to discover meta data
+            self.nrow -= 1
             cur_pos = self.data.stream.tell()
             line = self.data.stream.readline().decode("utf-8-sig")
 
+            # Line starting with a number sign is demeed metatdata
             if line.startswith("#"):
                 t = line.strip().split("=")
                 if len(t) == 1:
                     tl = t[0].split(":")
                     if len(tl) > 1:
+                        # Iterables in the metadata
                         lst = tl[1].split(self.delimiter)
-                        _entry = tl[0].strip().replace("#", "").lower()
-                        _val = [item.strip() for item in lst]
-                        self.meta[_entry] = _val
+                        entry = tl[0].strip().replace("#", "").lower()
+                        val = [item.strip() for item in lst]
+                        self.meta[entry] = val
                     else:
+                        # Direct key value pairs
                         lst = t[0].split(self.delimiter)
-                        _entry = lst[0].strip().replace("#", "").lower()
-                        _val = [item.strip() for item in lst[1:]]
-                        self.meta[_entry] = _val
+                        entry = lst[0].strip().replace("#", "").lower()
+                        val = [item.strip() for item in lst[1:]]
+                        self.meta[entry] = val
                         # raise ValueError("Supplied metadata in unknown format..")
                 else:
+                    # Really direct key value pairs
                     key, item = t
                     self.meta[key.strip().replace("#", "").lower()] = item.strip()
                 continue
 
+            # After the metadata, the header should be encountered
+            # However when not defined the first line is split to determine
+            # The amount of columns
             if not header:
                 self.columns = None
-                self._ncol = len(_pat.split(line.encode("utf-8-sig")))
+                self.ncol = len(_pat.split(line.encode("utf-8-sig")))
                 self.data.stream.seek(cur_pos)
-                self._nrow += 1
+                self.nrow += 1
                 break
 
+            # Otherwise the columns parsed directly from this line
             self.columns = [item.strip() for item in line.split(self.delimiter)]
-            self.meta["dup_cols"] = find_duplicates(self.columns)
+            self.duplicates = find_duplicates(self.columns)
             self.resolve_column_headers()
-            self._ncol = len(self.columns)
+            self.ncol = len(self.columns)
             break
 
+        # Skip the lines where metadata is located
         self.data.skip = self.data.stream.tell()
-        self.meta["ncol"] = self._ncol
-        self.meta["nrow"] = self._nrow
 
     def parse_structure(
         self,
-        index: str,
+        index: str | None = None,
     ):
         """Parse the csv file to create the structure.
 
         Parameters
         ----------
-        index : str
+        index : str, optional
             Index of the csv file.
         """
-        _get_index = False
-        _get_dtypes = True
+        # Set up the pattern and the vars for pulling apart the data
+        get_index = False
+        get_dtypes = True
         _pat_multi = regex_pattern(self.delimiter, multi=True, nchar=self.data.nchar)
 
-        if index is not None:
-            try:
-                idcol = self.columns.index(index)
-            except Exception:
-                idcol = 0
-            self.meta["index_col"] = idcol
-            self.meta["index_name"] = self.columns[idcol]
-            _index = []
-            _get_index = True
+        # Check if the index has been provided
+        if index is not None and self.columns is not None:
+            if index not in self.columns:
+                raise ValueError(f"Given index column ({index}) not found \
+in the columns ({self.columns})")
+            idcol = self.columns.index(index)
+            self.index_col = idcol
+            index_list = []
+            get_index = True
 
+        # Check if dtypes had been present in the metadata
         if "dtypes" in self.meta:
-            _dtypes = self.meta["dtypes"]
-            if len(_dtypes) != self._ncol:
-                raise ValueError("")
+            dtypes = self.meta.pop("dtypes")
+            if len(dtypes) != self.ncol:
+                raise ValueError(f"Length of dtypes ({len(dtypes)}) in meta does not \
+match the amount of columns in the dataset ({len(self.columns)})")
 
-            _dtypes = [_dtypes_from_string[item] for item in _dtypes]
+            dtypes = [_dtypes_from_string[item] for item in dtypes]
 
-            self.meta["dtypes"] = _dtypes
-            _dtypes = None
-            _get_dtypes = False
+            self.dtypes = dtypes
+            dtypes = None
+            get_dtypes = False
 
-        if _get_dtypes or _get_index:
-            if _get_dtypes:
-                _dtypes = [0] * self._ncol
+        # Pull apart the data to either determine the dtypes and/ or the index
+        if get_dtypes or get_index:
+            if get_dtypes:
+                dtypes = [0] * self.ncol
             with self.data as _h:
                 for _nlines, sd in text_chunk_gen(
                     _h, pattern=_pat_multi, nchar=self.data.nchar
                 ):
-                    if _get_dtypes:
-                        for idx in range(self._ncol):
-                            _dtypes[idx] = max(
-                                deter_type(b"\n".join(sd[idx :: self._ncol]), _nlines),
-                                _dtypes[idx],
+                    if get_dtypes:
+                        for idx in range(self.ncol):
+                            dtypes[idx] = max(
+                                deter_type(b"\n".join(sd[idx :: self.ncol]), _nlines),
+                                dtypes[idx],
                             )
-                    if _get_index:
-                        _index += sd[idcol :: self._ncol]
+                    if get_index:
+                        index_list += sd[idcol :: self.ncol]
                     del sd
 
-                if _get_dtypes:
-                    self.meta["dtypes"] = [_dtypes_reversed[item] for item in _dtypes]
-                if _get_index:
-                    func = self.meta["dtypes"][idcol]
-                    self.index = [func(item.decode()) for item in _index]
+                if get_dtypes:
+                    self.dtypes = [_dtypes_reversed[item] for item in dtypes]
+                if get_index:
+                    func = self.dtypes[idcol]
+                    self.index = [func(item.decode()) for item in index_list]
 
     def resolve_column_headers(self):
         """Resolve the column headers."""
-        _cols = self.columns
-        dup = self.meta["dup_cols"]
+        cols = self.columns
+        dup = self.duplicates
         if dup is None:
             dup = []
         # Solve duplicate values first
         count = dict(zip(dup, [0] * len(dup)))
-        for idx, item in enumerate(_cols):
+        for idx, item in enumerate(cols):
             if item in dup:
-                _cols[idx] += f"_{count[item]}"
+                cols[idx] += f"_{count[item]}"
                 count[item] += 1
 
         # Solve unnamed column headers
-        _cols = [_col if _col else f"Unnamed_{_i+1}" for _i, _col in enumerate(_cols)]
-        self.columns = _cols
+        cols = [col if col else f"Unnamed_{idx+1}" for idx, col in enumerate(cols)]
+        self.columns = cols
