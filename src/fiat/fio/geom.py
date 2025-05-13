@@ -24,7 +24,7 @@ class GeomIO(BaseIO):
 
     Parameters
     ----------
-    file : str
+    file : Path | str
         Path to a file.
     mode : str, optional
         The I/O mode. Either `r` for reading or `w` for writing.
@@ -59,7 +59,7 @@ class GeomIO(BaseIO):
 
     def __init__(
         self,
-        file: str,
+        file: Path | str,
         mode: str = "r",
         overwrite: bool = False,
         srs: str | None = None,

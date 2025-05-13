@@ -239,8 +239,8 @@ class TableLazy(TableBase):
 
     Parameters
     ----------
-    data : BufferHandler
-        A stream.
+    parser : CSVParser
+        A parser containing metadata and the stream to the file.
     index : str | tuple, optional
         The index column used as row indices.
     columns : list, optional
