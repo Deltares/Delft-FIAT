@@ -6,7 +6,7 @@ from pathlib import Path
 from numpy import full, ravel, unravel_index, where
 
 from fiat.fio import (
-    GridSource,
+    GridIO,
     open_grid,
 )
 from fiat.methods.ead import calc_ead, risk_density
@@ -16,27 +16,27 @@ from fiat.util import create_windows
 
 def worker(
     cfg: dict,
-    haz: GridSource,
+    haz: GridIO,
     idx: int,
     vul: Table,
-    exp: GridSource,
+    exp: GridIO,
 ):
     """Run the geometry model.
 
     This is the worker function corresponding to the run method \
-of the [GridSource](/api/GeomSource.qmd) object.
+of the [GridIO](/api/GeomIO.qmd) object.
 
     Parameters
     ----------
     cfg : object
         The configurations.
-    haz : GridSource
+    haz : GridIO
         The hazard data.
     idx : int
         Index of the hazard data band to be used.
     vul : Table
         The vulnerability data.
-    exp : GridSource
+    exp : GridIO
         The exposure data.
     """
     # Set some variables for the calculations

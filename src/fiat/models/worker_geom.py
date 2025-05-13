@@ -10,7 +10,7 @@ from typing import Callable
 from fiat.fio import (
     BufferedGeomWriter,
     BufferedTextWriter,
-    GridSource,
+    GridIO,
 )
 from fiat.gis import geom, overlay
 from fiat.log import LogItem, Sender
@@ -22,7 +22,7 @@ from fiat.util import DummyWriter, regex_pattern
 def worker(
     cfg: dict,
     risk: bool,
-    haz: GridSource,
+    haz: GridIO,
     vul: Table,
     exp_func: Callable,
     exp_data: TableLazy,
@@ -35,7 +35,7 @@ def worker(
     """Run the geometry model.
 
     This is the worker function corresponding to the run method \
-of the [GeomSource](/api/GeomSource.qmd) object.
+of the [GeomIO](/api/GeomIO.qmd) object.
 
     Parameters
     ----------
@@ -43,7 +43,7 @@ of the [GeomSource](/api/GeomSource.qmd) object.
         The configurations.
     risk : bool
         Whether to run in risk-mode.
-    haz : GridSource
+    haz : GridIO
         The hazard data.
     vul : Table
         The vulnerability data.

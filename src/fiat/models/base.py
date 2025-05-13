@@ -177,8 +177,8 @@ exceeds machine thread count ('{max_threads}')"
         path : Path | str, optional
             Path to the hazard gridded dataset, by default None
         kwargs : dict, optional
-            Keyword arguments for reading. These are passed into [open_geom]\
-(/api/fio/open_geom.qmd) after which into [GridSouce](/api/GridSource.qmd)/
+            Keyword arguments for reading. These are passed into [open_grid]\
+(/api/fio/open_grid.qmd) after which into [GridIO](/api/GridIO.qmd)/
         """
         file_entry = "hazard.file"
         path = check_file_for_read(self.cfg, file_entry, path)
@@ -201,7 +201,7 @@ exceeds machine thread count ('{max_threads}')"
 
         # check for subsets
         check_hazard_subsets(
-            data.subset_dict,
+            data.subdatasets,
             path,
         )
 

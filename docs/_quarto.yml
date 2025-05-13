@@ -241,9 +241,9 @@ quartodoc:
       desc: Objects constructed from data
       package: fiat.fio
       contents:
-        - name: GeomSource
+        - name: GeomIO
           children: separate
-        - name: GridSource
+        - name: GridIO
           children: separate
         - name: Grid
           children: separate

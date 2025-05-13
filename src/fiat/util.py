@@ -352,6 +352,8 @@ def read_gridsource_layers(
         ds = path.split(":")[-1].strip()
         out[ds] = path
 
+    if len(out) == 0:
+        return None
     return out
 
 

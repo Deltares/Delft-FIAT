@@ -270,7 +270,7 @@ class GeomModel(BaseModel):
             A list of paths to the vector files.
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_geom]\
-(/api/fio/open_geom.qmd) after which into [GeomSource](/api/GeomSource.qmd)/
+(/api/fio/open_geom.qmd) after which into [GeomIO](/api/GeomIO.qmd)/
         """
         # Discover the files
         _d = {}

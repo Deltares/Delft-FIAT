@@ -35,10 +35,10 @@ class GeomIO(BaseIO):
 
     Examples
     --------
-    Index the GeomSource directly to get features.
+    Index the GeomIO directly to get features.
     ```Python
     # Load a file
-    gm = GeomSource(< path-to-file >)
+    gm = GeomIO(< path-to-file >)
 
     # Index it!
     feature = gm[1]
@@ -160,7 +160,7 @@ class GeomIO(BaseIO):
         self,
         mode: str = "r",
     ):
-        """Reopen a closed GeomSource."""
+        """Reopen a closed GeomIO."""
         if not self.closed:
             return self
         obj = GeomIO.__new__(GeomIO, self.path, mode=mode)

@@ -13,6 +13,8 @@ class GeomLayer(BaseStruct):
     """Geometries container."""
 
     def __init__(self, *args, **kwargs):
+        # For typing
+        self._obj: ogr.Layer = None
         raise AttributeError("No constructer defined")
 
     @classmethod
@@ -104,7 +106,7 @@ class GeomLayer(BaseStruct):
 
     @property
     def bounds(self):
-        """Return the bounds of the GridSource.
+        """Return the bounds of the GridIO.
 
         Returns
         -------

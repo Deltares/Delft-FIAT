@@ -3,201 +3,21 @@
 import gc
 from pathlib import Path
 
-from numpy import array
 from osgeo import gdal, osr
 
 from fiat.error import DriverNotFoundError
 from fiat.fio.base import BaseIO
-from fiat.struct.base import BaseStruct
+from fiat.struct import GridBand
 from fiat.util import (
     GRID_DRIVER_MAP,
     get_srs_repr,
     read_gridsource_layers,
 )
 
-__all__ = ["Grid", "GridSource"]
+__all__ = ["GridIO"]
 
 
-class Grid(
-    BaseIO,
-    BaseStruct,
-):
-    """A source object for a specific raster band.
-
-    Acquired by indexing a GridSource object.
-
-    Parameters
-    ----------
-    band : gdal.Band
-        A band defined by GDAL.
-    chunk : tuple, optional
-        Chunk size in x direction and y direction.
-    mode : str, optional
-        The I/O mode. Either `r` for reading or `w` for writing.
-    """
-
-    def __init__(
-        self,
-        band: gdal.Band,
-        chunk: tuple = None,
-        mode: str = "r",
-    ):
-        BaseIO.__init__(self, mode=mode)
-
-        self.src = band
-        self._x = band.XSize
-        self._y = band.YSize
-        self._l = 0
-        self._u = 0
-        self.nodata = band.GetNoDataValue()
-        self.dtype = band.DataType
-        self.dtype_name = gdal.GetDataTypeName(self.dtype)
-        self.dtype_size = gdal.GetDataTypeSize(self.dtype)
-
-        self._last_chunk = None
-
-        if chunk is None:
-            self._chunk = self.shape
-        elif len(chunk) == 2:
-            self._chunk = chunk
-        else:
-            raise ValueError(f"Incorrect chunking set: {chunk}")
-
-    def __iter__(self):
-        self.flush()
-        self._reset_chunking()
-        return self
-
-    def __next__(self):
-        if self._u > self._y:
-            self.flush()
-            raise StopIteration
-
-        w = min(self._chunk[1], self._x - self._l)
-        h = min(self._chunk[0], self._y - self._u)
-
-        window = (
-            self._l,
-            self._u,
-            w,
-            h,
-        )
-        chunk = self[window]
-
-        self._l += self._chunk[1]
-        if self._l > self._x:
-            self._l = 0
-            self._u += self._chunk[0]
-
-        return window, chunk
-
-    def __getitem__(
-        self,
-        window: tuple,
-    ):
-        chunk = self.src.ReadAsArray(*window)
-        return chunk
-
-    def _reset_chunking(self):
-        self._l = 0
-        self._u = 0
-
-    def close(self):
-        """Close the Grid object."""
-        BaseIO.close(self)
-        self.src = None
-        gc.collect()
-
-    def flush(self):
-        """Flush the grid object."""
-        if self.src is not None:
-            self.src.FlushCache()
-
-    @property
-    def chunk(self):
-        """Return the chunk size."""
-        return self._chunk
-
-    @property
-    def shape(self):
-        """Return the shape of the grid.
-
-        According to normal reading, i.e. rows, columns.
-
-        Returns
-        -------
-        tuple
-            Size in y direction, size in x direction
-        """
-        return self._y, self._x
-
-    @property
-    def shape_xy(self):
-        """Return the shape of the grid.
-
-        According to x-direction first.
-
-        Returns
-        -------
-        tuple
-            Size in x direction, size in y direction
-        """
-        return self._x, self._y
-
-    def get_metadata_item(
-        self,
-        entry: str,
-    ):
-        """Get specific metadata item.
-
-        Parameters
-        ----------
-        entry : str
-            Identifier of item.
-
-        Returns
-        -------
-        object
-            Information is present.
-        """
-        res = str(self.src.GetMetadataItem(entry))
-        return res
-
-    def set_chunk_size(
-        self,
-        chunk: tuple,
-    ):
-        """Set the chunking size.
-
-        Parameters
-        ----------
-        chunk : tuple
-            Size in x direction, size in y direction.
-        """
-        self._chunk = chunk
-
-    @BaseIO.check_mode
-    def write_chunk(
-        self,
-        chunk: array,
-        upper_left: tuple | list,
-    ):
-        """Write a chunk of data to the band.
-
-        Only in write (`'w'`) mode.
-
-        Parameters
-        ----------
-        chunk : array
-            Array of data.
-        upper_left : tuple | list
-            Upper left corner of the chunk.
-            N.b. these are not coordinates, but indices.
-        """
-        self.src.WriteArray(chunk, *upper_left)
-
-
-class GridSource(BaseIO, BaseStruct):
+class GridIO(BaseIO):
     """A source object for geospatial gridded data.
 
     Essentially a gdal Dataset wrapper.
@@ -221,7 +41,7 @@ multiple variables.
 
     Examples
     --------
-    Can be indexed directly to get a `Grid` object.
+    Can be indexed directly to get a `GridBand` object.
     ```Python
     # Open a file
     gs = open_grid(< path-to-file >)
@@ -246,7 +66,7 @@ multiple variables.
         subset: str = None,
         var_as_band: bool = False,
     ):
-        """Create a new GridSource object."""
+        """Create a new GridIO object."""
         obj = object.__new__(cls)
 
         return obj
@@ -260,62 +80,55 @@ multiple variables.
         subset: str = None,
         var_as_band: bool = False,
     ):
-        _open_options = []
-
-        BaseStruct.__init__(self)
-        self._update_kwargs(
-            subset=subset,
-            var_as_band=var_as_band,
-        )
-
+        # Supercharge with BaseIO class
         BaseIO.__init__(self, file, mode)
 
+        # Figure out the driver situation
         if self.path.suffix not in GRID_DRIVER_MAP:
             raise DriverNotFoundError(gog="Grid", path=self.path)
 
         driver = GRID_DRIVER_MAP[self.path.suffix]
+        self.driver = gdal.GetDriverByName(driver)
 
+        # Go over the open options, var_as_band really
+        open_options = []
+        if var_as_band:
+            open_options.append("VARIABLES_AS_BANDS=YES")
+        self.var_as_band = var_as_band
+
+        # If var_as_band is false, a subset might be requested/ required
         if not subset:
             subset = None
         self.subset = subset
-
         if subset is not None and not var_as_band:
             self._path = Path(
                 f"{driver.upper()}:" + f'"{file}"' + f":{subset}",
             )
 
-        if var_as_band:
-            _open_options.append("VARIABLES_AS_BANDS=YES")
-        self._var_as_band = var_as_band
+        # Some of the internals
+        self._count: int = 0
+        self._chunk: tuple = None
+        self._dtype: int = None
+        self.src: gdal.Dataset = None
 
-        self._driver = gdal.GetDriverByName(driver)
+        # If write mode, consider initialized
+        if self.mode:
+            return
 
-        self.src = None
-        self._chunk = None
-        self._dtype = None
-        self.subset_dict = None
-        self._count = 0
-        self._cur_index = 1
+        # Otherwise open an existing dataset
+        self.src = gdal.OpenEx(self._path.as_posix(), open_options=open_options)
+        self._count = self.src.RasterCount
+
+        # Set the chunking
+        self.chunk = self.shape
+        if chunk is not None:
+            self.chunk = chunk
+
+        # Set the 'external' srs
         self._srs = None
         if srs is not None:
             self._srs = osr.SpatialReference()
             self._srs.SetFromUserInput(srs)
-
-        if not self.mode:
-            self.src = gdal.OpenEx(self._path.as_posix(), open_options=_open_options)
-            self._count = self.src.RasterCount
-
-            if chunk is None:
-                self._chunk = self.shape
-            elif len(chunk) == 2:
-                self._chunk = chunk
-            else:
-                raise ValueError(f"Incorrect chunking set: {chunk}")
-
-            if self._count == 0:
-                self.subset_dict = read_gridsource_layers(
-                    self.src,
-                )
 
     def __iter__(self):
         self._cur_index = 1
@@ -333,10 +146,11 @@ multiple variables.
         self,
         oid: int,
     ):
-        return Grid(
-            self.src.GetRasterBand(oid),
+        return GridBand._create(
+            ref=self.src,
+            band=self.src.GetRasterBand(oid),
             chunk=self.chunk,
-            mode=self.mode_str,
+            mode=self.mode,
         )
 
     def __reduce__(self):
@@ -349,11 +163,152 @@ multiple variables.
             srs,
             self.chunk,
             self.subset,
-            self._var_as_band,
+            self.var_as_band,
         )
 
+    ## Properties
+    @property
+    def band_names(
+        self,
+    ) -> list:
+        """Get the names of all bands."""
+        _names = []
+        for n in range(self.size):
+            _names.append(self.get_band_name(n + 1))
+
+        return _names
+
+    @property
+    @BaseIO.check_state
+    def bounds(self) -> tuple:
+        """Return the bounds of the GridIO.
+
+        Returns
+        -------
+        tuple
+            Contains the four boundaries of the grid. This take the form of \
+[left, right, top, bottom]
+        """
+        _gtf = self.src.GetGeoTransform()
+        return (
+            _gtf[0],
+            _gtf[0] + _gtf[1] * self.src.RasterXSize,
+            _gtf[3] + _gtf[5] * self.src.RasterYSize,
+            _gtf[3],
+        )
+
+    @property
+    def chunk(self) -> tuple:
+        """Return the chunking size.
+
+        Returns
+        -------
+        list
+            The chunking in x direction and y direction.
+        """
+        return self._chunk
+
+    @chunk.setter
+    def chunk(
+        self,
+        value: tuple[int],
+    ):
+        """Set the chunking size of the grid.
+
+        Parameters
+        ----------
+        chunk : tuple[int]
+            A tuple containing the chunking size in x direction and y direction.
+        """
+        if len(value) != 2:
+            raise ValueError("Chunk should have two elements")
+        self._chunk = value
+
+    @property
+    @BaseIO.check_state
+    def dtype(self) -> int:
+        """Return the data types of the field data."""
+        if not self._dtype:
+            _b = self[1]
+            self._dtype = _b.dtype
+            del _b
+        return self._dtype
+
+    @property
+    @BaseIO.check_state
+    def geotransform(self) -> tuple:
+        """Return the geo transform of the grid."""
+        return self.src.GetGeoTransform()
+
+    @property
+    @BaseIO.check_state
+    def shape(self) -> tuple:
+        """Return the shape of the grid.
+
+        According to normal reading, i.e. rows, columns.
+
+        Returns
+        -------
+        tuple
+            Contains size in y direction and x direction.
+        """
+        return (
+            self.src.RasterYSize,
+            self.src.RasterXSize,
+        )
+
+    @property
+    @BaseIO.check_state
+    def shape_xy(self) -> tuple:
+        """Return the shape of the grid.
+
+        According to x-direction first.
+
+        Returns
+        -------
+        tuple
+            Contains size in x direction and y direction.
+        """
+        return (
+            self.src.RasterXSize,
+            self.src.RasterYSize,
+        )
+
+    @property
+    @BaseIO.check_state
+    def size(self) -> int:
+        """Return the number of bands."""
+        count = self.src.RasterCount
+        self._count = count
+        return self._count
+
+    @property
+    @BaseIO.check_state
+    def srs(
+        self,
+    ) -> osr.SpatialReference:
+        """Return the srs (Spatial Reference System)."""
+        _srs = self.src.GetSpatialRef()
+        if _srs is None:
+            _srs = self._srs
+        return _srs
+
+    @srs.setter
+    def srs(
+        self,
+        srs,
+    ):
+        self._srs = srs
+
+    @property
+    @BaseIO.check_state
+    def subdatasets(self):
+        """Return the sub datasets of the source, if present."""
+        return read_gridsource_layers(self.src)
+
+    # Basic I/O methods
     def close(self):
-        """Close the GridSource."""
+        """Close the GridIO."""
         BaseIO.close(self)
 
         self.src = None
@@ -371,11 +326,11 @@ multiple variables.
             self.src.FlushCache()
 
     def reopen(self):
-        """Reopen a closed GridSource."""
+        """Reopen a closed GridIO."""
         if not self._closed:
             return self
-        obj = GridSource.__new__(
-            GridSource,
+        obj = GridIO.__new__(
+            GridIO,
             file=self.path,
             chunk=self.chunk,
             subset=self.subset,
@@ -389,112 +344,7 @@ multiple variables.
         )
         return obj
 
-    @property
-    @BaseIO.check_state
-    def bounds(self):
-        """Return the bounds of the GridSource.
-
-        Returns
-        -------
-        list
-            Contains the four boundaries of the grid. This take the form of \
-[left, right, top, bottom]
-        """
-        _gtf = self.src.GetGeoTransform()
-        return (
-            _gtf[0],
-            _gtf[0] + _gtf[1] * self.src.RasterXSize,
-            _gtf[3] + _gtf[5] * self.src.RasterYSize,
-            _gtf[3],
-        )
-
-    @property
-    def chunk(self):
-        """Return the chunking size.
-
-        Returns
-        -------
-        list
-            The chunking in x direction and y direction.
-        """
-        return self._chunk
-
-    @property
-    @BaseIO.check_state
-    def dtype(self):
-        """Return the data types of the field data."""
-        if not self._dtype:
-            _b = self[1]
-            self._dtype = _b.dtype
-            del _b
-        return self._dtype
-
-    @property
-    @BaseIO.check_state
-    def geotransform(self):
-        """Return the geo transform of the grid."""
-        return self.src.GetGeoTransform()
-
-    @property
-    @BaseIO.check_state
-    def shape(self):
-        """Return the shape of the grid.
-
-        According to normal reading, i.e. rows, columns.
-
-        Returns
-        -------
-        tuple
-            Contains size in y direction and x direction.
-        """
-        return (
-            self.src.RasterYSize,
-            self.src.RasterXSize,
-        )
-
-    @property
-    @BaseIO.check_state
-    def shape_xy(self):
-        """Return the shape of the grid.
-
-        According to x-direction first.
-
-        Returns
-        -------
-        tuple
-            Contains size in x direction and y direction.
-        """
-        return (
-            self.src.RasterXSize,
-            self.src.RasterYSize,
-        )
-
-    @property
-    @BaseIO.check_state
-    def size(self):
-        """Return the number of bands."""
-        count = self.src.RasterCount
-        self._count = count
-        return self._count
-
-    @property
-    @BaseIO.check_state
-    def srs(
-        self,
-    ):
-        """Return the srs (Spatial Reference System)."""
-        _srs = self.src.GetSpatialRef()
-        if _srs is None:
-            _srs = self._srs
-        return _srs
-
-    @srs.setter
-    def srs(
-        self,
-        srs,
-    ):
-        self._srs = srs
-
+    ## Specific I/O methods
     @BaseIO.check_mode
     @BaseIO.check_state
     def create(
@@ -547,26 +397,7 @@ multiple variables.
         self._count += 1
 
     @BaseIO.check_state
-    def deter_band_names(
-        self,
-    ):
-        """Determine the names of the bands.
-
-        If the bands do not have any names of themselves,
-        they will be set to a default.
-        """
-        _names = []
-        for n in range(self.size):
-            name = self.get_band_name(n + 1)
-            if not name:
-                _names.append(f"band{n+1}")
-                continue
-            _names.append(name)
-
-        return _names
-
-    @BaseIO.check_state
-    def get_band_name(self, n: int):
+    def get_band_name(self, n: int) -> str:
         """Get the name of a specific band.
 
         Parameters
@@ -591,29 +422,6 @@ multiple variables.
             return _meta[_var_meta[0]]
 
         return ""
-
-    def get_band_names(
-        self,
-    ):
-        """Get the names of all bands."""
-        _names = []
-        for n in range(self.size):
-            _names.append(self.get_band_name(n + 1))
-
-        return _names
-
-    def set_chunk_size(
-        self,
-        chunk: tuple,
-    ):
-        """Set the chunking size of the grid.
-
-        Parameters
-        ----------
-        chunk : tuple
-            A tuple containing the chunking size in x direction and y direction.
-        """
-        self._chunk = chunk
 
     @BaseIO.check_mode
     def set_geotransform(self, affine: tuple):

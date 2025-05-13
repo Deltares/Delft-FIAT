@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from fiat.fio.geom import GeomIO
-from fiat.fio.grid import GridSource
+from fiat.fio.grid import GridIO
 from fiat.fio.handler import BufferHandler
 from fiat.fio.parser import CSVParser
 from fiat.struct import Table, TableLazy
@@ -121,10 +121,10 @@ def open_grid(
 
     Returns
     -------
-    GridSource
+    GridIO
         Object that holds a connection to the source file.
     """
-    return GridSource(
+    return GridIO(
         file,
         mode,
         srs,

@@ -5,7 +5,7 @@ import pytest
 
 from fiat.fio import (
     GeomIO,
-    GridSource,
+    GridIO,
     open_csv,
     open_geom,
     open_grid,
@@ -156,7 +156,7 @@ def test_open_grid_context(hazard_event_path: Path):
     # Open the dataset with context managesubsetr
     with open_grid(hazard_event_path) as reader:
         # Assert some simple stuff
-        assert isinstance(reader, GridSource)
+        assert isinstance(reader, GridIO)
         assert reader.size == 1  # One band
 
     # Now it's closed but not deleted
@@ -176,7 +176,7 @@ def test_open_grid_read_only(hazard_event_path: Path):
     ds = open_grid(hazard_event_path)
 
     # Assert some simple stuff
-    assert isinstance(ds, GridSource)
+    assert isinstance(ds, GridIO)
     assert ds.size == 1  # One band
 
     ds.close()
@@ -208,7 +208,7 @@ def test_open_grid_subset(hazard_risk_path: Path):
 
     # Assert some simple stuff
     assert ds.size == 0  # Nothing found
-    assert ds.subset_dict is not None  # Subsets are found
+    assert ds.subdatasets is not None  # Subsets are found
 
     ds.close()
 
@@ -217,7 +217,7 @@ def test_open_grid_subset(hazard_risk_path: Path):
 
     # Assert some simple stuff
     assert ds.size == 1  # A single band
-    assert ds.subset_dict is None  # No longer any subsets
+    assert ds.subdatasets is None  # No longer any subsets
 
     ds.close()
 
@@ -228,7 +228,7 @@ def test_open_grid_var(hazard_risk_path: Path):
 
     # Assert some simple stuff
     assert ds.size == 0  # Nothing found
-    assert ds.subset_dict is not None  # Subsets are found
+    assert ds.subdatasets is not None  # Subsets are found
 
     ds.close()
 
@@ -237,7 +237,7 @@ def test_open_grid_var(hazard_risk_path: Path):
 
     # Assert some simple stuff
     assert ds.size == 4  # All subsets as bands
-    assert ds.subset_dict is None  # No longer any subsets
+    assert ds.subdatasets is None  # No longer any subsets
 
     ds.close()
 
