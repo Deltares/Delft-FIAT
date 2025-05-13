@@ -5,7 +5,7 @@ from osgeo import ogr, osr
 
 from fiat.error import DriverNotFoundError
 from fiat.fio.geom import GeomIO
-from fiat.struct import GeomStruct
+from fiat.struct import GeomLayer
 from fiat.util import get_srs_repr
 
 
@@ -16,7 +16,7 @@ def test_geomio_read_only(exposure_geom_path: Path):
     # Assert some simple stuff
     assert gio.mode == 0
     assert get_srs_repr(gio.srs) == "EPSG:4326"
-    assert isinstance(gio.layer, GeomStruct)
+    assert isinstance(gio.layer, GeomLayer)
 
 
 def test_geomio_read_errors(tmp_path: Path):

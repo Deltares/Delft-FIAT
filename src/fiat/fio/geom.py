@@ -7,7 +7,7 @@ from osgeo import gdal, ogr, osr
 
 from fiat.error import DriverNotFoundError
 from fiat.fio.base import BaseIO
-from fiat.struct import GeomStruct
+from fiat.struct import GeomLayer
 from fiat.util import (
     GEOM_READ_DRIVER_MAP,
     GEOM_WRITE_DRIVER_MAP,
@@ -113,7 +113,7 @@ class GeomIO(BaseIO):
             return self._layer
         obj = self.src.GetLayer()
         if obj is not None:
-            self._layer = GeomStruct._create(self.src, obj, self.mode)
+            self._layer = GeomLayer._create(self.src, obj, self.mode)
             return self._layer
 
     @property
@@ -204,7 +204,7 @@ class GeomIO(BaseIO):
             that complies with a specific geometry type according to GDAL.
         """
         obj = self.src.CreateLayer(self.path.stem, srs, geom_type)
-        self._layer = GeomStruct._create(self.src, obj, self.mode)
+        self._layer = GeomLayer._create(self.src, obj, self.mode)
 
     @BaseIO.check_mode
     @BaseIO.check_state
@@ -230,7 +230,7 @@ class GeomIO(BaseIO):
         }
 
         obj = self.src.CopyLayer(layer, self.path.stem, [f"OVERWRITE={_ow[overwrite]}"])
-        self._layer = GeomStruct._create(self.src, obj, self.mode)
+        self._layer = GeomLayer._create(self.src, obj, self.mode)
 
     @BaseIO.check_mode
     @BaseIO.check_state
@@ -254,7 +254,7 @@ class GeomIO(BaseIO):
             _description_
         """
         obj = self.src.CopyLayer(layer, layer_fn, ["OVERWRITE=YES"])
-        self._layer = GeomStruct._create(self.src, obj, self.mode)
+        self._layer = GeomLayer._create(self.src, obj, self.mode)
 
     @BaseIO.check_mode
     @BaseIO.check_state

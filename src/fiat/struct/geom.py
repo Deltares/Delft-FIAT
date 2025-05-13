@@ -6,10 +6,10 @@ from osgeo import gdal, ogr
 
 from fiat.struct.base import BaseStruct
 
-__all__ = ["GeomStruct"]
+__all__ = ["GeomLayer"]
 
 
-class GeomStruct(BaseStruct):
+class GeomLayer(BaseStruct):
     """Geometries container."""
 
     def __init__(self, *args, **kwargs):
