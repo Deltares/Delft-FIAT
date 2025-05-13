@@ -2,6 +2,7 @@ import platform
 from pathlib import Path
 
 import pytest
+from osgeo import osr
 
 TEST_MODULE = Path(__file__).parent
 
@@ -52,3 +53,11 @@ def hazard_risk_path(testdata_dir: Path) -> Path:
     p = Path(testdata_dir, "hazard", "risk_map.nc")
     assert p.is_file()
     return p
+
+
+## Globally used object
+@pytest.fixture(scope="session")
+def srs() -> osr.SpatialReference:
+    s = osr.SpatialReference()
+    s.SetFromUserInput("EPSG:4326")
+    return s
