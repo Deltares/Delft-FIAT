@@ -28,6 +28,15 @@ class GridBand(
     def __init__(self, *args, **kwargs):
         # For typing
         self._obj: gdal.Band = None
+        self._x: int = None
+        self._y: int = None
+        self._l: int = None
+        self._u: int = None
+        self.mode: int = None
+        self.nodata: float | int = None
+        self.dtype: int = None
+        self.dtype_name: str = None
+        self.dtype_size: int = None
         raise AttributeError("No constructer defined")
 
     def __iter__(self):

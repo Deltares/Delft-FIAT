@@ -143,11 +143,11 @@ multiple variables.
             self._srs.SetFromUserInput(srs)
 
     def __iter__(self):
-        self._cur_index = 1
+        self._cur_index = 0
         return self
 
     def __next__(self):
-        if self._cur_index < self._count + 1:
+        if self._cur_index < self._count:
             r = self[self._cur_index]
             self._cur_index += 1
             return r
@@ -321,6 +321,7 @@ multiple variables.
         BaseIO.close(self)
 
         self._srs = None
+        self._bands = None
         self.src = None
         self.driver = None
 
@@ -333,6 +334,8 @@ multiple variables.
         """
         if self.src is not None:
             self.src.FlushCache()
+            for item in self._bands:
+                item.flush()
 
     def reopen(self):
         """Reopen a closed GridIO."""

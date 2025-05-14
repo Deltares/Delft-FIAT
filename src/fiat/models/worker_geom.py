@@ -70,9 +70,6 @@ of the [GeomIO](/api/GeomIO.qmd) object.
     man_columns = getattr(module, "MANDATORY_COLUMNS")
     man_entries = getattr(module, "MANDATORY_ENTRIES")
 
-    # Get the bands to prevent object creation while looping
-    bands = [(haz[idx + 1], idx + 1) for idx in range(haz.size)]
-
     # More meta data
     cfg_entries = [cfg.get(item) for item in man_entries]
     index_col = cfg.get("exposure.geom.settings.index")
@@ -89,7 +86,7 @@ of the [GeomIO](/api/GeomIO.qmd) object.
     pattern = None
     if exp_data is not None:
         man_columns_idxs = [exp_data.columns.index(item) for item in man_columns]
-        pattern = regex_pattern(exp_data.delimiter, nchar=exp_data.nchar)
+        pattern = regex_pattern(exp_data.delimiter, nchar=exp_data.data.nchar)
 
     # Loop through the different files
     for idx, gm in exp_geom.items():
@@ -150,7 +147,7 @@ No data found in exposure database",
                     )
                 )
                 continue
-            for band, bn in bands:
+            for band in haz:
                 # How to get the hazard data
                 if method == "area":
                     res = overlay.clip(

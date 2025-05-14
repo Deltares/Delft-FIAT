@@ -168,7 +168,6 @@ the fields in the buffer.
         # Block while writing to the drive
         # self.buffer.close()
         self.lock.acquire()
-        print("dumping")
         merge_geom_layers(
             self.file.as_posix(),
             f"/vsimem/{self.file.stem}.gpkg",
