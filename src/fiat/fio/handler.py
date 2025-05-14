@@ -22,11 +22,11 @@ class BufferHandler:
         path: Path,
         skip: int = 0,
     ):
-        self.path = Path(path)
-        self.size = None
-        self.skip = skip
-        self.nchar = b"\n"
-        self.stream = None
+        self.path: Path = Path(path)
+        self.size: int = None
+        self.skip: int = skip
+        self.nchar: bytes = b"\n"
+        self.stream: BufferedReader = None
 
         if self.stream is None:
             self.setup_stream()

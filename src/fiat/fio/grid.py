@@ -94,12 +94,12 @@ multiple variables.
         open_options = []
         if var_as_band:
             open_options.append("VARIABLES_AS_BANDS=YES")
-        self.var_as_band = var_as_band
+        self.var_as_band: bool = var_as_band
 
         # If var_as_band is false, a subset might be requested/ required
         if not subset:
             subset = None
-        self.subset = subset
+        self.subset: str = subset
         if subset is not None and not var_as_band:
             self._path = Path(
                 f"{driver.upper()}:" + f'"{file}"' + f":{subset}",
@@ -137,7 +137,7 @@ multiple variables.
             )
 
         # Set the 'external' srs
-        self._srs = None
+        self._srs: osr.SpatialReference = None
         if srs is not None:
             self._srs = osr.SpatialReference()
             self._srs.SetFromUserInput(srs)
@@ -175,9 +175,7 @@ multiple variables.
 
     ## Properties
     @property
-    def band_names(
-        self,
-    ) -> list:
+    def band_names(self) -> list:
         """Get the names of all bands."""
         _names = []
         for n in range(self.size):
@@ -293,9 +291,7 @@ multiple variables.
 
     @property
     @BaseIO.check_state
-    def srs(
-        self,
-    ) -> osr.SpatialReference:
+    def srs(self) -> osr.SpatialReference:
         """Return the srs (Spatial Reference System)."""
         _srs = self.src.GetSpatialRef()
         if _srs is None:
@@ -303,15 +299,12 @@ multiple variables.
         return _srs
 
     @srs.setter
-    def srs(
-        self,
-        srs,
-    ):
+    def srs(self, srs: osr.SpatialReference):
         self._srs = srs
 
     @property
     @BaseIO.check_state
-    def subdatasets(self):
+    def subdatasets(self) -> dict:
         """Return the sub datasets of the source, if present."""
         return read_gridsource_layers(self.src)
 

@@ -2,7 +2,7 @@
 
 import weakref
 
-from osgeo import gdal, ogr
+from osgeo import gdal, ogr, osr
 
 from fiat.struct.base import BaseStruct
 
@@ -15,6 +15,8 @@ class GeomLayer(BaseStruct):
     def __init__(self, *args, **kwargs):
         # For typing
         self._obj: ogr.Layer = None
+        self._count: int = None
+        self.mode: int = None
         raise AttributeError("No constructer defined")
 
     @classmethod
@@ -55,7 +57,7 @@ class GeomLayer(BaseStruct):
         else:
             raise StopIteration
 
-    def __getitem__(self, fid):
+    def __getitem__(self, fid) -> ogr.Feature:
         return self._obj.GetFeature(fid)
 
     ## Some private methods
@@ -105,7 +107,7 @@ class GeomLayer(BaseStruct):
         return self._obj_ref()
 
     @property
-    def bounds(self):
+    def bounds(self) -> tuple:
         """Return the bounds of the GridIO.
 
         Returns
@@ -117,7 +119,7 @@ class GeomLayer(BaseStruct):
         return self._obj.GetExtent()
 
     @property
-    def columns(self):
+    def columns(self) -> tuple:
         """Return the columns header of the attribute tabel.
 
         (Same as field, but determined from internal _columns attribute)
@@ -130,12 +132,12 @@ class GeomLayer(BaseStruct):
         return tuple(self._columns.keys())
 
     @property
-    def defn(self):
+    def defn(self) -> ogr.FeatureDefn:
         """Return the layer definition."""
         return self._obj.GetLayerDefn()
 
     @property
-    def dtypes(self):
+    def dtypes(self) -> list[int]:
         """Return the data types of the fields."""
         _flds = self._obj.GetLayerDefn()
         dt = [_flds.GetFieldDefn(_i).type for _i in range(_flds.GetFieldCount())]
@@ -143,7 +145,7 @@ class GeomLayer(BaseStruct):
         return dt
 
     @property
-    def fields(self):
+    def fields(self) -> list[str]:
         """Return the names of the fields."""
         _flds = self._obj.GetLayerDefn()
         fh = [_flds.GetFieldDefn(_i).GetName() for _i in range(_flds.GetFieldCount())]
@@ -151,28 +153,24 @@ class GeomLayer(BaseStruct):
         return fh
 
     @property
-    def geom_type(self):
+    def geom_type(self) -> int:
         """Return the geometry type."""
         return self._obj.GetGeomType()
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the layer name."""
         return self._obj.GetName()
 
     @property
-    def size(
-        self,
-    ):
+    def size(self) -> int:
         """Return the size (geometry count)."""
         count = self._obj.GetFeatureCount()
         self._count = count
         return self._count
 
     @property
-    def srs(
-        self,
-    ):
+    def srs(self) -> osr.SpatialReference:
         """Return the srs (Spatial Reference System)."""
         return self._obj.GetSpatialRef()
 

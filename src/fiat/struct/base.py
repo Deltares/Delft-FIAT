@@ -16,10 +16,10 @@ class NamedIndex(dict):
 
     def __init__(self, settings={}, **kwargs):
         dict.__init__(self, settings, **kwargs)
-        self._name = "index"
+        self._name: str = "index"
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the index name."""
         return self._name
 
@@ -33,9 +33,9 @@ class BaseStruct(metaclass=ABCMeta):
     """A struct container."""
 
     def __init__(self):
-        self._columns = {}
-        self._kwargs = {}
-        self._index = NamedIndex()
+        self._columns: dict = {}
+        self._kwargs: dict = {}
+        self._index: NamedIndex = NamedIndex()
 
     @abstractmethod
     def __del__(self):

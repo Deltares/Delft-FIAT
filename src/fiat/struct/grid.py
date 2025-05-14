@@ -128,7 +128,7 @@ class GridBand(
         return self._obj_ref()
 
     @property
-    def chunk(self):
+    def chunk(self) -> tuple:
         """Return the chunk size."""
         return self._chunk
 
@@ -150,7 +150,7 @@ class GridBand(
         return self._obj.GetMetadata()
 
     @property
-    def shape(self):
+    def shape(self) -> tuple:
         """Return the shape of the grid.
 
         According to normal reading, i.e. rows, columns.
@@ -163,7 +163,7 @@ class GridBand(
         return self._y, self._x
 
     @property
-    def shape_xy(self):
+    def shape_xy(self) -> tuple:
         """Return the shape of the grid.
 
         According to x-direction first.
@@ -179,7 +179,7 @@ class GridBand(
     def get_metadata_item(
         self,
         entry: str,
-    ):
+    ) -> object:
         """Get specific metadata item.
 
         Parameters

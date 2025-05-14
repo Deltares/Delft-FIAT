@@ -9,6 +9,7 @@ from typing import Any
 from osgeo import ogr, osr
 
 from fiat.fio.fopen import open_geom
+from fiat.fio.geom import GeomIO
 from fiat.fio.misc import merge_geom_layers
 from fiat.util import (
     NEWLINE_CHAR,
@@ -23,7 +24,7 @@ class BufferedGeomWriter:
 
     Parameters
     ----------
-    file : str | Path
+    file : Path | str
         Path to the file.
     srs : osr.SpatialReference
         The spatial reference system of the file (and the buffer).
@@ -31,11 +32,13 @@ class BufferedGeomWriter:
         The definition of the layer, by default None
     buffer_size : int, optional
         The size of the buffer, by default 100000
+    lock : Lock, optional
+        A lock for multiprocessing, by default None
     """
 
     def __init__(
         self,
-        file: str | Path,
+        file: Path | str,
         srs: osr.SpatialReference,
         layer_defn: ogr.FeatureDefn = None,
         buffer_size: int = 100000,  # geometries
@@ -43,29 +46,29 @@ class BufferedGeomWriter:
     ):
         # Ensure pathlib.Path
         file = Path(file)
-        self.file = file
+        self.file: Path = file
 
         # Set the lock
-        self.lock = lock
+        self.lock: Lock | DummyLock = lock
         if lock is None:
             self.lock = DummyLock()
 
         # Set for unique layer id's
-        self.pid = os.getpid()
+        self.pid: int = os.getpid()
 
         # Set for later use
-        self.srs = srs
-        self.flds = {}
-        self.n = 1
+        self.srs: osr.SpatialReference = srs
+        self.flds: dict[str:int] = {}
+        self.n: int = 1
 
         if layer_defn is None:
             with open_geom(self.file, mode="r") as _r:
                 layer_defn = _r.layer.defn
             _r = None
-        self.layer_defn = layer_defn
+        self.layer_defn: ogr.FeatureDefn = layer_defn
 
         # Create the buffer
-        self.buffer = open_geom(f"/vsimem/{file.stem}.gpkg", mode="w")
+        self.buffer: GeomIO = open_geom(f"/vsimem/{file.stem}.gpkg", mode="w")
         self.buffer.create_layer(
             srs,
             layer_defn.GetGeomType(),
@@ -76,8 +79,8 @@ class BufferedGeomWriter:
         # Set some check vars
         # TODO: do this based om memory foodprint
         # Needs some reseach into ogr's memory tracking
-        self.max_size = buffer_size
-        self.size = 0
+        self.max_size: int = buffer_size
+        self.size: int = 0
 
     def __del__(self):
         self.buffer = None

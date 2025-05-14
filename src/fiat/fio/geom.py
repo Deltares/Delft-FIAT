@@ -74,11 +74,12 @@ class GeomIO(BaseIO):
         if self.path.suffix not in _map:
             raise DriverNotFoundError(gog="Geometry", path=self.path)
 
-        driver = _map[self.path.suffix]
+        driver: str = _map[self.path.suffix]
 
-        self.driver = ogr.GetDriverByName(driver)
+        self.driver: gdal.Driver = ogr.GetDriverByName(driver)
         info = gdal.VSIStatL(self.path.as_posix())
 
+        self.src: gdal.Dataset = None
         if (self.path.exists() or info is not None) and not overwrite:
             self.src = self.driver.Open(self.path.as_posix(), self.mode)
         else:
@@ -87,8 +88,8 @@ class GeomIO(BaseIO):
             self.create(self.path)
 
         info = None
-        self._layer = None
-        self._srs = None
+        self._layer: GeomLayer = None
+        self._srs: osr.SpatialReference = None
         if srs is not None:
             self._srs = osr.SpatialReference()
             self._srs.SetFromUserInput(srs)
@@ -107,7 +108,7 @@ class GeomIO(BaseIO):
     ## Properties
     @property
     @BaseIO.check_state
-    def layer(self):
+    def layer(self) -> GeomLayer:
         """Return the geometries layer."""
         if self._layer is not None:
             return self._layer
@@ -118,9 +119,7 @@ class GeomIO(BaseIO):
 
     @property
     @BaseIO.check_state
-    def srs(
-        self,
-    ):
+    def srs(self) -> osr.SpatialReference:
         """Return the srs (Spatial Reference System)."""
         _srs = self.layer.srs
         if _srs is None:
@@ -128,10 +127,7 @@ class GeomIO(BaseIO):
         return _srs
 
     @srs.setter
-    def srs(
-        self,
-        srs,
-    ):
+    def srs(self, srs: osr.SpatialReference):
         self._srs = srs
 
     ## Basic I/O methods

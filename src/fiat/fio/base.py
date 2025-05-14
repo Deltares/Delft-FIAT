@@ -12,7 +12,7 @@ class BaseIO(metaclass=ABCMeta):
 
     Parameters
     ----------
-    file : str, optional
+    file : Path | str, optional
         Path to the file, by default None
     mode : str, optional
         Mode in which to open the file, by default "r"
@@ -30,18 +30,18 @@ class BaseIO(metaclass=ABCMeta):
 
     def __init__(
         self,
-        file: str = None,
+        file: Path | str = None,
         mode: str = "r",
     ):
         if file is not None:
-            self.path = Path(file)
-            self._path = Path(file)
+            self.path: Path = Path(file)
+            self._path: Path = Path(file)
 
         if mode not in BaseIO._mode_map:
             raise ValueError("")
 
-        self.mode = BaseIO._mode_map[mode]
-        self.mode_str = mode
+        self.mode: int = BaseIO._mode_map[mode]
+        self.mode_str: str = mode
 
     def __repr__(self):
         _mem_loc = f"{id(self):#018x}".upper()
@@ -85,7 +85,7 @@ class BaseIO(metaclass=ABCMeta):
         gc.collect()
 
     @property
-    def closed(self):
+    def closed(self) -> bool:
         """Return the state."""
         return self._closed
 

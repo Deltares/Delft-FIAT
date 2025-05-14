@@ -4,6 +4,7 @@ from math import floor, log10
 
 from numpy import arange, delete, empty, float64, interp, ndarray
 
+from fiat.fio.handler import BufferHandler
 from fiat.fio.parser import CSVParser
 from fiat.struct.base import TableBase
 from fiat.struct.util import convert_to_numpy_dtype, infer_column_types
@@ -47,7 +48,7 @@ class Table(TableBase):
         **kwargs,
     ):
         # Set the data directly
-        self.data = data
+        self.data: ndarray = data
 
         # Check for the dtypes
         if dtypes is None:
@@ -261,8 +262,8 @@ class TableLazy(TableBase):
         columns: list = None,
     ):
         # Set the stream as the data
-        self.data = parser.data
-        self.delimiter = parser.delimiter
+        self.data: BufferHandler = parser.data
+        self.delimiter: str = parser.delimiter
 
         # Get internal indexing
         index_int = [None] * parser.nrow
@@ -290,12 +291,9 @@ class TableLazy(TableBase):
             internal_index=index_int,
         )
 
-        #
-        try:
-            index_name = self.columns[parser.index_col]
-            self.index_name = index_name
-        except BaseException:
-            pass
+        # Set the index (column)
+        if TableBase.set_index(self, parser.index_col):
+            self.index_name = self.columns[parser.index_col]
 
     def __iter__(self):
         raise NotImplementedError(DD_NOT_IMPLEMENTED)
@@ -306,7 +304,7 @@ class TableLazy(TableBase):
     def __getitem__(
         self,
         oid: object,
-    ):
+    ) -> bytes:
         try:
             idx = self._index[oid]
         except Exception:
@@ -322,7 +320,7 @@ class TableLazy(TableBase):
     def get(
         self,
         oid: str,
-    ):
+    ) -> bytes:
         """Get a row from the table based on the index.
 
         Parameters
