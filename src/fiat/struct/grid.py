@@ -74,7 +74,7 @@ class GridBand(
         mode: int,
     ):
         # This is effectively the init methods of this class
-        obj = object.__new__(cls)
+        obj = GridBand.__new__(cls)
         super(BaseStruct, obj).__init__()
 
         # Set the content
@@ -107,11 +107,6 @@ class GridBand(
         self._l = 0
         self._u = 0
 
-    ## TODO move mb
-    def close(self):
-        """Close the Grid object."""
-        self._obj = None
-
     def flush(self):
         """Flush the grid object."""
         if self._obj is not None:
@@ -134,6 +129,16 @@ class GridBand(
         if len(value) != 2:
             raise ValueError("Chunk should have two elements")
         self._chunk = value
+
+    @property
+    def description(self) -> str:
+        """Return the band description."""
+        return self._obj.GetDescription()
+
+    @property
+    def meta(self) -> dict:
+        """Return the band meta data."""
+        return self._obj.GetMetadata()
 
     @property
     def shape(self):

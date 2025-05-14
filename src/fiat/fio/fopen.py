@@ -18,7 +18,7 @@ def open_csv(
     header: bool = True,
     index: str = None,
     lazy: bool = False,
-) -> object:
+) -> Table | TableLazy:
     """Open a csv file.
 
     Parameters
@@ -97,7 +97,7 @@ def open_grid(
     chunk: tuple = None,
     subset: str = None,
     var_as_band: bool = False,
-):
+) -> GridIO:
     """Open a grid source file.
 
     This source file is lazily read.

@@ -67,7 +67,7 @@ class GeomModel(BaseModel):
         super().__init__(cfg)
 
         # Set/ declare some variables
-        self.exposure_types = self.cfg.get("exposure.types", ["damage"])
+        self.exposure_types: list[str] = self.cfg.get("exposure.types", ["damage"])
 
         # Setup the geometry model
         self.read_exposure()
@@ -247,7 +247,7 @@ class GeomModel(BaseModel):
         logger.info("Executing exposure data checks...")
 
         # Check for duplicate columns
-        check_duplicate_columns(data.meta["dup_cols"])
+        check_duplicate_columns(data.duplicate_columns)
 
         # Reset to ensure the entry is present
         self.cfg.set(file_entry, path)

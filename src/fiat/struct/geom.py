@@ -25,8 +25,8 @@ class GeomLayer(BaseStruct):
         mode: int,
     ):
         # This is effectively the init methods of this class
-        obj = object.__new__(cls)
-        super(BaseStruct, obj).__init__()
+        obj = GeomLayer.__new__(cls)
+        BaseStruct.__init__(obj)
 
         # Set the content
         obj._obj_ref = weakref.ref(ref, obj._cleanup)

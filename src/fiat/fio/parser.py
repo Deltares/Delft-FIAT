@@ -34,16 +34,16 @@ class CSVParser:
         index: str | None = None,
     ):
         # The internal variables
-        self.columns = None
-        self.delimiter = delimiter
-        self.data = handler
-        self.dtypes = None
-        self.duplicates = None
-        self.index = None
-        self.index_col = -1
-        self.meta = {}
-        self.ncol = 0
-        self.nrow = self.data.size
+        self.columns: list = None
+        self.delimiter: str = delimiter
+        self.data: BufferHandler = handler
+        self.dtypes: list = None
+        self.duplicates: list = None
+        self.index: list = None
+        self.index_col: int = -1
+        self.meta: dict = {}
+        self.ncol: int = 0
+        self.nrow: int = self.data.size
 
         # Execute the parsing directly
         self.parse_meta(header)

@@ -68,6 +68,9 @@ class BufferHandler:
         self.stream = BufferedReader(FileIO(self.path))
         self.sniffer()
         self.size = self.stream.read().count(self.nchar)
+        self.stream.seek(self.stream.tell() - len(self.nchar))  # To get the last char
+        if self.stream.read() != self.nchar:  # Check if there is a newline char
+            self.size += 1  # If no newline char than add one line to the size
         self.stream.seek(self.skip)
 
     def sniffer(self):

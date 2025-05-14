@@ -6,10 +6,10 @@ from numpy import arange, delete, empty, float64, interp, ndarray
 
 from fiat.fio.parser import CSVParser
 from fiat.struct.base import TableBase
+from fiat.struct.util import convert_to_numpy_dtype, infer_column_types
 from fiat.util import (
     DD_NOT_IMPLEMENTED,
     NOT_IMPLEMENTED,
-    _dtypes_to_numpy,
     regex_pattern,
     replace_empty,
     text_chunk_gen,
@@ -51,7 +51,7 @@ class Table(TableBase):
 
         # Check for the dtypes
         if dtypes is None:
-            dtypes = [str] * data.shape[1]
+            dtypes = infer_column_types(data)
 
         # Supercharge with _Table
         TableBase.__init__(
@@ -116,11 +116,7 @@ class Table(TableBase):
             _d = _pat_multi.split(h.read().strip())
 
         # Determine the dtype of the underlying dataset
-        dtype_set = set(parser.dtypes)
-        if len(dtype_set) != 1:
-            dtype = object
-        else:
-            dtype = _dtypes_to_numpy[dtype_set.pop().__name__]
+        dtype = convert_to_numpy_dtype(parser.dtypes)
 
         # Create an empty numpy array to set the data in
         data = empty((parser.nrow, parser.ncol), dtype=dtype)
@@ -139,6 +135,7 @@ class Table(TableBase):
             columns=parser.columns,
             index_col=parser.index_col,
             dtypes=parser.dtypes,
+            duplicate_columns=parser.duplicates,
         )
 
     def set_index(
@@ -152,13 +149,9 @@ class Table(TableBase):
         index_col : int
             The index of column to be set as the index of the Table.
         """
-        cols = list(range(len(self.columns)))
-
-        # Check whether the index column index is valid
-        if index_col < 0:
+        # Supercharge for check
+        if not TableBase.set_index(self, index_col):
             return
-        elif index_col >= 0 and index_col not in cols:
-            raise ValueError(f"Index column index not present: ({index_col})")
 
         # Remove the necessary data
         index_name = self.columns[index_col]
@@ -169,12 +162,19 @@ class Table(TableBase):
         new_index = self.data[:, index_col].tolist()
         self.data = delete(self.data, index_col, 1)
 
+        # Reset the dtype of the array
+        dtype = convert_to_numpy_dtype(self.dtypes)
+        self.data = self.data.astype(dtype)
+
         # Set the new variable
-        self.index_name = index_name
         self._ncol -= 1
 
         # Recall the set index and column methods
-        self._set_index(new_index, self._index.values())
+        self._set_index(
+            new_index,
+            name=index_name,
+            internal_index=self._index.values(),
+        )
         self._set_columns(self.columns)
 
     def upscale(
@@ -218,6 +218,7 @@ class Table(TableBase):
                 data=data,
                 index=x,
                 columns=self.columns,
+                **self.kwargs,
             )
             self.index_name = index_name
             return None
@@ -227,6 +228,7 @@ class Table(TableBase):
             data=data,
             index=x,
             columns=self.columns,
+            **self.kwargs,
         )
         obj.index_name = index_name
         return obj
@@ -288,6 +290,13 @@ class TableLazy(TableBase):
             internal_index=index_int,
         )
 
+        #
+        try:
+            index_name = self.columns[parser.index_col]
+            self.index_name = index_name
+        except BaseException:
+            pass
+
     def __iter__(self):
         raise NotImplementedError(DD_NOT_IMPLEMENTED)
 
@@ -325,28 +334,22 @@ class TableLazy(TableBase):
 
     def set_index(
         self,
-        index_col: str,
-        inplace: bool = True,
+        index_col: int,
     ):
         """Set the index of the table.
 
         Parameters
         ----------
-        index_col : str
-            Column header. View available headers via <object>.columns.
-        inplace : bool, optional
-            Whether to adjust the current object or return a new one, by default True
+        index_col : int
+            Column header index. View available headers via <object>.columns.
         """
-        if index_col not in self.columns:
-            raise ValueError(f"Given column ({index_col}) not found")
-
-        if index_col == self.index_name:
+        # Supercharge for check
+        if not TableBase.set_index(self, index_col):
             return
 
         # Set up the pattern for parsing the data over multiple lines
         _pat_multi = regex_pattern(self.delimiter, multi=True, nchar=self.data.nchar)
         # Find the index of the index column
-        idx = self.columns.index(index_col)
         new_index = [None] * self.data.size
 
         # Go through the data and collect all the index column data
@@ -355,14 +358,15 @@ class TableLazy(TableBase):
             for _nlines, sd in text_chunk_gen(h, _pat_multi, nchar=self.data.nchar):
                 new_index[c:_nlines] = [
                     *map(
-                        self.dtypes[idx],
-                        [item.decode() for item in sd[idx :: self._ncol]],
+                        self.dtypes[index_col],
+                        [item.decode() for item in sd[index_col :: self._ncol]],
                     )
                 ]
                 c += _nlines
-            del sd
+            sd = None
 
-        if inplace:
-            self._index = dict(zip(new_index, self._index.values()))
-            self.index_name = index_col
-            return
+        self._set_index(
+            new_index,
+            name=self.columns[index_col],
+            internal_index=self._index.values(),
+        )

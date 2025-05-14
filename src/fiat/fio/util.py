@@ -13,7 +13,7 @@ def deter_band_names(
     """
     _names = []
     for n in range(obj.size):
-        name = obj.get_band_name(n + 1)
+        name = obj.get_band_name(n)
         if not name:
             _names.append(f"band{n+1}")
             continue

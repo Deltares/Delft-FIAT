@@ -12,7 +12,6 @@ from pathlib import Path
 from types import FunctionType, ModuleType
 
 import regex
-from numpy import float64, int64
 from osgeo import gdal, ogr, osr
 
 # Define the variables for FIAT
@@ -44,12 +43,6 @@ _dtypes_reversed = {
     1: int,
     2: float,
     3: str,
-}
-
-_dtypes_to_numpy = {
-    "float": float64,
-    "int": int64,
-    "str": object,
 }
 
 _dtypes_from_string = {
@@ -123,6 +116,9 @@ def text_chunk_gen(
     while True:
         t = h.read(chunk_size)
         if not t:
+            if _res:
+                _nlines = _res.count(nchar)
+                yield _nlines, pattern.split(_res)
             break
         t = _res + t
         try:

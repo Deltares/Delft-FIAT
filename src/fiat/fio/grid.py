@@ -106,6 +106,7 @@ multiple variables.
             )
 
         # Some of the internals
+        self._bands: list[GridBand] = []
         self._count: int = 0
         self._chunk: tuple = None
         self._dtype: int = None
@@ -120,9 +121,20 @@ multiple variables.
         self._count = self.src.RasterCount
 
         # Set the chunking
-        self.chunk = self.shape
+        self._chunk = self.shape
         if chunk is not None:
-            self.chunk = chunk
+            self._chunk = chunk
+
+        # Set the bands
+        for idx in range(self._count):
+            self._bands.append(
+                GridBand._create(
+                    self.src,
+                    band=self.src.GetRasterBand(idx + 1),
+                    chunk=self.chunk,
+                    mode=self.mode,
+                )
+            )
 
         # Set the 'external' srs
         self._srs = None
@@ -145,13 +157,8 @@ multiple variables.
     def __getitem__(
         self,
         oid: int,
-    ):
-        return GridBand._create(
-            ref=self.src,
-            band=self.src.GetRasterBand(oid),
-            chunk=self.chunk,
-            mode=self.mode,
-        )
+    ) -> GridBand:
+        return self._bands[oid]
 
     def __reduce__(self):
         srs = None
@@ -223,6 +230,8 @@ multiple variables.
         if len(value) != 2:
             raise ValueError("Chunk should have two elements")
         self._chunk = value
+        for item in self:
+            item.chunk = self.chunk
 
     @property
     @BaseIO.check_state
@@ -311,9 +320,9 @@ multiple variables.
         """Close the GridIO."""
         BaseIO.close(self)
 
-        self.src = None
         self._srs = None
-        self._driver = None
+        self.src = None
+        self.driver = None
 
         gc.collect()
 
@@ -334,13 +343,13 @@ multiple variables.
             file=self.path,
             chunk=self.chunk,
             subset=self.subset,
-            var_as_band=self._var_as_band,
+            var_as_band=self.var_as_band,
         )
         obj.__init__(
             file=self.path,
-            chunk=self._chunk,
+            chunk=self.chunk,
             subset=self.subset,
-            var_as_band=self._var_as_band,
+            var_as_band=self.var_as_band,
         )
         return obj
 
@@ -372,7 +381,7 @@ multiple variables.
         options : list
             Additional arguments.
         """
-        self.src = self._driver.Create(
+        self.src = self.driver.Create(
             self.path.as_posix(),
             *shape,
             nb,
@@ -410,8 +419,8 @@ multiple variables.
         str
             Name of the band.
         """
-        _desc = self[n].src.GetDescription()
-        _meta = self[n].src.GetMetadata()
+        _desc = self[n].description
+        _meta = self[n].meta
 
         if _desc:
             return _desc
