@@ -64,3 +64,42 @@ def test_geomio_write(tmp_path: Path, srs: osr.SpatialReference):
     # Assert there is a layer
     assert gio.layer is not None
     assert ogr.GeometryTypeToName(gio.layer.geom_type) == "Point"
+
+
+def test_geomio_write_append(exposure_geom_tmp_path: Path):
+    # Open the dataset
+    gio = GeomIO(exposure_geom_tmp_path, mode="w")
+
+    # Assert some simple stuff
+    assert gio.mode == 1
+    # Even in write mode, it will already have a layer a its exists
+    assert gio.layer is not None  # But no layer present
+    assert gio.layer.size == 4
+
+
+def test_geomio_write_overwrite(exposure_geom_tmp_path: Path):
+    # Assert that the file exists
+    assert exposure_geom_tmp_path.is_file()
+    # Open the dataset
+    gio = GeomIO(exposure_geom_tmp_path, mode="w", overwrite=True)
+
+    # Assert some simple stuff
+    assert gio.mode == 1
+    # As the file is overwritten, the layer should be None
+    assert gio.layer is None  # But no layer present
+
+
+def test_geomio_write_delete(exposure_geom_tmp_path: Path):
+    # Open the dataset
+    gio = GeomIO(exposure_geom_tmp_path, mode="w")
+
+    # Assert some simple stuff
+    assert gio.src is not None
+    assert gio.layer is not None
+    assert gio.layer.size == 4
+
+    # Delete the layer
+    gio.delete(all=True)
+
+    # Assert that its gone
+    assert gio.src is None  # If src is None, layer cannot be requested

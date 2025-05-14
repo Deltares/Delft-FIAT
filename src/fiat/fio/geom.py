@@ -108,6 +108,12 @@ class GeomIO(BaseIO):
     ## Properties
     @property
     @BaseIO.check_state
+    def driver_meta(self):
+        """Return the driver meta data."""
+        return self.driver.GetMetadata()
+
+    @property
+    @BaseIO.check_state
     def layer(self) -> GeomLayer:
         """Return the geometries layer."""
         if self._layer is not None:
@@ -230,30 +236,6 @@ class GeomIO(BaseIO):
 
     @BaseIO.check_mode
     @BaseIO.check_state
-    def copy_layer(
-        self,
-        layer: ogr.Layer,
-        layer_fn: str,
-    ):
-        """Copy a layer to an existing dataset.
-
-        Bit of a spoof off of `create_layer_from_copy`.
-        This method is a bit more forcing and allows to set it's own variable as
-        layer name.
-        Only in write (`'w'`) mode.
-
-        Parameters
-        ----------
-        layer : ogr.Layer
-            _description_
-        layer_fn : str
-            _description_
-        """
-        obj = self.src.CopyLayer(layer, layer_fn, ["OVERWRITE=YES"])
-        self._layer = GeomLayer._create(self.src, obj, self.mode)
-
-    @BaseIO.check_mode
-    @BaseIO.check_state
     def delete(
         self,
         all=False,
@@ -265,8 +247,12 @@ class GeomIO(BaseIO):
         all : bool, optional
             Delete everything, including the data source, by default False
         """
-        self._layer = None
-        self.src.DeleteLayer(self.path.stem)
+        check = self._layer is not None
+        if check and gdal.DCAP_DELETE_LAYER in self.driver_meta:
+            name = self.layer.name
+            self._layer = None
+            self.src.DeleteLayer(name)
         if all:
-            self.driver.DeleteDataSource(self.path.as_posix())
+            self._layer = None
             self.src = None
+            self.driver.Delete(self.path.as_posix())

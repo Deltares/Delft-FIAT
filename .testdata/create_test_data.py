@@ -41,6 +41,21 @@ def create_exposure_dbase():
             f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\n".encode())
 
 
+def create_exposure_dbase_with_meta():
+    """_summary_."""
+    with open(Path(p, "exposure", "spatial_meta.csv"), "wb") as f:
+        f.write(b"#version=v0.0.1\n")
+        f.write(b"#dtypes:int,str,int,int,str,int\n")
+        f.write(b"object_id,extract_method,ground_flht,ground_elevtn,")
+        f.write(b"fn_damage_structure,max_damage_structure\n")
+        for n in range(5):
+            if (n + 1) % 2 != 0:
+                dmc = "struct_1"
+            else:
+                dmc = "struct_2"
+            f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\n".encode())
+
+
 def create_exposure_dbase_missing():
     """_summary_."""
     with open(Path(p, "exposure", "spatial_missing.csv"), "w") as f:
@@ -654,6 +669,7 @@ if __name__ == "__main__":
     create_exposure_dbase_missing()
     create_exposure_dbase_partial()
     create_exposure_dbase_win()
+    create_exposure_dbase_with_meta()
     create_exposure_geoms()
     create_exposure_geoms_2()
     create_exposure_geoms_3()
