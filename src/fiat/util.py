@@ -116,6 +116,9 @@ def text_chunk_gen(
     while True:
         t = h.read(chunk_size)
         if not t:
+            if _res:
+                _nlines = _res.count(nchar)
+                yield _nlines, pattern.split(_res)
             break
         t = _res + t
         try:
@@ -345,6 +348,8 @@ def read_gridsource_layers(
         ds = path.split(":")[-1].strip()
         out[ds] = path
 
+    if len(out) == 0:
+        return None
     return out
 
 

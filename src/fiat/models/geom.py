@@ -67,7 +67,7 @@ class GeomModel(BaseModel):
         super().__init__(cfg)
 
         # Set/ declare some variables
-        self.exposure_types = self.cfg.get("exposure.types", ["damage"])
+        self.exposure_types: list[str] = self.cfg.get("exposure.types", ["damage"])
 
         # Setup the geometry model
         self.read_exposure()
@@ -132,7 +132,7 @@ class GeomModel(BaseModel):
         """Set the chunking size."""
         # Determine maximum geometry dataset size
         max_geom_size = max(
-            [item.size for item in self.exposure_geoms.values()],
+            [item.layer.size for item in self.exposure_geoms.values()],
         )
         # Set the 1D chunks
         self.chunks = create_1d_chunk(
@@ -162,9 +162,11 @@ class GeomModel(BaseModel):
             with open_geom(
                 Path(self.cfg.get("output.path"), out_geom), mode="w", overwrite=True
             ) as _w:
-                _w.create_layer(self.srs, gm.geom_type)
-                _w.create_fields(dict(zip(gm.fields, gm.dtypes)))
-                _w.create_fields(dict(zip(new_fields, [ogr.OFTReal] * len(new_fields))))
+                _w.create_layer(self.srs, gm.layer.geom_type)
+                _w.layer.create_fields(dict(zip(gm.layer.fields, gm.layer.dtypes)))
+                _w.layer.create_fields(
+                    dict(zip(new_fields, [ogr.OFTReal] * len(new_fields)))
+                )
             _w = None
 
             # Check whether to do the same for the csv
@@ -194,7 +196,7 @@ class GeomModel(BaseModel):
                 self.cfg.get("exposure.csv.settings.index"),
             )
         for key, gm in self.exposure_geoms.items():
-            columns = gm._columns
+            columns = gm.layer._columns
             self._discover_exposure_meta(
                 columns,
                 meta,
@@ -245,7 +247,7 @@ class GeomModel(BaseModel):
         logger.info("Executing exposure data checks...")
 
         # Check for duplicate columns
-        check_duplicate_columns(data.meta["dup_cols"])
+        check_duplicate_columns(data.duplicate_columns)
 
         # Reset to ensure the entry is present
         self.cfg.set(file_entry, path)
@@ -268,7 +270,7 @@ class GeomModel(BaseModel):
             A list of paths to the vector files.
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_geom]\
-(/api/fio/open_geom.qmd) after which into [GeomSource](/api/GeomSource.qmd)/
+(/api/fio/open_geom.qmd) after which into [GeomIO](/api/GeomIO.qmd)/
         """
         # Discover the files
         _d = {}
@@ -306,15 +308,15 @@ class GeomModel(BaseModel):
 
             # check the internal srs of the file
             check_internal_srs(
-                data.srs,
+                data.layer.srs,
                 path.name,
             )
 
             # check if file srs is the same as the model srs
-            if not check_vs_srs(self.srs, data.srs):
+            if not check_vs_srs(self.srs, data.layer.srs):
                 logger.warning(
                     f"Spatial reference of '{path.name}' \
-('{get_srs_repr(data.srs)}') does not match \
+('{get_srs_repr(data.layer.srs)}') does not match \
 the model spatial reference ('{get_srs_repr(self.srs)}')"
                 )
                 logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
@@ -322,7 +324,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
             # check if it falls within the extent of the hazard map
             check_geom_extent(
-                data.bounds,
+                data.layer.bounds,
                 self.hazard_grid.bounds,
             )
 

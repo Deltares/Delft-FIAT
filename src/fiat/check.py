@@ -266,7 +266,7 @@ def check_exp_index_col(
     index_col: type,
 ):
     """Check whether the index column exists in the exposure geometry dataset."""
-    if index_col not in obj.columns:
+    if index_col not in obj.layer.columns:
         raise FIATDataError(f"Index column ('{index_col}') not found in {obj.path}")
 
 
