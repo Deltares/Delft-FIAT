@@ -23,13 +23,12 @@ class BufferHandler:
         skip: int = 0,
     ):
         self.path: Path = Path(path)
-        self.size: int = None
+        self.size: int | None = None
         self.skip: int = skip
         self.nchar: bytes = b"\n"
-        self.stream: BufferedReader = None
+        self.stream: BufferedReader | None = None
 
-        if self.stream is None:
-            self.setup_stream()
+        self.setup_stream()
 
     def __repr__(self):
         return f"<{self.__class__.__name__} file='{self.path}' encoding=''>"

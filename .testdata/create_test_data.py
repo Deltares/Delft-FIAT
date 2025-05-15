@@ -22,14 +22,14 @@ osr.UseExceptions()
 
 
 def create_dbase_stucture():
-    """_summary_."""
+    """Create folder structure, very difficult, yes.."""
     for f in folders:
         if not Path(p, f).exists():
             os.mkdir(Path(p, f))
 
 
 def create_exposure_dbase():
-    """_summary_."""
+    """Create default exposure data for basic vector and the fifth."""
     with open(Path(p, "exposure", "spatial.csv"), "wb") as f:
         f.write(b"object_id,extract_method,ground_flht,ground_elevtn,")
         f.write(b"fn_damage_structure,max_damage_structure\n")
@@ -41,8 +41,47 @@ def create_exposure_dbase():
             f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\n".encode())
 
 
+def create_exposure_dbase_missing():
+    """Create exposure data with missing entry compared to vector."""
+    with open(Path(p, "exposure", "spatial_missing.csv"), "w") as f:
+        f.write("extract_method,ground_flht,ground_elevtn,")
+        f.write("fn_damage_structure,max_damage_structure\n")
+        for n in range(5):
+            if (n + 1) % 2 != 0:
+                dmc = "struct_1"
+            else:
+                dmc = "struct_2"
+            f.write(f"area,0,0,{dmc},{(n+1)*1000}\n")
+
+
+def create_exposure_dbase_partial():
+    """Create exposure data for vector data that partially lies outside."""
+    with open(Path(p, "exposure", "spatial_partial.csv"), "w") as f:
+        f.write("object_id,extract_method,ground_flht,ground_elevtn,")
+        f.write("fn_damage_structure,fn_damage_content,max_damage_structure\n")
+        for n in range(5):
+            if (n + 1) % 2 != 0:
+                dmc = "struct_1"
+            else:
+                dmc = "struct_2"
+            f.write(f"{n+1},area,0,0,{dmc},{dmc},{(n+1)*1000}\n")
+
+
+def create_exposure_dbase_win():
+    """Create exposure data with Windows newline char."""
+    with open(Path(p, "exposure", "spatial_win.csv"), "wb") as f:
+        f.write(b"object_id,extract_method,ground_flht,ground_elevtn,")
+        f.write(b"fn_damage_structure,max_damage_structure\r\n")
+        for n in range(5):
+            if (n + 1) % 2 != 0:
+                dmc = "struct_1"
+            else:
+                dmc = "struct_2"
+            f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\r\n".encode())
+
+
 def create_exposure_dbase_with_meta():
-    """_summary_."""
+    """Create exposure data with metadata."""
     with open(Path(p, "exposure", "spatial_meta.csv"), "wb") as f:
         f.write(b"#version=v0.0.1\n")
         f.write(b"#foo,bar\n")
@@ -57,47 +96,8 @@ def create_exposure_dbase_with_meta():
             f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\n".encode())
 
 
-def create_exposure_dbase_missing():
-    """_summary_."""
-    with open(Path(p, "exposure", "spatial_missing.csv"), "w") as f:
-        f.write("extract_method,ground_flht,ground_elevtn,")
-        f.write("fn_damage_structure,max_damage_structure\n")
-        for n in range(5):
-            if (n + 1) % 2 != 0:
-                dmc = "struct_1"
-            else:
-                dmc = "struct_2"
-            f.write(f"area,0,0,{dmc},{(n+1)*1000}\n")
-
-
-def create_exposure_dbase_partial():
-    """_summary_."""
-    with open(Path(p, "exposure", "spatial_partial.csv"), "w") as f:
-        f.write("object_id,extract_method,ground_flht,ground_elevtn,")
-        f.write("fn_damage_structure,fn_damage_content,max_damage_structure\n")
-        for n in range(5):
-            if (n + 1) % 2 != 0:
-                dmc = "struct_1"
-            else:
-                dmc = "struct_2"
-            f.write(f"{n+1},area,0,0,{dmc},{dmc},{(n+1)*1000}\n")
-
-
-def create_exposure_dbase_win():
-    """_summary_."""
-    with open(Path(p, "exposure", "spatial_win.csv"), "wb") as f:
-        f.write(b"object_id,extract_method,ground_flht,ground_elevtn,")
-        f.write(b"fn_damage_structure,max_damage_structure\r\n")
-        for n in range(5):
-            if (n + 1) % 2 != 0:
-                dmc = "struct_1"
-            else:
-                dmc = "struct_2"
-            f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\r\n".encode())
-
-
-def create_exposure_geoms():
-    """_summary_."""
+def create_exposure_geoms(epsg=None):
+    """Create basic vector file with 4 geometries."""
     geoms = (
         "POLYGON ((4.355 52.045, 4.355 52.035, 4.365 52.035, \
 4.365 52.045, 4.355 52.045))",
@@ -107,14 +107,23 @@ def create_exposure_geoms():
         "POLYGON ((4.4105 52.0295, 4.4395 52.0295, 4.435 52.0105, \
 4.415 52.0105, 4.4105 52.0295))",
     )
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(4326)
-    dr = ogr.GetDriverByName("GeoJSON")
-    src = dr.CreateDataSource(str(Path(p, "exposure", "spatial.geojson")))
+    driver = "FlatGeoBuf"
+    add = "_no_srs"
+    suffix = ".fgb"
+    srs = None
+    if epsg is not None:
+        driver = "GeoJSON"
+        suffix = ".geojson"
+        add = ""
+        srs = osr.SpatialReference()
+        srs.ImportFromEPSG(epsg)
+
+    dr = ogr.GetDriverByName(driver)
+    src = dr.CreateDataSource(str(Path(p, "exposure", f"spatial{add}{suffix}")))
     layer = src.CreateLayer(
-        "spatial",
-        srs,
-        3,
+        f"spatial{add}",
+        srs=srs,
+        geom_type=3,
     )
 
     field = ogr.FieldDefn(
@@ -148,8 +157,8 @@ def create_exposure_geoms():
     dr = None
 
 
-def create_exposure_geoms_2():
-    """_summary_."""
+def create_exposure_geoms_5th():
+    """Create vector file with fifth geometry for calculation."""
     geoms = (
         "POLYGON ((4.375 52.025, 4.385 52.025, 4.385 52.015, \
 4.375 52.015, 4.375 52.025))",
@@ -194,8 +203,8 @@ def create_exposure_geoms_2():
     dr = None
 
 
-def create_exposure_geoms_3():
-    """_summary_."""
+def create_exposure_geoms_missing():
+    """Create vector data with no data in exposure data csv."""
     geoms = (
         "POLYGON ((4.375 52.025, 4.385 52.025, 4.385 52.015, \
 4.375 52.015, 4.375 52.025))",
@@ -252,8 +261,8 @@ def create_exposure_geoms_3():
     dr = None
 
 
-def create_exposure_geoms_4():
-    """_summary_."""
+def create_exposure_geoms_outside():
+    """Create vector data that lies outside of hazard."""
     geoms = (
         "POLYGON ((4.355 52.065, 4.355 52.055, 4.365 52.055, \
 4.365 52.065, 4.355 52.065))",
@@ -304,7 +313,7 @@ def create_exposure_geoms_4():
 
 
 def create_exposure_grid():
-    """_summary_."""
+    """Create raster file with exposure data for grid model."""
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
     dr = gdal.GetDriverByName("netCDF")
@@ -343,8 +352,8 @@ def create_exposure_grid():
     dr = None
 
 
-def create_hazard_map():
-    """_summary_."""
+def create_hazard_event_map():
+    """Create hazard event map."""
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
     dr = gdal.GetDriverByName("netCDF")
@@ -382,8 +391,8 @@ def create_hazard_map():
     dr = None
 
 
-def create_hazard_map_highres():
-    """_summary_."""
+def create_hazard_event_map_highres():
+    """Create a high resolution hazard map to be reprojected."""
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
     dr = gdal.GetDriverByName("netCDF")
@@ -421,8 +430,8 @@ def create_hazard_map_highres():
     dr = None
 
 
-def create_risk_map():
-    """_summary_."""
+def create_hazard_risk_map():
+    """Create a hazard map for risk calculations."""
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
     dr = gdal.GetDriverByName("netCDF")
@@ -466,7 +475,7 @@ def create_risk_map():
 
 
 def create_settings_geom():
-    """_summary_."""
+    """Create exposure geometry model settings."""
     doc = {
         "model": {
             "model_type": "geom",
@@ -568,7 +577,7 @@ def create_settings_geom():
 
 
 def create_settings_grid():
-    """_summary_."""
+    """Create exposure grid model settings."""
     doc = {
         "model": {
             "model_type": "grid",
@@ -623,7 +632,7 @@ def create_settings_grid():
 
 
 def create_vulnerability():
-    """_summary_."""
+    """Create vulnerability curves."""
 
     def log_base(b, x):
         r = math.log(x) / math.log(b)
@@ -644,7 +653,7 @@ def create_vulnerability():
 
 
 def create_vulnerability_win():
-    """_summary_."""
+    """Create vulnerability curves with Windows newline char."""
 
     def log_base(b, x):
         r = math.log(x) / math.log(b)
@@ -671,14 +680,15 @@ if __name__ == "__main__":
     create_exposure_dbase_partial()
     create_exposure_dbase_win()
     create_exposure_dbase_with_meta()
-    create_exposure_geoms()
-    create_exposure_geoms_2()
-    create_exposure_geoms_3()
-    create_exposure_geoms_4()
+    create_exposure_geoms(epsg=4326)
+    create_exposure_geoms(epsg=None)
+    create_exposure_geoms_5th()
+    create_exposure_geoms_missing()
+    create_exposure_geoms_outside()
     create_exposure_grid()
-    create_hazard_map()
-    create_hazard_map_highres()
-    create_risk_map()
+    create_hazard_event_map()
+    create_hazard_event_map_highres()
+    create_hazard_risk_map()
     create_settings_geom()
     create_settings_grid()
     create_vulnerability()

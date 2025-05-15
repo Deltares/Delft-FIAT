@@ -27,6 +27,13 @@ def exposure_geom_empty_tmp_path(tmp_path: Path, exposure_geom_dataset: Path) ->
     return p
 
 
+@pytest.fixture(scope="session")
+def exposure_geom_path_no_srs(testdata_dir: Path):
+    p = Path(testdata_dir, "exposure", "spatial_no_srs.fgb")
+    assert p.is_file()
+    return p
+
+
 @pytest.fixture
 def exposure_geom_tmp_path(tmp_path: Path, exposure_geom_path: Path) -> Path:
     p = Path(tmp_path, "tmp.geojson")

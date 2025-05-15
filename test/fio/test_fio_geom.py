@@ -1,3 +1,4 @@
+import pickle
 from pathlib import Path
 
 import pytest
@@ -15,8 +16,40 @@ def test_geomio_read_only(exposure_geom_path: Path):
 
     # Assert some simple stuff
     assert gio.mode == 0
-    assert get_srs_repr(gio.srs) == "EPSG:4326"
+    assert get_srs_repr(gio.srs) == "EPSG:4326"  # Induced from layer
     assert isinstance(gio.layer, GeomLayer)
+
+
+def test_geomio_read_no_srs(
+    exposure_geom_path_no_srs: Path,
+    srs: osr.SpatialReference,
+):
+    # Open a Dataset
+    gio = GeomIO(exposure_geom_path_no_srs)
+
+    # Assert some simple stuff
+    assert gio.layer.size == 4
+    assert gio.layer.srs is None  # Verify that there is not srs
+    assert gio.srs is None  # Cant induce from layer and not set at GeomIO level
+
+    # Close the dataset
+    gio.close()
+
+    # Open with srs as input argument to set the srs at GeomIO level
+    gio = GeomIO(exposure_geom_path_no_srs, srs="EPSG:4326")
+
+    # Assert the srs
+    assert isinstance(gio.srs, osr.SpatialReference)
+    assert get_srs_repr(gio.srs) == "EPSG:4326"
+    assert gio.layer.srs is None  # Induces from layer still returns None
+
+    # Or set directly
+    gio._srs = None
+    assert gio.srs is None
+    gio.srs = srs
+
+    # Assert the srs
+    assert get_srs_repr(gio.srs) == "EPSG:4326"
 
 
 def test_geomio_read_errors(tmp_path: Path):
@@ -103,3 +136,40 @@ def test_geomio_write_delete(exposure_geom_tmp_path: Path):
 
     # Assert that its gone
     assert gio.src is None  # If src is None, layer cannot be requested
+
+
+def test_geomio_reopen(exposure_geom_tmp_path: Path):
+    # Open the dataset
+    gio = GeomIO(exposure_geom_tmp_path, mode="w")
+
+    # Reopen without closing should return same dataset
+    obj = gio.reopen()
+    assert id(gio) == id(obj)
+    assert obj.mode == 1  # Still in write mode
+
+    # Close the dataset and reopen
+    gio.close()
+    assert gio.src is None
+
+    # Reopen the closed dataset
+    obj = gio.reopen()
+    assert id(obj) != id(gio)
+    assert obj.mode == 0  # After reopening a closed dataset, it will be read mode
+    assert obj.src is not None
+
+
+def test_geomio_reduce(exposure_geom_path: Path):
+    # Open the dataset
+    gio = GeomIO(exposure_geom_path)
+
+    # Assert some simple stuff
+    assert gio.layer.size == 4
+
+    # Reduce/ dump using pickle
+    dump = pickle.dumps(gio)
+    assert isinstance(dump, bytes)
+
+    # Rebuild using pickle
+    obj = pickle.loads(dump)
+    # Size of the layer should be the same
+    assert obj.layer.size == 4

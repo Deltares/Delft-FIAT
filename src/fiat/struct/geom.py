@@ -14,9 +14,9 @@ class GeomLayer(BaseStruct):
 
     def __init__(self, *args, **kwargs):
         # For typing
-        self._obj: ogr.Layer = None
-        self._count: int = None
-        self.mode: int = None
+        self._obj: ogr.Layer | None = None
+        self._count: int = 0
+        self.mode: int = 0
         raise AttributeError("No constructer defined")
 
     @classmethod
