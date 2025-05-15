@@ -39,3 +39,9 @@ def exposure_geom_tmp_path(tmp_path: Path, exposure_geom_path: Path) -> Path:
 def handler(exposure_data_path: Path) -> BufferHandler:
     h = BufferHandler(exposure_data_path)
     return h
+
+
+@pytest.fixture(scope="session")
+def handler_meta(testdata_dir: Path) -> BufferHandler:
+    h = BufferHandler(Path(testdata_dir, "exposure", "spatial_meta.csv"))
+    return h

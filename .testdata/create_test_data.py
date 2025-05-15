@@ -45,7 +45,8 @@ def create_exposure_dbase_with_meta():
     """_summary_."""
     with open(Path(p, "exposure", "spatial_meta.csv"), "wb") as f:
         f.write(b"#version=v0.0.1\n")
-        f.write(b"#dtypes:int,str,int,int,str,int\n")
+        f.write(b"#foo,bar\n")
+        f.write(b"#dtypes:int,str,int,int,str,float\n")
         f.write(b"object_id,extract_method,ground_flht,ground_elevtn,")
         f.write(b"fn_damage_structure,max_damage_structure\n")
         for n in range(5):

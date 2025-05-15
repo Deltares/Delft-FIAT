@@ -21,6 +21,7 @@ def test_csvparser_default(handler: BufferHandler):
     assert pa.ncol == 6
     assert pa.nrow == 5
     assert "object_id" in pa.columns  # As the headers are parsed
+    assert pa.dtypes == [int, str, int, int, str, int]
 
 
 def test_csvparser_delimiter(handler: BufferHandler):
@@ -39,6 +40,20 @@ def test_csvparser_delimiter(handler: BufferHandler):
     assert pa.nrow == 5
     assert len(pa.columns) == 1  # Of course the same as `ncol`, but good to verify
     assert "object_id,extract_method" in pa.columns[0]  # One big header
+
+
+def test_csvparser_meta(handler_meta: BufferHandler):
+    # Kickstart the parser
+    pa = CSVParser(
+        handler_meta,
+        delimiter=",",
+        header=True,
+        index="object_id",
+    )
+
+    # Assert the dtypes
+    assert pa.meta == {"version": "v0.0.1", "foo": ["bar"]}
+    assert pa.dtypes == [int, str, int, int, str, float]  # notice the last is float
 
 
 def test_csvparser_no_index(handler: BufferHandler):
