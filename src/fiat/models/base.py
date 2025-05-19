@@ -17,10 +17,12 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
-from fiat.fio import open_csv, open_grid
+from fiat.fio import GeomIO, GridIO, open_csv, open_grid
+from fiat.fio.util import deter_band_names
 from fiat.gis import grid
 from fiat.log import spawn_logger
 from fiat.models.util import check_file_for_read
+from fiat.struct import Table, TableLazy
 from fiat.util import NEED_IMPLEMENTED, deter_dec, get_srs_repr
 
 logger = spawn_logger("fiat.model")
@@ -44,12 +46,12 @@ class BaseModel(metaclass=ABCMeta):
 
         ## Declarations
         # Model data
-        self.srs = None
-        self.exposure_data = None
-        self.exposure_geoms = None
-        self.exposure_grid = None
-        self.hazard_grid = None
-        self.vulnerability_data = None
+        self.srs: osr.SpatialReference = None
+        self.exposure_data: TableLazy = None
+        self.exposure_geoms: dict[int:GeomIO] = None
+        self.exposure_grid: GridIO = None
+        self.hazard_grid: GridIO = None
+        self.vulnerability_data: Table = None
         # Type of calculations
         type = self.cfg.get("model.type", "flood")
         self.module = importlib.import_module(f"fiat.methods.{type}")
@@ -83,7 +85,7 @@ class BaseModel(metaclass=ABCMeta):
 
     ## Properties
     @property
-    def risk(self):
+    def risk(self) -> bool:
         """Return the calculation modus."""
         return self.cfg.get("model.risk")
 
@@ -93,7 +95,7 @@ class BaseModel(metaclass=ABCMeta):
         self.cfg.set("model.risk", value)
 
     @property
-    def type(self):
+    def type(self) -> str:
         """Return the hazard type."""
         return self.cfg.get("model.type")
 
@@ -177,8 +179,8 @@ exceeds machine thread count ('{max_threads}')"
         path : Path | str, optional
             Path to the hazard gridded dataset, by default None
         kwargs : dict, optional
-            Keyword arguments for reading. These are passed into [open_geom]\
-(/api/fio/open_geom.qmd) after which into [GridSouce](/api/GridSource.qmd)/
+            Keyword arguments for reading. These are passed into [open_grid]\
+(/api/fio/open_grid.qmd) after which into [GridIO](/api/GridIO.qmd)/
         """
         file_entry = "hazard.file"
         path = check_file_for_read(self.cfg, file_entry, path)
@@ -201,7 +203,7 @@ exceeds machine thread count ('{max_threads}')"
 
         # check for subsets
         check_hazard_subsets(
-            data.subset_dict,
+            data.subdatasets,
             path,
         )
 
@@ -241,7 +243,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # Information for output
         ns = check_hazard_band_names(
-            data.deter_band_names(),
+            deter_band_names(data),
             self.risk,
             self.cfg.get("hazard.return_periods"),
             data.size,
@@ -288,7 +290,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         logger.info("Executing vulnerability checks...")
 
         # Column check
-        check_duplicate_columns(data.meta["dup_cols"])
+        check_duplicate_columns(data.duplicate_columns)
 
         # upscale the data (can be done after the checks)
         if "vulnerability.step_size" in self.cfg:

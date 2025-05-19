@@ -6,12 +6,13 @@ from pathlib import Path
 
 from osgeo import gdal, osr
 
-from fiat.fio import Grid, GridSource, open_grid
+from fiat.fio import GridIO, open_grid
+from fiat.struct import GridBand
 from fiat.util import NOT_IMPLEMENTED
 
 
 def clip(
-    band: Grid,
+    band: GridBand,
     gtf: tuple,
     idx: tuple,
 ):
@@ -30,7 +31,7 @@ def clip(
 
 
 def reproject(
-    gs: GridSource,
+    gs: GridIO,
     dst_crs: str,
     dst_gtf: list | tuple = None,
     dst_width: int = None,
@@ -42,7 +43,7 @@ def reproject(
 
     Parameters
     ----------
-    gs : GridSource
+    gs : GridIO
         Input object.
     dst_crs : str
         Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
@@ -63,7 +64,7 @@ def reproject(
 
     Returns
     -------
-    GridSource
+    GridIO
         Output object. A lazy reading of the just creating raster file.
     """
     _gs_kwargs = gs._kwargs

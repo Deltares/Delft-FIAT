@@ -17,7 +17,7 @@ def test_geommodel(tmp_path, settings_files):
     assert model.hazard_grid is not None
     assert model.hazard_grid.shape == (10, 10)
     model.read_exposure_geoms(paths=[cfg.get("exposure.geom.file1")])
-    assert model.exposure_geoms[1].size == 4
+    assert model.exposure_geoms[1].layer.size == 4
 
     model = GeomModel(cfg)
     assert model.exposure_data is not None

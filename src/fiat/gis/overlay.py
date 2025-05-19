@@ -5,8 +5,8 @@ from itertools import product
 from numpy import ndarray, ones
 from osgeo import ogr
 
-from fiat.fio import Grid
 from fiat.gis.util import pixel2world, world2pixel
+from fiat.struct import GridBand
 
 
 def intersect_cell(
@@ -46,7 +46,7 @@ def intersect_cell(
 
 def clip(
     ft: ogr.Feature,
-    band: Grid,
+    band: GridBand,
     gtf: tuple,
 ):
     """Clip a grid based on a feature (vector).
@@ -57,10 +57,10 @@ def clip(
         A Feature according to the \
 [ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
         Can be optained by indexing a \
-[GeomSource](/api/GeomSource.qmd).
-    band : Grid
+[GeomIO](/api/GeomIO.qmd).
+    band : GridBand
         An object that contains a connection the band within the dataset. For further
-        information, see [Grid](/api/Grid.qmd)!
+        information, see [GridBand](/api/GridBand.qmd)!
     gtf : tuple
         The geotransform of a grid dataset.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
@@ -105,7 +105,7 @@ def clip(
 
 def clip_weighted(
     ft: ogr.Feature,
-    band: Grid,
+    band: GridBand,
     gtf: tuple,
     upscale: int = 3,
 ):
@@ -125,10 +125,10 @@ cells that are touched by the feature.
         A Feature according to the \
 [ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
         Can be optained by indexing a \
-[GeomSource](/api/GeomSource.qmd).
-    band : Grid
+[GeomIO](/api/GeomIO.qmd).
+    band : GridBand
         An object that contains a connection the band within the dataset. For further
-        information, see [Grid](/api/Grid.qmd)!
+        information, see [GridBand](/api/GridBand.qmd)!
     gtf : tuple
         The geotransform of a grid dataset.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
@@ -175,7 +175,7 @@ cells that are touched by the feature.
 
 def pin(
     point: tuple,
-    band: Grid,
+    band: GridBand,
     gtf: tuple,
 ) -> ndarray:
     """Pin a the value of a cell based on a coordinate.
@@ -184,7 +184,7 @@ def pin(
     ----------
     point : tuple
         x and y coordinate.
-    band : Grid
+    band : GridBand
         Input object. This holds a connection to the specified band.
     gtf : tuple
         The geotransform of a grid dataset.
