@@ -352,18 +352,24 @@ def create_exposure_grid():
     dr = None
 
 
-def create_hazard_event_map():
+def create_hazard_event_map(epsg: int = None):
     """Create hazard event map."""
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(4326)
+    add = "_no_srs"
+    if epsg is not None:
+        add = ""
     dr = gdal.GetDriverByName("netCDF")
     src = dr.Create(
-        str(Path(p, "hazard", "event_map.nc")),
+        str(Path(p, "hazard", f"event_map{add}.nc")),
         10,
         10,
         1,
         gdal.GDT_Float32,
     )
+    srs = None
+    if epsg is not None:
+        srs = osr.SpatialReference()
+        srs.ImportFromEPSG(4326)
+        src.SetSpatialRef(srs)
     gtf = (
         4.35,
         0.01,
@@ -372,7 +378,6 @@ def create_hazard_event_map():
         0.0,
         -0.01,
     )
-    src.SetSpatialRef(srs)
     src.SetGeoTransform(gtf)
 
     band = src.GetRasterBand(1)
@@ -686,7 +691,8 @@ if __name__ == "__main__":
     create_exposure_geoms_missing()
     create_exposure_geoms_outside()
     create_exposure_grid()
-    create_hazard_event_map()
+    create_hazard_event_map(epsg=4326)
+    create_hazard_event_map(epsg=None)
     create_hazard_event_map_highres()
     create_hazard_risk_map()
     create_settings_geom()

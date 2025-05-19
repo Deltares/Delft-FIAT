@@ -29,6 +29,7 @@ class BufferHandler:
         self.stream: BufferedReader | None = None
 
         self.setup_stream()
+        self.stream_info()
 
     def __repr__(self):
         return f"<{self.__class__.__name__} file='{self.path}' encoding=''>"
@@ -41,6 +42,7 @@ class BufferHandler:
     def __setstate__(self, d):
         self.__dict__ = d
         self.setup_stream()
+        self.stream_info()
 
     def __enter__(self):
         return self.stream.__enter__()
@@ -50,6 +52,7 @@ class BufferHandler:
         self.stream.seek(self.skip)
         return False
 
+    ## Altering methods
     def close(self):
         """Close the handler."""
         if self.stream is not None:
@@ -65,12 +68,6 @@ class BufferHandler:
     def setup_stream(self):
         """Set up the steam to the file."""
         self.stream = BufferedReader(FileIO(self.path))
-        self.sniffer()
-        self.size = self.stream.read().count(self.nchar)
-        self.stream.seek(self.stream.tell() - len(self.nchar))  # To get the last char
-        if self.stream.read() != self.nchar:  # Check if there is a newline char
-            self.size += 1  # If no newline char than add one line to the size
-        self.stream.seek(self.skip)
 
     def sniffer(self):
         """Sniff for the newline character."""
@@ -84,3 +81,12 @@ class BufferHandler:
         else:
             raise ValueError(f"Mixed newline characters in {self.path.as_posix()}")
         self.stream.seek(0)
+
+    def stream_info(self):
+        """Retrieve information from the stream."""
+        self.sniffer()
+        self.size = self.stream.read().count(self.nchar)
+        self.stream.seek(self.stream.tell() - len(self.nchar))  # To get the last char
+        if self.stream.read() != self.nchar:  # Check if there is a newline char
+            self.size += 1  # If no newline char than add one line to the size
+        self.stream.seek(self.skip)

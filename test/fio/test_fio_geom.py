@@ -21,22 +21,22 @@ def test_geomio_read_only(exposure_geom_path: Path):
 
 
 def test_geomio_read_no_srs(
-    exposure_geom_path_no_srs: Path,
+    exposure_geom_no_srs_path: Path,
     srs: osr.SpatialReference,
 ):
     # Open a Dataset
-    gio = GeomIO(exposure_geom_path_no_srs)
+    gio = GeomIO(exposure_geom_no_srs_path)
 
     # Assert some simple stuff
     assert gio.layer.size == 4
-    assert gio.layer.srs is None  # Verify that there is not srs
+    assert gio.layer.srs is None  # Verify that there is no srs
     assert gio.srs is None  # Cant induce from layer and not set at GeomIO level
 
     # Close the dataset
     gio.close()
 
     # Open with srs as input argument to set the srs at GeomIO level
-    gio = GeomIO(exposure_geom_path_no_srs, srs="EPSG:4326")
+    gio = GeomIO(exposure_geom_no_srs_path, srs="EPSG:4326")
 
     # Assert the srs
     assert isinstance(gio.srs, osr.SpatialReference)
@@ -52,7 +52,14 @@ def test_geomio_read_no_srs(
     assert get_srs_repr(gio.srs) == "EPSG:4326"
 
 
-def test_geomio_read_errors(tmp_path: Path):
+def test_geomio_create_error(tmp_path: Path):
+    # Read something that does not exist
+    p = Path(tmp_path, "tmp.geojson")
+    with pytest.raises(OSError, match=f"Cannot create {p.as_posix()} in 'read' mode."):
+        _ = GeomIO(p)
+
+
+def test_geomio_driver_error(tmp_path: Path):
     # Read a file extension that is not accepted
     with pytest.raises(
         DriverNotFoundError,
@@ -60,15 +67,9 @@ def test_geomio_read_errors(tmp_path: Path):
 Extension of file: tmp.unknown not recoqnized",
     ):
         _ = GeomIO(Path(tmp_path, "tmp.unknown"))
-    pass
-
-    # Read something that does not exist
-    p = Path(tmp_path, "tmp.geojson")
-    with pytest.raises(OSError, match=f"Cannot create {p.as_posix()} in 'read' mode."):
-        _ = GeomIO(p)
 
 
-def test_geomio_mode_errors(exposure_geom_path: Path):
+def test_geomio_state_errors(exposure_geom_path: Path):
     gio = GeomIO(exposure_geom_path)
     # Create e.g. a layer in read only mode
     with pytest.raises(ValueError, match="Invalid operation on a read-only file"):
@@ -77,6 +78,7 @@ def test_geomio_mode_errors(exposure_geom_path: Path):
     # Close the dataset
     gio.close()
 
+    # Assert that the layer cannot be requested
     with pytest.raises(ValueError, match="Invalid operation on a closed file"):
         _ = gio.layer
 

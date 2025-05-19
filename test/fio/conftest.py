@@ -7,11 +7,12 @@ from fiat.fio import GeomIO, open_geom
 from fiat.fio.handler import BufferHandler
 
 
+## Paths to data and temporary data
 @pytest.fixture(scope="session")
-def exposure_geom_dataset(exposure_geom_path: Path):
-    ds = open_geom(exposure_geom_path)  # Read only
-    assert isinstance(ds, GeomIO)
-    return ds
+def exposure_data_win_path(testdata_dir: Path):
+    p = Path(testdata_dir, "exposure", "spatial_win.csv")
+    assert p.is_file()
+    return p
 
 
 @pytest.fixture
@@ -28,7 +29,7 @@ def exposure_geom_empty_tmp_path(tmp_path: Path, exposure_geom_dataset: Path) ->
 
 
 @pytest.fixture(scope="session")
-def exposure_geom_path_no_srs(testdata_dir: Path):
+def exposure_geom_no_srs_path(testdata_dir: Path):
     p = Path(testdata_dir, "exposure", "spatial_no_srs.fgb")
     assert p.is_file()
     return p
@@ -40,6 +41,29 @@ def exposure_geom_tmp_path(tmp_path: Path, exposure_geom_path: Path) -> Path:
     shutil.copy2(exposure_geom_path, p)
     assert p.is_file()
     return p
+
+
+@pytest.fixture(scope="session")
+def hazard_event_no_srs_path(testdata_dir: Path):
+    p = Path(testdata_dir, "hazard", "event_map_no_srs.nc")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture
+def hazard_event_tmp_path(tmp_path: Path, hazard_event_path: Path) -> Path:
+    p = Path(tmp_path, "tmp.nc")
+    shutil.copy2(hazard_event_path, p)
+    assert p.is_file()
+    return p
+
+
+## Objects/ data structures
+@pytest.fixture(scope="session")
+def exposure_geom_dataset(exposure_geom_path: Path):
+    ds = open_geom(exposure_geom_path)  # Read only
+    assert isinstance(ds, GeomIO)
+    return ds
 
 
 @pytest.fixture(scope="session")

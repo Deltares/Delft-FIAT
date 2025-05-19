@@ -108,9 +108,10 @@ multiple variables.
         # Some of the internals
         self._bands: list[GridBand] = []
         self._count: int = 0
-        self._chunk: tuple = None
-        self._dtype: int = None
-        self.src: gdal.Dataset = None
+        self._chunk: tuple | None = None
+        self._dtype: int | None = None
+        self._srs: osr.SpatialReference | None = None
+        self.src: gdal.Dataset | None = None
 
         # If write mode, consider initialized
         if self.mode:
@@ -126,18 +127,9 @@ multiple variables.
             self._chunk = chunk
 
         # Set the bands
-        for idx in range(self._count):
-            self._bands.append(
-                GridBand._create(
-                    self.src,
-                    band=self.src.GetRasterBand(idx + 1),
-                    chunk=self.chunk,
-                    mode=self.mode,
-                )
-            )
+        self._retrieve_bands()
 
         # Set the 'external' srs
-        self._srs: osr.SpatialReference = None
         if srs is not None:
             self._srs = osr.SpatialReference()
             self._srs.SetFromUserInput(srs)
@@ -173,15 +165,33 @@ multiple variables.
             self.var_as_band,
         )
 
+    # Internals
+    def _retrieve_bands(self):
+        """Get the bands at any stage."""
+        for idx in range(self._count):
+            self._bands.append(
+                GridBand._create(
+                    self.src,
+                    band=self.src.GetRasterBand(idx + 1),
+                    chunk=self.chunk,
+                    mode=self.mode,
+                )
+            )
+
     ## Properties
     @property
     def band_names(self) -> list:
         """Get the names of all bands."""
         _names = []
         for n in range(self.size):
-            _names.append(self.get_band_name(n + 1))
+            _names.append(self.get_band_name(n))
 
         return _names
+
+    @property
+    def bands(self) -> list:
+        """Return the bands of the dataset."""
+        return self._bands
 
     @property
     @BaseIO.check_state
@@ -236,7 +246,7 @@ multiple variables.
     def dtype(self) -> int:
         """Return the data types of the field data."""
         if not self._dtype:
-            _b = self[1]
+            _b = self[0]
             self._dtype = _b.dtype
             del _b
         return self._dtype
@@ -386,20 +396,7 @@ multiple variables.
         )
 
         self._count = nb
-
-    @BaseIO.check_mode
-    @BaseIO.check_state
-    def create_band(
-        self,
-    ):
-        """Create a new band.
-
-        Only in write (`'w'`) mode.
-
-        This will append the numbers of bands.
-        """
-        self.src.AddBand()
-        self._count += 1
+        self._retrieve_bands()
 
     @BaseIO.check_state
     def get_band_name(self, n: int) -> str:
@@ -441,7 +438,7 @@ multiple variables.
 
     @BaseIO.check_mode
     @BaseIO.check_state
-    def set_srs(
+    def set_source_srs(
         self,
         srs: osr.SpatialReference,
     ):
