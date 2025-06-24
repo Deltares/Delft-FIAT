@@ -69,6 +69,52 @@ def test_gridio_properties(hazard_event_path: Path):
     assert get_srs_repr(gio.srs) == "EPSG:4326"
 
 
+def test_gridio_transform(tmp_path: Path):
+    # Open the dataset
+    gio = GridIO(Path(tmp_path, "tmp.tif"), mode="w")
+    gio.create((10, 10), 1, 6)  # Create a dataset
+
+    # Assert default geotransform
+    np.testing.assert_array_almost_equal(
+        gio.geotransform,
+        (0.0, 1.0, 0.0, 0.0, 0.0, 1.0),
+    )
+
+    # Create a new transform
+    gtf = [1, 0.1, 0, 1, 0, -0.1]
+    # Set the geotransform
+    gio.geotransform = gtf
+
+    # Assert the result
+    np.testing.assert_almost_equal(gio.geotransform[1], 0.1)
+
+
+def test_gridio_chunk(hazard_event_path: Path):
+    # Open the dataset
+    gio = GridIO(hazard_event_path)
+
+    # Assert the current chunking
+    assert gio.chunk == (10, 10)
+    assert gio[0].chunk == (10, 10)
+
+    # Set the chunking
+    gio.chunk = (4, 4)
+    assert gio.chunk == (4, 4)
+    assert gio[0].chunk == (4, 4)
+
+
+def test_gridio_chunk_error(hazard_event_path: Path):
+    # Open the dataset
+    gio = GridIO(hazard_event_path)
+
+    # Assert error if not exactly two elements are passed
+    with pytest.raises(
+        ValueError,
+        match="Chunk should have two elements",
+    ):
+        gio.chunk = (4, 4, 4)
+
+
 def test_gridio_driver_error(tmp_path: Path):
     # Read a file extension that is not accepted
     with pytest.raises(
@@ -76,7 +122,7 @@ def test_gridio_driver_error(tmp_path: Path):
         match="Grid data -> \
 Extension of file: tmp.unknown not recoqnized",
     ):
-        _ = GridIO(Path(tmp_path, "tmp.unknown"))
+        _ = GridIO(Path(tmp_path, "tmp.unknown"), mode="w")
 
 
 def test_gridio_state_error(hazard_event_path: Path):
@@ -100,13 +146,23 @@ def test_gridio_state_error(hazard_event_path: Path):
         _ = gio.geotransform
 
 
-def test_gridio_write_create(tmp_path: Path, srs: osr.SpatialReference):
+def test_gridio_append(hazard_event_path: Path):
+    # Open the dataset
+    gio = GridIO(hazard_event_path, mode="a")
+
+    # Assert some simple stuff
+    assert gio.mode == 1
+    # Even though we can write, there is data present due to append mode.
+    assert len(gio.bands) == 1
+
+
+def test_gridio_write(tmp_path: Path, srs: osr.SpatialReference):
     p = Path(tmp_path, "tmp.tif")  # Make a path
     # Open the dataset
     gio = GridIO(p, mode="w")
 
     # Assert the mode
-    assert gio.mode == 1
+    assert gio.mode == 2
     # assert gio.src is None
 
     # Create a source
@@ -130,14 +186,14 @@ def test_gridio_write_create(tmp_path: Path, srs: osr.SpatialReference):
     assert get_srs_repr(gio.srs) == "EPSG:4326"
 
 
-def test_geomio_reopen(hazard_event_tmp_path: Path):
+def test_gridio_reopen(hazard_event_tmp_path: Path):
     # Open the dataset
-    gio = GridIO(hazard_event_tmp_path, mode="w")
+    gio = GridIO(hazard_event_tmp_path, mode="a")
 
     # Reopen without closing should return same dataset
     obj = gio.reopen()
     assert id(gio) == id(obj)
-    assert obj.mode == 1  # Still in write mode
+    assert obj.mode == 1  # Still in append mode
 
     # Close the dataset and reopen
     gio.close()

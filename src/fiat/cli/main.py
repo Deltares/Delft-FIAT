@@ -10,7 +10,8 @@ from fiat.check import check_config_entries
 from fiat.cli.action import KeyValueAction
 from fiat.cli.formatter import MainHelpFormatter
 from fiat.cli.util import file_path_check, run_log, run_profiler
-from fiat.log import check_loglevel, setup_default_log
+from fiat.log import setup_default_log
+from fiat.log.util import check_loglevel
 from fiat.models import GeomModel, GridModel
 from fiat.util import (
     MANDATORY_GEOM_ENTRIES,

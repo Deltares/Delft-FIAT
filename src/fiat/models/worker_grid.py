@@ -69,7 +69,7 @@ of the [GridIO](/api/GeomIO.qmd) object.
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
     out_src.set_source_srs(exp.srs)
-    out_src.set_geotransform(exp.geotransform)
+    out_src.geotransform = exp.geotransform
     # Create the outgoing total damage grid
     td_out = open_grid(
         Path(
@@ -85,7 +85,7 @@ of the [GridIO](/api/GeomIO.qmd) object.
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
     # Set the neccesary attributes
-    td_out.set_geotransform(exp.geotransform)
+    td_out.geotransform = exp.geotransform
     td_out.set_source_srs(exp.srs)
     td_band = td_out[1]
     td_noval = -0.5 * 2**128
@@ -212,7 +212,7 @@ def worker_ead(
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
     ead_src.set_source_srs(rp[0].srs)
-    ead_src.set_geotransform(rp[0].geotransform)
+    ead_src.geotransform = rp[0].geotransform
 
     # Gather and set information before looping through windows.
     for idx in range(rp[0].size):
@@ -264,7 +264,7 @@ def worker_ead(
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
     td_src.set_source_srs(td[0].srs)
-    td_src.set_geotransform(td[0].geotransform)
+    td_src.geotransform = td[0].geotransform
     td_band = td_src[1]
     td_noval = -0.5 * 2**128
     td_band.src.SetNoDataValue(td_noval)

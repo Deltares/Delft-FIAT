@@ -66,28 +66,29 @@ class GeomIO(BaseIO):
     ):
         BaseIO.__init__(self, file, mode)
 
-        if mode == "r":
-            _map = GEOM_READ_DRIVER_MAP
-        else:
+        # Select the driver map based on the mode
+        _map = GEOM_READ_DRIVER_MAP
+        if self.mode == 2:
             _map = GEOM_WRITE_DRIVER_MAP
 
+        # Check for the driver
         if self.path.suffix not in _map:
             raise DriverNotFoundError(gog="Geometry", path=self.path)
 
+        # Set the driver and retrieve info
         driver: str = _map[self.path.suffix]
-
         self.driver: gdal.Driver = ogr.GetDriverByName(driver)
-        info = gdal.VSIStatL(self.path.as_posix())
 
+        # Read or create a data source depending on the mode
         self.src: gdal.Dataset = None
-        if (self.path.exists() or info is not None) and not overwrite:
-            self.src = self.driver.Open(self.path.as_posix(), self.mode)
-        else:
-            if not self.mode:
-                raise OSError(f"Cannot create {self.path.as_posix()} in 'read' mode.")
+        if self.mode != 2 and not overwrite:
+            self.src = gdal.OpenEx(
+                self.path.as_posix(),
+                nOpenFlags=self.mode,
+            )
+        elif self.mode == 2 or (self.mode == 1 and overwrite):
             self.create(self.path)
 
-        info = None
         self._layer: GeomLayer = None
         self._srs: osr.SpatialReference = None
         if srs is not None:
@@ -206,32 +207,6 @@ class GeomIO(BaseIO):
             that complies with a specific geometry type according to GDAL.
         """
         obj = self.src.CreateLayer(self.path.stem, srs, geom_type)
-        self._layer = GeomLayer._create(self.src, obj, self.mode)
-
-    @BaseIO.check_mode
-    @BaseIO.check_state
-    def create_layer_from_copy(
-        self,
-        layer: ogr.Layer,
-        overwrite: bool = True,
-    ):
-        """Create a new layer by copying another layer.
-
-        Only in write (`'w'`) mode.
-
-        Parameters
-        ----------
-        layer : ogr.Layer
-            A layer defined by OGR.
-        overwrite : bool, optional
-            If set to `True`, it will overwrite an existing layer.
-        """
-        _ow = {
-            True: "YES",
-            False: "NO",
-        }
-
-        obj = self.src.CopyLayer(layer, self.path.stem, [f"OVERWRITE={_ow[overwrite]}"])
         self._layer = GeomLayer._create(self.src, obj, self.mode)
 
     @BaseIO.check_mode

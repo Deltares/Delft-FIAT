@@ -25,7 +25,9 @@ def test_buffered_geom_writer_create(tmp_path: Path, exposure_geom_dataset: Geom
     assert w.buffer.path.as_posix() == "/vsimem/tmp.gpkg"
 
     # Check for the error when there is no file and no layer defn is given
-    with pytest.raises(OSError, match=f"Cannot create {p.as_posix()} in 'read' mode."):
+    with pytest.raises(
+        FileNotFoundError, match=f"{p.as_posix()} doesn't exist, can't read"
+    ):
         w = BufferedGeomWriter(
             p,
             srs=exposure_geom_dataset.srs,

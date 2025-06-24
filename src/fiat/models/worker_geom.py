@@ -13,7 +13,8 @@ from fiat.fio import (
     GridIO,
 )
 from fiat.gis import geom, overlay
-from fiat.log import LogItem, Sender
+from fiat.log import Sender
+from fiat.log.util import LogItem
 from fiat.methods.ead import calc_ead, risk_density
 from fiat.struct import Table, TableLazy
 from fiat.util import DummyWriter, regex_pattern

@@ -12,36 +12,43 @@ class BaseIO(metaclass=ABCMeta):
 
     Parameters
     ----------
-    file : Path | str, optional
-        Path to the file, by default None
+    file : Path | str
+        Path to the file
     mode : str, optional
         Mode in which to open the file, by default "r"
     """
 
     _mode_map = {
         "r": 0,
-        "w": 1,
+        "a": 1,
+        "w": 2,
     }
-
-    _closed = False
-    _path = None
-    path = None
-    src = None
 
     def __init__(
         self,
-        file: Path | str = None,
+        file: Path | str,
         mode: str = "r",
     ):
-        if file is not None:
-            self.path: Path = Path(file)
-            self._path: Path = Path(file)
+        # Current state
+        self._closed = False
 
+        # Set the pathing
+        self.path: Path = Path(file)
+        self._path: Path = Path(file)  # Seems funny, needed later
+
+        # Check the mode
         if mode not in BaseIO._mode_map:
-            raise ValueError("")
+            raise ValueError("Invalid mode, chose from 'r', 'a' or 'w'")
 
+        # Set the mode
         self.mode: int = BaseIO._mode_map[mode]
         self.mode_str: str = mode
+
+        # If read and file doesnt exist, throw error
+        if self.mode != 2 and not self.path.is_file():
+            raise FileNotFoundError(
+                f"{self.path.as_posix()} doesn't exist, can't read",
+            )
 
     def __repr__(self):
         _mem_loc = f"{id(self):#018x}".upper()

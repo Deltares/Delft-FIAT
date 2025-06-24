@@ -115,21 +115,9 @@ def test_open_geom_read_only(exposure_geom_path: Path):
     ds.close()
 
 
-def test_open_geom_write_new(tmp_path: Path):
+def test_open_geom_append(exposure_geom_tmp_path: Path):
     # Open a dataset in write mode
-    ds = open_geom(Path(tmp_path, "tmp.geojson"), mode="w")
-
-    # Assert some simple stuff
-    assert isinstance(ds, GeomIO)
-    assert ds.mode == 1  # Write/ update mode
-    assert ds.layer is None  # Hasn't been created yet
-
-    ds.close()
-
-
-def test_open_geom_write_append(exposure_geom_tmp_path: Path):
-    # Open a dataset in write mode
-    ds = open_geom(exposure_geom_tmp_path, mode="w")
+    ds = open_geom(exposure_geom_tmp_path, mode="a")
 
     # Assert some simple stuff
     assert isinstance(ds, GeomIO)
@@ -140,13 +128,25 @@ def test_open_geom_write_append(exposure_geom_tmp_path: Path):
     ds.close()
 
 
+def test_open_geom_write_new(tmp_path: Path):
+    # Open a dataset in write mode
+    ds = open_geom(Path(tmp_path, "tmp.geojson"), mode="w")
+
+    # Assert some simple stuff
+    assert isinstance(ds, GeomIO)
+    assert ds.mode == 2  # Write/ update mode
+    assert ds.layer is None  # Hasn't been created yet
+
+    ds.close()
+
+
 def test_open_geom_write_overwrite(exposure_geom_tmp_path: Path):
     # Open a dataset in write mode
     ds = open_geom(exposure_geom_tmp_path, mode="w", overwrite=True)
 
     # Assert some simple stuff
     assert isinstance(ds, GeomIO)
-    assert ds.mode == 1  # Write/ update mode
+    assert ds.mode == 2  # Write/ update mode
     assert ds.layer is None  # Overwritten source, so has to be newly created
 
     ds.close()
@@ -248,5 +248,5 @@ def test_open_grid_write(tmp_path: Path):
     ds = open_grid(p, mode="w")
 
     # Assert some simple stuff
-    assert ds.mode == 1
+    assert ds.mode == 2
     assert ds.src is None

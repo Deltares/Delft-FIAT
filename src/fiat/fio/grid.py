@@ -88,7 +88,7 @@ multiple variables.
             raise DriverNotFoundError(gog="Grid", path=self.path)
 
         driver = GRID_DRIVER_MAP[self.path.suffix]
-        self.driver = gdal.GetDriverByName(driver)
+        self.driver: gdal.Driver = gdal.GetDriverByName(driver)
 
         # Go over the open options, var_as_band really
         open_options = []
@@ -114,11 +114,15 @@ multiple variables.
         self.src: gdal.Dataset | None = None
 
         # If write mode, consider initialized
-        if self.mode:
+        if self.mode == 2:
             return
 
         # Otherwise open an existing dataset
-        self.src = gdal.OpenEx(self._path.as_posix(), open_options=open_options)
+        self.src = gdal.OpenEx(
+            self._path.as_posix(),
+            nOpenFlags=self.mode,
+            open_options=open_options,
+        )
         self._count = self.src.RasterCount
 
         # Set the chunking
@@ -239,7 +243,7 @@ multiple variables.
             raise ValueError("Chunk should have two elements")
         self._chunk = value
         for item in self:
-            item.chunk = self.chunk
+            item.chunk = self._chunk
 
     @property
     @BaseIO.check_state
@@ -256,6 +260,18 @@ multiple variables.
     def geotransform(self) -> tuple:
         """Return the geo transform of the grid."""
         return self.src.GetGeoTransform()
+
+    @geotransform.setter
+    @BaseIO.check_mode
+    def geotransform(self, affine: tuple):
+        """Set the geo transform of the grid.
+
+        Parameters
+        ----------
+        affine : tuple
+            An affine matrix.
+        """
+        self.src.SetGeoTransform(affine)
 
     @property
     @BaseIO.check_state
@@ -424,17 +440,6 @@ multiple variables.
             return _meta[_var_meta[0]]
 
         return ""
-
-    @BaseIO.check_mode
-    def set_geotransform(self, affine: tuple):
-        """Set the geo transform of the grid.
-
-        Parameters
-        ----------
-        affine : tuple
-            An affine matrix.
-        """
-        self.src.SetGeoTransform(affine)
 
     @BaseIO.check_mode
     @BaseIO.check_state
