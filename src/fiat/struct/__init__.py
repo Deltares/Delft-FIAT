@@ -1,5 +1,12 @@
 """Data structures (glorified classes)."""
 
-from .geom import *
-from .grid import *
-from .table import *
+from .geom import GeomLayer
+from .grid import GridBand
+from .table import Table, TableLazy
+
+__all__ = [
+    "GeomLayer",
+    "GridBand",
+    "Table",
+    "TableLazy",
+]

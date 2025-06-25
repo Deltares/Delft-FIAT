@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from fiat.fio import GeomIO, open_geom
+from fiat.fio import open_geom
 from fiat.fio.handler import BufferHandler
 
 
@@ -59,13 +59,6 @@ def hazard_event_tmp_path(tmp_path: Path, hazard_event_path: Path) -> Path:
 
 
 ## Objects/ data structures
-@pytest.fixture(scope="session")
-def exposure_geom_dataset(exposure_geom_path: Path):
-    ds = open_geom(exposure_geom_path)  # Read only
-    assert isinstance(ds, GeomIO)
-    return ds
-
-
 @pytest.fixture(scope="session")
 def handler(exposure_data_path: Path) -> BufferHandler:
     h = BufferHandler(exposure_data_path)

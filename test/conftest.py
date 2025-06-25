@@ -4,6 +4,8 @@ from pathlib import Path
 import pytest
 from osgeo import osr
 
+from fiat.fio import GeomIO, open_geom
+
 TEST_MODULE = Path(__file__).parent
 
 
@@ -56,6 +58,13 @@ def hazard_risk_path(testdata_dir: Path) -> Path:
 
 
 ## Globally used object
+@pytest.fixture(scope="session")
+def exposure_geom_dataset(exposure_geom_path: Path) -> GeomIO:
+    ds = open_geom(exposure_geom_path)  # Read only
+    assert isinstance(ds, GeomIO)
+    return ds
+
+
 @pytest.fixture(scope="session")
 def srs() -> osr.SpatialReference:
     s = osr.SpatialReference()
