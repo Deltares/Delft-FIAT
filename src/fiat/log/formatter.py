@@ -1,9 +1,7 @@
 """Logging formatting."""
 
-import io
 import re
 import time
-import traceback
 from string import Formatter as StrFormatter
 
 from fiat.log.util import DEFAULT_TIME_FMT, LogItem
@@ -58,14 +56,14 @@ class FormatStyler:
         if not fields:
             raise ValueError("Invalid format: no fields")
 
-    def _format(self, record):
+    def _format(self, record: LogItem):
         if defaults := self._defaults:
             values = defaults | record.__dict__
         else:
             values = record.__dict__
         return self._fmt.format(**values)
 
-    def format(self, record):
+    def format(self, record: LogItem):
         """Format the record."""
         try:
             return self._format(record)
@@ -112,7 +110,7 @@ class MessageFormatter:
         return self._style._fmt
 
     ## Executing methods
-    def format_time(self, record):
+    def format_time(self, record: LogItem):
         """Format the time."""
         ct = self._conv(record.ct)
         if datefmt := self.datefmt:
@@ -121,18 +119,7 @@ class MessageFormatter:
             s = time.strftime(DEFAULT_TIME_FMT, ct)
         return s
 
-    def format_exception(self, ei):
-        """Format an exception."""
-        sio = io.StringIO()
-        tb = ei[2]
-        traceback.print_exception(ei[0], ei[1], tb, None, sio)
-        s = sio.getvalue()
-        sio.close()
-        if s[-1:] == "\n":
-            s = s[:-1]
-        return s
-
-    def format_message(self, record):
+    def format_message(self, record: LogItem):
         """Format the message."""
         return self._style.format(record)
 

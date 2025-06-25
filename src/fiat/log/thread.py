@@ -2,8 +2,10 @@
 
 import atexit
 import queue
+import sys
 import threading
 import weakref
+from multiprocessing.queues import Queue
 
 from fiat.log.handler import BaseHandler
 from fiat.log.util import LogItem, global_acquire, global_release
@@ -46,8 +48,9 @@ class Sender(BaseHandler):
         """Emit a record."""
         try:
             self.put(record)
-        except Exception:
-            self.handleError(record)
+        except BaseException:
+            cdesc, _, _ = sys.exc_info()
+            raise BufferError(f"Issue with the queue: {cdesc.__name__}")
 
 
 class Receiver:
@@ -66,7 +69,7 @@ class Receiver:
 
     def __init__(
         self,
-        queue: object,
+        queue: Queue,
     ):
         self._closed = False
         self._t = None
@@ -80,6 +83,13 @@ class Receiver:
 
         self._add_global_receiver_ref()
 
+    ## properties
+    @property
+    def closed(self):
+        """Return the current state."""
+        return self._closed
+
+    ## Private methods
     def _add_global_receiver_ref(
         self,
     ):
@@ -109,11 +119,13 @@ class Receiver:
             except queue.Empty:
                 break
 
+    ## I/O methods
     def close(self):
         """Close the receiver."""
         if not self._closed:
             self.q.put_nowait(self._sentinel)
-            self._t.join()
+            if self._t is not None:
+                self._t.join()
             self._t = None
             self._closed = True
         global_acquire()
@@ -126,6 +138,7 @@ class Receiver:
             handler.close()
             handler = None
 
+    ## Specific methods
     def get(
         self,
         block: bool = True,

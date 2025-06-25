@@ -55,11 +55,11 @@ def setup_default_log(
 
     obj = Logger(name, level=level)
 
-    obj.add_handler(level=level)
+    obj.add_stream_handler(level=level)
     if dst is not None:
         obj.add_file_handler(
-            dst,
             level=level,
+            dst=dst,
             filename=name,
         )
 
@@ -70,7 +70,7 @@ def setup_mp_log(
     queue: object,
     name: str,
     level: int,
-    dst: str = None,
+    dst: str | None = None,
 ):
     """Set up logging for multiprocessing.
 

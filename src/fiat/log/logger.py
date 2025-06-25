@@ -3,7 +3,7 @@
 import weakref
 from warnings import warn
 
-from fiat.log.handler import CHandler, FileHandler
+from fiat.log.handler import FileHandler, StreamHandler
 from fiat.log.util import (
     LogItem,
     LogLevels,
@@ -11,45 +11,10 @@ from fiat.log.util import (
     global_acquire,
     global_release,
 )
-from fiat.util import NOT_IMPLEMENTED
 
 __all__ = ["Logger"]
 
 _loggers = weakref.WeakValueDictionary()
-
-
-class DummyLog:
-    """Create dummy class for tracking children.
-
-    (actually funny..).
-    """
-
-    def __init__(
-        self,
-        obj,
-    ):
-        self.child_tree = {obj: None}
-
-    def __repr__(self):
-        _mem_loc = f"{id(self):#018x}".upper()
-        return f"<{self.__class__.__name__} object at {_mem_loc}>"
-
-    def _check_succession(
-        self,
-        obj,
-    ):
-        """Remove child if older one is present."""
-        _disinherit = [
-            child for child in self.child_tree if child.name.startswith(obj.name)
-        ]
-
-        for child in _disinherit:
-            del self.child_tree[child]
-
-    def add_to_chain(self, obj):
-        """Add object to the tree."""
-        self._check_succession(obj)
-        self.child_tree[obj] = None
 
 
 class Logmeta(type):
@@ -64,7 +29,7 @@ class Logmeta(type):
 
         To accommodate the check in the logger tree.
         """
-        obj = cls.__new__(cls, name, level)
+        obj: Logger = cls.__new__(cls, name, level)
         cls.__init__(obj, name, level)
 
         res = obj.manager.resolve_logger_tree(obj)
@@ -78,6 +43,39 @@ class Logmeta(type):
         return obj
 
 
+class BaseLogger:
+    """Create dummy class for tracking children.
+
+    (actually funny..).
+    """
+
+    def __init__(
+        self,
+    ):
+        self.children = weakref.WeakValueDictionary()
+
+    def __repr__(self):
+        _mem_loc = f"{id(self):#018x}".upper()
+        return f"<{self.__class__.__name__} object at {_mem_loc}>"
+
+    ## Private methods
+    def _check_succession(
+        self,
+        obj: "Logger",
+    ):
+        """Remove child if older one is present."""
+        _disinherit = [child for child in self.children if child.startswith(obj.name)]
+
+        for child in _disinherit:
+            _ = self.children.pop(child)
+
+    ## Mutating methods
+    def add_child(self, obj: "Logger"):
+        """Add object to the tree."""
+        self._check_succession(obj)
+        self.children[obj.name] = obj
+
+
 class LogManager:
     """The manager of all the loggers."""
 
@@ -88,19 +86,15 @@ class LogManager:
 
     def _check_children(
         self,
-        obj: DummyLog,
+        obj: BaseLogger,
         logger: "Logger",
     ):
         """Ensure the hierarchy is corrected downwards."""
-        name = logger.name
-
-        for child in obj.child_tree.keys():
-            if child.parent is None:
-                child.parent = logger
-            elif not child.parent.name.startswith(name):
-                if logger.parent is not child.parent:
-                    logger.parent = child.parent
-                child.parent = logger
+        for child in obj.children.values():
+            if logger.parent is not child.parent:
+                logger.parent = child.parent
+            child.parent = logger
+            logger.add_child(child)
 
     def _check_parents(self, logger: "Logger"):
         """Ensure the hierarchy is corrected upwards."""
@@ -117,17 +111,18 @@ class LogManager:
             substr = ".".join(sub)
 
             if substr not in self.logger_tree:
-                self.logger_tree[substr] = DummyLog(logger)
+                obj = BaseLogger()
+                self.logger_tree[substr] = obj
             else:
                 obj = self.logger_tree[substr]
                 if isinstance(obj, Logger):
                     parent = obj
                     break
-                else:
-                    obj.add_to_chain(logger)
+            obj.add_child(logger)
 
         logger.parent = parent
         if parent is not None:
+            parent.add_child(logger)
             logger.level = parent.level
 
     def resolve_logger_tree(
@@ -138,23 +133,28 @@ class LogManager:
         obj = None
         name = logger.name
 
+        # Acquire
         global_acquire()
+
+        # Solve the family tree
         if name in self.logger_tree:
             obj = self.logger_tree[name]
-            if isinstance(obj, DummyLog):
+            if not isinstance(obj, Logger):
                 self.logger_tree[name] = logger
                 self._check_children(obj, logger)
-                self._check_parents(logger)
                 obj = None
         else:
             self.logger_tree[name] = logger
-            self._check_parents(logger)
+        self._check_parents(logger)
+
+        # Release
         global_release()
 
+        # Return the object or NoneType
         return obj
 
 
-class Logger(metaclass=Logmeta):
+class Logger(BaseLogger, metaclass=Logmeta):
     """Generate a logger.
 
     The list of available logging levels:\n
@@ -176,29 +176,13 @@ class Logger(metaclass=Logmeta):
 
     manager = LogManager()
 
-    # def __new__(
-    #     cls,
-    #     name: str,
-    #     level: int = 2,
-    # ):
-
-    #     obj = object.__new__(cls)
-    #     obj.__init__(name, level)
-
-    #     res = Log.manager.fit_external_logger(obj)
-    #     if res is not None:
-    #         warn(f"{name} is already in use -> \
-    # returning currently known object", UserWarning)
-    #         obj = res
-
-    #     return obj
-
     def __init__(
         self,
         name: str,
         level: int = 2,
     ):
         self._level = check_loglevel(level)
+        BaseLogger.__init__(self)
         self.name = name
         self.bubble_up = True
         self.parent = None
@@ -210,13 +194,26 @@ class Logger(metaclass=Logmeta):
         pass
 
     def __repr__(self):
-        _lvl_str = str(LogLevels(self.level)).split(".")[1]
-        return f"<Logger {self.name} level={_lvl_str}>"
-
-    def __str__(self):
         _mem_loc = f"{id(self):#018x}".upper()
-        return f"<{self.__class__.__name__} object at {_mem_loc}>"
+        _lvl_str = LogLevels(self.level).name
+        return f"<Logger {self.name} level={_lvl_str} at {_mem_loc}>"
 
+    ## Properties
+    @property
+    def level(self):
+        """Return the current logging level."""
+        return self._level
+
+    @level.setter
+    def level(
+        self,
+        val: int,
+    ):
+        self._level = check_loglevel(val)
+        for h in self._handlers:
+            h.level = val
+
+    ## Private methods/ decorators
     def _log(self, record):
         """Handle logging."""
         obj = self
@@ -240,11 +237,12 @@ class Logger(metaclass=Logmeta):
 
         return handle
 
-    def add_handler(
+    ## Mutating methods
+    def add_stream_handler(
         self,
         level: int = 2,
-        name: str = None,
-        stream: type = None,
+        name: str | None = None,
+        stream: type | None = None,
     ):
         """Add an outlet to the logging object.
 
@@ -258,45 +256,31 @@ class Logger(metaclass=Logmeta):
             Stream to which to send the logging messages.
             If none is provided, stdout is chosen. By default None
         """
-        self._handlers.append(CHandler(level=level, name=name, stream=stream))
+        self._handlers.append(StreamHandler(level=level, name=name, stream=stream))
 
     def add_file_handler(
         self,
-        dst: str,
         level: int = 2,
-        filename: str = None,
+        dst: str | None = None,
+        filename: str | None = None,
     ):
         """Add an outlet directed to a file.
 
+        If not destination is provided, the file is placed in the current working
+        directory.
+
         Parameters
         ----------
-        dst : str
-            The destination of the file, i.e. the path.
         level : int, optional
-            Logging level.
+            Logging level. By default 2 (INFO)
+        dst : str
+            The destination of the file, i.e. the path. By default None (cwd)
         filename : str, optional
             The name of the file, also the identifier for the stream handler.
         """
         self._handlers.append(FileHandler(dst=dst, level=level, name=filename))
 
-    @property
-    def level(self):
-        """Return the current logging level."""
-        return self._level
-
-    @level.setter
-    def level(
-        self,
-        val: int,
-    ):
-        self._level = check_loglevel(val)
-        for h in self._handlers:
-            h.level = val
-
-    def _direct(self, msg):
-        """Log something directly."""
-        raise NotImplementedError(NOT_IMPLEMENTED)
-
+    ## Logging methods
     @_handle_log
     def debug(self, msg: str):
         """Create a debug message."""

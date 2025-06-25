@@ -1,10 +1,10 @@
 """Logging handlers."""
 
 import atexit
-import os
 import sys
 import threading
 import weakref
+from pathlib import Path
 
 from fiat.log.formatter import MessageFormatter
 from fiat.log.util import (
@@ -17,7 +17,7 @@ from fiat.log.util import (
 )
 from fiat.util import NOT_IMPLEMENTED
 
-__all__ = ["CHandler", "FileHandler"]
+__all__ = ["StreamHandler", "FileHandler"]
 
 STREAM_COUNT = 1
 
@@ -63,6 +63,13 @@ class BaseHandler:
         _mem_loc = f"{id(self):#018x}".upper()
         return f"<{self.__class__.__name__} object at {_mem_loc}>"
 
+    ## Properties
+    @property
+    def closed(self):
+        """Return the handler state."""
+        return self._closed
+
+    # Private methods
     def _add_global_stream_ref(
         self,
     ):
@@ -75,6 +82,7 @@ class BaseHandler:
         """Create a lock."""
         self._lock = threading.RLock()
 
+    ## Locking
     def acquire(self):
         """Acquire the lock."""
         self._lock.acquire()
@@ -83,12 +91,14 @@ class BaseHandler:
         """Release the lock."""
         self._lock.release()
 
+    ## I/O
     def close(self):
         """Close and clean up."""
         global_acquire()
-        self._closed = True
         del _handlers[self._name]
         global_release()
+        self._closed = True
+        self.stream = None
 
     def emit(self):
         """Emit a message."""
@@ -98,6 +108,7 @@ class BaseHandler:
         """Flush."""
         raise NotImplementedError(NOT_IMPLEMENTED)
 
+    ## Mutating
     def format(
         self,
         record: LogItem,
@@ -134,8 +145,10 @@ class BaseHandler:
         self.msg_formatter = formatter
 
 
-class CHandler(BaseHandler):
-    """Output text to the console.
+class StreamHandler(BaseHandler):
+    """Output text to a stream.
+
+    By default this stream is stdout.
 
     Parameters
     ----------
@@ -172,7 +185,8 @@ class CHandler(BaseHandler):
 
         self._add_global_stream_ref()
 
-    def emit(self, record):
+    ## Mutating
+    def emit(self, record: LogItem):
         """Emit a certain message."""
         msg = self.format(record)
         self.stream.write(msg)
@@ -185,15 +199,18 @@ class CHandler(BaseHandler):
         self.release()
 
 
-class FileHandler(CHandler):
+class FileHandler(StreamHandler):
     """Output text to a file.
+
+    If not destination is provided, the file is placed in the current working
+    directory.
 
     Parameters
     ----------
-    level : int
-        Logging level.
-    dst : str
-        The destination of the logging (text) file.
+    level : int, optional
+        Logging level. By default 2 (INFO)
+    dst : str, optional
+        The destination of the logging (text) file. By default None (cwd)
     name : str, optional
         The name of the file handler, by default None
     mode : str, optional
@@ -202,23 +219,26 @@ class FileHandler(CHandler):
 
     def __init__(
         self,
-        level: int,
-        dst: str,
-        name: str = None,
+        level: int = 2,
+        dst: str | None = None,
+        name: str | None = None,
         mode: str = "w",
     ):
         if name is None:
             name = "log_default"
-        self._filename = os.path.join(dst, f"{name}.log")
-        CHandler.__init__(self, level, self._open(mode), name)
+        dst = dst or Path.cwd()
+        self._path = Path(dst, f"{name}.log")
+        StreamHandler.__init__(self, level, self._open(mode), name)
 
+    ## Private/ I/O
     def _open(
         self,
         mode: str = "w",
     ):
         """Open a txt file and return the handler."""
-        return open(self._filename, mode)
+        return open(self._path, mode)
 
+    ## I/O
     def close(self):
         """Close and clean up."""
         self.acquire()
@@ -228,5 +248,5 @@ class FileHandler(CHandler):
         self.stream = None
 
         stream.close()
-        CHandler.close(self)
+        StreamHandler.close(self)
         self.release()
