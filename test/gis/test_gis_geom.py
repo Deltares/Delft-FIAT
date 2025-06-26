@@ -13,7 +13,7 @@ def test_point_in_geom_linestring(feature_linestring: ogr.Feature):
     p = point_in_geom(feature_linestring)
 
     # Assert the output
-    assert p == (3, 2)
+    assert p == (3.5, 2.5)
 
 
 def test_point_in_geom_point(feature_point: ogr.Feature):
@@ -29,7 +29,7 @@ def test_point_in_geom_polygon(feature_polygon: ogr.Feature):
     p = point_in_geom(feature_polygon)
 
     # Assert the output
-    assert p == (1.5, 1.5)
+    assert p == (2.0, 2.0)
 
 
 def test_reproject_feature_point(feature_point: ogr.Feature):
@@ -49,14 +49,14 @@ def test_reproject_feature_point(feature_point: ogr.Feature):
 def test_reproject_feature_polygon(feature_polygon: ogr.Feature):
     # Assert current state
     geom = feature_polygon.GetGeometryRef()
-    assert geom.GetGeometryRef(0).GetPoint_2D(0) == (1.0, 2.0)  # Due to interior
+    assert geom.GetGeometryRef(0).GetPoint_2D(0) == (1.5, 2.5)  # Due to interior
 
     # Call the function
     geom = reproject_feature(geom, src_srs="EPSG:4326", dst_srs="EPSG:3857")
     # Assert the output
     np.testing.assert_array_almost_equal(
         geom.GetGeometryRef(0).GetPoint_2D(0),
-        (111319.490793, 222684.208506),
+        (166979.23619, 278387.075954),
     )
 
 

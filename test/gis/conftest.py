@@ -33,6 +33,13 @@ def hazard_tif(tmp_path: Path, srs: osr.SpatialReference) -> GridIO:
 
 
 ## GIS related objects
+# Other
+@pytest.fixture(scope="session")
+def geotransform() -> tuple:
+    gtf = (0, 0.5, 0.0, 10, 0.0, -0.5)
+    return gtf
+
+
 # Layers
 @pytest.fixture(scope="session")
 def linestring_defn() -> ogr.FeatureDefn:
@@ -58,7 +65,7 @@ def polygon_defn() -> ogr.FeatureDefn:
 # Features
 @pytest.fixture(scope="session")
 def feature_linestring(linestring_defn: ogr.FeatureDefn) -> ogr.Feature:
-    wkt = "LINESTRING (1 1, 2 1, 3 2, 4 2)"
+    wkt = "LINESTRING (1.5 1.5, 2.5 1.5, 3.5 2.5, 4.5 2.5)"
     geom = ogr.CreateGeometryFromWkt(wkt)
     ft = ogr.Feature(linestring_defn)
     ft.SetFID(1)
@@ -76,9 +83,19 @@ def feature_point(point_defn: ogr.FeatureDefn) -> ogr.Feature:
     return ft
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def feature_polygon(polygon_defn: ogr.FeatureDefn) -> ogr.Feature:
-    wkt = "POLYGON ((1 2, 2 2, 2 1, 1 1, 1 2))"
+    wkt = "POLYGON ((1.5 2.5, 2.5 2.5, 2.5 1.5, 1.5 1.5, 1.5 2.5))"
+    geom = ogr.CreateGeometryFromWkt(wkt)
+    ft = ogr.Feature(polygon_defn)
+    ft.SetFID(1)
+    ft.SetGeometry(geom)
+    return ft
+
+
+@pytest.fixture(scope="session")
+def feature_polygon_complex(polygon_defn: ogr.FeatureDefn) -> ogr.Feature:
+    wkt = "POLYGON ((4.5 5.5, 4.5 2.5, 6.5 2.5, 6.5 3.5, 5.5 3.5, 5.5 5.5, 4.5 5.5))"
     geom = ogr.CreateGeometryFromWkt(wkt)
     ft = ogr.Feature(polygon_defn)
     ft.SetFID(1)
