@@ -83,12 +83,6 @@ class Receiver:
 
         self._add_global_receiver_ref()
 
-    ## properties
-    @property
-    def closed(self):
-        """Return the current state."""
-        return self._closed
-
     ## Private methods
     def _add_global_receiver_ref(
         self,
@@ -118,6 +112,12 @@ class Receiver:
                 self.count += 1
             except queue.Empty:
                 break
+
+    ## properties
+    @property
+    def closed(self):
+        """Return the current state."""
+        return self._closed
 
     ## I/O methods
     def close(self):

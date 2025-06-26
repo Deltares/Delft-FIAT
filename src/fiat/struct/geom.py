@@ -217,33 +217,6 @@ class GeomLayer(BaseStruct):
         self._obj.CreateFeature(ft)
         ft = None
 
-    def add_feature_from_defn(
-        self,
-        geom: ogr.Geometry,
-        in_ft: ogr.Feature,
-        out_ft: ogr.Feature,
-    ):
-        """Add a feature to a layer by using properties from another.
-
-        Only in write (`'w'`) mode.
-
-        Parameters
-        ----------
-        geom : ogr.Geometry
-            The geometry of the new feature. Defined by OGR.
-        in_ft : ogr.Feature
-            The input feature. The properties and fieldinfo are used from this one
-            to set information on the new feature. Defined by OGR.
-        out_ft : ogr.Feature
-            New feature. Empty. Defined by OGR.
-        """
-        out_ft.SetGeometry(geom)
-
-        for n in range(in_ft.GetFieldCount()):
-            out_ft.SetField(in_ft.GetFieldDefnRef(n).GetName(), in_ft.GetField(n))
-
-        self._obj.CreateFeature(out_ft)
-
     def create_field(
         self,
         name: str,

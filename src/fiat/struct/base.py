@@ -192,12 +192,12 @@ as the data ({self.ncol})")
     @abstractmethod
     def set_index(
         self,
-        index_col: int,
+        index_col: int | str,
     ):
         """Set the index to a new column."""
         # Check whether the index column index is valid
-        if index_col < 0:
-            return False
-        elif index_col >= 0 and index_col not in range(len(self.columns)):
-            raise ValueError(f"Index column index not present: ({index_col})")
-        return True
+        if isinstance(index_col, str):
+            index_col = self._columns.get("object_id", -1)
+        if index_col >= 0 and index_col not in range(len(self.columns)):
+            raise ValueError(f"Index column index out of range: ({index_col})")
+        return index_col

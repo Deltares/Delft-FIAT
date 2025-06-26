@@ -84,6 +84,7 @@ class LogManager:
     ):
         self.logger_tree = {}
 
+    ## Private methods
     def _check_children(
         self,
         obj: BaseLogger,
@@ -125,6 +126,7 @@ class LogManager:
             parent.add_child(logger)
             logger.level = parent.level
 
+    ## Resolve method
     def resolve_logger_tree(
         self,
         logger: "Logger",
@@ -198,21 +200,6 @@ class Logger(BaseLogger, metaclass=Logmeta):
         _lvl_str = LogLevels(self.level).name
         return f"<Logger {self.name} level={_lvl_str} at {_mem_loc}>"
 
-    ## Properties
-    @property
-    def level(self):
-        """Return the current logging level."""
-        return self._level
-
-    @level.setter
-    def level(
-        self,
-        val: int,
-    ):
-        self._level = check_loglevel(val)
-        for h in self._handlers:
-            h.level = val
-
     ## Private methods/ decorators
     def _log(self, record):
         """Handle logging."""
@@ -236,6 +223,21 @@ class Logger(BaseLogger, metaclass=Logmeta):
             self._log(LogItem(level=lvl, msg=msg))
 
         return handle
+
+    ## Properties
+    @property
+    def level(self):
+        """Return the current logging level."""
+        return self._level
+
+    @level.setter
+    def level(
+        self,
+        val: int,
+    ):
+        self._level = check_loglevel(val)
+        for h in self._handlers:
+            h.level = val
 
     ## Mutating methods
     def add_stream_handler(

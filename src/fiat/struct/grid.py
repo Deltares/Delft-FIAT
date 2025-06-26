@@ -8,9 +8,7 @@ from osgeo import gdal
 from fiat.struct.base import BaseStruct
 
 
-class GridBand(
-    BaseStruct,
-):
+class GridBand(BaseStruct):
     """A source object for a specific raster band.
 
     Acquired by indexing a GridIO object.
@@ -27,16 +25,17 @@ class GridBand(
 
     def __init__(self, *args, **kwargs):
         # For typing
-        self._obj: gdal.Band = None
-        self._x: int = None
-        self._y: int = None
-        self._l: int = None
-        self._u: int = None
-        self.mode: int = None
-        self.nodata: float | int = None
-        self.dtype: int = None
-        self.dtype_name: str = None
-        self.dtype_size: int = None
+        self._obj_ref: weakref.ReferenceType | None = None
+        self._obj: gdal.Band | None = None
+        self._x: int = 0
+        self._y: int = 0
+        self._l: int = 0
+        self._u: int = 0
+        self.mode: int = 0
+        self.nodata: float | int = 0
+        self.dtype: int = 0
+        self.dtype_name: str = "int"
+        self.dtype_size: int = 4
         raise AttributeError("No constructer defined")
 
     def __iter__(self):
@@ -84,7 +83,7 @@ class GridBand(
     ):
         # This is effectively the init methods of this class
         obj = GridBand.__new__(cls)
-        super(BaseStruct, obj).__init__()
+        BaseStruct.__init__(obj)
 
         # Set the content
         obj._obj_ref = weakref.ref(ref, obj._cleanup)

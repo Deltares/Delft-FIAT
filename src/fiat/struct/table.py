@@ -1,6 +1,7 @@
 """Table structures."""
 
 from math import floor, log10
+from typing import Any
 
 from numpy import arange, delete, empty, float64, interp, ndarray
 
@@ -87,9 +88,6 @@ class Table(TableBase):
     def __setitem__(self, key, value):
         self.data[key] = value
 
-    def __eq__(self, other):
-        return NotImplemented
-
     @classmethod
     def from_parser(
         cls,
@@ -141,17 +139,18 @@ class Table(TableBase):
 
     def set_index(
         self,
-        index_col: int,
+        index_col: int | str,
     ):
         """Set the index of the Table to a specific column.
 
         Parameters
         ----------
-        index_col : int
-            The index of column to be set as the index of the Table.
+        index_col : int | str
+            The index or name of column to be set as the index of the Table.
         """
         # Supercharge for check
-        if not TableBase.set_index(self, index_col):
+        index_col = TableBase.set_index(self, index_col)
+        if index_col < 0:
             return
 
         # Remove the necessary data
@@ -292,7 +291,7 @@ class TableLazy(TableBase):
         )
 
         # Set the index (column)
-        if TableBase.set_index(self, parser.index_col):
+        if TableBase.set_index(self, parser.index_col) >= 0:
             self.index_name = self.columns[parser.index_col]
 
     def __iter__(self):
@@ -303,7 +302,7 @@ class TableLazy(TableBase):
 
     def __getitem__(
         self,
-        oid: object,
+        oid: Any,
     ) -> bytes:
         try:
             idx = self._index[oid]
@@ -319,30 +318,31 @@ class TableLazy(TableBase):
 
     def get(
         self,
-        oid: str,
+        oid: Any,
     ) -> bytes:
         """Get a row from the table based on the index.
 
         Parameters
         ----------
-        oid : str
+        oid : Any
             Row identifier.
         """
         return self.__getitem__(oid)
 
     def set_index(
         self,
-        index_col: int,
+        index_col: int | str,
     ):
         """Set the index of the table.
 
         Parameters
         ----------
-        index_col : int
-            Column header index. View available headers via <object>.columns.
+        index_col : int | str
+            Column header index or name. View available headers via <object>.columns.
         """
         # Supercharge for check
-        if not TableBase.set_index(self, index_col):
+        index_col = TableBase.set_index(self, index_col)
+        if index_col < 0:
             return
 
         # Set up the pattern for parsing the data over multiple lines

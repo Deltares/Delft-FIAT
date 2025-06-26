@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from osgeo import osr
 
-from fiat.fio import GeomIO, open_geom
+from fiat.fio import GeomIO, GridIO, open_geom, open_grid
 
 TEST_MODULE = Path(__file__).parent
 
@@ -62,6 +62,13 @@ def hazard_risk_path(testdata_dir: Path) -> Path:
 def exposure_geom_dataset(exposure_geom_path: Path) -> GeomIO:
     ds = open_geom(exposure_geom_path)  # Read only
     assert isinstance(ds, GeomIO)
+    return ds
+
+
+@pytest.fixture(scope="session")
+def hazard_event_data(hazard_event_path: Path) -> GridIO:
+    ds = open_grid(hazard_event_path)  # Read only
+    assert isinstance(ds, GridIO)
     return ds
 
 
