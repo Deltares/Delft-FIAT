@@ -99,13 +99,10 @@ def create_exposure_dbase_with_meta():
 def create_exposure_geoms(epsg=None):
     """Create basic vector file with 4 geometries."""
     geoms = (
-        "POLYGON ((4.355 52.045, 4.355 52.035, 4.365 52.035, \
-4.365 52.045, 4.355 52.045))",
-        "POLYGON ((4.395 52.005, 4.395 51.975, 4.415 51.975, \
-4.415 51.985, 4.405 51.985, 4.405 52.005, 4.395 52.005))",
-        "POLYGON ((4.365 51.9605, 4.375 51.9895, 4.385 51.9605, 4.365 51.9605))",
-        "POLYGON ((4.4105 52.0295, 4.4395 52.0295, 4.435 52.0105, \
-4.415 52.0105, 4.4105 52.0295))",
+        "POLYGON ((0.5 9.5, 0.5 8.5, 1.5 8.5, 1.5 9.5, 0.5 9.5))",
+        "POLYGON ((4.5 5.5, 4.5 2.5, 6.5 2.5, 6.5 3.5, 5.5 3.5, 5.5 5.5, 4.5 5.5))",
+        "POLYGON ((1.5 1.05, 2.5 3.95, 3.5 1.05, 1.5 1.05))",
+        "POLYGON ((6.05 7.95, 8.95 7.95, 8.5 6.05, 6.5 6.05, 6.05 7.95))",
     )
     driver = "FlatGeoBuf"
     add = "_no_srs"
@@ -159,16 +156,13 @@ def create_exposure_geoms(epsg=None):
 
 def create_exposure_geoms_5th():
     """Create vector file with fifth geometry for calculation."""
-    geoms = (
-        "POLYGON ((4.375 52.025, 4.385 52.025, 4.385 52.015, \
-4.375 52.015, 4.375 52.025))",
-    )
+    geoms = ("POLYGON ((2.5 7.5, 3.5 7.5, 3.5 6.5, 2.5 6.5, 2.5 7.5))",)
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
     dr = ogr.GetDriverByName("GeoJSON")
     src = dr.CreateDataSource(str(Path(p, "exposure", "spatial2.geojson")))
     layer = src.CreateLayer(
-        "spatial",
+        "spatial2",
         srs,
         3,
     )
@@ -206,10 +200,8 @@ def create_exposure_geoms_5th():
 def create_exposure_geoms_missing():
     """Create vector data with no data in exposure data csv."""
     geoms = (
-        "POLYGON ((4.375 52.025, 4.385 52.025, 4.385 52.015, \
-4.375 52.015, 4.375 52.025))",
-        "POLYGON ((4.425 51.975, 4.435 51.975, 4.435 51.965, \
-4.425 51.965, 4.425 51.975))",
+        "POLYGON ((2.5 7.5, 3.5 7.5, 3.5 6.5, 2.5 6.5, 2.5 7.5))",
+        "POLYGON ((7.5 2.5, 8.5 2.5, 8.5 1.5, 7.5 1.5, 7.5 2.5))",
     )
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
@@ -264,12 +256,9 @@ def create_exposure_geoms_missing():
 def create_exposure_geoms_outside():
     """Create vector data that lies outside of hazard."""
     geoms = (
-        "POLYGON ((4.355 52.065, 4.355 52.055, 4.365 52.055, \
-4.365 52.065, 4.355 52.065))",
-        "POLYGON ((4.395 52.055, 4.395 52.045, 4.405 52.045, \
-4.405 52.055, 4.395 52.055))",
-        "POLYGON ((4.435 52.045, 4.435 52.035, 4.445 52.035, \
-4.445 52.045, 4.435 52.045))",
+        "POLYGON ((0.5 11.5, 0.5 10.5, 1.5 10.5, 1.5 11.5, 0.5 11.5))",
+        "POLYGON ((4.5 10.5, 4.5 9.5, 5.5 9.5, 5.5 10.5, 4.5 10.5))",
+        "POLYGON ((8.5 9.5, 8.5 8.5, 9.5 8.5, 9.5 9.5, 8.5 9.5))",
     )
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
@@ -325,12 +314,12 @@ def create_exposure_grid():
         gdal.GDT_Float32,
     )
     gtf = (
-        4.35,
-        0.01,
         0.0,
-        52.05,
+        1.0,
         0.0,
-        -0.01,
+        10.0,
+        0.0,
+        -1.0,
     )
     src.SetSpatialRef(srs)
     src.SetGeoTransform(gtf)
@@ -371,12 +360,12 @@ def create_hazard_event_map(epsg: int = None):
         srs.ImportFromEPSG(4326)
         src.SetSpatialRef(srs)
     gtf = (
-        4.35,
-        0.01,
         0.0,
-        52.05,
+        1.0,
         0.0,
-        -0.01,
+        10.0,
+        0.0,
+        -1.0,
     )
     src.SetGeoTransform(gtf)
 
@@ -409,12 +398,12 @@ def create_hazard_event_map_highres():
         gdal.GDT_Float32,
     )
     gtf = (
-        4.35,
-        0.001,
         0.0,
-        52.05,
+        0.1,
         0.0,
-        -0.001,
+        10.0,
+        0.0,
+        -0.1,
     )
     src.SetSpatialRef(srs)
     src.SetGeoTransform(gtf)
@@ -448,12 +437,12 @@ def create_hazard_risk_map():
         gdal.GDT_Float32,
     )
     gtf = (
-        4.35,
-        0.01,
         0.0,
-        52.05,
+        1.0,
         0.0,
-        -0.01,
+        10.0,
+        0.0,
+        -1.0,
     )
     src.SetSpatialRef(srs)
     src.SetGeoTransform(gtf)

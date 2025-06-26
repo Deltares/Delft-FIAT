@@ -32,7 +32,7 @@ def clip(
 
 def reproject(
     gs: GridIO,
-    dst_crs: str,
+    dst_srs: str,
     dst_gtf: list | tuple = None,
     dst_width: int = None,
     dst_height: int = None,
@@ -45,11 +45,11 @@ def reproject(
     ----------
     gs : GridIO
         Input object.
-    dst_crs : str
+    dst_srs : str
         Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
     dst_gtf : list | tuple, optional
         The geotransform of the warped dataset. Must be defined in the same
-        coordinate reference system as dst_crs. When defined, its only used when
+        coordinate reference system as dst_srs. When defined, its only used when
         both 'dst_width' and 'dst_height' are defined.
     dst_width : int, optional
         The width of the warped dataset in pixels.
@@ -67,7 +67,12 @@ def reproject(
     GridIO
         Output object. A lazy reading of the just creating raster file.
     """
-    _gs_kwargs = gs._kwargs
+    # Set some kwargs before moving on
+    _gs_kwargs = {
+        "chunk": gs.chunk,
+        "subset": gs.subset,
+        "var_as_band": gs.var_as_band,
+    }
 
     if not Path(str(out_dir)).is_dir():
         out_dir = gs.path.parent
@@ -76,7 +81,7 @@ def reproject(
     fname = Path(out_dir, f"{gs.path.stem}_repr{gs.path.suffix}")
 
     out_srs = osr.SpatialReference()
-    out_srs.SetFromUserInput(dst_crs)
+    out_srs.SetFromUserInput(dst_srs)
     out_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
     warp_kw = {}
@@ -91,8 +96,8 @@ def reproject(
                     dst_gtf[0] + dst_gtf[1] * dst_width,
                     dst_gtf[3],
                 ),
-                "width": dst_width,
-                "height": dst_height,
+                # "width": dst_width,
+                # "height": dst_height,
             }
         )
 

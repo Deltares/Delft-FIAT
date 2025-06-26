@@ -43,10 +43,6 @@ def test_geomlayer_field_properties(exposure_geom_dataset: GeomIO):
     gl = exposure_geom_dataset.layer
 
     # Assert the important attributes and properties
-    np.testing.assert_array_almost_equal(
-        gl.bounds,
-        (4.355, 4.4395, 51.9605, 52.045),
-    )
     assert gl.columns == ("object_id", "object_name")  # Field headers
     assert gl.dtypes == [0, 4]  # i.e. int and string
     assert gl.fields == ["object_id", "object_name"]  # Field headers
@@ -60,7 +56,7 @@ def test_geomlayer_spatial_properties(exposure_geom_dataset: GeomIO):
     # Assert the important attributes and properties
     np.testing.assert_array_almost_equal(
         gl.bounds,
-        (4.355, 4.4395, 51.9605, 52.045),
+        (0.5, 8.95, 1.05, 9.5),
     )
     assert gl.geom_type == 3  # i.e. 3 = Polygon
     assert get_srs_repr(gl.srs) == "EPSG:4326"

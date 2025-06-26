@@ -34,8 +34,8 @@ def point_in_geom(
 
 def reproject_feature(
     geometry: ogr.Geometry,
-    src_crs: str,
-    dst_crs: str,
+    src_srs: str,
+    dst_srs: str,
 ) -> ogr.Feature:
     """Transform geometry/ geometries of a feature.
 
@@ -43,29 +43,31 @@ def reproject_feature(
     ----------
     geometry : ogr.Geometry
         The geometry.
-    src_crs : str
+    src_srs : str
         Coordinate reference system of the feature.
-    dst_crs : str
+    dst_srs : str
         Coordinate reference system to which the feature is transformed.
     """
-    src_srs = osr.SpatialReference()
-    src_srs.SetFromUserInput(src_crs)
-    src_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
-    dst_srs = osr.SpatialReference()
-    dst_srs.SetFromUserInput(dst_crs)
-    src_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+    src = osr.SpatialReference()
+    src.SetFromUserInput(src_srs)
+    src.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+    dst = osr.SpatialReference()
+    dst.SetFromUserInput(dst_srs)
+    dst.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
-    transform = osr.CoordinateTransformation(src_srs, dst_srs)
+    transform = osr.CoordinateTransformation(src, dst)
     geometry.Transform(transform)
 
-    src_srs = None
-    dst_srs = None
+    src = None
+    dst = None
     transform = None
+
+    return geometry
 
 
 def reproject(
     gs: GeomIO,
-    crs: str,
+    srs: str,
     chunk: int = 200000,
     out_dir: Path | str = None,
 ):
@@ -75,8 +77,8 @@ def reproject(
     ----------
     gs : GeomIO
         Input object.
-    crs : str
-        Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
+    srs : str
+        Spatial reference system (projection). An accepted format is: `EPSG:3857`.
     chunk : int, optional
         The size of the chunks used during reprojecting.
     out_dir : Path | str, optional
@@ -93,7 +95,7 @@ def reproject(
     fname = Path(out_dir, f"{gs.path.stem}_repr{gs.path.suffix}")
 
     out_srs = osr.SpatialReference()
-    out_srs.SetFromUserInput(crs)
+    out_srs.SetFromUserInput(srs)
     out_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
     layer_defn = gs.layer.defn
 

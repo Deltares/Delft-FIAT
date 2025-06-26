@@ -61,7 +61,7 @@ def test_gridio_properties(hazard_event_path: Path):
     assert gio.band_names == ["Band1"]
     np.testing.assert_array_almost_equal(
         gio.bounds,
-        [4.35, 4.45, 51.95, 52.05],
+        [0.0, 10.0, 0.0, 10.0],
     )
     assert gio.dtype == 6
     assert gio.shape == (10, 10)
