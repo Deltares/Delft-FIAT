@@ -1,7 +1,6 @@
 """Logging objects."""
 
 import weakref
-from warnings import warn
 
 from fiat.log.handler import FileHandler, StreamHandler
 from fiat.log.util import (
@@ -34,10 +33,7 @@ class Logmeta(type):
 
         res = obj.manager.resolve_logger_tree(obj)
         if res is not None:
-            warn(
-                f"{name} is already in use -> returning currently known object",
-                UserWarning,
-            )
+            # Return the currently known object
             obj = res
 
         return obj

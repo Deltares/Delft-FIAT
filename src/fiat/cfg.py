@@ -114,24 +114,6 @@ class Configurations(dict):
         obj = cls(_root=path.parent, _name=path.name, **settings)
         return obj
 
-    def get_path(
-        self,
-        key: str,
-    ):
-        """Get a Path to a file that is present in the object.
-
-        Parameters
-        ----------
-        key : str
-            Key of the Path. (e.g. exposure.geom.file1)
-
-        Returns
-        -------
-        Path
-            A path.
-        """
-        return str(self[key])
-
     def generate_kwargs(
         self,
         base: str,

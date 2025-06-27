@@ -16,12 +16,6 @@ def log_item() -> LogItem:
     return l
 
 
-@pytest.fixture
-def log_capture() -> io.StringIO:
-    buffer = io.StringIO()
-    return buffer
-
-
 @pytest.fixture(scope="session")
 def formatter() -> MessageFormatter:
     mf = MessageFormatter(fmt="{levelname:8s}{message}")

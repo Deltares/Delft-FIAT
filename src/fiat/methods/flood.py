@@ -134,3 +134,53 @@ def calculate_damage(
     out[-1] = round(total, 2)
 
     return out
+
+
+def calculate_damage_single(
+    hazard_value: float | int,
+    red_fact: float | int,
+    fn: str,
+    maxv: int | float,
+    vuln: Table,
+    vul_min: float | int,
+    vul_max: float | int,
+    vul_round: int,
+) -> tuple:
+    """Calculate the damage corresponding with the hazard value.
+
+    Parameters
+    ----------
+    hazard_value : float | int
+        The representative hazard value.
+    red_fact : float | int
+        The reduction factor. How much to compensate for the lack of touching the grid
+        by an object (geometry).
+    ft : ogr.Feature | list
+        A feature or feature info (whichever has to contain the exposure data).
+        See docs on running FIAT with an without csv.
+    type_dict : dict
+        The exposure types and corresponding column id's.
+    vuln : Table
+        Vulnerability data.
+    vul_min : float | int
+        Minimum value of the index of the vulnerability data.
+    vul_max : float | int
+        Maximum value of the index of the vulnerability data.
+    vul_round : int
+        Significant decimals to be used.
+
+    Returns
+    -------
+    tuple
+        Damage values.
+    """
+    # Calculate the damage per catagory, and in total (_td)
+    if isnan(hazard_value) or fn is None or fn == "nan":
+        val = "nan"
+    else:
+        hazard_value = max(min(vul_max, hazard_value), vul_min)
+        f = vuln[round(hazard_value, vul_round), fn]
+        val = f * maxv * red_fact
+        val = round(val, 2)
+
+    return val

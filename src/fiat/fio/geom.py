@@ -64,6 +64,8 @@ class GeomIO(BaseIO):
         overwrite: bool = False,
         srs: str | None = None,
     ):
+        self.src: gdal.Dataset = None
+        # Supercharge
         BaseIO.__init__(self, file, mode)
 
         # Select the driver map based on the mode
@@ -80,7 +82,6 @@ class GeomIO(BaseIO):
         self.driver: gdal.Driver = ogr.GetDriverByName(driver)
 
         # Read or create a data source depending on the mode
-        self.src: gdal.Dataset = None
         if self.mode != 2 and not overwrite:
             self.src = gdal.OpenEx(
                 self.path.as_posix(),

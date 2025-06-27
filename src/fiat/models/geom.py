@@ -89,9 +89,9 @@ class GeomModel(BaseModel):
             meta[index] = {}
             # Check the exposure column headers
             check_exp_columns(
-                index_col,
-                columns=list(columns.keys()),
-                specific_columns=getattr(self.module, "MANDATORY_COLUMNS"),
+                list(columns.keys()),
+                index_col=index_col,
+                mandatory_columns=getattr(self.module, "MANDATORY_COLUMNS"),
             )
 
             # Check the found columns
@@ -304,7 +304,7 @@ class GeomModel(BaseModel):
             logger.info("Executing exposure geometry checks...")
 
             # check for the index column
-            check_exp_index_col(data, index_col=index_col)
+            check_exp_index_col(data.layer.columns, index_col=index_col, path=data.path)
 
             # check the internal srs of the file
             check_internal_srs(

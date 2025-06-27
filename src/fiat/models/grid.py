@@ -136,7 +136,7 @@ data to {prefer} data"
 
         # Check if all damage functions are correct
         check_exp_grid_dmfs(
-            data,
+            [item.get_metadata_item("fn_damage") for item in data],
             self.vulnerability_data.columns,
         )
 

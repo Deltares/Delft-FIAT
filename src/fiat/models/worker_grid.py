@@ -9,7 +9,7 @@ from fiat.fio import (
     GridIO,
     open_grid,
 )
-from fiat.methods.ead import calc_ead, risk_density
+from fiat.methods.ead import calculate_ead, risk_density
 from fiat.struct import Table
 from fiat.util import create_windows
 
@@ -236,7 +236,7 @@ def worker_ead(
 
             data = [_data[_w] for _data in rpx]
             data = [ravel(_data)[_coords] for _data in data]
-            data = calc_ead(_rp_coef, data)
+            data = calculate_ead(_rp_coef, data)
             idx2d = unravel_index(_coords, *[_chunk])
             ead_ch[idx2d] = data
             write_bands[idx].write_chunk(ead_ch, _w[:2])
@@ -283,7 +283,7 @@ def worker_ead(
 
         # Get data, calc risk and write it.
         data = [ravel(_i)[_coords] for _i in data]
-        data = calc_ead(_rp_coef, data)
+        data = calculate_ead(_rp_coef, data)
         idx2d = unravel_index(_coords, *[_chunk])
         td_ch[idx2d] = data
         td_band.write_chunk(td_ch, _w[:2])

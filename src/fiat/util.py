@@ -10,6 +10,7 @@ from gc import get_referents
 from itertools import product
 from pathlib import Path
 from types import FunctionType, ModuleType
+from typing import Any, Generator
 
 import regex
 from osgeo import gdal, ogr, osr
@@ -58,7 +59,11 @@ _fields_type_map = {
 }
 
 
-def regex_pattern(delimiter: str, multi: bool = False, nchar: bytes = b"\n"):
+def regex_pattern(
+    delimiter: str,
+    multi: bool = False,
+    nchar: bytes = b"\n",
+) -> regex.Pattern:
     """Create a regex pattern.
 
     Parameters
@@ -72,8 +77,8 @@ def regex_pattern(delimiter: str, multi: bool = False, nchar: bytes = b"\n"):
 
     Returns
     -------
-    _type_
-        _description_
+    regex.Pattern
+        Compiled regex pattern.
     """
     nchar = nchar.decode()
     if not multi:
@@ -82,7 +87,7 @@ def regex_pattern(delimiter: str, multi: bool = False, nchar: bytes = b"\n"):
 
 
 # Calculation
-def mean(values: list):
+def mean(values: list) -> float:
     """Very simple python mean."""
     return sum(values) / len(values)
 
@@ -93,7 +98,7 @@ def text_chunk_gen(
     pattern: re.Pattern,
     chunk_size: int = 100000,
     nchar: bytes = b"\n",
-):
+) -> Generator[tuple]:
     """Read and split text in chunks.
 
     Parameters
@@ -137,7 +142,7 @@ def text_chunk_gen(
 def create_windows(
     shape: tuple,
     chunk: tuple,
-):
+) -> Generator[tuple]:
     """Create chunk windows from a grid.
 
     Parameters
@@ -173,7 +178,7 @@ def create_windows(
 def create_1d_chunk(
     length: int,
     parts: int,
-):
+) -> tuple:
     """Create chunks for 1d vector data."""
     part = math.ceil(
         length / parts,
@@ -193,7 +198,11 @@ def create_1d_chunk(
 
 
 # Config related stuff
-def _flatten_dict_gen(d, parent_key, sep):
+def _flatten_dict_gen(
+    d: dict,
+    parent_key: str,
+    sep: str,
+) -> Generator[tuple]:
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
         if isinstance(v, MutableMapping):
@@ -202,7 +211,11 @@ def _flatten_dict_gen(d, parent_key, sep):
             yield new_key, v
 
 
-def flatten_dict(d: MutableMapping, parent_key: str = "", sep: str = "."):
+def flatten_dict(
+    d: MutableMapping,
+    parent_key: str = "",
+    sep: str = ".",
+) -> dict:
     """Flatten a dictionary.
 
     Thanks to this post:
@@ -215,7 +228,7 @@ def flatten_dict(d: MutableMapping, parent_key: str = "", sep: str = "."):
 def discover_exp_columns(
     columns: dict,
     type: str,
-):
+) -> tuple:
     """Figure out the which are the exposure related columns.
 
     Parameters
@@ -227,7 +240,7 @@ def discover_exp_columns(
 
     Returns
     -------
-    Tuple
+    tuple
         Exposure suffix (e.g. structure for damage), index of the columns, \
 missing values.
     """
@@ -269,7 +282,7 @@ def generate_output_columns(
     exposure_types: dict,
     extra: tuple | list = [],
     suffix: tuple | list = [""],
-):
+) -> tuple:
     """Generate the output columns."""
     default = specific_columns + ["red_fact"]
     total_idx = []
@@ -325,7 +338,7 @@ def get_srs_repr(
 def read_gridsource_info(
     gr: gdal.Dataset,
     format: str = "json",
-):
+) -> dict:
     """Read grid source information.
 
     Thanks to:
@@ -337,7 +350,7 @@ def read_gridsource_info(
 
 def read_gridsource_layers(
     gr: gdal.Dataset,
-):
+) -> dict | None:
     """Read the layers of a gridsource."""
     sd = gr.GetSubDatasets()
 
@@ -355,7 +368,7 @@ def read_gridsource_layers(
 
 def _create_geom_driver_map(
     write: bool = False,
-):
+) -> dict:
     """Create a map of geometry drivers."""
     geom_drivers = {}
     _c = gdal.GetDriverCount()
@@ -392,7 +405,7 @@ GEOM_WRITE_DRIVER_MAP = _create_geom_driver_map(write=True)
 GEOM_WRITE_DRIVER_MAP[""] = "Memory"
 
 
-def _create_grid_driver_map():
+def _create_grid_driver_map() -> dict:
     """Create a map of grid drivers."""
     grid_drivers = {}
     _c = gdal.GetDriverCount()
@@ -429,7 +442,7 @@ GRID_DRIVER_MAP[""] = "MEM"
 def create_dir(
     root: Path | str,
     path: Path | str,
-):
+) -> Path:
     """Create directory when it does not yet exist."""
     _p = Path(path)
     if not _p.is_absolute():
@@ -440,7 +453,7 @@ def create_dir(
 
 def generic_folder_check(
     path: Path | str,
-):
+) -> Path:
     """Check if a directory exists.
 
     Parameters
@@ -475,43 +488,12 @@ def generic_path_check(
     if not path.is_absolute():
         path = Path(root, path)
     if not (path.is_file() | path.is_dir()):
-        raise FileNotFoundError(f"{str(path)} is not a valid path")
+        raise FileNotFoundError(f"{path.as_posix()} is not a valid path")
     return path
 
 
-# Logging utility
-def progressbar(
-    iteration: int,
-    total: int,
-    prefix: str = "",
-    suffix: str = "",
-    decimals: int = 1,
-    bar_length: int = 50,
-):
-    """Call in a loop to create terminal progress bar.
-
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        bar_length  - Optional  : character length of bar (Int)
-    """
-    str_format = "{0:." + str(decimals) + "f}"
-    percents = str_format.format(100 * (iteration / float(total)))
-    filled_length = int(round(bar_length * iteration / float(total)))
-    bar = "█" * filled_length + "-" * (bar_length - filled_length)
-
-    (sys.stdout.write("\r%s |%s| %s%s %s" % (prefix, bar, percents, "%", suffix)),)
-
-    if iteration == total:
-        sys.stdout.write("\n")
-    sys.stdout.flush()
-
-
 # Misc.
-def find_duplicates(elements: tuple | list):
+def find_duplicates(elements: tuple | list) -> list | None:
     """Find duplicate elements in an iterable object."""
     uni = list(set(elements))
     counts = [elements.count(elem) for elem in uni]
@@ -521,7 +503,7 @@ def find_duplicates(elements: tuple | list):
     return dup
 
 
-def re_filter(values, pat):
+def re_filter(values, pat) -> list:
     """Quickly filter values based on a pattern match."""
     result = []
     pat = os.path.normcase(pat)
@@ -532,7 +514,7 @@ def re_filter(values, pat):
     return result
 
 
-def get_module_attr(module: str, attr: str):
+def get_module_attr(module: str, attr: str) -> Any:
     """Quickly get attribute from a module dynamically."""
     module = importlib.import_module(module)
     out = getattr(module, attr)
@@ -603,7 +585,7 @@ class DummyWriter:
 def deter_type(
     e: bytes,
     l: int,
-):
+) -> int:
     """Detemine the type of a column of text.
 
     Parameters
@@ -634,12 +616,12 @@ def deter_type(
 def deter_dec(
     e: float,
     base: float = 10.0,
-):
+) -> int:
     """Detemine the number of decimals."""
     ndec = math.floor(math.log(e) / math.log(base))
     return abs(ndec)
 
 
-def replace_empty(l: list):
+def replace_empty(l: list) -> list:
     """Replace empty values by None in a string (i.e. between delimiters)."""
     return ["nan" if not e else e.decode() for e in l]

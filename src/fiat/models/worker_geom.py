@@ -15,7 +15,7 @@ from fiat.fio import (
 from fiat.gis import geom, overlay
 from fiat.log import Sender
 from fiat.log.util import LogItem
-from fiat.methods.ead import calc_ead, risk_density
+from fiat.methods.ead import calculate_ead, risk_density
 from fiat.struct import Table, TableLazy
 from fiat.util import DummyWriter, regex_pattern
 
@@ -26,7 +26,7 @@ def worker(
     haz: GridIO,
     vul: Table,
     exp_func: Callable,
-    exp_data: TableLazy,
+    exp_data: TableLazy | None,
     exp_geom: dict,
     chunk: tuple | list,
     queue: Queue,
@@ -50,7 +50,7 @@ of the [GeomIO](/api/GeomIO.qmd) object.
         The vulnerability data.
     exp_func : Callable
         The function to get information from a feature.
-    exp_data : TableLazy
+    exp_data : TableLazy | None
         The exposure data.
     exp_geom : dict
         The exposure geometries.
@@ -188,7 +188,7 @@ No data found in exposure database",
                 i = 0
                 for ti in total_idx:
                     ead = round(
-                        calc_ead(rp_coef, out[ti - i :: -slen]),
+                        calculate_ead(rp_coef, out[ti - i :: -slen]),
                         rounding,
                     )
                     out.append(ead)

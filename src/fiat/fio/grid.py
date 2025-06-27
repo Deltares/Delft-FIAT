@@ -80,6 +80,7 @@ multiple variables.
         subset: str = None,
         var_as_band: bool = False,
     ):
+        self.src: gdal.Dataset | None = None
         # Supercharge with BaseIO class
         BaseIO.__init__(self, file, mode)
 
@@ -111,7 +112,6 @@ multiple variables.
         self._chunk: tuple | None = None
         self._dtype: int | None = None
         self._srs: osr.SpatialReference | None = None
-        self.src: gdal.Dataset | None = None
 
         # If write mode, consider initialized
         if self.mode == 2:
@@ -206,7 +206,7 @@ multiple variables.
         -------
         tuple
             Contains the four boundaries of the grid. This take the form of \
-[left, right, top, bottom]
+[left, right, bottom, top]
         """
         _gtf = self.src.GetGeoTransform()
         return (

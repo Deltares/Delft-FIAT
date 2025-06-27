@@ -3,7 +3,7 @@
 import math
 
 
-def calc_ead(
+def calculate_ead(
     rp_coef: list,
     dms: list,
 ) -> float:

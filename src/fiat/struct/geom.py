@@ -114,7 +114,7 @@ class GeomLayer(BaseStruct):
         -------
         list
             Contains the four boundaries of the grid. This take the form of \
-[left, right, top, bottom]
+[left, right, bottom, top]
         """
         return self._obj.GetExtent()
 
