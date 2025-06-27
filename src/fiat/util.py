@@ -98,7 +98,7 @@ def text_chunk_gen(
     pattern: re.Pattern,
     chunk_size: int = 100000,
     nchar: bytes = b"\n",
-) -> Generator[tuple]:
+) -> Generator:
     """Read and split text in chunks.
 
     Parameters
@@ -142,7 +142,7 @@ def text_chunk_gen(
 def create_windows(
     shape: tuple,
     chunk: tuple,
-) -> Generator[tuple]:
+) -> Generator:
     """Create chunk windows from a grid.
 
     Parameters
@@ -202,7 +202,7 @@ def _flatten_dict_gen(
     d: dict,
     parent_key: str,
     sep: str,
-) -> Generator[tuple]:
+) -> Generator:
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
         if isinstance(v, MutableMapping):
