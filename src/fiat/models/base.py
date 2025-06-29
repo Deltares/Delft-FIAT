@@ -46,12 +46,12 @@ class BaseModel(metaclass=ABCMeta):
 
         ## Declarations
         # Model data
-        self.srs: osr.SpatialReference = None
-        self.exposure_data: TableLazy = None
-        self.exposure_geoms: dict[int:GeomIO] = None
-        self.exposure_grid: GridIO = None
-        self.hazard_grid: GridIO = None
-        self.vulnerability_data: Table = None
+        self.srs: osr.SpatialReference | None = None
+        self.exposure_data: dict[int, TableLazy] | None = None
+        self.exposure_geoms: dict[int, GeomIO] | None = None
+        self.exposure_grid: GridIO | None = None
+        self.hazard_grid: GridIO | None = None
+        self.vulnerability_data: Table | None = None
         # Type of calculations
         type = self.cfg.get("model.type", "flood")
         self.module = importlib.import_module(f"fiat.methods.{type}")
