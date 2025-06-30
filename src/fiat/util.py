@@ -15,7 +15,11 @@ from typing import Any, Generator
 import regex
 from osgeo import gdal, ogr, osr
 
-# Define the variables for FIAT
+## Model entries
+MODEL_THREADS = "model.threads"
+MODEL_TYPE = "model.type"
+
+## Define the variables for FIAT
 BLACKLIST = type, ModuleType, FunctionType
 DD_NEED_IMPLEMENTED = "Dunder method needs to be implemented."
 DD_NOT_IMPLEMENTED = "Dunder method not yet implemented."
@@ -32,7 +36,7 @@ NEWLINE_CHAR = os.linesep
 NEED_IMPLEMENTED = "Method needs to be implemented."
 NOT_IMPLEMENTED = "Method not yet implemented."
 
-# Some widely used dictionaries
+## Some widely used dictionaries
 _dtypes = {
     0: 3,
     1: 2,
@@ -59,6 +63,7 @@ _fields_type_map = {
 }
 
 
+## Patterns
 def regex_pattern(
     delimiter: str,
     multi: bool = False,

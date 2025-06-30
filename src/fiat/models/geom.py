@@ -83,6 +83,7 @@ class GeomModel(BaseModel):
         meta: dict,
         index: int,
         index_col: str,
+        offset: int,
     ):
         """Simple method for sorting out the exposure meta."""  # noqa: D401
         meta[index] = {}
@@ -121,7 +122,7 @@ class GeomModel(BaseModel):
         )
 
         # Set the indices for the outgoing columns
-        idxs = list(range(len(columns), len(columns) + len(new_fields)))
+        idxs = list(range(offset, offset + len(new_fields)))
         meta[index].update({"idxs": idxs})
 
     def _set_chunking(self):
@@ -185,12 +186,14 @@ class GeomModel(BaseModel):
         # Get the relevant column headers
         meta = {}
         for key in self.exposure_geoms:
-            obj = self.exposure_data.get(key) or self.exposure_geoms.get(key).layer
+            eg = self.exposure_geoms.get(key).layer
+            obj = self.exposure_data.get(key) or eg
             self._discover_exposure_meta(
                 obj._columns,
-                meta,
-                key,
-                self.cfg.get("exposure.geom.settings.index"),
+                meta=meta,
+                index=key,
+                index_col=self.cfg.get("exposure.geom.settings.index"),
+                offset=len(eg.columns),
             )
         self.cfg.set("_exposure_meta", meta)
 
@@ -224,8 +227,6 @@ class GeomModel(BaseModel):
 no exposure vector data was found"
             )
 
-        # Discover the files
-        _d = {}
         # Infer the files and paths
         files, paths, pattern = get_file_entries(
             self.cfg,
@@ -261,10 +262,7 @@ no exposure vector data was found"
             # Reset to ensure the entry is present
             self.cfg.set(file, path)
             ## Add data to the dictionary
-            _d[suffix] = data
-
-        ## When all is done, add it
-        self.exposure_data = _d
+            self.exposure_data[suffix] = data
 
     def read_exposure_geoms(
         self,
@@ -345,6 +343,7 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # When all is done, add it
         self.exposure_geoms = _d
+        self.exposure_data = {idx: None for idx in self.exposure_geoms}
 
     ## Run model method
     def run(
@@ -391,14 +390,15 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
                 "haz": self.hazard_grid,
                 "vul": self.vulnerability_data,
                 "exp_func": field_func,
-                "exp_data": self.exposure_data,
-                "exp_geom": self.exposure_geoms,
+                "exp_data": list(self.exposure_data.values()),
+                "exp_geom": list(self.exposure_geoms.values()),
+                "idx": list(self.exposure_geoms.keys()),
                 "chunk": self.chunks,
                 "queue": self._queue,
                 "lock1": lock1,
                 "lock2": lock2,
             },
-            # tied=["idx", "lock"],
+            tied=["exp_data", "exp_geom", "idx"],
         )
 
         # Execute the jobs in a multiprocessing pool
