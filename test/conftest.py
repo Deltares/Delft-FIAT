@@ -127,19 +127,6 @@ def hazard_risk_sub_data(hazard_risk_path: Path) -> GridIO:
 
 
 @pytest.fixture
-def log_capture() -> io.StringIO:
-    buffer = io.StringIO()
-    return buffer
-
-
-@pytest.fixture
-def logger_stream(log_capture: io.StringIO) -> Logger:
-    logger = Logger("fiat")
-    logger.add_stream_handler(name="Capture", level=2, stream=log_capture)
-    return logger
-
-
-@pytest.fixture
 def mocked_exp_grid(mocker: MockerFixture, srs: osr.SpatialReference) -> MagicMock:
     grid = mocker.create_autospec(GridIO)
     # Set attributes for practical use
@@ -175,3 +162,28 @@ def vulnerability_data(vulnerability_path: Path) -> Table:
     ds = open_csv(vulnerability_path, index="water depth")
     assert isinstance(ds, Table)
     return ds
+
+
+## Capturing logging messages
+class CapLogger(Logger):
+    """Logging class for capturing texting logging."""
+
+    @property
+    def text(self) -> str:
+        stream = self._handlers[0].stream
+        stream.seek(0)
+        return stream.read()
+
+
+@pytest.fixture
+def log_capture() -> io.StringIO:
+    buffer = io.StringIO()
+    return buffer
+
+
+@pytest.fixture
+def caplog(log_capture: io.StringIO) -> Logger:
+    logger = CapLogger("fiat")
+    logger._handlers = []
+    logger.add_stream_handler(name="Capture", level=2, stream=log_capture)
+    return logger

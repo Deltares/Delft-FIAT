@@ -1,4 +1,3 @@
-import io
 import re
 from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
@@ -141,8 +140,7 @@ fn_damage_* and max_damage_* columns."
 
 
 def test_check_exp_derived_types_pass(
-    log_capture: io.StringIO,
-    logger_stream: Logger,
+    caplog: Logger,
 ):
     # Columns found
     check_exp_derived_types(
@@ -159,12 +157,10 @@ def test_check_exp_derived_types_pass(
     )
 
     # Assert the logging message
-    log_capture.seek(0)
-    cap = log_capture.read()
     assert (
         "No every damage function has a corresponding \
 maximum potential damage: ['content']"
-        in cap
+        in caplog.text
     )
 
 
@@ -214,46 +210,39 @@ def test_check_exp_index_col_pass():
 
 
 def test_check_geom_extent_fail(
-    log_capture: io.StringIO,
-    logger_stream: Logger,
+    caplog: Logger,
 ):
     # Bounds exceed
     check_geom_extent(
-        gm_bounds=[0, 1, 0, 1],
-        gr_bounds=[0, 1, 0, 0.5],
+        gm_bounds=[0, 0, 1, 1],
+        gr_bounds=[0, 0, 1, 0.5],
     )
 
     # Assert the logging message
-    log_capture.seek(0)
-    cap = log_capture.read()
     assert (
-        "Geometry bounds [0, 1, 0, 1] exceed \
-hazard bounds [0, 1, 0, 0.5]"
-        in cap
+        "Geometry bounds [0, 0, 1, 1] exceed \
+hazard bounds [0, 0, 1, 0.5]"
+        in caplog.text
     )
 
 
 def test_check_geom_extent_pass(
-    log_capture: io.StringIO,
-    logger_stream: Logger,
+    caplog: Logger,
 ):
     # Bounds is within
     check_geom_extent(
-        gm_bounds=[0, 1, 0, 1],
-        gr_bounds=[0, 1, 0, 1],
+        gm_bounds=[0, 0, 1, 1],
+        gr_bounds=[0, 0, 1, 1],
     )
 
     # Assert no logging message
-    log_capture.seek(0)
-    cap = log_capture.read()
-    assert cap == ""
+    assert caplog.text == ""
 
 
 def test_check_grid_exact_fail_srs(
     mocked_hazard_grid: MagicMock,
     mocked_exp_grid: MagicMock,
-    log_capture: io.StringIO,
-    logger_stream: Logger,
+    caplog: Logger,
 ):
     # Set a different srs
     srs = osr.SpatialReference()
@@ -265,20 +254,17 @@ def test_check_grid_exact_fail_srs(
 
     # Assert the output
     assert not b
-    log_capture.seek(0)
-    cap = log_capture.read()
     assert (
         "CRS of hazard data (EPSG:4326) does not match the \
 CRS of the exposure data (EPSG:3857)"
-        in cap
+        in caplog.text
     )
 
 
 def test_check_grid_exact_fail_gtf(
     mocked_hazard_grid: MagicMock,
     mocked_exp_grid: MagicMock,
-    log_capture: io.StringIO,
-    logger_stream: Logger,
+    caplog: Logger,
 ):
     # Set a different geo transform
     type(mocked_exp_grid).geotransform = PropertyMock(
@@ -290,20 +276,17 @@ def test_check_grid_exact_fail_gtf(
 
     # Assert the output
     assert not b
-    log_capture.seek(0)
-    cap = log_capture.read()
     assert (
         "Geotransform of hazard data ([0, 1.0, 0.0, 10.0, 0.0, -1.0]) does not \
 match geotransform of exposure data ([0, 0.5, 0, 10, 0, -0.5])"
-        in cap
+        in caplog.text
     )
 
 
 def test_check_grid_exact_fail_shape(
     mocked_hazard_grid: MagicMock,
     mocked_exp_grid: MagicMock,
-    log_capture: io.StringIO,
-    logger_stream: Logger,
+    caplog: Logger,
 ):
     # Set a different shape
     type(mocked_exp_grid).shape = PropertyMock(side_effect=lambda: (5, 5))
@@ -313,29 +296,24 @@ def test_check_grid_exact_fail_shape(
 
     # Assert the output
     assert not b
-    log_capture.seek(0)
-    cap = log_capture.read()
     assert (
         "Shape of hazard ((10, 10)) does not match shape of \
 exposure data ((5, 5))"
-        in cap
+        in caplog.text
     )
 
 
 def test_check_grid_exact_pass(
     mocked_hazard_grid: MagicMock,
     mocked_exp_grid: MagicMock,
-    log_capture: io.StringIO,
-    logger_stream: Logger,
+    caplog: Logger,
 ):
     # Call the method which should return true and no logging message
     b = check_grid_exact(mocked_hazard_grid, mocked_exp_grid)
 
     # Assert the output
     assert b
-    log_capture.seek(0)
-    cap = log_capture.read()
-    assert cap == ""
+    assert caplog.text == ""
 
 
 def test_check_hazard_band_names():

@@ -1,7 +1,5 @@
 """Only raster methods for FIAT."""
 
-import gc
-import os
 from pathlib import Path
 
 from osgeo import gdal, osr
@@ -70,15 +68,12 @@ def reproject(
     # Set some kwargs before moving on
     _gs_kwargs = {
         "chunk": gs.chunk,
-        "subset": gs.subset,
-        "var_as_band": gs.var_as_band,
     }
 
     if not Path(str(out_dir)).is_dir():
         out_dir = gs.path.parent
 
-    fname_int = Path(out_dir, f"{gs.path.stem}_repr.tif")
-    fname = Path(out_dir, f"{gs.path.stem}_repr{gs.path.suffix}")
+    fname = Path(out_dir, f"{gs.path.stem}_repr.tif")
 
     out_srs = osr.SpatialReference()
     out_srs.SetFromUserInput(dst_srs)
@@ -101,8 +96,8 @@ def reproject(
             }
         )
 
-    dst_src = gdal.Warp(
-        str(fname_int),
+    _ = gdal.Warp(
+        str(fname),
         gs.src,
         srcSRS=gs.srs,
         dstSRS=out_srs,
@@ -112,16 +107,5 @@ def reproject(
 
     out_srs = None
 
-    if gs.path.suffix == ".tif":
-        gs.close()
-        dst_src = None
-        return open_grid(fname_int)
-
     gs.close()
-    gdal.Translate(str(fname), dst_src)
-    dst_src = None
-    gc.collect()
-
-    os.unlink(fname_int)
-
     return open_grid(fname, **_gs_kwargs)

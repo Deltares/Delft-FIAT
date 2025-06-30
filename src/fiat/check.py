@@ -116,8 +116,8 @@ def check_geom_extent(
     """Check whether the geometries lie within the bounds of the hazard data."""
     _checks = (
         gm_bounds[0] >= gr_bounds[0],
-        gm_bounds[1] <= gr_bounds[1],
-        gm_bounds[2] >= gr_bounds[2],
+        gm_bounds[1] >= gr_bounds[1],
+        gm_bounds[2] <= gr_bounds[2],
         gm_bounds[3] <= gr_bounds[3],
     )
 

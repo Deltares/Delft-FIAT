@@ -114,9 +114,10 @@ class GeomLayer(BaseStruct):
         -------
         list
             Contains the four boundaries of the grid. This take the form of \
-[left, right, bottom, top]
+[left, bottom, right, top]
         """
-        return self._obj.GetExtent()
+        b = self._obj.GetExtent()
+        return (b[0], b[2], b[1], b[3])
 
     @property
     def columns(self) -> tuple:

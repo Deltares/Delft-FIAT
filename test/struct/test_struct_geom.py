@@ -56,7 +56,7 @@ def test_geomlayer_spatial_properties(exposure_geom_dataset: GeomIO):
     # Assert the important attributes and properties
     np.testing.assert_array_almost_equal(
         gl.bounds,
-        (0.5, 8.95, 1.05, 9.5),
+        (0.5, 1.05, 8.95, 9.5),
     )
     assert gl.geom_type == 3  # i.e. 3 = Polygon
     assert get_srs_repr(gl.srs) == "EPSG:4326"

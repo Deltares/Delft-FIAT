@@ -206,14 +206,14 @@ multiple variables.
         -------
         tuple
             Contains the four boundaries of the grid. This take the form of \
-[left, right, bottom, top]
+[left, bottom, right, top]
         """
-        _gtf = self.src.GetGeoTransform()
+        gtf = self.src.GetGeoTransform()
         return (
-            _gtf[0],
-            _gtf[0] + _gtf[1] * self.src.RasterXSize,
-            _gtf[3] + _gtf[5] * self.src.RasterYSize,
-            _gtf[3],
+            gtf[0],
+            gtf[3] + gtf[5] * self.src.RasterYSize,
+            gtf[0] + gtf[1] * self.src.RasterXSize,
+            gtf[3],
         )
 
     @property

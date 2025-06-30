@@ -19,11 +19,12 @@ GRID_PREFER = {
 def check_file_for_read(
     cfg: Configurations,
     entry: str,
-    path: Path | str,
+    path: Path | str | None = None,
 ) -> Path:
     """Quick check on the input for reading."""
+    path = path or cfg.get(entry)
     if path is None:
-        path = cfg.get(entry)
+        return
     return generic_path_check(path, cfg.path)
 
 

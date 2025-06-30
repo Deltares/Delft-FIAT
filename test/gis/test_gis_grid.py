@@ -12,7 +12,7 @@ def test_reproject(tmp_path: Path, hazard_event_repr: GridIO):
     assert get_srs_repr(hazard_event_repr.srs) == "EPSG:4326"
     np.testing.assert_array_almost_equal(
         hazard_event_repr.bounds,
-        (0, 10.0, 0, 10.0),
+        (0, 0, 10.0, 10.0),
     )
 
     # Call the function
@@ -22,7 +22,7 @@ def test_reproject(tmp_path: Path, hazard_event_repr: GridIO):
     assert get_srs_repr(gs.srs) == "EPSG:3857"
     np.testing.assert_array_almost_equal(
         gs.bounds,
-        (7.275958e-12, 1.116046e06, 2.843901e03, 1.118890e06),
+        (7.275958e-12, 2.843901e03, 1.116046e06, 1.118890e06),
         decimal=1,
     )
 
@@ -32,7 +32,7 @@ def test_reproject_resample(tmp_path: Path, hazard_event_repr: GridIO):
     assert get_srs_repr(hazard_event_repr.srs) == "EPSG:4326"
     np.testing.assert_array_almost_equal(
         hazard_event_repr.bounds,
-        (0, 10.0, 0, 10.0),
+        (0, 0, 10.0, 10.0),
     )
     assert hazard_event_repr.shape == (10, 10)
 
@@ -55,7 +55,7 @@ def test_reproject_resample(tmp_path: Path, hazard_event_repr: GridIO):
     assert get_srs_repr(gs.srs) == "EPSG:4326"
     np.testing.assert_array_almost_equal(
         gs.bounds,
-        (0, 10.0, 0, 10.0),
+        (0, 0, 10.0, 10.0),
     )
     assert gs.shape == (5, 5)
 
@@ -67,7 +67,7 @@ def test_reproject_tif(
     assert get_srs_repr(hazard_tif.srs) == "EPSG:4326"
     np.testing.assert_array_almost_equal(
         hazard_tif.bounds,
-        (0, 10.0, 0, 10.0),
+        (0, 0, 10.0, 10.0),
     )
     assert hazard_tif.shape == (10, 10)
 
@@ -78,6 +78,6 @@ def test_reproject_tif(
     assert get_srs_repr(gs.srs) == "EPSG:3857"
     np.testing.assert_array_almost_equal(
         gs.bounds,
-        (7.275958e-12, 1.116046e06, 2.843901e03, 1.118890e06),
+        (7.275958e-12, 2.843901e03, 1.116046e06, 1.118890e06),
         decimal=1,
     )
