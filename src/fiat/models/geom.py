@@ -6,7 +6,6 @@ import sys
 import time
 from multiprocessing import Manager
 from pathlib import Path
-from typing import List
 
 from osgeo import ogr
 
@@ -71,7 +70,7 @@ class GeomModel(BaseModel):
         self.exposure_types: list[str] = self.cfg.get("exposure.types", ["damage"])
 
         # Setup the geometry model
-        self.read_exposure()
+        self.read_exposure_geoms()
 
     def __del__(self):
         BaseModel.__del__(self)
@@ -197,12 +196,6 @@ class GeomModel(BaseModel):
             )
         self.cfg.set("_exposure_meta", meta)
 
-    ## Read data methods
-    def read_exposure(self):
-        """Read all the exposure files."""
-        self.read_exposure_geoms()
-        self.read_exposure_data()
-
     def read_exposure_data(
         self,
         paths: list[Path | str] | None = None,
@@ -266,7 +259,26 @@ no exposure vector data was found"
 
     def read_exposure_geoms(
         self,
-        paths: List[Path] = None,
+        paths: list[Path] | None = None,
+    ):
+        """_summary_."""
+        self.exposure_geoms = []
+        self.exposure_data = []
+
+        # Get all from config file
+        files = self.cfg.get("exposure.geom")
+        # If no data provided, return
+        if (files is None and paths is None) or len(files) == 0:
+            return
+        # Sort the files and paths from config and signature
+        files, paths = get_file_entries(files, paths)
+
+        pass
+
+    def read_exposure_geom(
+        self,
+        path: Path | str = None,
+        csv: bool = False,
         **kwargs: dict,
     ):
         """Read the exposure geometries.
@@ -282,13 +294,9 @@ no exposure vector data was found"
             Keyword arguments for reading. These are passed into [open_geom]\
 (/api/fio/open_geom.qmd) after which into [GeomIO](/api/GeomIO.qmd)/
         """
-        _d = {}
-        # Discover the files
-        files, paths, pattern = get_file_entries(
-            self.cfg,
-            base_str="exposure.geom.file",
-            paths=paths,
-        )
+        if self.exposure_geoms is None or self.exposure_data is None:
+            self.exposure_data = []
+            self.exposure_geoms = []
 
         # First check for the index_col
         index_col = self.cfg.get("exposure.geom.settings.index", "object_id")
@@ -301,49 +309,49 @@ no exposure vector data was found"
         kw.update(kwargs)
 
         # For all that is found, try to read the data
-        for file, path in zip(files, paths):
-            path = check_file_for_read(self.cfg, file, path)
-            suffix = int(re.findall(pattern, file)[0])
-            logger.info(
-                f"Reading exposure geometry '{file.split('.')[-1]}' ('{path.name}')"
-            )
-            data = open_geom(path.as_posix(), **kw)
-            ## checks
-            logger.info("Executing exposure geometry checks...")
+        path = check_file_for_read(
+            self.cfg,
+            entry="file",
+            path=path,
+        )
+        logger.info(f"Reading exposure geometry ('{path.name}')")
+        data = open_geom(path.as_posix(), **kw)
+        ## checks
+        logger.info("Executing exposure geometry checks...")
 
-            # check for the index column
-            check_exp_index_col(data.layer.columns, index_col=index_col, path=data.path)
+        # check for the index column
+        check_exp_index_col(data.layer.columns, index_col=index_col, path=data.path)
 
-            # check the internal srs of the file
-            check_internal_srs(
-                data.layer.srs,
-                path.name,
-            )
+        # check the internal srs of the file
+        check_internal_srs(
+            data.layer.srs,
+            path.name,
+        )
 
-            # check if file srs is the same as the model srs
-            if not check_vs_srs(self.srs, data.layer.srs):
-                logger.warning(
-                    f"Spatial reference of '{path.name}' \
+        # check if file srs is the same as the model srs
+        if not check_vs_srs(self.srs, data.layer.srs):
+            logger.warning(
+                f"Spatial reference of '{path.name}' \
 ('{get_srs_repr(data.layer.srs)}') does not match \
 the model spatial reference ('{get_srs_repr(self.srs)}')"
-                )
-                logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
-                data = geom.reproject(data, self.srs.ExportToWkt())
-
-            # check if it falls within the extent of the hazard map
-            check_geom_extent(
-                data.layer.bounds,
-                self.hazard_grid.bounds,
             )
+            logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
+            data = geom.reproject(data, self.srs.ExportToWkt())
 
-            # Add to the dict
-            _d[suffix] = data
-            # And reset the entry
-            self.cfg.set(file, path)
+        # check if it falls within the extent of the hazard map
+        check_geom_extent(
+            data.layer.bounds,
+            self.hazard_grid.bounds,
+        )
+
+        # Add to the dict
+        # _d.append(data)
+        # And reset the entry
+        # self.cfg.set(file, path)
 
         # When all is done, add it
-        self.exposure_geoms = _d
-        self.exposure_data = {idx: None for idx in self.exposure_geoms}
+        # self.exposure_geoms = _d
+        # self.exposure_data = {idx: None for idx in self.exposure_geoms}
 
     ## Run model method
     def run(
