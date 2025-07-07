@@ -493,7 +493,7 @@ def create_settings_geom():
         },
         "exposure": {
             "csv": {
-                "file": "exposure/spatial.csv",
+                "file1": "exposure/spatial.csv",
             },
             "geom": {
                 "file1": "exposure/spatial.geojson",

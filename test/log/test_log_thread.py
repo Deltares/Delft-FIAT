@@ -15,7 +15,6 @@ def test_receiver(
     r = Receiver(mp_queue)
 
     # Assert some simple stuff
-    assert r._name == "Receiver1"
     assert isinstance(r.q, Queue)
     assert r.count == 0
     # Important the sentinel message

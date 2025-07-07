@@ -7,6 +7,7 @@ from fiat.cfg import Configurations
 from fiat.fio import GridIO
 from fiat.log import Logger
 from fiat.models.base import BaseModel
+from fiat.struct import Table
 from fiat.util import get_srs_repr
 
 # Overwrite the abstractmethods to be able to initialize it
@@ -187,3 +188,57 @@ model spatial reference ('EPSG:3857')"
         hazard_event_path.parent,
         f"{hazard_event_path.stem}_repr.tif",
     ).is_file()
+
+
+def test_basemodel_read_vulnerability(
+    vulnerability_path: Path,
+    config_empty: Configurations,
+):
+    # Adjust the config for a vulnerability file to be read
+    config_empty.set("vulnerability.file", vulnerability_path)
+
+    # Create the object
+    m = BaseModel(config_empty)
+
+    # Assert the state
+    assert m.vulnerability_data is not None
+    assert isinstance(m.vulnerability_data, Table)
+    # Had been upscaled so a long index
+    assert len(m.vulnerability_data.index) == 501
+    assert m._vul_step_size == 0.01
+
+
+def test_basemodel_read_vulnerability_argument(
+    vulnerability_path: Path,
+    config_empty: Configurations,
+):
+    # Create the object
+    m = BaseModel(config_empty)
+    # Assert the current state
+    assert m.vulnerability_data is None
+
+    # Read the data via argument
+    m.read_vulnerability_data(path=vulnerability_path)
+
+    # Assert the state
+    assert m.vulnerability_data is not None
+    assert isinstance(m.vulnerability_data, Table)
+
+
+def test_basemodel_read_vulnerability_step_size(
+    vulnerability_path: Path,
+    config_empty: Configurations,
+):
+    # Adjust the config for a vulnerability file to be read
+    config_empty.set("vulnerability.file", vulnerability_path)
+    config_empty.set("vulnerability.step_size", 0.1)
+
+    # Create the object
+    m = BaseModel(config_empty)
+
+    # Assert the state
+    assert m.vulnerability_data is not None
+    assert isinstance(m.vulnerability_data, Table)
+    # Had been upscaled so a long index
+    assert len(m.vulnerability_data.index) == 61
+    assert m._vul_step_size == 0.1

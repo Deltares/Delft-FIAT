@@ -52,17 +52,21 @@ class BaseModel(metaclass=ABCMeta):
         self.exposure_grid: GridIO | None = None
         self.hazard_grid: GridIO | None = None
         self.vulnerability_data: Table | None = None
+
         # Type of calculations
         type = self.cfg.get("model.type", "flood")
         self.module = importlib.import_module(f"fiat.methods.{type}")
         self.cfg.set("model.type", type)
+
         # Risk or event based
         risk = self.cfg.get("model.risk", False)
         self.cfg.set("model.risk", risk)
+
         # Vulnerability data
         self._vul_step_size = 0.01
         self._rounding = 2
         self.cfg.set("vulnerability.round", self._rounding)
+
         # Threading stuff
         self._mp_ctx = get_context("spawn")
         self._mp_manager = None
@@ -70,7 +74,7 @@ class BaseModel(metaclass=ABCMeta):
         self._threads = 1
         self.chunks = []
 
-        # Call the necessary methods at init
+        ## Call the necessary methods at init
         self.srs = self.cfg.get("model.srs.value", "EPSG:4326")
         self.threads = self.cfg.get("model.threads")
         self.read_hazard_grid()
