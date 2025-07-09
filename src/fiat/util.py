@@ -29,7 +29,7 @@ MANDATORY_MODEL_ENTRIES = [
     "vulnerability.file",
 ]
 MANDATORY_GEOM_ENTRIES = [
-    r"exposure.geom.file\d+",
+    "exposure.geom.file",
 ]
 MANDATORY_GRID_ENTRIES = ["exposure.grid.file"]
 NEWLINE_CHAR = os.linesep

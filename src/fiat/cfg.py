@@ -1,9 +1,8 @@
 """The config interpreter of FIAT."""
 
-import re
 import tomllib
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from fiat.check import (
     check_config_grid,
@@ -13,7 +12,6 @@ from fiat.util import (
     MANDATORY_GRID_ENTRIES,
     MANDATORY_MODEL_ENTRIES,
     create_dir,
-    flatten_dict,
     generic_path_check,
 )
 
@@ -23,6 +21,43 @@ MODEL_ENTRIES = (
     + MANDATORY_GRID_ENTRIES
     + ["exposure.csv.file"]  # Check for the only non mandatory file
 )
+
+
+def get_item(
+    parts: list,
+    current: dict,
+    fallback: Any | None = None,
+):
+    """_summary_."""
+    num_parts = len(parts)
+    for i, part in enumerate(parts):
+        if isinstance(current, list):
+            return [get_item(parts[i:], item, fallback) for item in current]
+        if i < num_parts - 1:
+            current = current.get(part, {})
+        else:
+            return current.get(part, fallback)
+
+
+def set_item(
+    parts: list,
+    current: dict,
+    value: Any,
+):
+    """_summary_."""
+    part = parts[0]
+    if part not in current:
+        current[part] = {}
+    if len(parts) != 1:
+        if isinstance(current[part], list):
+            for item in current[part]:
+                set_item(parts[1:], item, value)
+            return
+        elif not isinstance(current[part], dict):
+            current[part] = {}
+        set_item(parts[1:], current[part], value)
+    else:
+        current[part] = value
 
 
 class Configurations(dict):
@@ -52,27 +87,20 @@ class Configurations(dict):
             self.filepath = Path(self.path, name)
 
         # Load the config as a simple flat dictionary
-        dict.__init__(self, flatten_dict(settings, "", "."))
-
-        # Set the cache size per GDAL object
-        # _cache_size = self.get("model.gdal_cache")
-        # if _cache_size is not None:
-        #     gdal.SetCacheMax(_cache_size * 1024**2)
-        # else:
-        #     gdal.SetCacheMax(50 * 1024**2)
+        dict.__init__(self, settings)
 
         # Do some checking concerning the file paths in the settings file
-        for key, item in self.items():
-            if not any([re.match(f"^{pattern}$", key) for pattern in MODEL_ENTRIES]):
+        for key in MODEL_ENTRIES:
+            value = self.get(key)
+            if value is None:
                 continue
-            if (
-                key.endswith(("file",)) or key.rsplit(".", 1)[1].startswith("file")
-            ) and item:
-                path = generic_path_check(
-                    item,
-                    self.path,
-                )
-                self[key] = path
+            if isinstance(value, list):
+                value = value[0]
+            path = generic_path_check(
+                value,
+                self.path,
+            )
+            self.set(key, path)
 
         # Ensure absolute path for output
         self._ensure_output_path()
@@ -138,6 +166,36 @@ class Configurations(dict):
 
         return kw
 
+    def get(
+        self, key: str, fallback: Any | None = None, index: int | None = None
+    ) -> Any:
+        """_summary_.
+
+        Parameters
+        ----------
+        key : str
+            _description_
+        fallback : Any | None, optional
+            _description_, by default None
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+        parts = key.split(".")
+        current = dict(self)  # reads config at first call
+        value = fallback
+        value = get_item(parts, current, fallback=fallback)
+
+        if isinstance(value, (list, tuple)) and index is not None:
+            try:
+                value = value[index]
+            except IndexError:
+                value = fallback
+
+        return value
+
     def set(
         self,
         key: str,
@@ -152,7 +210,9 @@ class Configurations(dict):
         value : Any
             The value corresponding to the entry.
         """
-        self[key] = value
+        parts = key.split(".")
+        current = cast(dict[str, Any], self)
+        set_item(parts, current, value)
 
     def setup_output_dir(
         self,

@@ -266,12 +266,15 @@ no exposure vector data was found"
         self.exposure_data = []
 
         # Get all from config file
-        files = self.cfg.get("exposure.geom")
+        files = self.cfg.get("exposure.geom.file")
         # If no data provided, return
         if (files is None and paths is None) or len(files) == 0:
             return
         # Sort the files and paths from config and signature
         files, paths = get_file_entries(files, paths)
+
+        for path in paths:
+            self.read_exposure_geom(path)
 
         pass
 
