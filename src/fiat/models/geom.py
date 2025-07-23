@@ -167,18 +167,21 @@ class GeomModel(BaseModel):
 
             # Check whether to do the same for the csv
             out_csv = self.cfg.get(f"output.csv.name{key}")
-            if out_csv is not None:
-                columns = ("object_id",) + new_fields
-                if self.exposure_data[key] is not None:
-                    columns = self.exposure_data[key].columns + tuple(
-                        self.cfg.get("_exposure_meta")[key]["new_fields"]
-                    )
+            if out_csv is None:
+                continue
 
-                # Create an empty csv file for the separate thread to till
-                csv_def_file(
-                    Path(self.cfg.get("output.path"), out_csv),
-                    columns,
+            # Continue is output name is found
+            columns = ("object_id",) + new_fields
+            if self.exposure_data[key] is not None:
+                columns = self.exposure_data[key].columns + tuple(
+                    self.cfg.get("_exposure_meta")[key]["new_fields"]
                 )
+
+            # Create an empty csv file for the separate thread to till
+            csv_def_file(
+                Path(self.cfg.get("output.path"), out_csv),
+                columns,
+            )
 
     def get_exposure_meta(self):
         """Get the exposure meta regarding the data itself (fields etc.)."""
