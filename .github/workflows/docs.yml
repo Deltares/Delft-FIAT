@@ -79,7 +79,7 @@ jobs:
 
       - name: Trigger Dispatch
         if: ${{ github.event_name != 'pull_request' && !github.event.act }}
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
