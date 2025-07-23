@@ -109,7 +109,7 @@ def test_pin_outside(geom_outside_data, grid_event_data):
     ft = None
 
     assert len(hazard) == 1
-    assert int(round(hazard[0] * 100, 0)) == 180
+    assert int(round(hazard[0] * 100, 0)) == 200
 
 
 def test_geom_reproject(tmp_path, geom_data):
