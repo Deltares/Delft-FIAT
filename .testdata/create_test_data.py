@@ -7,7 +7,7 @@ import os
 from itertools import product
 from pathlib import Path
 
-import tomli_w
+import tomlkit
 from numpy import arange, zeros
 from osgeo import gdal, ogr, osr
 
@@ -479,10 +479,7 @@ def create_settings_geom():
         },
         "output": {
             "path": "output/geom_event",
-            "csv": {
-                "name1": "output.csv",
-            },
-            "geom": {"name1": "spatial.gpkg"},
+            "geom": [{"name": "spatial.gpkg"}],
         },
         "hazard": {
             "file": "hazard/event_map.nc",
@@ -492,15 +489,14 @@ def create_settings_geom():
             },
         },
         "exposure": {
-            "csv": {
-                "file1": "exposure/spatial.csv",
-            },
-            "geom": {
-                "file1": "exposure/spatial.geojson",
-                "settings": {
-                    "srs": "EPSG:4326",
+            "geom": [
+                {
+                    "file": "exposure/spatial.geojson",
+                    "settings": {
+                        "srs": "EPSG:4326",
+                    },
                 },
-            },
+            ],
         },
         "vulnerability": {
             "file": "vulnerability/vulnerability_curves.csv",
@@ -509,33 +505,33 @@ def create_settings_geom():
     }
 
     # Dump directly as default event toml
-    with open(Path(p, "geom_event.toml"), "wb") as f:
-        tomli_w.dump(doc, f)
+    with open(Path(p, "geom_event.toml"), "w") as f:
+        tomlkit.dump(doc, f)
 
     # Setup toml with two geometry files
     doc2g = copy.deepcopy(doc)
     doc2g["output"]["path"] = "output/geom_event_2g"
-    doc2g["output"]["geom"]["name2"] = "spatial2.gpkg"
-    doc2g["exposure"]["geom"]["file2"] = "exposure/spatial2.geojson"
+    doc2g["output"]["geom"].append({"name": "spatial2.gpkg"})
+    doc2g["exposure"]["geom"].append({"file": "exposure/spatial2.geojson"})
 
-    with open(Path(p, "geom_event_2g.toml"), "wb") as f:
-        tomli_w.dump(doc2g, f)
+    with open(Path(p, "geom_event_2g.toml"), "w") as f:
+        tomlkit.dump(doc2g, f)
 
     # Setup toml with missing geometry meta
     doc_m = copy.deepcopy(doc)
     doc_m["output"]["path"] = "output/geom_event_missing"
-    doc_m["output"]["geom"]["name1"] = "spatial_missing.gpkg"
-    doc_m["exposure"]["geom"]["file1"] = "exposure/spatial_missing.geojson"
+    doc_m["output"]["geom"][0]["name"] = "spatial_missing.gpkg"
+    doc_m["exposure"]["geom"][0]["file"] = "exposure/spatial_missing.geojson"
 
-    with open(Path(p, "geom_event_missing.toml"), "wb") as f:
-        tomli_w.dump(doc_m, f)
+    with open(Path(p, "geom_event_missing.toml"), "w") as f:
+        tomlkit.dump(doc_m, f)
 
     # Setup toml with geometries lying outside hazard are
     doc_o = copy.deepcopy(doc)
-    doc_o["exposure"]["geom"]["file1"] = "exposure/spatial_outside.geojson"
+    doc_o["exposure"]["geom"][0]["file"] = "exposure/spatial_outside.geojson"
 
-    with open(Path(p, "geom_event_outside.toml"), "wb") as f:
-        tomli_w.dump(doc_o, f)
+    with open(Path(p, "geom_event_outside.toml"), "w") as f:
+        tomlkit.dump(doc_o, f)
 
     # Setup toml for risk calculation
     doc_r = copy.deepcopy(doc)
@@ -545,29 +541,17 @@ def create_settings_geom():
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
     doc_r["hazard"]["settings"].update({"var_as_band": True})
 
-    with open(Path(p, "geom_risk.toml"), "wb") as f:
-        tomli_w.dump(doc_r, f)
+    with open(Path(p, "geom_risk.toml"), "w") as f:
+        tomlkit.dump(doc_r, f)
 
     # Setup toml for risk calculation with 2 geometries
     doc_r2g = copy.deepcopy(doc_r)
     doc_r2g["output"]["path"] = "output/geom_risk_2g"
-    doc_r2g["output"]["geom"]["name2"] = "spatial2.gpkg"
-    doc_r2g["exposure"]["geom"]["file2"] = "exposure/spatial2.geojson"
+    doc_r2g["output"]["geom"].append({"name": "spatial2.gpkg"})
+    doc_r2g["exposure"]["geom"].append({"file2": "exposure/spatial2.geojson"})
 
-    with open(Path(p, "geom_risk_2g.toml"), "wb") as f:
-        tomli_w.dump(doc_r2g, f)
-
-    missing_hazard = copy.deepcopy(doc)
-    del missing_hazard["hazard"]["file"]
-
-    with open(Path(p, "missing_hazard.toml"), "wb") as f:
-        tomli_w.dump(missing_hazard, f)
-
-    missing_models = copy.deepcopy(doc)
-    del missing_models["exposure"]["geom"]["file1"]
-
-    with open(Path(p, "missing_models.toml"), "wb") as f:
-        tomli_w.dump(missing_models, f)
+    with open(Path(p, "geom_risk_2g.toml"), "w") as f:
+        tomlkit.dump(doc_r2g, f)
 
 
 def create_settings_grid():
@@ -605,8 +589,8 @@ def create_settings_grid():
         },
     }
 
-    with open(Path(p, "grid_event.toml"), "wb") as f:
-        tomli_w.dump(doc, f)
+    with open(Path(p, "grid_event.toml"), "w") as f:
+        tomlkit.dump(doc, f)
 
     doc_r = copy.deepcopy(doc)
     doc_r["model"]["risk"] = True
@@ -615,14 +599,14 @@ def create_settings_grid():
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
     doc_r["hazard"]["settings"].update({"var_as_band": True})
 
-    with open(Path(p, "grid_risk.toml"), "wb") as f:
-        tomli_w.dump(doc_r, f)
+    with open(Path(p, "grid_risk.toml"), "w") as f:
+        tomlkit.dump(doc_r, f)
 
     doc_u = copy.deepcopy(doc)
     doc_u["hazard"]["file"] = "hazard/event_map_highres.nc"
 
-    with open(Path(p, "grid_unequal.toml"), "wb") as f:
-        tomli_w.dump(doc_u, f)
+    with open(Path(p, "grid_unequal.toml"), "w") as f:
+        tomlkit.dump(doc_u, f)
 
 
 def create_vulnerability():

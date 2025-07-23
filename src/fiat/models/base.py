@@ -187,7 +187,7 @@ exceeds machine thread count ('{max_threads}')"
 (/api/fio/open_grid.qmd) after which into [GridIO](/api/GridIO.qmd)/
         """
         file_entry = "hazard.file"
-        path = check_file_for_read(self.cfg, file_entry, path)
+        path = check_file_for_read(self.cfg, entry=file_entry, path=path)
         if path is None:
             return
         logger.info(f"Reading hazard data ('{path.name}')")
@@ -281,7 +281,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
 (/api/fio/open_csv.qmd) after which into [Table](/api/Table.qmd)/
         """
         file_entry = "vulnerability.file"
-        path = check_file_for_read(self.cfg, file_entry, path)
+        path = check_file_for_read(self.cfg, entry=file_entry, path=path)
         if path is None:
             return
         logger.info(f"Reading vulnerability curves ('{path.name}')")

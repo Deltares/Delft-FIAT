@@ -1,6 +1,5 @@
 """The FIAT model workers."""
 
-import re
 from pathlib import Path
 
 from osgeo import ogr
@@ -90,17 +89,12 @@ def csv_def_file(
 
 
 def get_file_entries(
-    cfg: Configurations,
-    base_str: str,
-    paths: list[Path] | None,
+    files: list[dict] | None,
+    paths: list[Path | str] | None,
 ) -> tuple:
     """Get multiple file entries from the configurations."""
-    pattern = rf"^{base_str}(\d+)$"
-
     if paths is None:
-        files = [item for item in list(cfg) if re.match(pattern, item)]
-        paths = [None] * len(files)
+        paths = [item.get("file", None) for item in files]
     else:
-        files = [f"{base_str}{idx+1}" for idx in range(len(paths))]
-
-    return files, paths, pattern
+        files = [{} for _ in paths]
+    return files, paths
