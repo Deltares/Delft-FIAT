@@ -50,7 +50,7 @@ jobs:
           title: Update pixi lockfile
           body-path: diff.md
           branch: update-pixi
-          base: main
+          base: master
           labels: pixi
           delete-branch: true
           add-paths: pixi.lock
