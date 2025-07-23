@@ -16,24 +16,24 @@ name = "delft_fiat"
 dynamic = ['version']
 
 authors = [
-    {name = "B.W. Dalmijn", email = "brencodeert@outlook.com"},
+    {name = "B.W. Dalmijn", email = "brendan.dalmijn@deltares.nl"},
     {name = "F.C. de Groen", email = "frederique.degroen@deltares.nl"},
     {name = "S.A. Rautenbach", email = "sarah.rautenbach@deltares.nl"},
     {name = "P. Athanasiou", email = "panos.athanasiou@deltares.nl"},
 ]
 maintainers = [
-    {name = "B.W. Dalmijn", email = "brencodeert@outlook.com"},
+    {name = "B.W. Dalmijn", email = "brendan.dalmijn@deltares.nl"},
 ]
 
 description = "Delft Fast Impact Assessment Tool"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 
 requires-python = ">=3.11"
 dependencies = [
-"gdal>=3.5",
-"numpy",
-"regex",
+    "gdal>=3.5",
+    "numpy",
+    "regex",
 ]
 
 keywords = ["FIAT", "Assessment", "Damage"]
@@ -52,9 +52,6 @@ classifiers = [
 # Topic of the package
 'Topic :: Scientific/Engineering :: Hydrology',
 'Topic :: Scientific/Engineering :: GIS',
-
-# Pick your license as you wish (should match "license" above)
-'License :: OSI Approved :: MIT License',
 
 # Language
 'Natural Language :: English',
@@ -107,10 +104,6 @@ test = [
 [project.scripts]
 fiat = "fiat.cli.main:main"
 
-[tool.make_env]
-channels = ["conda-forge"]
-conda_only = ["libgdal-netcdf"]
-
 ## Some stuff for pytest and coverage
 [tool.pytest.ini_options]
 testpaths = [
@@ -120,7 +113,6 @@ testpaths = [
 [tool.coverage.run]
 branch = true
 source = ["./src"]
-omit = ["*/gui/*"]
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
@@ -139,8 +131,7 @@ exclude_also = [
 
     # Don't complain about abstract methods, they aren't run:
     "@(abc\\.)?abstractmethod",
-    ]
-
+]
 ignore_errors = true
 
 [tool.coverage.html]
@@ -148,7 +139,7 @@ directory = ".cov"
 
 [tool.ruff]
 line-length = 88
-exclude = ["docs"]
+exclude = ["docs/**"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "PT", "D"]
@@ -188,6 +179,7 @@ docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 docs = { depends-on = ["generate-api", "interlink-docs", "quarto-execute"] }
 docs-slim = { depends-on = ["interlink-docs", "quarto-render"] }
 docs-slim-execute = { depends-on = ["interlink-docs", "quarto-execute"] }
+docs-slim-rebuild = { depends-on = ["clean-docs", "docs-slim"] }
 generate-api = { cmd = ["python", "docs/_scripts/api.py", "docs/_quarto.yml"] }
 interlink-docs = { cmd = ["python", "docs/_scripts/inv.py", "interlinks", "docs/_quarto.yml"] }
 quarto-render = { cmd = ["quarto", "render", "docs"] }
@@ -198,21 +190,22 @@ serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_site"] }
 test = { cmd = ["pytest"] }
 test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
 test-cov = { cmd = ["pytest", "--verbose", "--cov=fiat", "--cov-report", "xml"] }
-test-cov-local = { cmd = ["pytest", "--verbose", "--cov", "--cov-report", "html",] }
+test-cov-html = { cmd = ["pytest", "--verbose", "--cov", "--cov-report", "html"] }
 
 # Clean up (some of) the temporary files
 clean = { depends-on = [
-  "clean-env-files",
-  "clean-bin",
-  "clean-build",
-  "clean-dist",
-  "clean-docs",
+    "clean-bin",
+    "clean-build",
+    "clean-dist",
+    "clean-docs",
 ] }
-clean-env-files = { cmd = ["rm", "-f", "environment.yml"] }
 clean-bin = { cmd = ["rm", "-rf", "bin"] }
-clean-build = {cmd = ["rm", "-rf", "build"] }
-clean-dist = {cmd = ["rm", "-rf", "dist"] }
-clean-docs = { cmd = ["rm", "-rf", "docs/_site"] }
+clean-build = { cmd = ["rm", "-rf", "build"] }
+clean-dist = { cmd = ["rm", "-rf", "dist"] }
+clean-docs = { depends-on = ["clean-docs-site", "clean-docs-freeze", "clean-docs-inv"] }
+clean-docs-freeze = { cmd = ["rm", "-rf", "docs/_freeze"] }
+clean-docs-inv = { cmd = ["rm", "-rf", "docs/_inv"] }
+clean-docs-site = { cmd = ["rm", "-rf", "docs/_site"] }
 
 # Specify conda only deps
 [tool.pixi.dependencies]
@@ -223,11 +216,11 @@ delft_fiat = { path = ".", editable = true }
 
 [tool.pixi.feature.build-win]
 dependencies = {python = "3.12.*"}
-pypi-dependencies = {gdal = {url = "https://github.com/cgohlke/geospatial-wheels/releases/download/v2025.1.20/GDAL-3.10.1-cp312-cp312-win_amd64.whl"}}
+pypi-dependencies = { gdal = { url = "https://github.com/cgohlke/geospatial-wheels/releases/download/v2025.1.20/GDAL-3.10.1-cp312-cp312-win_amd64.whl" } }
 platforms = ["win-64"]
 
 [tool.pixi.feature.build-linux]
-dependencies = {python = "3.12.*"}
+dependencies = { python = "3.12.*" }
 platforms = ["linux-64"]
 
 [tool.pixi.feature.docs.dependencies]
@@ -249,10 +242,11 @@ python = "3.11.*"
 
 # Environments
 [tool.pixi.environments]
-build-win = { features = ["all", "build", "build-win", "extra"]}
-build-linux = { features = ["all", "build", "build-linux", "extra", "gdal"]}
+build-win = { features = ["all", "build", "build-win", "extra"] }
+build-linux = { features = ["all", "build", "build-linux", "extra", "gdal"] }
 default = { features = ["py313", "all", "dev", "docs", "extra", "gdal", "test"] }
 docs = { features = ["all", "docs", "extra", "gdal"] }
-test-py313 = {features = ["py313", "all", "extra", "gdal", "test"]}
-test-py312 = {features = ["py312", "all", "extra", "gdal", "test"]}
-test-py311 = {features = ["py311", "all", "extra", "gdal", "test"]}
+slim = { features = [] }
+test-py313 = { features = ["py313", "all", "extra", "gdal", "test"] }
+test-py312 = { features = ["py312", "all", "extra", "gdal", "test"] }
+test-py311 = { features = ["py311", "all", "extra", "gdal", "test"] }
