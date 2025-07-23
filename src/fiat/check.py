@@ -51,21 +51,9 @@ def check_config_grid(
     return True
 
 
-def check_global_crs(
-    srs: osr.SpatialReference,
-):
-    """Check the global spatial reference system.
-
-    This should exist.
-    """
-    if srs is None:
-        msg = "Could not infer the srs from '{}', nor from '{}'"
-        raise FIATDataError(msg)
-
-
 ## Text files
 def check_duplicate_columns(
-    cols,
+    cols: tuple | list,
 ):
     """Check for duplicate column headers."""
     if cols is not None:
@@ -127,10 +115,10 @@ def check_geom_extent(
 ):
     """Check whether the geometries lie within the bounds of the hazard data."""
     _checks = (
-        gm_bounds[0] > gr_bounds[0],
-        gm_bounds[1] < gr_bounds[1],
-        gm_bounds[2] > gr_bounds[2],
-        gm_bounds[3] < gr_bounds[3],
+        gm_bounds[0] >= gr_bounds[0],
+        gm_bounds[1] >= gr_bounds[1],
+        gm_bounds[2] <= gr_bounds[2],
+        gm_bounds[3] <= gr_bounds[3],
     )
 
     if not all(_checks):
@@ -210,14 +198,14 @@ multiple datasets (subsets). Chose one of the following subsets: {keys}"
 
 ## Exposure
 def check_exp_columns(
-    index_col: str,
     columns: tuple | list,
-    specific_columns: tuple | list = [],
+    index_col: str,
+    mandatory_columns: tuple | list = [],
 ):
     """Check the columns of the exposure data."""
     _man_columns = [
         index_col,
-    ] + specific_columns
+    ] + mandatory_columns
 
     _check = [item in columns for item in _man_columns]
     if not all(_check):
@@ -242,32 +230,30 @@ fn_{type}_* and max_{type}_* columns."
     if missing:
         logger.warning(
             f"No every damage function has a corresponding \
-    maximum potential damage: {missing}"
+maximum potential damage: {missing}"
         )
 
 
 def check_exp_grid_dmfs(
-    exp: object,
+    fns: tuple | list,
     dmfs: tuple | list,
 ):
     """Check the damage functions mentioned in the exposure bands."""
-    _ef = [_i.get_metadata_item("fn_damage") for _i in exp]
-    _i = None
-
-    _check = [item in dmfs for item in _ef]
+    _check = [item in dmfs for item in fns]
     if not all(_check):
-        _missing = [item for item, b in zip(_ef, _check) if not b]
-        msg = f"Incorrect damage function identifier found in exposure grid: {_missing}"
+        _missing = [item for item, b in zip(fns, _check) if not b]
+        msg = f"Unknown damage function identifier found in exposure grid: {_missing}"
         raise FIATDataError(msg)
 
 
 def check_exp_index_col(
-    obj: object,
+    columns: tuple | list,
     index_col: type,
+    path: Path | str,
 ):
     """Check whether the index column exists in the exposure geometry dataset."""
-    if index_col not in obj.columns:
-        raise FIATDataError(f"Index column ('{index_col}') not found in {obj.path}")
+    if index_col not in columns:
+        raise FIATDataError(f"Index column ('{index_col}') not found in {path}")
 
 
 ## Vulnerability

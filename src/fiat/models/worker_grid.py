@@ -6,37 +6,37 @@ from pathlib import Path
 from numpy import full, ravel, unravel_index, where
 
 from fiat.fio import (
-    GridSource,
-    Table,
+    GridIO,
     open_grid,
 )
-from fiat.methods.ead import calc_ead, risk_density
+from fiat.methods.ead import calculate_ead, risk_density
+from fiat.struct import Table
 from fiat.util import create_windows
 
 
 def worker(
     cfg: dict,
-    haz: GridSource,
+    haz: GridIO,
     idx: int,
     vul: Table,
-    exp: GridSource,
+    exp: GridIO,
 ):
     """Run the geometry model.
 
     This is the worker function corresponding to the run method \
-of the [GridSource](/api/GeomSource.qmd) object.
+of the [GridIO](/api/GeomIO.qmd) object.
 
     Parameters
     ----------
     cfg : object
         The configurations.
-    haz : GridSource
+    haz : GridIO
         The hazard data.
     idx : int
         Index of the hazard data band to be used.
     vul : Table
         The vulnerability data.
-    exp : GridSource
+    exp : GridIO
         The exposure data.
     """
     # Set some variables for the calculations
@@ -68,8 +68,8 @@ of the [GridSource](/api/GeomSource.qmd) object.
         exp.dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
-    out_src.set_srs(exp.srs)
-    out_src.set_geotransform(exp.geotransform)
+    out_src.set_source_srs(exp.srs)
+    out_src.geotransform = exp.geotransform
     # Create the outgoing total damage grid
     td_out = open_grid(
         Path(
@@ -85,8 +85,8 @@ of the [GridSource](/api/GeomSource.qmd) object.
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
     # Set the neccesary attributes
-    td_out.set_geotransform(exp.geotransform)
-    td_out.set_srs(exp.srs)
+    td_out.geotransform = exp.geotransform
+    td_out.set_source_srs(exp.srs)
     td_band = td_out[1]
     td_noval = -0.5 * 2**128
     td_band.src.SetNoDataValue(td_noval)
@@ -211,8 +211,8 @@ def worker_ead(
         rp[0].dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
-    ead_src.set_srs(rp[0].srs)
-    ead_src.set_geotransform(rp[0].geotransform)
+    ead_src.set_source_srs(rp[0].srs)
+    ead_src.geotransform = rp[0].geotransform
 
     # Gather and set information before looping through windows.
     for idx in range(rp[0].size):
@@ -236,7 +236,7 @@ def worker_ead(
 
             data = [_data[_w] for _data in rpx]
             data = [ravel(_data)[_coords] for _data in data]
-            data = calc_ead(_rp_coef, data)
+            data = calculate_ead(_rp_coef, data)
             idx2d = unravel_index(_coords, *[_chunk])
             ead_ch[idx2d] = data
             write_bands[idx].write_chunk(ead_ch, _w[:2])
@@ -263,8 +263,8 @@ def worker_ead(
         td[0].dtype,
         options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
     )
-    td_src.set_srs(td[0].srs)
-    td_src.set_geotransform(td[0].geotransform)
+    td_src.set_source_srs(td[0].srs)
+    td_src.geotransform = td[0].geotransform
     td_band = td_src[1]
     td_noval = -0.5 * 2**128
     td_band.src.SetNoDataValue(td_noval)
@@ -283,7 +283,7 @@ def worker_ead(
 
         # Get data, calc risk and write it.
         data = [ravel(_i)[_coords] for _i in data]
-        data = calc_ead(_rp_coef, data)
+        data = calculate_ead(_rp_coef, data)
         idx2d = unravel_index(_coords, *[_chunk])
         td_ch[idx2d] = data
         td_band.write_chunk(td_ch, _w[:2])

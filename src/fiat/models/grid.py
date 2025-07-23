@@ -113,7 +113,7 @@ data to {prefer} data"
             Path to an exposure grid, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_grid]\
-(/api/fio/open_grid.qmd) after which into [GridSouce](/api/GridSource.qmd)/
+(/api/fio/open_grid.qmd) after which into [GridSouce](/api/GridIO.qmd)/
         """
         file_entry = "exposure.grid.file"
         path = check_file_for_read(self.cfg, file_entry, path)
@@ -136,7 +136,7 @@ data to {prefer} data"
 
         # Check if all damage functions are correct
         check_exp_grid_dmfs(
-            data,
+            [item.get_metadata_item("fn_damage") for item in data],
             self.vulnerability_data.columns,
         )
 

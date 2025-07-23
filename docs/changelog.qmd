@@ -20,6 +20,7 @@ These are the unreleased changes.
 - Better handling of errors during calculations
 - Check for module specific (e.g. 'flood') settings entries
 - Default output vector file format (driver) matches input file format
+- Reading of csv not ending with newline char
 - Vector reproject dataset creation error
 
 ## v0.3.2 (2025-05-01)

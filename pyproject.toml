@@ -244,7 +244,7 @@ python = "3.11.*"
 [tool.pixi.environments]
 build-win = { features = ["all", "build", "build-win", "extra"] }
 build-linux = { features = ["all", "build", "build-linux", "extra", "gdal"] }
-default = { features = ["all", "dev", "docs", "extra", "gdal", "test"] }
+default = { features = ["py313", "all", "dev", "docs", "extra", "gdal", "test"] }
 docs = { features = ["all", "docs", "extra", "gdal"] }
 slim = { features = [] }
 test-py313 = { features = ["py313", "all", "extra", "gdal", "test"] }

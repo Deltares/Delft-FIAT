@@ -1,166 +1,189 @@
-import shutil
+import io
+import platform
 from pathlib import Path
+from unittest.mock import MagicMock, PropertyMock
 
 import pytest
+from osgeo import osr
+from pytest_mock import MockerFixture
 
 from fiat.cfg import Configurations
-from fiat.cli.main import args_parser
-from fiat.fio import open_csv, open_geom, open_grid
-from fiat.log import LogItem
-from fiat.models import GeomModel, GridModel
+from fiat.fio import GeomIO, GridIO, open_csv, open_geom, open_grid
+from fiat.log import Logger
+from fiat.struct import Table
 
-_GEOM_FILES = [
-    "hazard.file",
-    "exposure.geom.file1",
-    "exposure.csv.file",
-    "vulnerability.file",
-]
-_MODELS = [
-    "geom_event",
-    "geom_event_2g",
-    "geom_event_missing",
-    "geom_event_outside",
-    "geom_risk",
-    "geom_risk_2g",
-    "grid_event",
-    "grid_risk",
-    "grid_unequal",
-    "missing_hazard",
-    "missing_models",
-]
-_PATH = Path.cwd()
+TEST_MODULE = Path(__file__).parent
 
 
-@pytest.fixture
-def cli_parser():
-    return args_parser()
-
-
-@pytest.fixture
-def settings_files():
-    _files = {}
-    for _m in _MODELS:
-        p = Path(_PATH, ".testdata", f"{_m}.toml")
-        p_name = p.stem
-        _files[p_name] = p
-    return _files
-
-
-@pytest.fixture
-def configs(settings_files):
-    _cfgs = {}
-    for key, item in settings_files.items():
-        if not key.startswith("missing"):
-            _cfgs[key] = Configurations.from_file(item)
-    return _cfgs
-
-
-## Models
-@pytest.fixture
-def geom_tmp_model(tmp_path, configs):
-    cfg = configs["geom_event"]
-    settings_file = Path(tmp_path, "settings.toml")
-    shutil.copy2(cfg.filepath, settings_file)
-    for file in _GEOM_FILES:
-        path = cfg.get(file)
-        new_path = Path(tmp_path, path.parent.name)
-        new_path.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(path, Path(new_path, path.name))
-    assert settings_file.is_file()
-    return settings_file
-
-
-@pytest.fixture
-def geom_risk(configs):
-    model = GeomModel(configs["geom_risk"])
-    return model
-
-
-@pytest.fixture
-def grid_risk(configs):
-    model = GridModel(configs["grid_risk"])
-    return model
-
-
-## Data
-@pytest.fixture
-def geom_data():
-    d = open_geom(Path(_PATH, ".testdata", "exposure", "spatial.geojson"))
-    return d
-
-
-## Data
+## Globally defined fixtures (for easy access)
 @pytest.fixture(scope="session")
-def geom_outside_data():
-    d = open_geom(Path(_PATH, ".testdata", "exposure", "spatial_outside.geojson"))
-    return d
+def os_type() -> int:
+    s = platform.system()
+    if s.lower() == "linux":
+        return 0
+    elif s.lower() == "windows":
+        return 1
+    else:
+        raise OSError("Non")
 
 
 @pytest.fixture(scope="session")
-def geom_partial_data():
-    d = open_csv(Path(_PATH, ".testdata", "exposure", "spatial_partial.csv"), lazy=True)
-    return d
+def testdata_dir() -> Path:
+    p = Path(TEST_MODULE, "..", ".testdata").resolve()
+    assert Path(p, "geom_event.toml").is_file()
+    return p
+
+
+## Path to key files
+@pytest.fixture(scope="session")
+def exposure_geom_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "exposure", "spatial.geojson")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
+def exposure_data_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "exposure", "spatial.csv")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
+def hazard_event_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "hazard", "event_map.nc")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
+def hazard_risk_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "hazard", "risk_map.nc")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
+def vulnerability_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "vulnerability", "vulnerability_curves.csv")
+    assert p.is_file()
+    return p
+
+
+## Globally used object
+@pytest.fixture
+def config(testdata_dir: Path) -> Configurations:
+    c = Configurations(
+        _root=testdata_dir,
+        _name="tmp.toml",
+    )
+    return c
 
 
 @pytest.fixture
-def grid_event_data():
-    d = open_grid(Path(_PATH, ".testdata", "hazard", "event_map.nc"))
-    return d
+def exposure_cols() -> dict:
+    c = {
+        "object_id": 0,
+        "fn_damage_structure": 1,
+        "fn_damage_content": 2,
+        "max_damage_structure": 3,
+        "max_damage_content": 4,
+    }
+    return c
 
 
-@pytest.fixture(scope="session")
-def grid_event_highres_data():
-    d = open_grid(Path(_PATH, ".testdata", "hazard", "event_map_highres.nc"))
-    return d
-
-
-@pytest.fixture(scope="session")
-def grid_exp_data():
-    d = open_grid(Path(_PATH, ".testdata", "exposure", "spatial.nc"))
-    return d
-
-
-@pytest.fixture(scope="session")
-def grid_risk_data():
-    d = open_grid(Path(_PATH, ".testdata", "hazard", "risk_map.nc"))
-    return d
-
-
-@pytest.fixture(scope="session")
-def vul_path():
-    path = Path(_PATH, ".testdata", "vulnerability", "vulnerability_curves.csv")
-    assert path.exists()
-    return path
-
-
-@pytest.fixture(scope="session")
-def vul_raw_data(vul_path):
-    with open(vul_path, mode="rb") as f:
-        data = f.read()
+@pytest.fixture
+def exposure_data_fn() -> dict:
+    data = {
+        "fn": {
+            "_structure": 1,
+        },
+        "max": {
+            "_structure": 3,
+        },
+    }
     return data
 
 
 @pytest.fixture(scope="session")
-def vul_data(vul_path):
-    d = open_csv(vul_path)
-    return d
+def exposure_geom_dataset(exposure_geom_path: Path) -> GeomIO:
+    ds = open_geom(exposure_geom_path)  # Read only
+    assert isinstance(ds, GeomIO)
+    return ds
 
 
 @pytest.fixture(scope="session")
-def vul_data_win():
-    d = open_csv(
-        Path(_PATH, ".testdata", "vulnerability", "vulnerability_curves_win.csv"),
+def hazard_event_data(hazard_event_path: Path) -> GridIO:
+    ds = open_grid(hazard_event_path)  # Read only
+    assert isinstance(ds, GridIO)
+    return ds
+
+
+@pytest.fixture(scope="session")
+def hazard_risk_sub_data(hazard_risk_path: Path) -> GridIO:
+    ds = open_grid(hazard_risk_path, var_as_band=False)  # Read only
+    assert isinstance(ds, GridIO)
+    return ds
+
+
+@pytest.fixture
+def mocked_exp_grid(mocker: MockerFixture, srs: osr.SpatialReference) -> MagicMock:
+    grid = mocker.create_autospec(GridIO)
+    # Set attributes for practical use
+    type(grid).geotransform = PropertyMock(
+        side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
     )
-    return d
+    type(grid).srs = PropertyMock(side_effect=lambda: srs)
+    type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
+    return grid
 
 
 @pytest.fixture
-def log1():
-    obj = LogItem(level=2, msg="Hello!")
-    return obj
+def mocked_hazard_grid(mocker: MockerFixture, srs: osr.SpatialReference) -> MagicMock:
+    grid = mocker.create_autospec(GridIO)
+    # Set attributes for practical use
+    type(grid).geotransform = PropertyMock(
+        side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
+    )
+    type(grid).srs = PropertyMock(side_effect=lambda: srs)
+    type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
+    return grid
+
+
+@pytest.fixture(scope="session")
+def srs() -> osr.SpatialReference:
+    s = osr.SpatialReference()
+    s.SetFromUserInput("EPSG:4326")
+    return s
+
+
+@pytest.fixture(scope="session")
+def vulnerability_data(vulnerability_path: Path) -> Table:
+    ds = open_csv(vulnerability_path, index="water depth")
+    assert isinstance(ds, Table)
+    return ds
+
+
+## Capturing logging messages
+class CapLogger(Logger):
+    """Logging class for capturing texting logging."""
+
+    @property
+    def text(self) -> str:
+        stream = self._handlers[0].stream
+        stream.seek(0)
+        return stream.read()
 
 
 @pytest.fixture
-def log2():
-    obj = LogItem(level=2, msg="Good Bye!")
-    return obj
+def log_capture() -> io.StringIO:
+    buffer = io.StringIO()
+    return buffer
+
+
+@pytest.fixture
+def caplog(log_capture: io.StringIO) -> Logger:
+    logger = CapLogger("fiat")
+    logger._handlers = []
+    logger.add_stream_handler(name="Capture", level=2, stream=log_capture)
+    return logger

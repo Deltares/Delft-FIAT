@@ -1,17 +1,16 @@
 """Only raster methods for FIAT."""
 
-import gc
-import os
 from pathlib import Path
 
 from osgeo import gdal, osr
 
-from fiat.fio import Grid, GridSource, open_grid
+from fiat.fio import GridIO, open_grid
+from fiat.struct import GridBand
 from fiat.util import NOT_IMPLEMENTED
 
 
 def clip(
-    band: Grid,
+    band: GridBand,
     gtf: tuple,
     idx: tuple,
 ):
@@ -30,8 +29,8 @@ def clip(
 
 
 def reproject(
-    gs: GridSource,
-    dst_crs: str,
+    gs: GridIO,
+    dst_srs: str,
     dst_gtf: list | tuple = None,
     dst_width: int = None,
     dst_height: int = None,
@@ -42,13 +41,13 @@ def reproject(
 
     Parameters
     ----------
-    gs : GridSource
+    gs : GridIO
         Input object.
-    dst_crs : str
+    dst_srs : str
         Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
     dst_gtf : list | tuple, optional
         The geotransform of the warped dataset. Must be defined in the same
-        coordinate reference system as dst_crs. When defined, its only used when
+        coordinate reference system as dst_srs. When defined, its only used when
         both 'dst_width' and 'dst_height' are defined.
     dst_width : int, optional
         The width of the warped dataset in pixels.
@@ -63,19 +62,21 @@ def reproject(
 
     Returns
     -------
-    GridSource
+    GridIO
         Output object. A lazy reading of the just creating raster file.
     """
-    _gs_kwargs = gs._kwargs
+    # Set some kwargs before moving on
+    _gs_kwargs = {
+        "chunk": gs.chunk,
+    }
 
     if not Path(str(out_dir)).is_dir():
         out_dir = gs.path.parent
 
-    fname_int = Path(out_dir, f"{gs.path.stem}_repr.tif")
-    fname = Path(out_dir, f"{gs.path.stem}_repr{gs.path.suffix}")
+    fname = Path(out_dir, f"{gs.path.stem}_repr.tif")
 
     out_srs = osr.SpatialReference()
-    out_srs.SetFromUserInput(dst_crs)
+    out_srs.SetFromUserInput(dst_srs)
     out_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
     warp_kw = {}
@@ -90,13 +91,13 @@ def reproject(
                     dst_gtf[0] + dst_gtf[1] * dst_width,
                     dst_gtf[3],
                 ),
-                "width": dst_width,
-                "height": dst_height,
+                # "width": dst_width,
+                # "height": dst_height,
             }
         )
 
-    dst_src = gdal.Warp(
-        str(fname_int),
+    _ = gdal.Warp(
+        str(fname),
         gs.src,
         srcSRS=gs.srs,
         dstSRS=out_srs,
@@ -106,16 +107,5 @@ def reproject(
 
     out_srs = None
 
-    if gs.path.suffix == ".tif":
-        gs.close()
-        dst_src = None
-        return open_grid(fname_int)
-
     gs.close()
-    gdal.Translate(str(fname), dst_src)
-    dst_src = None
-    gc.collect()
-
-    os.unlink(fname_int)
-
     return open_grid(fname, **_gs_kwargs)

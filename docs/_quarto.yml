@@ -183,7 +183,7 @@ quartodoc:
       package: fiat.methods
       contents:
         - ead.risk_density
-        - ead.calc_ead
+        - ead.calculate_ead
         - flood.calculate_hazard
         - flood.calculate_damage
 
@@ -241,9 +241,9 @@ quartodoc:
       desc: Objects constructed from data
       package: fiat.fio
       contents:
-        - name: GeomSource
+        - name: GeomIO
           children: separate
-        - name: GridSource
+        - name: GridIO
           children: separate
         - name: Grid
           children: separate
