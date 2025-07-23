@@ -1,15 +1,15 @@
 ---
-name: Docker testing
+name: Docker Test
 
 on:
   push:
-    branches: [master]
+    branches: [ master ]
     paths:
       - Dockerfile
       - pyproject.toml
       - .github/workflows/docker.yml
   pull_request:
-    branches: [master]
+    branches: [ master ]
     paths:
       - Dockerfile
       - pyproject.toml
