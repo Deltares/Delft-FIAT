@@ -1,5 +1,5 @@
 ---
-name: Build
+name: Build Binary
 
 on:
   push:
@@ -18,7 +18,7 @@ on:
       - .github/workflows/build.yml
 
 jobs:
-  Test:
+  build:
     defaults:
       run:
         shell: bash -l {0}

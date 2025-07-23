@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  Versioning:
+  version:
     defaults:
       run:
         shell: bash -l {0}

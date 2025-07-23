@@ -16,7 +16,7 @@ on:
       - .github/workflows/docker.yml
 
 jobs:
-  docs:
+  docker:
     defaults:
       run:
         shell: bash -l {0}
