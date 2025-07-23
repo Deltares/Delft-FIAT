@@ -371,7 +371,7 @@ Tip
 <p>Event maps are generally supplied in singular fashion (i.e.&nbsp;one band per event map). This band just simply contains the hazard values per cell. Let’s have a quick peek at the data using <a href="https://gdal.org/programs/gdalinfo.html">gdalinfo</a>:</p>
 <div class="columns">
 <div style="height: 400px; overflow: auto;">
-<div id="0b82eb6c" class="cell" data-execution_count="1">
+<div id="da19840d" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-stdout">
 <pre><code>Driver: netCDF/Network Common Data Format
 Files: ../../../.testdata/hazard/event_map.nc
@@ -399,7 +399,7 @@ Metadata:
   Band1#long_name=GDAL Band Number 1
   Band1#_FillValue=9.96921e+36
   crs#crs_wkt=GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AXIS["Latitude",NORTH],AXIS["Longitude",EAST],AUTHORITY["EPSG","4326"]]
-  crs#GeoTransform=4.35 0.01 0 52.05 0 -0.01 
+  crs#GeoTransform=4.3499999999999996 0.01 0 52.049999999999997 0 -0.01 
   crs#grid_mapping_name=latitude_longitude
   crs#inverse_flattening=298.257223563
   crs#longitude_of_prime_meridian=0
@@ -413,8 +413,8 @@ Metadata:
   lon#standard_name=longitude
   lon#units=degrees_east
   NC_GLOBAL#Conventions=CF-1.5
-  NC_GLOBAL#GDAL=GDAL 3.10.3, released 2025/04/01
-  NC_GLOBAL#history=Wed May 07 12:06:45 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/event_map.nc, ... )
+  NC_GLOBAL#GDAL=GDAL 3.11.3 "Eganville", released 2025/07/12
+  NC_GLOBAL#history=Wed Jul 23 11:19:10 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/event_map.nc, ... )
 Corner Coordinates:
 Upper Left  (   4.3500000,  52.0500000) (  4d21' 0.00"E, 52d 3' 0.00"N)
 Lower Left  (   4.3500000,  51.9500000) (  4d21' 0.00"E, 51d57' 0.00"N)
@@ -459,15 +459,15 @@ Note
 <p>Lets take a look quick look at the data (again with <code>gdalinfo</code>):</p>
 <div class="columns">
 <div style="height: 400px; overflow: auto;">
-<div id="f252f42a" class="cell" data-execution_count="2">
+<div id="5103a85a" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-stdout">
 <pre><code>Driver: netCDF/Network Common Data Format
 Files: ../../../.testdata/hazard/risk_map.nc
 Size is 512, 512
 Metadata:
   NC_GLOBAL#Conventions=CF-1.5
-  NC_GLOBAL#GDAL=GDAL 3.10.3, released 2025/04/01
-  NC_GLOBAL#history=Wed May 07 12:06:45 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/risk_map.nc, ... )
+  NC_GLOBAL#GDAL=GDAL 3.11.3 "Eganville", released 2025/07/12
+  NC_GLOBAL#history=Wed Jul 23 11:19:10 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/risk_map.nc, ... )
 Subdatasets:
   SUBDATASET_1_NAME=NETCDF:"../../../.testdata/hazard/risk_map.nc":Band1
   SUBDATASET_1_DESC=[10x10] Band1 (32-bit floating-point)
@@ -520,7 +520,7 @@ Note
 <p>Let’s have a quick peek at the data using <a href="https://gdal.org/programs/gdalinfo.html">gdalinfo</a> (it will be at the bottom):</p>
 <div class="columns">
 <div style="height: 400px; overflow: auto;">
-<div id="54334b6b" class="cell" data-execution_count="3">
+<div id="ea63a8c5" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-stdout">
 <pre><code>Driver: netCDF/Network Common Data Format
 Files: ../../../.testdata/hazard/risk_map.nc
@@ -549,7 +549,7 @@ Metadata:
   Band1#return_period=2
   Band1#_FillValue=9.96921e+36
   crs#crs_wkt=GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AXIS["Latitude",NORTH],AXIS["Longitude",EAST],AUTHORITY["EPSG","4326"]]
-  crs#GeoTransform=4.35 0.01 0 52.05 0 -0.01 
+  crs#GeoTransform=4.3499999999999996 0.01 0 52.049999999999997 0 -0.01 
   crs#grid_mapping_name=latitude_longitude
   crs#inverse_flattening=298.257223563
   crs#longitude_of_prime_meridian=0
@@ -563,8 +563,8 @@ Metadata:
   lon#standard_name=longitude
   lon#units=degrees_east
   NC_GLOBAL#Conventions=CF-1.5
-  NC_GLOBAL#GDAL=GDAL 3.10.3, released 2025/04/01
-  NC_GLOBAL#history=Wed May 07 12:06:45 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/risk_map.nc, ... )
+  NC_GLOBAL#GDAL=GDAL 3.11.3 "Eganville", released 2025/07/12
+  NC_GLOBAL#history=Wed Jul 23 11:19:10 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/risk_map.nc, ... )
 Corner Coordinates:
 Upper Left  (   4.3500000,  52.0500000) (  4d21' 0.00"E, 52d 3' 0.00"N)
 Lower Left  (   4.3500000,  51.9500000) (  4d21' 0.00"E, 51d57' 0.00"N)

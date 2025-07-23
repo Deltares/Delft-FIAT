@@ -404,7 +404,7 @@ Table&nbsp;1: Available drivers for reading vector data
 <tr class="even">
 <td>.gdb</td>
 <td>OpenFileGDB</td>
-<td>ESRI FileGDB</td>
+<td>ESRI FileGeodatabase (using OpenFileGDB)</td>
 </tr>
 <tr class="odd">
 <td>.geojson</td>
@@ -442,94 +442,84 @@ Table&nbsp;1: Available drivers for reading vector data
 <td>GPSBabel</td>
 </tr>
 <tr class="even">
-<td>.ili</td>
-<td>Interlis 2</td>
-<td>Interlis 2</td>
-</tr>
-<tr class="odd">
 <td>.jml</td>
 <td>JML</td>
 <td>OpenJUMP JML</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.json</td>
 <td>JSONFG</td>
 <td>OGC Features and Geometries JSON</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.kml</td>
 <td>KML</td>
 <td>Keyhole Markup Language (KML)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.kmz</td>
 <td>LIBKML</td>
 <td>Keyhole Markup Language (LIBKML)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.map</td>
 <td>WAsP</td>
 <td>WAsP .map format</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.mbtiles</td>
 <td>MBTiles</td>
 <td>MBTiles</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.mid</td>
 <td>MapInfo File</td>
 <td>MapInfo File</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.mvt</td>
 <td>MVT</td>
 <td>Mapbox Vector Tiles</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.nc</td>
 <td>netCDF</td>
 <td>Network Common Data Format</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.ods</td>
 <td>ODS</td>
 <td>Open Document/ LibreOffice / OpenOffice Spreadsheet</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.pix</td>
 <td>PCIDSK</td>
 <td>PCIDSK Database File</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.pmtiles</td>
 <td>PMTiles</td>
 <td>ProtoMap Tiles</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.pnt</td>
 <td>MiraMonVector</td>
 <td>MiraMon Vectors (.pol, .arc, .pnt)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.shp</td>
 <td>ESRI Shapefile</td>
 <td>ESRI Shapefile</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.sql</td>
 <td>PGDUMP</td>
 <td>PostgreSQL SQL dump</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.sqlite</td>
 <td>SQLite</td>
 <td>SQLite / Spatialite</td>
-</tr>
-<tr class="odd">
-<td>.txt</td>
-<td>Geoconcept</td>
-<td>Geoconcept</td>
 </tr>
 <tr class="even">
 <td>.x10</td>
@@ -561,6 +551,9 @@ Table&nbsp;1: Available drivers for reading vector data
 <div class="columns">
 <div class="center" width="70%" style="height: 500px; overflow: auto;">
 <div class="cell" data-execution_count="2">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning 1: DeprecationWarning: 'Memory' driver is deprecated since GDAL 3.11. Use 'MEM' onwards. Further messages of this type will be suppressed.</code></pre>
+</div>
 <div id="tbl-geom-write-drivers" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="2">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-geom-write-drivers-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -580,7 +573,7 @@ Table&nbsp;2: Available drivers for writing vector data
 <tr class="odd">
 <td></td>
 <td>Memory</td>
-<td>Memory</td>
+<td>In Memory raster, vector and multidimensional raster</td>
 </tr>
 <tr class="even">
 <td>.csv</td>
@@ -595,7 +588,7 @@ Table&nbsp;2: Available drivers for writing vector data
 <tr class="even">
 <td>.gdb</td>
 <td>OpenFileGDB</td>
-<td>ESRI FileGDB</td>
+<td>ESRI FileGeodatabase (using OpenFileGDB)</td>
 </tr>
 <tr class="odd">
 <td>.geojson</td>
@@ -678,7 +671,7 @@ Table&nbsp;3: Available drivers for gridded data
 <tr class="odd">
 <td></td>
 <td>MEM</td>
-<td>In Memory Raster</td>
+<td>In Memory raster, vector and multidimensional raster</td>
 </tr>
 <tr class="even">
 <td>.asc</td>
@@ -696,44 +689,24 @@ Table&nbsp;3: Available drivers for gridded data
 <td>ESRI .hdr Labelled</td>
 </tr>
 <tr class="odd">
-<td>.blx</td>
-<td>BLX</td>
-<td>Magellan topo (.blx)</td>
-</tr>
-<tr class="even">
 <td>.bmp</td>
 <td>BMP</td>
 <td>MS Windows Device Independent Bitmap</td>
 </tr>
-<tr class="odd">
-<td>.bt</td>
-<td>BT</td>
-<td>VTP .bt (Binary Terrain) 1.3 Format</td>
-</tr>
 <tr class="even">
-<td>.byn</td>
-<td>BYN</td>
-<td>Natural Resources Canada's Geoid</td>
-</tr>
-<tr class="odd">
 <td>.ct1</td>
 <td>CALS</td>
 <td>CALS (Type 1)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.cub</td>
 <td>ISIS3</td>
 <td>USGS Astrogeology ISIS cube (Version 3)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.dat</td>
 <td>ZMap</td>
 <td>ZMap Plus Grid</td>
-</tr>
-<tr class="even">
-<td>.dem</td>
-<td>USGSDEM</td>
-<td>USGS Optional ASCII DEM (and CDED)</td>
 </tr>
 <tr class="odd">
 <td>.dt2</td>
@@ -748,62 +721,52 @@ Table&nbsp;3: Available drivers for gridded data
 <tr class="odd">
 <td>.gdb</td>
 <td>OpenFileGDB</td>
-<td>ESRI FileGDB</td>
+<td>ESRI FileGeodatabase (using OpenFileGDB)</td>
 </tr>
 <tr class="even">
-<td>.gen</td>
-<td>ADRG</td>
-<td>ARC Digitized Raster Graphics</td>
-</tr>
-<tr class="odd">
 <td>.gif</td>
 <td>GIF</td>
 <td>Graphics Interchange Format (.gif)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.gpkg</td>
 <td>GPKG</td>
 <td>GeoPackage</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.grd</td>
 <td>NWT_GRD</td>
 <td>Northwood Numeric Grid Format .grd/.tab</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.gtx</td>
 <td>GTX</td>
 <td>NOAA Vertical Datum .GTX</td>
 </tr>
-<tr class="odd">
-<td>.gvb</td>
-<td>NTv2</td>
-<td>NTv2 Datum Grid Shift</td>
-</tr>
 <tr class="even">
-<td>.hdr</td>
-<td>MFF</td>
-<td>Vexcel MFF Raster</td>
-</tr>
-<tr class="odd">
 <td>.hf2</td>
 <td>HF2</td>
 <td>HF2/HFZ heightfield raster</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.hgt</td>
 <td>SRTMHGT</td>
 <td>SRTMHGT File Format</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.img</td>
 <td>HFA</td>
 <td>Erdas Imagine Images (.img)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.jpg</td>
 <td>JPEG</td>
 <td>JPEG JFIF</td>
+</tr>
+<tr class="even">
+<td>.jxl</td>
+<td>JPEGXL</td>
+<td>JPEG-XL</td>
 </tr>
 <tr class="odd">
 <td>.kmz</td>
@@ -866,16 +829,6 @@ Table&nbsp;3: Available drivers for gridded data
 <td>Portable Pixmap Format (netpbm)</td>
 </tr>
 <tr class="odd">
-<td>.rda</td>
-<td>R</td>
-<td>R Object Data Store</td>
-</tr>
-<tr class="even">
-<td>.rgb</td>
-<td>SGI</td>
-<td>SGI Image File Format 1.0</td>
-</tr>
-<tr class="odd">
 <td>.rst</td>
 <td>RST</td>
 <td>Idrisi Raster A.1</td>
@@ -896,49 +849,44 @@ Table&nbsp;3: Available drivers for gridded data
 <td>Scaled Integer Gridded DEM .sigdem</td>
 </tr>
 <tr class="odd">
-<td>.sqlite</td>
-<td>Rasterlite</td>
-<td>Rasterlite</td>
-</tr>
-<tr class="even">
 <td>.ter</td>
 <td>Terragen</td>
 <td>Terragen heightfield</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.tif</td>
 <td>GTiff</td>
 <td>GeoTIFF</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.tiff</td>
 <td>COG</td>
 <td>Cloud optimized GeoTIFF generator</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.vrt</td>
 <td>VRT</td>
 <td>Virtual Raster</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>.webp</td>
 <td>WEBP</td>
 <td>WEBP</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>.xml</td>
 <td>PDS4</td>
 <td>NASA Planetary Data System 4</td>
-</tr>
-<tr class="even">
-<td>.xpm</td>
-<td>XPM</td>
-<td>X11 PixMap Format</td>
 </tr>
 <tr class="odd">
 <td>.xyz</td>
 <td>XYZ</td>
 <td>ASCII Gridded XYZ</td>
+</tr>
+<tr class="even">
+<td>.zarr</td>
+<td>Zarr</td>
+<td>Zarr</td>
 </tr>
 </tbody>
 </table>
