@@ -13,87 +13,27 @@ from osgeo import gdal, ogr, osr
 
 p = Path(__file__).parent
 
-folders = (
+directories = (
     "exposure",
-    "hazard",
     "vulnerability",
 )
+fields = {
+    "object_id": {"type": ogr.OFTInteger},
+    "object_name": {"type": ogr.OFTString},
+    "extract_method": {"type": ogr.OFTString},
+    "ground_elevtn": {"type": ogr.OFTReal},
+    "ground_flht": {"type": ogr.OFTReal},
+    "fn_damage_structure": {"type": ogr.OFTString},
+    "max_damage_structure": {"type": ogr.OFTReal},
+}
 osr.UseExceptions()
 
 
 def create_dbase_stucture():
     """Create folder structure, very difficult, yes.."""
-    for f in folders:
-        if not Path(p, f).exists():
-            os.mkdir(Path(p, f))
-
-
-def create_exposure_dbase():
-    """Create default exposure data for basic vector and the fifth."""
-    with open(Path(p, "exposure", "spatial.csv"), "wb") as f:
-        f.write(b"object_id,extract_method,ground_flht,ground_elevtn,")
-        f.write(b"fn_damage_structure,max_damage_structure\n")
-        for n in range(5):
-            if (n + 1) % 2 != 0:
-                dmc = "struct_1"
-            else:
-                dmc = "struct_2"
-            f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\n".encode())
-
-
-def create_exposure_dbase_missing():
-    """Create exposure data with missing entry compared to vector."""
-    with open(Path(p, "exposure", "spatial_missing.csv"), "w") as f:
-        f.write("extract_method,ground_flht,ground_elevtn,")
-        f.write("fn_damage_structure,max_damage_structure\n")
-        for n in range(5):
-            if (n + 1) % 2 != 0:
-                dmc = "struct_1"
-            else:
-                dmc = "struct_2"
-            f.write(f"area,0,0,{dmc},{(n+1)*1000}\n")
-
-
-def create_exposure_dbase_partial():
-    """Create exposure data for vector data that partially lies outside."""
-    with open(Path(p, "exposure", "spatial_partial.csv"), "w") as f:
-        f.write("object_id,extract_method,ground_flht,ground_elevtn,")
-        f.write("fn_damage_structure,fn_damage_content,max_damage_structure\n")
-        for n in range(5):
-            if (n + 1) % 2 != 0:
-                dmc = "struct_1"
-            else:
-                dmc = "struct_2"
-            f.write(f"{n+1},area,0,0,{dmc},{dmc},{(n+1)*1000}\n")
-
-
-def create_exposure_dbase_win():
-    """Create exposure data with Windows newline char."""
-    with open(Path(p, "exposure", "spatial_win.csv"), "wb") as f:
-        f.write(b"object_id,extract_method,ground_flht,ground_elevtn,")
-        f.write(b"fn_damage_structure,max_damage_structure\r\n")
-        for n in range(5):
-            if (n + 1) % 2 != 0:
-                dmc = "struct_1"
-            else:
-                dmc = "struct_2"
-            f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\r\n".encode())
-
-
-def create_exposure_dbase_with_meta():
-    """Create exposure data with metadata."""
-    with open(Path(p, "exposure", "spatial_meta.csv"), "wb") as f:
-        f.write(b"#version=v0.0.1\n")
-        f.write(b"#foo,bar\n")
-        f.write(b"#dtypes:int,str,int,int,str,float\n")
-        f.write(b"object_id,extract_method,ground_flht,ground_elevtn,")
-        f.write(b"fn_damage_structure,max_damage_structure\n")
-        for n in range(5):
-            if (n + 1) % 2 != 0:
-                dmc = "struct_1"
-            else:
-                dmc = "struct_2"
-            f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\n".encode())
+    for d in directories:
+        if not Path(p, d).exists():
+            os.mkdir(Path(p, d))
 
 
 def create_exposure_geoms(epsg=None):
@@ -108,6 +48,7 @@ def create_exposure_geoms(epsg=None):
     add = "_no_srs"
     suffix = ".fgb"
     srs = None
+    # In all honesty, this seems stupid
     if epsg is not None:
         driver = "GeoJSON"
         suffix = ".geojson"
@@ -115,6 +56,7 @@ def create_exposure_geoms(epsg=None):
         srs = osr.SpatialReference()
         srs.ImportFromEPSG(epsg)
 
+    # Set up the datasource
     dr = ogr.GetDriverByName(driver)
     src = dr.CreateDataSource(str(Path(p, "exposure", f"spatial{add}{suffix}")))
     layer = src.CreateLayer(
@@ -123,28 +65,39 @@ def create_exposure_geoms(epsg=None):
         geom_type=3,
     )
 
-    field = ogr.FieldDefn(
-        "object_id",
-        ogr.OFTInteger,
-    )
-    layer.CreateField(field)
+    # Create the fields
+    for key, item in fields.items():
+        field = ogr.FieldDefn(
+            key,
+            item["type"],
+        )
+        if item["type"] == ogr.OFTString:
+            field.SetWidth(20)
+        layer.CreateField(field)
 
-    field = ogr.FieldDefn(
-        "object_name",
-        ogr.OFTString,
-    )
-    field.SetWidth(50)
-    layer.CreateField(field)
-
+    # Set the geometries and the field values
     for idx, geom in enumerate(geoms):
+        # Create the geometry and the feature
         geom = ogr.CreateGeometryFromWkt(geom)
         ft = ogr.Feature(layer.GetLayerDefn())
-        ft.SetField("object_id", idx + 1)
-        ft.SetField("object_name", f"fp_{idx+1}")
+        # Alternate damage curve
+        if (idx + 1) % 2 != 0:
+            dmc = "struct_1"
+        else:
+            dmc = "struct_2"
+        # Set the field values and geometry
+        ft.SetField(0, idx + 1)
+        ft.SetField(1, f"fp_{idx+1}")
+        ft.SetField(2, "area")
+        ft.SetField(3, 0)
+        ft.SetField(4, 0)
+        ft.SetField(5, dmc)
+        ft.SetField(6, (idx + 1) * 1000)
         ft.SetGeometry(geom)
-
+        # Add the feature to the layer
         layer.CreateFeature(ft)
 
+    # Dereference everything
     srs = None
     field = None
     geom = None
@@ -159,6 +112,8 @@ def create_exposure_geoms_5th():
     geoms = ("POLYGON ((2.5 7.5, 3.5 7.5, 3.5 6.5, 2.5 6.5, 2.5 7.5))",)
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
+
+    # Set up the data source
     dr = ogr.GetDriverByName("GeoJSON")
     src = dr.CreateDataSource(str(Path(p, "exposure", "spatial2.geojson")))
     layer = src.CreateLayer(
@@ -167,83 +122,32 @@ def create_exposure_geoms_5th():
         3,
     )
 
-    field = ogr.FieldDefn(
-        "object_id",
-        ogr.OFTInteger,
-    )
-    layer.CreateField(field)
+    # Create the fields
+    for key, item in fields.items():
+        field = ogr.FieldDefn(
+            key,
+            item["type"],
+        )
+        if item["type"] == ogr.OFTString:
+            field.SetWidth(20)
+        layer.CreateField(field)
 
-    field = ogr.FieldDefn(
-        "object_name",
-        ogr.OFTString,
-    )
-    field.SetWidth(50)
-    layer.CreateField(field)
-
+    # Create the geometry and feature
     geom = ogr.CreateGeometryFromWkt(geoms[0])
     ft = ogr.Feature(layer.GetLayerDefn())
-    ft.SetField("object_id", 5)
-    ft.SetField("object_name", f"fp_{5}")
+    # Set the fields and geometry
+    ft.SetField(0, 5)
+    ft.SetField(1, f"fp_{5}")
+    ft.SetField(2, "area")
+    ft.SetField(3, 0)
+    ft.SetField(4, 0)
+    ft.SetField(5, "struct_1")
+    ft.SetField(6, (5 + 1) * 1000)
     ft.SetGeometry(geom)
-
+    # Add the feature to the layer
     layer.CreateFeature(ft)
 
-    srs = None
-    field = None
-    geom = None
-    ft = None
-    layer = None
-    src = None
-    dr = None
-
-
-def create_exposure_geoms_missing():
-    """Create vector data with no data in exposure data csv."""
-    geoms = (
-        "POLYGON ((2.5 7.5, 3.5 7.5, 3.5 6.5, 2.5 6.5, 2.5 7.5))",
-        "POLYGON ((7.5 2.5, 8.5 2.5, 8.5 1.5, 7.5 1.5, 7.5 2.5))",
-    )
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(4326)
-    dr = ogr.GetDriverByName("GeoJSON")
-    src = dr.CreateDataSource(str(Path(p, "exposure", "spatial_missing.geojson")))
-    layer = src.CreateLayer(
-        "spatial",
-        srs,
-        3,
-    )
-
-    field = ogr.FieldDefn(
-        "object_id",
-        ogr.OFTInteger,
-    )
-    layer.CreateField(field)
-
-    field = ogr.FieldDefn(
-        "object_name",
-        ogr.OFTString,
-    )
-    field.SetWidth(50)
-    layer.CreateField(field)
-
-    geom = ogr.CreateGeometryFromWkt(geoms[0])
-    ft = ogr.Feature(layer.GetLayerDefn())
-    ft.SetField("object_id", 5)
-    ft.SetField("object_name", f"fp_{5}")
-    ft.SetGeometry(geom)
-
-    layer.CreateFeature(ft)
-    geom = None
-    ft = None
-
-    geom = ogr.CreateGeometryFromWkt(geoms[1])
-    ft = ogr.Feature(layer.GetLayerDefn())
-    ft.SetField("object_id", 6)
-    ft.SetField("object_name", f"fp_{6}")
-    ft.SetGeometry(geom)
-
-    layer.CreateFeature(ft)
-
+    # Dereference everything
     srs = None
     field = None
     geom = None
@@ -262,6 +166,8 @@ def create_exposure_geoms_outside():
     )
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
+
+    # Set up the data source
     dr = ogr.GetDriverByName("GeoJSON")
     src = dr.CreateDataSource(str(Path(p, "exposure", "spatial_outside.geojson")))
     layer = src.CreateLayer(
@@ -270,28 +176,38 @@ def create_exposure_geoms_outside():
         3,
     )
 
-    field = ogr.FieldDefn(
-        "object_id",
-        ogr.OFTInteger,
-    )
-    layer.CreateField(field)
-
-    field = ogr.FieldDefn(
-        "object_name",
-        ogr.OFTString,
-    )
-    field.SetWidth(50)
-    layer.CreateField(field)
+    # Create the fields
+    for key, item in fields.items():
+        field = ogr.FieldDefn(
+            key,
+            item["type"],
+        )
+        if item["type"] == ogr.OFTString:
+            field.SetWidth(20)
+        layer.CreateField(field)
 
     for idx, geom in enumerate(geoms):
+        # Create the geometry and the feature
         geom = ogr.CreateGeometryFromWkt(geom)
         ft = ogr.Feature(layer.GetLayerDefn())
-        ft.SetField("object_id", idx + 1)
-        ft.SetField("object_name", f"fp_{idx+1}")
+        # Alternate damage curve
+        if (idx + 1) % 2 != 0:
+            dmc = "struct_1"
+        else:
+            dmc = "struct_2"
+        # Set the field values and geometry
+        ft.SetField(0, idx + 1)
+        ft.SetField(1, f"fp_{idx+1}")
+        ft.SetField(2, "area")
+        ft.SetField(3, 0)
+        ft.SetField(4, 0)
+        ft.SetField(5, dmc)
+        ft.SetField(6, (idx + 1) * 1000)
         ft.SetGeometry(geom)
-
+        # Add the feature to the layer
         layer.CreateFeature(ft)
 
+    # Dereference everything
     srs = None
     field = None
     geom = None
@@ -305,6 +221,8 @@ def create_exposure_grid():
     """Create raster file with exposure data for grid model."""
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
+
+    # Set up the data source
     dr = gdal.GetDriverByName("netCDF")
     src = dr.Create(
         str(Path(p, "exposure", "spatial.nc")),
@@ -324,17 +242,22 @@ def create_exposure_grid():
     src.SetSpatialRef(srs)
     src.SetGeoTransform(gtf)
 
+    # Create the band
     band = src.GetRasterBand(1)
     data = zeros((10, 10))
     oneD = tuple(range(10))
+    # Create spatially different data
     for x, y in product(oneD, oneD):
         data[x, y] = 2000 + ((x + y) * 100)
+    # Write the data
     band.WriteArray(data)
     band.SetMetadataItem("fn_damage", "struct_1")
 
+    # Flush the data
     band.FlushCache()
     src.FlushCache()
 
+    # Dereference everything
     srs = None
     band = None
     src = None
@@ -346,14 +269,17 @@ def create_hazard_event_map(epsg: int = None):
     add = "_no_srs"
     if epsg is not None:
         add = ""
+
+    # Set up the data source
     dr = gdal.GetDriverByName("netCDF")
     src = dr.Create(
-        str(Path(p, "hazard", f"event_map{add}.nc")),
+        str(Path(p, f"event_map{add}.nc")),
         10,
         10,
         1,
         gdal.GDT_Float32,
     )
+    # This is stupid
     srs = None
     if epsg is not None:
         srs = osr.SpatialReference()
@@ -369,16 +295,21 @@ def create_hazard_event_map(epsg: int = None):
     )
     src.SetGeoTransform(gtf)
 
+    # Create a band
     band = src.GetRasterBand(1)
     data = zeros((10, 10))
     oneD = tuple(range(10))
+    # Create spatially different data
     for x, y in product(oneD, oneD):
         data[x, y] = 3.6 - ((x + y) * 0.2)
+    # Write blyat
     band.WriteArray(data)
 
+    # Flush the data
     band.FlushCache()
     src.FlushCache()
 
+    # Dereference everything
     srs = None
     band = None
     src = None
@@ -389,9 +320,11 @@ def create_hazard_event_map_highres():
     """Create a high resolution hazard map to be reprojected."""
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
+
+    # Set up the data source
     dr = gdal.GetDriverByName("netCDF")
     src = dr.Create(
-        str(Path(p, "hazard", "event_map_highres.nc")),
+        str(Path(p, "event_map_highres.nc")),
         100,
         100,
         1,
@@ -408,16 +341,21 @@ def create_hazard_event_map_highres():
     src.SetSpatialRef(srs)
     src.SetGeoTransform(gtf)
 
+    # Create band
     band = src.GetRasterBand(1)
     data = zeros((100, 100))
     oneD = tuple(range(100))
+    # Create spatially different data
     for x, y in product(oneD, oneD):
         data[x, y] = 3.6 - ((x + y) * 0.02)
+    # Write the data
     band.WriteArray(data)
 
+    # Flush the data
     band.FlushCache()
     src.FlushCache()
 
+    # Dereference everything
     srs = None
     band = None
     src = None
@@ -428,9 +366,11 @@ def create_hazard_risk_map():
     """Create a hazard map for risk calculations."""
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
+
+    # Set up the data source
     dr = gdal.GetDriverByName("netCDF")
     src = dr.Create(
-        str(Path(p, "hazard", "risk_map.nc")),
+        str(Path(p, "risk_map.nc")),
         10,
         10,
         4,
@@ -453,6 +393,7 @@ def create_hazard_risk_map():
         band = src.GetRasterBand(idx + 1)
         data = zeros((10, 10))
         oneD = tuple(range(10))
+        # Create spatially different data
         for x, y in product(oneD, oneD):
             data[x, y] = 3.6 - ((x + y) * 0.2)
         data *= fc
@@ -461,8 +402,10 @@ def create_hazard_risk_map():
         band.FlushCache()
         band = None
 
+    # Flush the source
     src.FlushCache()
 
+    # Dereference
     srs = None
     src = None
     dr = None
@@ -482,7 +425,7 @@ def create_settings_geom():
             "geom": [{"name": "spatial.gpkg"}],
         },
         "hazard": {
-            "file": "hazard/event_map.nc",
+            "file": "event_map.nc",
             "elevation_reference": "DEM",
             "settings": {
                 "srs": "EPSG:4326",
@@ -517,15 +460,6 @@ def create_settings_geom():
     with open(Path(p, "geom_event_2g.toml"), "w") as f:
         tomlkit.dump(doc2g, f)
 
-    # Setup toml with missing geometry meta
-    doc_m = copy.deepcopy(doc)
-    doc_m["output"]["path"] = "output/geom_event_missing"
-    doc_m["output"]["geom"][0]["name"] = "spatial_missing.gpkg"
-    doc_m["exposure"]["geom"][0]["file"] = "exposure/spatial_missing.geojson"
-
-    with open(Path(p, "geom_event_missing.toml"), "w") as f:
-        tomlkit.dump(doc_m, f)
-
     # Setup toml with geometries lying outside hazard are
     doc_o = copy.deepcopy(doc)
     doc_o["exposure"]["geom"][0]["file"] = "exposure/spatial_outside.geojson"
@@ -537,7 +471,7 @@ def create_settings_geom():
     doc_r = copy.deepcopy(doc)
     doc_r["model"]["risk"] = True
     doc_r["output"]["path"] = "output/geom_risk"
-    doc_r["hazard"]["file"] = "hazard/risk_map.nc"
+    doc_r["hazard"]["file"] = "risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
     doc_r["hazard"]["settings"].update({"var_as_band": True})
 
@@ -568,7 +502,7 @@ def create_settings_grid():
             "grid": {"name": "output.nc"},
         },
         "hazard": {
-            "file": "hazard/event_map.nc",
+            "file": "event_map.nc",
             "risk": False,
             "elevation_reference": "DEM",
             "settings": {
@@ -584,26 +518,29 @@ def create_settings_grid():
             },
         },
         "vulnerability": {
-            "file": "vulnerability/vulnerability_curves.csv",
+            "file": "vulnerability/curves.csv",
             "step_size": 0.01,
         },
     }
 
+    # Dump directly
     with open(Path(p, "grid_event.toml"), "w") as f:
         tomlkit.dump(doc, f)
 
+    # Set up for risk calculations
     doc_r = copy.deepcopy(doc)
     doc_r["model"]["risk"] = True
     doc_r["output"]["path"] = "output/grid_risk"
-    doc_r["hazard"]["file"] = "hazard/risk_map.nc"
+    doc_r["hazard"]["file"] = "risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
     doc_r["hazard"]["settings"].update({"var_as_band": True})
 
     with open(Path(p, "grid_risk.toml"), "w") as f:
         tomlkit.dump(doc_r, f)
 
+    # With high resolution data
     doc_u = copy.deepcopy(doc)
-    doc_u["hazard"]["file"] = "hazard/event_map_highres.nc"
+    doc_u["hazard"]["file"] = "event_map_highres.nc"
 
     with open(Path(p, "grid_unequal.toml"), "w") as f:
         tomlkit.dump(doc_u, f)
@@ -612,6 +549,7 @@ def create_settings_grid():
 def create_vulnerability():
     """Create vulnerability curves."""
 
+    # Function for creating the curves
     def log_base(b, x):
         r = math.log(x) / math.log(b)
         if r < 0:
@@ -622,6 +560,7 @@ def create_vulnerability():
     dc1 = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
     dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
 
+    # Write to a csv
     with open(Path(p, "vulnerability", "vulnerability_curves.csv"), mode="wb") as f:
         f.write(b"#UNIT=meter\n")
         f.write(b"#method,mean,max\n")
@@ -633,6 +572,7 @@ def create_vulnerability():
 def create_vulnerability_win():
     """Create vulnerability curves with Windows newline char."""
 
+    # Function for creating the curves
     def log_base(b, x):
         r = math.log(x) / math.log(b)
         if r < 0:
@@ -643,6 +583,7 @@ def create_vulnerability_win():
     dc1 = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
     dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
 
+    # Write to a csv
     with open(Path(p, "vulnerability", "vulnerability_curves_win.csv"), mode="wb") as f:
         f.write(b"#UNIT=meter\r\n")
         f.write(b"#method,mean,max\r\n")
@@ -653,15 +594,9 @@ def create_vulnerability_win():
 
 if __name__ == "__main__":
     create_dbase_stucture()
-    create_exposure_dbase()
-    create_exposure_dbase_missing()
-    create_exposure_dbase_partial()
-    create_exposure_dbase_win()
-    create_exposure_dbase_with_meta()
     create_exposure_geoms(epsg=4326)
     create_exposure_geoms(epsg=None)
     create_exposure_geoms_5th()
-    create_exposure_geoms_missing()
     create_exposure_geoms_outside()
     create_exposure_grid()
     create_hazard_event_map(epsg=4326)

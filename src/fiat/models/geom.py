@@ -1,7 +1,6 @@
 """Geom model of FIAT."""
 
 import os
-import re
 import sys
 import time
 from multiprocessing import Manager
@@ -11,7 +10,6 @@ from osgeo import ogr
 
 from fiat.cfg import Configurations
 from fiat.check import (
-    check_duplicate_columns,
     check_exp_columns,
     check_exp_derived_types,
     check_exp_index_col,
@@ -19,9 +17,7 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
-from fiat.error import FIATDataError
 from fiat.fio import (
-    open_csv,
     open_geom,
 )
 from fiat.gis import geom
@@ -30,11 +26,8 @@ from fiat.log import setup_mp_log, spawn_logger
 from fiat.models import worker_geom
 from fiat.models.base import BaseModel
 from fiat.models.util import (
-    EXPOSURE_FIELDS,
     GEOM_DEFAULT_CHUNK,
     check_file_for_read,
-    csv_def_file,
-    get_file_entries,
 )
 from fiat.util import (
     create_1d_chunk,
@@ -50,9 +43,7 @@ class GeomModel(BaseModel):
     """Geometry model.
 
     Needs the following settings in order to be run: \n
-    - exposure.csv.file
-    - exposure.geom.file1
-    - output.geom.file1
+    - exposure.geom.file
 
     Parameters
     ----------
@@ -70,7 +61,7 @@ class GeomModel(BaseModel):
         self.exposure_types: list[str] = self.cfg.get("exposure.types", ["damage"])
 
         # Setup the geometry model
-        self.read_exposure_geoms()
+        self.read_exposure()
 
     def __del__(self):
         BaseModel.__del__(self)
@@ -82,7 +73,6 @@ class GeomModel(BaseModel):
         meta: dict,
         index: int,
         index_col: str,
-        offset: int,
     ):
         """Simple method for sorting out the exposure meta."""  # noqa: D401
         meta[index] = {}
@@ -121,7 +111,7 @@ class GeomModel(BaseModel):
         )
 
         # Set the indices for the outgoing columns
-        idxs = list(range(offset, offset + len(new_fields)))
+        idxs = list(range(len(columns), len(columns) + len(new_fields)))
         meta[index].update({"idxs": idxs})
 
     def _set_chunking(self):
@@ -165,24 +155,6 @@ class GeomModel(BaseModel):
                 )
             _w = None
 
-            # Check whether to do the same for the csv
-            out_csv = self.cfg.get(f"output.csv.name{key}")
-            if out_csv is None:
-                continue
-
-            # Continue is output name is found
-            columns = ("object_id",) + new_fields
-            if self.exposure_data[key] is not None:
-                columns = self.exposure_data[key].columns + tuple(
-                    self.cfg.get("_exposure_meta")[key]["new_fields"]
-                )
-
-            # Create an empty csv file for the separate thread to till
-            csv_def_file(
-                Path(self.cfg.get("output.path"), out_csv),
-                columns,
-            )
-
     def get_exposure_meta(self):
         """Get the exposure meta regarding the data itself (fields etc.)."""
         # Get the relevant column headers
@@ -195,96 +167,12 @@ class GeomModel(BaseModel):
                 meta=meta,
                 index=key,
                 index_col=self.cfg.get("exposure.geom.settings.index"),
-                offset=len(eg.columns),
             )
         self.cfg.set("_exposure_meta", meta)
 
-    def read_exposure_data(
-        self,
-        paths: list[Path | str] | None = None,
-        **kwargs: dict,
-    ):
-        """Read the exposure data file (csv).
-
-        If no path is provided the method tries to
-        infer it from the model configurations.
-
-        Parameters
-        ----------
-        paths : list[Path | str], optional
-            Paths to the exposure data, by default None
-        kwargs : dict, optional
-            Keyword arguments for reading. These are passed into [open_csv]\
-(/api/fio/open_csv.qmd) after which into [TableLazy](/api/TableLazy.qmd)/
-        """
-        if self.exposure_geoms is None:
-            raise FIATDataError(
-                "Call `read_exposure_geoms` before this method, \
-no exposure vector data was found"
-            )
-
-        # Infer the files and paths
-        files, paths, pattern = get_file_entries(
-            self.cfg,
-            base_str="exposure.csv.file",
-            paths=paths,
-        )
-
-        # Loop through the files
-        for file, path in zip(files, paths):
-            suffix = int(re.findall(pattern, file)[0])
-            # Check whether there is a link to the exposure geometries
-            if suffix not in self.exposure_geoms:
-                continue
-            path = check_file_for_read(self.cfg, file, path)
-            # if path is None:
-            #     return
-            logger.info(f"Reading exposure data ('{path.name}')")
-
-            # Setting the keyword arguments from settings file
-            kw = {"index": "object_id"}
-            kw.update(
-                self.cfg.generate_kwargs("exposure.csv.settings"),
-            )
-            kw.update(kwargs)
-            self.cfg.set("exposure.csv.settings.index", kw["index"])
-            data = open_csv(path, lazy=True, **kw)
-            ##checks
-            logger.info("Executing exposure data checks...")
-
-            # Check for duplicate columns
-            check_duplicate_columns(data.duplicate_columns)
-
-            # Reset to ensure the entry is present
-            self.cfg.set(file, path)
-            ## Add data to the dictionary
-            self.exposure_data[suffix] = data
-
-    def read_exposure_geoms(
-        self,
-        paths: list[Path] | None = None,
-    ):
-        """_summary_."""
-        self.exposure_geoms = []
-        self.exposure_data = []
-
-        # Get all from config file
-        files = self.cfg.get("exposure.geom.file")
-        # If no data provided, return
-        if (files is None and paths is None) or len(files) == 0:
-            return
-        # Sort the files and paths from config and signature
-        files, paths = get_file_entries(files, paths)
-
-        for path in paths:
-            self.read_exposure_geom(path)
-
-        pass
-
-    def read_exposure_geom(
+    def read_exposure(
         self,
         path: Path | str = None,
-        csv: bool = False,
         **kwargs: dict,
     ):
         """Read the exposure geometries.
@@ -300,10 +188,6 @@ no exposure vector data was found"
             Keyword arguments for reading. These are passed into [open_geom]\
 (/api/fio/open_geom.qmd) after which into [GeomIO](/api/GeomIO.qmd)/
         """
-        if self.exposure_geoms is None or self.exposure_data is None:
-            self.exposure_data = []
-            self.exposure_geoms = []
-
         # First check for the index_col
         index_col = self.cfg.get("exposure.geom.settings.index", "object_id")
         self.cfg.set("exposure.geom.settings.index", index_col)
@@ -389,9 +273,6 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
         # Start the receiver (which is in a seperate thread)
         _receiver.start()
 
-        # Exposure fields get function
-        field_func = EXPOSURE_FIELDS[self.exposure_data is None]
-
         # Setup the jobs
         # First setup the locks
         lock1, lock2 = (None, None)
@@ -403,16 +284,13 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
                 "risk": self.risk,
                 "haz": self.hazard_grid,
                 "vul": self.vulnerability_data,
-                "exp_func": field_func,
-                "exp_data": list(self.exposure_data.values()),
-                "exp_geom": list(self.exposure_geoms.values()),
-                "idx": list(self.exposure_geoms.keys()),
+                "exp_data": self.exposure_data,
                 "chunk": self.chunks,
                 "queue": self._queue,
                 "lock1": lock1,
                 "lock2": lock2,
             },
-            tied=["exp_data", "exp_geom", "idx"],
+            # tied=["exp_data", "exp_geom", "idx"],
         )
 
         # Execute the jobs in a multiprocessing pool

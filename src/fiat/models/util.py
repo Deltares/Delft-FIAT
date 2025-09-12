@@ -5,8 +5,7 @@ from pathlib import Path
 from osgeo import ogr
 
 from fiat.cfg import Configurations
-from fiat.struct import TableLazy
-from fiat.util import NEWLINE_CHAR, generic_path_check, replace_empty
+from fiat.util import NEWLINE_CHAR, generic_path_check
 
 GEOM_DEFAULT_CHUNK = 50000
 GRID_PREFER = {
@@ -27,44 +26,16 @@ def check_file_for_read(
     return generic_path_check(path, cfg.path)
 
 
-def exposure_from_geom(
+def get_field_values(
     ft: ogr.Feature,
-    exp: TableLazy,
     oid: int,
     mid: int,
     idxs_haz: list | tuple,
-    pattern: object,
 ) -> tuple:
     """Get exposure info from feature."""
     method = ft.GetField(mid)
     haz = [ft.GetField(idx) for idx in idxs_haz]
     return ft, [ft.GetField(oid)], method, haz
-
-
-def exposure_from_csv(
-    ft: ogr.Feature,
-    exp: TableLazy,
-    oid: int,
-    mid: int,
-    idxs_haz: list | tuple,
-    pattern: object,
-) -> tuple:
-    """Get exposure info from csv file."""
-    ft_info_raw = exp[ft.GetField(oid)]
-    if ft_info_raw is None:
-        return None, None, None, None
-
-    ft_info = replace_empty(pattern.split(ft_info_raw))
-    ft_info = [x(y) for x, y in zip(exp.dtypes, ft_info)]
-    method = ft_info[exp._columns["extract_method"]].lower()
-    haz = [ft_info[idx] for idx in idxs_haz]
-    return ft_info, ft_info, method, haz
-
-
-EXPOSURE_FIELDS = {
-    True: exposure_from_geom,
-    False: exposure_from_csv,
-}
 
 
 def csv_def_file(

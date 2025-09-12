@@ -5,7 +5,6 @@ from math import nan
 from multiprocessing.queues import Queue
 from multiprocessing.synchronize import Lock
 from pathlib import Path
-from typing import Callable
 
 from fiat.fio import (
     BufferedGeomWriter,
@@ -14,11 +13,10 @@ from fiat.fio import (
     GridIO,
 )
 from fiat.gis import geom, overlay
-from fiat.log import Sender
-from fiat.log.util import LogItem
 from fiat.methods.ead import calculate_ead, risk_density
-from fiat.struct import Table, TableLazy
-from fiat.util import DummyWriter, regex_pattern
+from fiat.models.util import get_field_values
+from fiat.struct import Table
+from fiat.util import DummyWriter
 
 
 def worker(
@@ -26,8 +24,6 @@ def worker(
     risk: bool,
     haz: GridIO,
     vul: Table,
-    exp_func: Callable,
-    exp_data: TableLazy | None,
     exp_geom: GeomIO,
     idx: int,
     chunk: tuple | list,
@@ -50,11 +46,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The hazard data.
     vul : Table
         The vulnerability data.
-    exp_func : Callable
-        The function to get information from a feature.
-    exp_data : TableLazy | None
-        The exposure data.
-    exp_geom : GeomIO
+    exp : GeomIO
         The exposure geometries.
     chunk : tuple | list
         The chunk to run through.
@@ -66,7 +58,6 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The lock for the geometries output.
     """
     # Setup the hazard type module
-    sender = Sender(queue=queue)
     module = importlib.import_module(f"fiat.methods.{cfg.get('model.type')}")
     func_hazard = getattr(module, "calculate_hazard")
     func_damage = getattr(module, "calculate_damage")
@@ -87,9 +78,6 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     # Some exposure csv dependent data (or not)
     mid = None
     pattern = None
-    if exp_data is not None:
-        man_columns_idxs = [exp_data.columns.index(item) for item in man_columns]
-        pattern = regex_pattern(exp_data.delimiter, nchar=exp_data.data.nchar)
 
     # Check if there actually is data for this chunk
     if chunk[0] > exp_geom.layer._count:
@@ -104,9 +92,8 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     total_idx = field_meta["total_idx"]
     types = field_meta["types"]
     idxs = field_meta["idxs"]
-    if exp_data is None:
-        man_columns_idxs = [exp_geom.layer.fields.index(item) for item in man_columns]
-        mid = exp_geom.layer.fields.index("extract_method")
+    man_columns_idxs = [exp_geom.layer.fields.index(item) for item in man_columns]
+    mid = exp_geom.layer.fields.index("extract_method")
 
     # Setup the dataset buffer writer
     out_geom = Path(cfg.get(f"output.geom.name{idx}"))
@@ -131,23 +118,13 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     # Loop over all the geometries in a reduced manner
     for ft in exp_geom.layer.reduced_iter(*chunk):
         out = []
-        in_info, out_info, method, haz_kwargs = exp_func(
+        in_info, out_info, method, haz_kwargs = get_field_values(
             ft,
-            exp_data,
             oid,
             mid,
             man_columns_idxs,
             pattern,
         )
-        if in_info is None:
-            sender.emit(
-                LogItem(
-                    2,
-                    f"Object with ID: {ft.GetField(oid)} -> \
-No data found in exposure database",
-                )
-            )
-            continue
         for band in haz:
             # How to get the hazard data
             if method == "area":

@@ -22,7 +22,7 @@ from fiat.fio.util import deter_band_names
 from fiat.gis import grid
 from fiat.log import spawn_logger
 from fiat.models.util import check_file_for_read
-from fiat.struct import Table, TableLazy
+from fiat.struct import Table
 from fiat.util import NEED_IMPLEMENTED, deter_dec, get_srs_repr
 
 logger = spawn_logger("fiat.model")
@@ -47,7 +47,6 @@ class BaseModel(metaclass=ABCMeta):
         ## Declarations
         # Model data
         self._srs: osr.SpatialReference | None = None
-        self.exposure_data: dict[int, TableLazy] | None = None
         self.exposure_geoms: dict[int, GeomIO] | None = None
         self.exposure_grid: GridIO | None = None
         self.hazard_grid: GridIO | None = None

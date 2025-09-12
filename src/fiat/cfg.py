@@ -161,9 +161,9 @@ class Configurations(dict):
         dict
             A dictionary containing the keyword arguments.
         """
-        keys = [item for item in list(self) if base in item]
-        kw = {key.split(".")[-1]: self[key] for key in keys}
-
+        kw = self.get(base, {})
+        if not isinstance(kw, dict):
+            return {}
         return kw
 
     def get(

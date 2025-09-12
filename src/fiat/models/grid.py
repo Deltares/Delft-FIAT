@@ -47,7 +47,7 @@ class GridModel(BaseModel):
         self.equal = True
 
         # Setup the model
-        self.read_exposure_grid()
+        self.read_exposure()
 
     def __del__(self):
         BaseModel.__del__(self)
@@ -97,7 +97,7 @@ data to {prefer} data"
             self.exposure_grid = data_warped
             self.cfg.set("exposure.grid.file", data_warped.path)
 
-    def read_exposure_grid(
+    def read_exposure(
         self,
         path: Path | str = None,
         **kwargs: dict,
