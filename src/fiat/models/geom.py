@@ -159,11 +159,9 @@ class GeomModel(BaseModel):
         """Get the exposure meta regarding the data itself (fields etc.)."""
         # Get the relevant column headers
         meta = {}
-        for key in self.exposure_geoms:
-            eg = self.exposure_geoms.get(key).layer
-            obj = self.exposure_data.get(key) or eg
+        for key, item in self.exposure_geoms.items():
             self._discover_exposure_meta(
-                obj._columns,
+                item.layer._columns,
                 meta=meta,
                 index=key,
                 index_col=self.cfg.get("exposure.geom.settings.index"),
@@ -275,20 +273,19 @@ the model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # Setup the jobs
         # First setup the locks
-        lock1, lock2 = (None, None)
+        lock = None
         if self.threads != 1:
-            lock1, lock2 = [self._mp_manager.Lock()] * 2
+            lock = self._mp_manager.Lock()
         jobs = generate_jobs(
             {
                 "cfg": self.cfg,
                 "risk": self.risk,
                 "haz": self.hazard_grid,
                 "vul": self.vulnerability_data,
-                "exp_data": self.exposure_data,
+                "exp_data": self.exposure_geoms,
                 "chunk": self.chunks,
                 "queue": self._queue,
-                "lock1": lock1,
-                "lock2": lock2,
+                "lock": lock,
             },
             # tied=["exp_data", "exp_geom", "idx"],
         )

@@ -87,7 +87,7 @@ docs = [
     "quartodoc>=0.7.6",
 ]
 extra = [
-    "tomli-w",
+    "tomlkit",
 ]
 test = [
 	"pytest>=2.7.3",
@@ -246,7 +246,7 @@ build-win = { features = ["all", "build", "build-win", "extra"] }
 build-linux = { features = ["all", "build", "build-linux", "extra", "gdal"] }
 default = { features = ["py313", "all", "dev", "docs", "extra", "gdal", "test"] }
 docs = { features = ["all", "docs", "extra", "gdal"] }
-slim = { features = [] }
+slim = { features = ["gdal"] }
 test-py313 = { features = ["py313", "all", "extra", "gdal", "test"] }
 test-py312 = { features = ["py312", "all", "extra", "gdal", "test"] }
 test-py311 = { features = ["py311", "all", "extra", "gdal", "test"] }

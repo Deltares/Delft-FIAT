@@ -8,7 +8,6 @@ from pathlib import Path
 
 from fiat.fio import (
     BufferedGeomWriter,
-    BufferedTextWriter,
     GeomIO,
     GridIO,
 )
@@ -16,7 +15,6 @@ from fiat.gis import geom, overlay
 from fiat.methods.ead import calculate_ead, risk_density
 from fiat.models.util import get_field_values
 from fiat.struct import Table
-from fiat.util import DummyWriter
 
 
 def worker(
@@ -28,8 +26,7 @@ def worker(
     idx: int,
     chunk: tuple | list,
     queue: Queue,
-    lock1: Lock,
-    lock2: Lock,
+    lock: Lock,
 ):
     """Run the geometry model.
 
@@ -101,19 +98,8 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         Path(cfg.get("output.path"), out_geom),
         exp_geom.layer.srs,
         buffer_size=cfg.get("model.geom.chunk"),
-        lock=lock2,
+        lock=lock,
     )
-
-    # Check for the csv writer
-    out_text_writer = DummyWriter()
-    out_csv = cfg.get(f"output.csv.name{idx}")
-    if out_csv is not None:
-        out_text_writer = BufferedTextWriter(
-            Path(cfg.get("output.path"), out_csv),
-            mode="ab",
-            buffer_size=100000,
-            lock=lock1,
-        )
 
     # Loop over all the geometries in a reduced manner
     for ft in exp_geom.layer.reduced_iter(*chunk):
@@ -179,9 +165,6 @@ of the [GeomModel](/api/GeomModel.qmd) object.
                 out,
             ),
         )
-        out_text_writer.write_iterable(out_info, out)
 
     out_writer.close()
     out_writer = None
-    out_text_writer.close()
-    out_text_writer = None
