@@ -15,23 +15,64 @@ from typing import Any, Generator
 import regex
 from osgeo import gdal, ogr, osr
 
-## Model entries
-MODEL_THREADS = "model.threads"
-MODEL_TYPE = "model.type"
+## Config entries
+# Building blocks
+CHUNK = "chunk"
+EXPOSURE = "exposure"
+FIAT = "fiat"
+FILE = "file"
+GEOM = "geom"
+GRID = "grid"
+HAZARD = "hazard"
+INDEX = "index"
+METHODS = "methods"
+MODEL = "model"
+NAME = "name"
+OUTPUT = "output"
+PATH = "path"
+RISK = "risk"
+ROUND = "round"  # Hate this one...
+SETTINGS = "settings"
+SRS = "srs"
+STEP_SIZE = "step_size"
+TYPE = "type"
+VALUE = "value"
+VULNERABILITY = "vulnerability"
+# Model settings
+MODEL_RISK = f"{MODEL}.{RISK}"
+MODEL_SRS = f"{MODEL}.{SRS}"
+MODEL_SRS_VALUE = f"{MODEL}.{SRS}.{VALUE}"
+MODEL_THREADS = f"{MODEL}.threads"
+MODEL_TYPE = f"{MODEL}.{TYPE}"
+# Output
+OUTPUT_PATH = f"{OUTPUT}.{PATH}"
+# Input
+EXPOSURE_GEOM = f"{EXPOSURE}.{GEOM}"
+EXPOSURE_GEOM_FILE = f"{EXPOSURE_GEOM}.{FILE}"
+EXPOSURE_GEOM_SETTINGS = f"{EXPOSURE_GEOM}.{SETTINGS}"
+EXPOSURE_GRID = f"{EXPOSURE}.{GRID}"
+EXPOSURE_GRID_FILE = f"{EXPOSURE_GRID}.{FILE}"
+EXPOSURE_GRID_SETTINGS = f"{EXPOSURE_GRID}.{SETTINGS}"
+HAZARD_FILE = f"{HAZARD}.{FILE}"
+HAZARD_SETTINGS = f"{HAZARD}.{SETTINGS}"
+VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
+VULNERABILITY_ROUND = f"{VULNERABILITY}.{ROUND}"  # Also f*ck this one
+VULNERABILITY_SETTINGS = f"{VULNERABILITY}.{SETTINGS}"
 
-## Define the variables for FIAT
+## Define other string variables
+OBJECT_ID = "object_id"
+
+## Define function variables for FIAT
 BLACKLIST = type, ModuleType, FunctionType
 DD_NEED_IMPLEMENTED = "Dunder method needs to be implemented."
 DD_NOT_IMPLEMENTED = "Dunder method not yet implemented."
 FILE_ATTRIBUTE_HIDDEN = 0x02
 MANDATORY_MODEL_ENTRIES = [
-    "hazard.file",
-    "vulnerability.file",
+    HAZARD_FILE,
+    VULNERABILITY_FILE,
 ]
-MANDATORY_GEOM_ENTRIES = [
-    "exposure.geom.file",
-]
-MANDATORY_GRID_ENTRIES = ["exposure.grid.file"]
+MANDATORY_GEOM_ENTRIES = [EXPOSURE_GEOM_FILE]
+MANDATORY_GRID_ENTRIES = [EXPOSURE_GRID_FILE]
 NEWLINE_CHAR = os.linesep
 NEED_IMPLEMENTED = "Method needs to be implemented."
 NOT_IMPLEMENTED = "Method not yet implemented."
@@ -452,11 +493,11 @@ def create_dir(
     _p = Path(path)
     if not _p.is_absolute():
         _p = Path(root, _p)
-    generic_folder_check(_p)
+    generic_directory_check(_p)
     return _p
 
 
-def generic_folder_check(
+def generic_directory_check(
     path: Path | str,
 ) -> Path:
     """Check if a directory exists.

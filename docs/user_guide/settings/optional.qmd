@@ -12,7 +12,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 | [type](#model)                         | string  | flood         |
 | **[model.srs]**                        |         |               |
 | [value](#model.srs)                    | string  | EPSG:4326     |
-| [prefer_global](#model.srs)            | bool    | false         |
+| [global](#model.srs)            | bool    | false         |
 | **[model.grid]**                       |         |               |
 | [prefer](#model.grid)                  | string  | exposure      |
 | **[hazard]**                           |         |               |
@@ -52,7 +52,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 
 - `value`: Global projection for the model and the output. If not defined, the default projection is set to WGS84.
 
-- `prefer_global`: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e. prefer the hazard projection.
+- `global`: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e. prefer the hazard projection.
 
 #### [model.grid]
 

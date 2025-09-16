@@ -21,9 +21,15 @@ from fiat.fio import GeomIO, GridIO, open_csv, open_grid
 from fiat.fio.util import deter_band_names
 from fiat.gis import grid
 from fiat.log import spawn_logger
-from fiat.models.util import check_file_for_read
 from fiat.struct import Table
-from fiat.util import NEED_IMPLEMENTED, deter_dec, get_srs_repr
+from fiat.util import (
+    HAZARD_FILE,
+    NEED_IMPLEMENTED,
+    VULNERABILITY_FILE,
+    deter_dec,
+    generic_path_check,
+    get_srs_repr,
+)
 
 logger = spawn_logger("fiat.model")
 
@@ -185,10 +191,12 @@ exceeds machine thread count ('{max_threads}')"
             Keyword arguments for reading. These are passed into [open_grid]\
 (/api/fio/open_grid.qmd) after which into [GridIO](/api/GridIO.qmd)/
         """
-        file_entry = "hazard.file"
-        path = check_file_for_read(self.cfg, entry=file_entry, path=path)
+        # Sort the pathing
+        # Hierarchy: 1) signature, 2) configurations
+        path = path or self.cfg.get(HAZARD_FILE)
         if path is None:
             return
+        path = generic_path_check(path, root=self.cfg.path)
         logger.info(f"Reading hazard data ('{path.name}')")
 
         # Set the extra arguments from the settings file
@@ -216,7 +224,7 @@ exceeds machine thread count ('{max_threads}')"
             path.name,
         )
 
-        if not self.cfg.get("model.srs.prefer_global", False):
+        if not self.cfg.get("model.srs.global", False):
             logger.warning("Setting the model srs from the hazard data.")
             self.srs = get_srs_repr(data.srs)
 
@@ -257,7 +265,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         self.cfg.set("hazard.band_names", ns)
 
         # Reset to ensure the entry is present
-        self.cfg.set(file_entry, path)
+        self.cfg.set(HAZARD_FILE, path)
         # When all is done, add it
         self.hazard_grid = data
 
@@ -274,15 +282,17 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         Parameters
         ----------
         path : Path | str, optional
-            Path to the vulnerabulity data, by default None
-        kwargs : dict, optional
+            Path to the vulnerabulity data, by default None.
+        **kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_csv]\
-(/api/fio/open_csv.qmd) after which into [Table](/api/Table.qmd)/
+(/api/fio/open_csv.qmd) after which into [Table](/api/Table.qmd)/.
         """
-        file_entry = "vulnerability.file"
-        path = check_file_for_read(self.cfg, entry=file_entry, path=path)
+        # Sort the pathing
+        # Hierarchy: 1) signature, 2) configurations
+        path = path or self.cfg.get(VULNERABILITY_FILE)
         if path is None:
             return
+        path = generic_path_check(path, root=self.cfg.path)
         logger.info(f"Reading vulnerability curves ('{path.name}')")
 
         # Setting the keyword arguments from settings file
@@ -311,7 +321,7 @@ using a step size of: {self._vul_step_size}"
         data.upscale(self._vul_step_size, inplace=True)
 
         # Reset to ensure the entry is present
-        self.cfg.set(file_entry, path)
+        self.cfg.set(VULNERABILITY_FILE, path)
         # When all is done, add it
         self.vulnerability_data = data
 

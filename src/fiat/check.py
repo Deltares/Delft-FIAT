@@ -29,7 +29,7 @@ following missing entries: {_missing}"
 
 
 def check_config_grid(
-    cfg: object,
+    cfg: dict,
 ):
     """Check the grid config entries."""
     _req_fields = [

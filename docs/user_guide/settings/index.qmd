@@ -50,7 +50,7 @@ File paths in the settings can be relative to the settings.toml file or absolute
 
 #### [output]
 
-- `path`:  The path to the output folder in the working directory.
+- `path`:  The path to the output directory in the working directory.
 
 #### [output.csv]
 
@@ -76,11 +76,11 @@ If provided, the suffix is mandatory. The suffix should match the suffix of the 
 
 #### [exposure.csv]
 
-- `file`: The path to the exposure CSV file (recommended to be within the [exposure folder](../data/index.qmd)) that contains the [required information](../data/exposure.qmd) per asset. There can only be one exposure CSV file.
+- `file`: The path to the exposure CSV file (recommended to be within the [exposure directory](../data/index.qmd)) that contains the [required information](../data/exposure.qmd) per asset. There can only be one exposure CSV file.
 
 #### [exposure.geom]
 
-- `file[n]`: The path to the exposure vector file (recommended to be within the [exposure folder](../data/index.qmd)) with the assets' geometry and object_id. The user can provide multiple vector files. Therefore the '[n]' suffix, as the user can create mulitple entries for vector files (e.g. `file1`, `file2` etc.).
+- `file[n]`: The path to the exposure vector file (recommended to be within the [exposure directory](../data/index.qmd)) with the assets' geometry and object_id. The user can provide multiple vector files. Therefore the '[n]' suffix, as the user can create mulitple entries for vector files (e.g. `file1`, `file2` etc.).
 
 ::: {.callout-warning}
 The suffix is mandatory. So if only one file is provided, name it `file1`.
@@ -91,7 +91,7 @@ Only required when running the geometry based model.
 
 #### [exposure.grid]
 
-- `file`: The path to the exposure raster file (recommended to be within the [exposure folder](../data/index.qmd)).
+- `file`: The path to the exposure raster file (recommended to be within the [exposure directory](../data/index.qmd)).
 
 ::: {.callout-note}
 Only required when running the raster based model.
@@ -99,7 +99,7 @@ Only required when running the raster based model.
 
 #### [vulnerability]
 
-- `file`: The path to the vulnerability curves CSV file within the [vulnerability folder](../data/index.qmd) that contains the [damage curves](../data/vulnerability.qmd). Only one vulnerability curves file is allowed.
+- `file`: The path to the vulnerability curves CSV file within the [vulnerability directory](../data/index.qmd) that contains the [damage curves](../data/vulnerability.qmd). Only one vulnerability curves file is allowed.
 
 ### Example
 

@@ -172,7 +172,7 @@ def test_basemodel_read_hazard_warnings(
 
     # Prefer global SRS over hazard SRS
     m.srs = "EPSG:3857"
-    m.cfg.set("model.srs.prefer_global", True)
+    m.cfg.set("model.srs.global", True)
 
     # Re-read the hazard data
     m.read_hazard_grid()

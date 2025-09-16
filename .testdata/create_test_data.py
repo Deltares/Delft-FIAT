@@ -30,7 +30,7 @@ osr.UseExceptions()
 
 
 def create_dbase_stucture():
-    """Create folder structure, very difficult, yes.."""
+    """Create directory structure, very difficult, yes.."""
     for d in directories:
         if not Path(p, d).exists():
             os.mkdir(Path(p, d))
@@ -424,6 +424,10 @@ def create_settings_geom():
             "path": "output/geom_event",
             "geom": [{"name": "spatial.gpkg"}],
         },
+        "vulnerability": {
+            "file": "vulnerability/vulnerability_curves.csv",
+            "step_size": 0.01,
+        },
         "hazard": {
             "file": "event_map.nc",
             "elevation_reference": "DEM",
@@ -440,10 +444,6 @@ def create_settings_geom():
                     },
                 },
             ],
-        },
-        "vulnerability": {
-            "file": "vulnerability/vulnerability_curves.csv",
-            "step_size": 0.01,
         },
     }
 
@@ -501,6 +501,10 @@ def create_settings_grid():
             "path": "output/grid_event",
             "grid": {"name": "output.nc"},
         },
+        "vulnerability": {
+            "file": "vulnerability/curves.csv",
+            "step_size": 0.01,
+        },
         "hazard": {
             "file": "event_map.nc",
             "risk": False,
@@ -516,10 +520,6 @@ def create_settings_grid():
                     "srs": "EPSG:4326",
                 },
             },
-        },
-        "vulnerability": {
-            "file": "vulnerability/curves.csv",
-            "step_size": 0.01,
         },
     }
 

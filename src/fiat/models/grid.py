@@ -17,9 +17,8 @@ from fiat.models import worker_grid
 from fiat.models.base import BaseModel
 from fiat.models.util import (
     GRID_PREFER,
-    check_file_for_read,
 )
-from fiat.util import get_srs_repr
+from fiat.util import EXPOSURE_GRID_FILE, generic_path_check, get_srs_repr
 
 logger = spawn_logger("fiat.model.grid")
 
@@ -115,10 +114,12 @@ data to {prefer} data"
             Keyword arguments for reading. These are passed into [open_grid]\
 (/api/fio/open_grid.qmd) after which into [GridSouce](/api/GridIO.qmd)/
         """
-        file_entry = "exposure.grid.file"
-        path = check_file_for_read(self.cfg, file_entry, path)
+        # Sort the pathing
+        # Hierarchy: 1) signature, 2) configurations
+        path = path or self.cfg.get(EXPOSURE_GRID_FILE)
         if path is None:
             return
+        path = generic_path_check(path, root=self.cfg.path)
         logger.info(f"Reading exposure grid ('{path.name}')")
 
         # Set the extra arguments from the settings file
@@ -157,7 +158,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             data = grid.reproject(data, self.srs.ExportToWkt(), _resalg)
 
         # Reset to ensure the entry is present
-        self.cfg.set(file_entry, path)
+        self.cfg.set(EXPOSURE_GRID_FILE, path)
         ## When all is done, add it
         self.exposure_grid = data
 

@@ -85,4 +85,4 @@ pybuild.bat
 ```
 
 That's it.
-FIAT will be located in the {root}/bin/core/Release folder.
+FIAT will be located in the {root}/bin/core/Release directory.

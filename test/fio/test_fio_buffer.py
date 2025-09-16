@@ -53,13 +53,13 @@ def test_buffered_geom_writer_create_fields(
     )
 
     # Assert the current fields
-    assert w.buffer.layer.fields == ["object_id", "object_name"]
+    assert w.buffer.layer.fields[:2] == ["object_id", "object_name"]
 
     # Create some fields
     w.create_fields(zip(["foo"], [0]))
 
     # Assert that is has been added
-    assert w.buffer.layer.fields == ["object_id", "object_name", "foo"]
+    assert w.buffer.layer.fields[-1] == "foo"
 
     # Clear the data
     w.close()

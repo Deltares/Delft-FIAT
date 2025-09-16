@@ -37,7 +37,7 @@ win64.bat
 ```
 
 That's it.
-A FIAT application will be located in the `{root}/bin/Release` folder.
+A FIAT application will be located in the `{root}/bin/Release` directory.
 
 ## Linux
 
@@ -62,6 +62,6 @@ chmod u+x .build/linux64.sh
 ```
 
 That's it.
-A FIAT application will be located in the `{root}/bin/Release` folder
+A FIAT application will be located in the `{root}/bin/Release` directory
 
 :::

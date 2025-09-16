@@ -27,9 +27,9 @@ from fiat.models import worker_geom
 from fiat.models.base import BaseModel
 from fiat.models.util import (
     GEOM_DEFAULT_CHUNK,
-    check_file_for_read,
 )
 from fiat.util import (
+    EXPOSURE_GEOM_FILE,
     create_1d_chunk,
     discover_exp_columns,
     generate_output_columns,
@@ -180,12 +180,27 @@ class GeomModel(BaseModel):
 
         Parameters
         ----------
-        paths : List[Path], optional
-            A list of paths to the vector files.
+        path : Path | str, optional
+            A path to the file on the drive. Can contain a wildcard that take the form
+            of an asterisk (*). Must be relative to the directory of the config.
+            By default None.
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_geom]\
 (/api/fio/open_geom.qmd) after which into [GeomIO](/api/GeomIO.qmd)/
         """
+        # Sort the pathing
+        # Hierarchy: 1) signature, 2) configurations
+        if path is not None:
+            path = list(self.cfg.path.glob(path))
+        path = path or self.cfg.get(EXPOSURE_GEOM_FILE)
+        if not isinstance(path, list):
+            path = list(path)  # Legacy purpose
+
+        # Move though the found paths
+        for p in path:
+            if p is None:  # Can be as a result from the config
+                continue
+
         # First check for the index_col
         index_col = self.cfg.get("exposure.geom.settings.index", "object_id")
         self.cfg.set("exposure.geom.settings.index", index_col)
@@ -196,12 +211,6 @@ class GeomModel(BaseModel):
         )
         kw.update(kwargs)
 
-        # For all that is found, try to read the data
-        path = check_file_for_read(
-            self.cfg,
-            entry="file",
-            path=path,
-        )
         logger.info(f"Reading exposure geometry ('{path.name}')")
         data = open_geom(path.as_posix(), **kw)
         ## checks

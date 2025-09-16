@@ -5,7 +5,7 @@ import sys
 import time
 from pathlib import Path
 
-from fiat.util import generic_folder_check
+from fiat.util import generic_directory_check
 
 # Pre build event setup
 app_name = "fiat"
@@ -17,7 +17,7 @@ _file = Path(inspect.getfile(lambda: None))
 project_root = _file.parents[1]
 build_dir = Path(project_root, ".build")
 
-generic_folder_check(Path(project_root, "bin"))
+generic_directory_check(Path(project_root, "bin"))
 
 # Set the build time for '--version' usage
 now = time.localtime(time.time())

@@ -4,31 +4,15 @@ import tomllib
 from pathlib import Path
 from typing import Any, cast
 
-from fiat.check import (
-    check_config_grid,
-)
-from fiat.util import (
-    MANDATORY_GEOM_ENTRIES,
-    MANDATORY_GRID_ENTRIES,
-    MANDATORY_MODEL_ENTRIES,
-    create_dir,
-    generic_path_check,
-)
-
-MODEL_ENTRIES = (
-    MANDATORY_MODEL_ENTRIES
-    + MANDATORY_GEOM_ENTRIES
-    + MANDATORY_GRID_ENTRIES
-    + ["exposure.csv.file"]  # Check for the only non mandatory file
-)
+from fiat.util import OUTPUT, OUTPUT_PATH, create_dir
 
 
 def get_item(
     parts: list,
     current: dict,
     fallback: Any | None = None,
-):
-    """_summary_."""
+) -> Any:
+    """Get item from a configurations."""
     num_parts = len(parts)
     for i, part in enumerate(parts):
         if isinstance(current, list):
@@ -44,16 +28,12 @@ def set_item(
     current: dict,
     value: Any,
 ):
-    """_summary_."""
+    """Set an item in the configurations."""
     part = parts[0]
     if part not in current:
         current[part] = {}
     if len(parts) != 1:
-        if isinstance(current[part], list):
-            for item in current[part]:
-                set_item(parts[1:], item, value)
-            return
-        elif not isinstance(current[part], dict):
+        if not isinstance(current[part], dict):
             current[part] = {}
         set_item(parts[1:], current[part], value)
     else:
@@ -89,19 +69,6 @@ class Configurations(dict):
         # Load the config as a simple flat dictionary
         dict.__init__(self, settings)
 
-        # Do some checking concerning the file paths in the settings file
-        for key in MODEL_ENTRIES:
-            value = self.get(key)
-            if value is None:
-                continue
-            if isinstance(value, list):
-                value = value[0]
-            path = generic_path_check(
-                value,
-                self.path,
-            )
-            self.set(key, path)
-
         # Ensure absolute path for output
         self._ensure_output_path()
 
@@ -115,10 +82,10 @@ class Configurations(dict):
 
     def _ensure_output_path(self):
         """Make sure the output path is present and absolute."""
-        output_dir = Path(self.get("output.path", "output"))
+        output_dir = Path(self.get(OUTPUT_PATH, OUTPUT))
         if not output_dir.is_absolute():
             output_dir = Path(self.path, output_dir)
-        self.set("output.path", output_dir)
+        self.set(OUTPUT_PATH, output_dir)
 
     @classmethod
     def from_file(
@@ -167,32 +134,29 @@ class Configurations(dict):
         return kw
 
     def get(
-        self, key: str, fallback: Any | None = None, index: int | None = None
-    ) -> Any:
+        self, key: str, fallback: Any | None = None, abs_path: bool = False
+    ) -> Any | None:
         """_summary_.
 
         Parameters
         ----------
         key : str
-            _description_
+            The key of the entry, parts separated by a period ('.'), e.g. 'foo.bar'.
         fallback : Any | None, optional
-            _description_, by default None
+            Fallback value if nothing is found, by default None.
+        abs_path : bool
+            Whether to the return the entry as an absolute path in regards to the
+            location of the configurations file (`Configurations.path`).
+            By default False.
 
         Returns
         -------
-        _type_
-            _description_
+        Any | None
+            The value corresponding to the entry.
         """
         parts = key.split(".")
         current = dict(self)  # reads config at first call
-        value = fallback
         value = get_item(parts, current, fallback=fallback)
-
-        if isinstance(value, (list, tuple)) and index is not None:
-            try:
-                value = value[index]
-            except IndexError:
-                value = fallback
 
         return value
 
@@ -226,20 +190,12 @@ class Configurations(dict):
             A Path to the new directory.
         """
         if path is None:
-            path = self.get("output.path")
+            path = self.get(OUTPUT_PATH)
         _p = create_dir(
             self.path,
             path,
         )
-        self.set("output.path", _p)
-
-        # Damage directory for grid risk calculations
-        if self.get("model.risk") and check_config_grid(self):
-            _p = create_dir(
-                _p,
-                "damages",
-            )
-            self.set("output.damages.path", _p)
+        self.set(OUTPUT_PATH, _p)
 
     def update(self, other: dict):
         """Update the config settings object.

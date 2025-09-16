@@ -1,4 +1,4 @@
-from fiat.util import generic_folder_check
+from fiat.util import generic_directory_check
 
 import os
 import sys
@@ -7,7 +7,7 @@ from pathlib import Path
 #Pre build event setup
 app_name = "fiat"
 sys.setrecursionlimit(5000)
-generic_folder_check("../bin")
+generic_directory_check("../bin")
 
 cwd = Path.cwd()
 env_path =  os.path.dirname(sys.executable)

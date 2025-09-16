@@ -4,26 +4,13 @@ from pathlib import Path
 
 from osgeo import ogr
 
-from fiat.cfg import Configurations
-from fiat.util import NEWLINE_CHAR, generic_path_check
+from fiat.util import NEWLINE_CHAR
 
 GEOM_DEFAULT_CHUNK = 50000
 GRID_PREFER = {
     False: "hazard",
     True: "exposure",
 }
-
-
-def check_file_for_read(
-    cfg: Configurations,
-    entry: str,
-    path: Path | str | None = None,
-) -> Path:
-    """Quick check on the input for reading."""
-    path = path or cfg.get(entry)
-    if path is None:
-        return
-    return generic_path_check(path, cfg.path)
 
 
 def get_field_values(
