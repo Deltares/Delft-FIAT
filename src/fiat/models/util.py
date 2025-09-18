@@ -15,14 +15,13 @@ GRID_PREFER = {
 
 def get_field_values(
     ft: ogr.Feature,
-    oid: int,
     mid: int,
     idxs_haz: list | tuple,
 ) -> tuple:
     """Get exposure info from feature."""
     method = ft.GetField(mid)
     haz = [ft.GetField(idx) for idx in idxs_haz]
-    return ft, [ft.GetField(oid)], method, haz
+    return ft, method, haz
 
 
 def csv_def_file(

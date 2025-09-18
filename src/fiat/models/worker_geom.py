@@ -49,9 +49,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The chunk to run through.
     queue : Queue
         A Queue for logging back to the main thread.
-    lock1 : Lock
-        The lock for the csv output.
-    lock2 : Lock
+    lock : Lock
         The lock for the geometries output.
     """
     # Setup the hazard type module
@@ -63,7 +61,6 @@ of the [GeomModel](/api/GeomModel.qmd) object.
 
     # More meta data
     cfg_entries = [cfg.get(item) for item in man_entries]
-    index_col = cfg.get("exposure.geom.settings.index")
     rounding = cfg.get("vulnerability.round")
     vul_min = min(vul.index)
     vul_max = max(vul.index)
@@ -72,16 +69,9 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         rp_coef = risk_density(cfg.get("hazard.return_periods"))
         rp_coef.reverse()
 
-    # Some exposure csv dependent data (or not)
-    mid = None
-    pattern = None
-
     # Check if there actually is data for this chunk
     if chunk[0] > exp_geom.layer._count:
         return
-
-    # Get the object id column index
-    oid = exp_geom.layer.fields.index(index_col)
 
     # Some meta for the specific geometry file
     field_meta = cfg.get("_exposure_meta")[idx]
@@ -104,12 +94,10 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     # Loop over all the geometries in a reduced manner
     for ft in exp_geom.layer.reduced_iter(*chunk):
         out = []
-        in_info, out_info, method, haz_kwargs = get_field_values(
+        in_info, method, haz_kwargs = get_field_values(
             ft,
-            oid,
             mid,
             man_columns_idxs,
-            pattern,
         )
         for band in haz:
             # How to get the hazard data

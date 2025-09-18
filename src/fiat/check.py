@@ -246,14 +246,4 @@ def check_exp_grid_dmfs(
         raise FIATDataError(msg)
 
 
-def check_exp_index_col(
-    columns: tuple | list,
-    index_col: type,
-    path: Path | str,
-):
-    """Check whether the index column exists in the exposure geometry dataset."""
-    if index_col not in columns:
-        raise FIATDataError(f"Index column ('{index_col}') not found in {path}")
-
-
 ## Vulnerability

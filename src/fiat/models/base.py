@@ -53,7 +53,7 @@ class BaseModel(metaclass=ABCMeta):
         ## Declarations
         # Model data
         self._srs: osr.SpatialReference | None = None
-        self.exposure_geoms: dict[int, GeomIO] | None = None
+        self.exposure_geoms: dict[int, GeomIO] = {}
         self.exposure_grid: GridIO | None = None
         self.hazard_grid: GridIO | None = None
         self.vulnerability_data: Table | None = None

@@ -331,15 +331,15 @@ def generate_output_columns(
 ) -> tuple:
     """Generate the output columns."""
     default = specific_columns + ["red_fact"]
-    total_idx = []
+    total = []
 
     # Loop over the exposure types
     for key, value in exposure_types.items():
         default += [f"{key}{item}" for item in value["fn"].keys()]
-        total_idx.append(len(default))
+        total.append(len(default))
         default += [f"total_{key}"]
 
-    total_idx = [item - len(default) for item in total_idx]
+    total = [item - len(default) for item in total]
 
     out = []
     if len(suffix) == 1 and not suffix[0]:
@@ -351,7 +351,7 @@ def generate_output_columns(
 
     out += [f"{x}_{y}" for x, y in product(extra, exposure_types.keys())]
 
-    return out, len(default), total_idx
+    return out, len(default), total
 
 
 # GIS related utility

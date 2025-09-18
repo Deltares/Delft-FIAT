@@ -12,7 +12,6 @@ from fiat.cfg import Configurations
 from fiat.check import (
     check_exp_columns,
     check_exp_derived_types,
-    check_exp_index_col,
     check_geom_extent,
     check_internal_srs,
     check_vs_srs,
@@ -33,6 +32,7 @@ from fiat.util import (
     create_1d_chunk,
     discover_exp_columns,
     generate_output_columns,
+    generic_path_check,
     get_srs_repr,
 )
 
@@ -70,12 +70,9 @@ class GeomModel(BaseModel):
     def _discover_exposure_meta(
         self,
         columns: dict,
-        meta: dict,
-        index: int,
         index_col: str,
     ):
         """Simple method for sorting out the exposure meta."""  # noqa: D401
-        meta[index] = {}
         # Check the exposure column headers
         check_exp_columns(
             list(columns.keys()),
@@ -90,7 +87,6 @@ class GeomModel(BaseModel):
             found, found_idx, missing = discover_exp_columns(columns, type=t)
             check_exp_derived_types(t, found, missing)
             types[t] = found_idx
-        meta[index].update({"types": types})
 
         ## Information for output
         extra = []
@@ -102,17 +98,11 @@ class GeomModel(BaseModel):
             extra=extra,
             suffix=self.cfg.get("hazard.band_names"),
         )
-        meta[index].update(
-            {
-                "new_fields": new_fields,
-                "slen": len1,
-                "total_idx": total_idx,
-            }
-        )
 
         # Set the indices for the outgoing columns
         idxs = list(range(len(columns), len(columns) + len(new_fields)))
-        meta[index].update({"idxs": idxs})
+
+        return idxs
 
     def _set_chunking(self):
         """Set the chunking size."""
@@ -159,11 +149,10 @@ class GeomModel(BaseModel):
         """Get the exposure meta regarding the data itself (fields etc.)."""
         # Get the relevant column headers
         meta = {}
-        for key, item in self.exposure_geoms.items():
+        for item in self.exposure_geoms.values():
             self._discover_exposure_meta(
                 item.layer._columns,
                 meta=meta,
-                index=key,
                 index_col=self.cfg.get("exposure.geom.settings.index"),
             )
         self.cfg.set("_exposure_meta", meta)
@@ -184,71 +173,78 @@ class GeomModel(BaseModel):
             A path to the file on the drive. Can contain a wildcard that take the form
             of an asterisk (*). Must be relative to the directory of the config.
             By default None.
-        kwargs : dict, optional
+        **kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_geom]\
 (/api/fio/open_geom.qmd) after which into [GeomIO](/api/GeomIO.qmd)/
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations
+        paths = None
         if path is not None:
-            path = list(self.cfg.path.glob(path))
-        path = path or self.cfg.get(EXPOSURE_GEOM_FILE)
-        if not isinstance(path, list):
-            path = list(path)  # Legacy purpose
+            paths = list(self.cfg.path.glob(path))
+        paths = paths or self.cfg.get(EXPOSURE_GEOM_FILE)
+        h = paths == self.cfg.get(EXPOSURE_GEOM_FILE)
+        if not isinstance(paths, list):
+            paths = list(paths)  # Legacy purpose
+
+        # To set the config afterwards
+        cfg = []
+
+        # Get the settings
+        settings = self.cfg.get("exposure.geom.settings", {})
+        if not h:
+            settings = [kwargs] * len(paths)
 
         # Move though the found paths
-        for p in path:
-            if p is None:  # Can be as a result from the config
+        for idx, path in enumerate(paths):
+            if path is None:  # Can be as a result from the config
                 continue
 
-        # First check for the index_col
-        index_col = self.cfg.get("exposure.geom.settings.index", "object_id")
-        self.cfg.set("exposure.geom.settings.index", index_col)
+            # Check the path
+            path = generic_path_check(path, root=self.cfg.path)
 
-        kw = {}
-        kw.update(
-            {"srs": self.cfg.get("exposure.geom.settings.srs")},
-        )
-        kw.update(kwargs)
+            # New config entry
+            entry = {}
+            # Get the settings
+            kw = settings[idx]
+            kw.update(kwargs)  # For good measure
 
-        logger.info(f"Reading exposure geometry ('{path.name}')")
-        data = open_geom(path.as_posix(), **kw)
-        ## checks
-        logger.info("Executing exposure geometry checks...")
+            logger.info(f"Reading exposure geometry ('{path.name}')")
+            data = open_geom(path.as_posix(), **kw)
+            ## checks
+            logger.info("Executing exposure geometry checks...")
 
-        # check for the index column
-        check_exp_index_col(data.layer.columns, index_col=index_col, path=data.path)
-
-        # check the internal srs of the file
-        check_internal_srs(
-            data.layer.srs,
-            path.name,
-        )
-
-        # check if file srs is the same as the model srs
-        if not check_vs_srs(self.srs, data.layer.srs):
-            logger.warning(
-                f"Spatial reference of '{path.name}' \
-('{get_srs_repr(data.layer.srs)}') does not match \
-the model spatial reference ('{get_srs_repr(self.srs)}')"
+            # check the internal srs of the file
+            check_internal_srs(
+                data.layer.srs,
+                path.name,
             )
-            logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
-            data = geom.reproject(data, self.srs.ExportToWkt())
 
-        # check if it falls within the extent of the hazard map
-        check_geom_extent(
-            data.layer.bounds,
-            self.hazard_grid.bounds,
-        )
+            # check if file srs is the same as the model srs
+            if not check_vs_srs(self.srs, data.layer.srs):
+                logger.warning(
+                    f"Spatial reference of '{path.name}' \
+    ('{get_srs_repr(data.layer.srs)}') does not match \
+    the model spatial reference ('{get_srs_repr(self.srs)}')"
+                )
+                logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
+                data = geom.reproject(data, self.srs.ExportToWkt())
 
-        # Add to the dict
-        # _d.append(data)
-        # And reset the entry
-        # self.cfg.set(file, path)
+            # check if it falls within the extent of the hazard map
+            check_geom_extent(
+                data.layer.bounds,
+                self.hazard_grid.bounds,
+            )
 
-        # When all is done, add it
-        # self.exposure_geoms = _d
-        # self.exposure_data = {idx: None for idx in self.exposure_geoms}
+            # Set the data
+            self.exposure_geoms[idx] = data
+            # Set config entry
+            entry["file"] = path
+            entry["settings"] = kw
+            cfg.append(entry)
+
+        # Set the config back
+        self.cfg.set("exposure.geom", cfg)
 
     ## Run model method
     def run(
