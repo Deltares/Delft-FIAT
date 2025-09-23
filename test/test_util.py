@@ -336,13 +336,13 @@ def test_regex_pattern(vulnerability_path: Path):
     pat = regex_pattern(delimiter=",")
     elem = pat.split(data)
     # Assert the output
-    assert len(elem) == 47
+    assert len(elem) == 46
 
     # Call the function
     pat = regex_pattern(delimiter=",", multi=True)
     elem = pat.split(data)
     # Assert the output
-    assert len(elem) == 71
+    assert len(elem) == 70
 
 
 def test_regex_pattern_other(vulnerability_path: Path):

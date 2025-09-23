@@ -5,9 +5,10 @@ from pathlib import Path
 
 from osgeo import osr
 
+from fiat.cfg import Configurations
 from fiat.error import FIATDataError
 from fiat.log import spawn_logger
-from fiat.util import deter_type, get_srs_repr
+from fiat.util import EXPOSURE_GRID_FILE, deter_type, get_srs_repr
 
 logger = spawn_logger("fiat.checks")
 
@@ -29,22 +30,14 @@ following missing entries: {_missing}"
 
 
 def check_config_grid(
-    cfg: dict,
+    cfg: Configurations,
 ):
     """Check the grid config entries."""
-    _req_fields = [
-        "exposure.grid.file",
-    ]
-    _all_grid = [item for item in cfg if item.startswith("exposure.grid")]
-    if len(_all_grid) == 0:
-        return False
-
-    _check = [item in _all_grid for item in _req_fields]
-    if not all(_check):
-        _missing = [item for item, b in zip(_req_fields, _check) if not b]
+    entry = cfg.get(EXPOSURE_GRID_FILE)
+    if entry is None:
         logger.warning(
             f"Info for the grid (raster) model was found, but not all. \
-{_missing} was/ were missing"
+            {EXPOSURE_GRID_FILE} was/ were missing"
         )
         return False
 

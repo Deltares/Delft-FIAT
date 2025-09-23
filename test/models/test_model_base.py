@@ -20,8 +20,7 @@ def test_basemodel(config_empty: Configurations):
 
     # Assert some simple stuff
     # Data should be None still
-    assert m.exposure_data is None
-    assert m.exposure_geoms is None
+    assert m.exposure_geoms == {}
     assert m.exposure_grid is None
     assert m.hazard_grid is None
     assert m.vulnerability_data is None
@@ -205,7 +204,7 @@ def test_basemodel_read_vulnerability(
     assert isinstance(m.vulnerability_data, Table)
     # Had been upscaled so a long index
     assert len(m.vulnerability_data.index) == 501
-    assert m._vul_step_size == 0.01
+    assert m._rounding == 2
 
 
 def test_basemodel_read_vulnerability_argument(
@@ -241,4 +240,4 @@ def test_basemodel_read_vulnerability_step_size(
     assert isinstance(m.vulnerability_data, Table)
     # Had been upscaled so a long index
     assert len(m.vulnerability_data.index) == 61
-    assert m._vul_step_size == 0.1
+    assert m._rounding == 1

@@ -43,29 +43,22 @@ def exposure_geom_path(testdata_dir: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
-def exposure_data_path(testdata_dir: Path) -> Path:
-    p = Path(testdata_dir, "exposure", "spatial.csv")
-    assert p.is_file()
-    return p
-
-
-@pytest.fixture(scope="session")
 def hazard_event_path(testdata_dir: Path) -> Path:
-    p = Path(testdata_dir, "hazard", "event_map.nc")
+    p = Path(testdata_dir, "event_map.nc")
     assert p.is_file()
     return p
 
 
 @pytest.fixture(scope="session")
 def hazard_risk_path(testdata_dir: Path) -> Path:
-    p = Path(testdata_dir, "hazard", "risk_map.nc")
+    p = Path(testdata_dir, "risk_map.nc")
     assert p.is_file()
     return p
 
 
 @pytest.fixture(scope="session")
 def vulnerability_path(testdata_dir: Path) -> Path:
-    p = Path(testdata_dir, "vulnerability", "vulnerability_curves.csv")
+    p = Path(testdata_dir, "vulnerability", "curves.csv")
     assert p.is_file()
     return p
 

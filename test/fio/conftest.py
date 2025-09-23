@@ -8,13 +8,6 @@ from fiat.fio.handler import BufferHandler
 
 
 ## Paths to data and temporary data
-@pytest.fixture(scope="session")
-def exposure_data_win_path(testdata_dir: Path):
-    p = Path(testdata_dir, "exposure", "spatial_win.csv")
-    assert p.is_file()
-    return p
-
-
 @pytest.fixture
 def exposure_geom_empty_tmp_path(tmp_path: Path, exposure_geom_dataset: Path) -> Path:
     p = Path(tmp_path, "tmp.geojson")
@@ -45,7 +38,7 @@ def exposure_geom_tmp_path(tmp_path: Path, exposure_geom_path: Path) -> Path:
 
 @pytest.fixture(scope="session")
 def hazard_event_no_srs_path(testdata_dir: Path):
-    p = Path(testdata_dir, "hazard", "event_map_no_srs.nc")
+    p = Path(testdata_dir, "event_map_no_srs.nc")
     assert p.is_file()
     return p
 
@@ -60,12 +53,21 @@ def hazard_event_tmp_path(tmp_path: Path, hazard_event_path: Path) -> Path:
 
 ## Objects/ data structures
 @pytest.fixture(scope="session")
-def handler(exposure_data_path: Path) -> BufferHandler:
-    h = BufferHandler(exposure_data_path)
+def handler(vulnerability_path: Path) -> BufferHandler:
+    h = BufferHandler(vulnerability_path)
+    return h
+
+
+## Objects/ data structures
+@pytest.fixture
+def handler_dummy(vulnerability_path: Path) -> BufferHandler:
+    h = BufferHandler(vulnerability_path)
+
     return h
 
 
 @pytest.fixture(scope="session")
-def handler_meta(testdata_dir: Path) -> BufferHandler:
-    h = BufferHandler(Path(testdata_dir, "exposure", "spatial_meta.csv"))
-    return h
+def vulnerability_win_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "vulnerability", "curves_win.csv")
+    assert p.is_file()
+    return p

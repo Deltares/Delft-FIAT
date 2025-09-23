@@ -425,7 +425,7 @@ def create_settings_geom():
             "geom": [{"name": "spatial.gpkg"}],
         },
         "vulnerability": {
-            "file": "vulnerability/vulnerability_curves.csv",
+            "file": "vulnerability/curves.csv",
             "step_size": 0.01,
         },
         "hazard": {
@@ -561,9 +561,9 @@ def create_vulnerability():
     dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
 
     # Write to a csv
-    with open(Path(p, "vulnerability", "vulnerability_curves.csv"), mode="wb") as f:
+    with open(Path(p, "vulnerability", "curves.csv"), mode="wb") as f:
         f.write(b"#UNIT=meter\n")
-        f.write(b"#method,mean,max\n")
+        f.write(b"#method=mean,max\n")
         f.write(b"water depth,struct_1,struct_2\n")
         for idx, item in enumerate(wd):
             f.write(f"{item},{dc1[idx]},{dc2[idx]}\n".encode())
@@ -584,9 +584,9 @@ def create_vulnerability_win():
     dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
 
     # Write to a csv
-    with open(Path(p, "vulnerability", "vulnerability_curves_win.csv"), mode="wb") as f:
+    with open(Path(p, "vulnerability", "curves_win.csv"), mode="wb") as f:
         f.write(b"#UNIT=meter\r\n")
-        f.write(b"#method,mean,max\r\n")
+        f.write(b"#method=mean,max\r\n")
         f.write(b"water depth,struct_1,struct_2\r\n")
         for idx, item in enumerate(wd):
             f.write(f"{item},{dc1[idx]},{dc2[idx]}\r\n".encode())

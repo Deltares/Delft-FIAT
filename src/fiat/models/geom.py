@@ -185,7 +185,7 @@ class GeomModel(BaseModel):
         paths = paths or self.cfg.get(EXPOSURE_GEOM_FILE)
         h = paths == self.cfg.get(EXPOSURE_GEOM_FILE)
         if not isinstance(paths, list):
-            paths = list(paths)  # Legacy purpose
+            paths = [paths]  # Legacy purpose
 
         # To set the config afterwards
         cfg = []

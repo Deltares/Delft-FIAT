@@ -73,25 +73,14 @@ class CSVParser:
             # Line starting with a number sign is demeed metatdata
             if line.startswith("#"):
                 t = line.strip().split("=")
-                if len(t) == 1:
-                    tl = t[0].split(":")
-                    if len(tl) > 1:
-                        # Iterables in the metadata
-                        lst = tl[1].split(self.delimiter)
-                        entry = tl[0].strip().replace("#", "").lower()
-                        val = [item.strip() for item in lst]
-                        self.meta[entry] = val
-                    else:
-                        # Direct key value pairs
-                        lst = t[0].split(self.delimiter)
-                        entry = lst[0].strip().replace("#", "").lower()
-                        val = [item.strip() for item in lst[1:]]
-                        self.meta[entry] = val
-                        # raise ValueError("Supplied metadata in unknown format..")
-                else:
-                    # Really direct key value pairs
-                    key, item = t
-                    self.meta[key.strip().replace("#", "").lower()] = item.strip()
+                if len(t) != 2:
+                    raise ValueError("Metadata should contain one equals sign ('=')")
+                entry, value = t
+                entry = entry.strip().replace("#", "").lower()
+                value = value.strip()
+                if len(value.split(self.delimiter)) > 1:
+                    value = [item.strip() for item in value.split(self.delimiter)]
+                self.meta[entry] = value
                 continue
 
             # After the metadata, the header should be encountered

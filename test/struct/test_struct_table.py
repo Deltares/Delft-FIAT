@@ -29,16 +29,16 @@ def test_table_general_properties(table_array: np.ndarray):
     assert t.shape == (2, 2)
 
 
-def test_table_from_parser(exposure_data_parsed: CSVParser):
+def test_table_from_parser(vulnerability_parsed: CSVParser):
     # Setup the object from class method
-    t = Table.from_parser(exposure_data_parsed)
+    t = Table.from_parser(vulnerability_parsed)
 
     # Assert the data
-    assert "object_id" in t.columns
-    assert t.dtypes == [int, str, int, int, str, int]
-    assert t.index == (0, 1, 2, 3, 4)
+    assert "water depth" in t.columns
+    assert t.dtypes == [float, float, float]
+    assert t.index[:5] == (0, 1, 2, 3, 4)
     assert t.kwargs == {"duplicate_columns": None}
-    assert t.shape == (5, 6)
+    assert t.shape == (21, 3)
 
 
 def test_table_get(table_array: np.ndarray):
@@ -98,61 +98,61 @@ def test_table_upscale(table_array: np.ndarray):
     assert t.shape == (3, 2)
 
 
-def test_tablelazy(exposure_data_parsed: CSVParser):
+def test_tablelazy(vulnerability_parsed: CSVParser):
     # Set the object
-    t = TableLazy(exposure_data_parsed)
+    t = TableLazy(vulnerability_parsed)
 
     # Assert some simple stuff
-    assert "object_id" in t.columns
+    assert "water depth" in t.columns
     assert isinstance(t.data, BufferHandler)
-    assert t.dtypes == [int, str, int, int, str, int]
-    assert t.index == (0, 1, 2, 3, 4)
+    assert t.dtypes == [float, float, float]
+    assert t.index[:5] == (0, 1, 2, 3, 4)
     assert t.index_name == "index"
 
 
-def test_tablelazy_general_properties(exposure_data_parsed: CSVParser):
+def test_tablelazy_general_properties(vulnerability_parsed: CSVParser):
     # Set the object
-    t = TableLazy(exposure_data_parsed)
+    t = TableLazy(vulnerability_parsed)
 
     # Assert  important general properties
     assert t.duplicate_columns is None
     assert t.kwargs == {}
-    assert t.ncol == 6
-    assert t.nrow == 5
-    assert t.shape == (5, 6)
+    assert t.ncol == 3
+    assert t.nrow == 21
+    assert t.shape == (21, 3)
 
 
-def test_tablelazy_get(exposure_data_parsed: CSVParser):
+def test_tablelazy_get(vulnerability_parsed: CSVParser):
     # Set the object
-    t = TableLazy(exposure_data_parsed)
+    t = TableLazy(vulnerability_parsed)
 
     # Get a row by direct indexing
     row = t[1]
     # Assert the output
     assert isinstance(row, bytes)
-    assert row.startswith(b"2,area")
+    assert row.startswith(b"0.25,0.0")
 
     # Call the methods
     row = t.get(1)
     # Assert the output
     assert isinstance(row, bytes)
-    assert row.startswith(b"2,area")
+    assert row.startswith(b"0.25,0.0")
 
 
-def test_tablelazy_set_index(exposure_data_parsed: CSVParser):
+def test_tablelazy_set_index(vulnerability_parsed: CSVParser):
     # Set the object
-    t = TableLazy(exposure_data_parsed)
+    t = TableLazy(vulnerability_parsed)
     # Assert the current state
-    assert t.index == (0, 1, 2, 3, 4)
+    assert t.index[:5] == (0, 1, 2, 3, 4)
     assert t.index_name == "index"
 
     # Set the index to a column
     t.set_index(0)
 
     # Assert the state
-    assert t.index == (1, 2, 3, 4, 5)
-    assert t.index_name == "object_id"
+    assert t.index[:5] == (0.0, 0.25, 0.5, 0.75, 1.0)
+    assert t.index_name == "water depth"
 
     # If not found, do nothing
     t.set_index(-1)
-    assert t.index_name == "object_id"  # still
+    assert t.index_name == "water depth"  # still

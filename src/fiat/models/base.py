@@ -68,7 +68,6 @@ class BaseModel(metaclass=ABCMeta):
         self.cfg.set("model.risk", risk)
 
         # Vulnerability data
-        self._vul_step_size = 0.01
         self._rounding = 2
         self.cfg.set("vulnerability.round", self._rounding)
 
@@ -309,16 +308,15 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         check_duplicate_columns(data.duplicate_columns)
 
         # upscale the data (can be done after the checks)
-        if "vulnerability.step_size" in self.cfg:
-            self._vul_step_size = self.cfg.get("vulnerability.step_size")
-            self._rounding = deter_dec(self._vul_step_size)
-            self.cfg.set("vulnerability.round", self._rounding)
+        step_size = self.cfg.get("vulnerability.step_size", 0.01)
+        self._rounding = deter_dec(step_size)
+        self.cfg.set("vulnerability.round", self._rounding)
 
         logger.info(
             f"Upscaling vulnerability curves, \
-using a step size of: {self._vul_step_size}"
+using a step size of: {step_size}"
         )
-        data.upscale(self._vul_step_size, inplace=True)
+        data.upscale(step_size, inplace=True)
 
         # Reset to ensure the entry is present
         self.cfg.set(VULNERABILITY_FILE, path)

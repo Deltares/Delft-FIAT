@@ -37,14 +37,14 @@ def feature(exposure_geom_write: GeomIO) -> ogr.Feature:
     return ft
 
 
-@pytest.fixture
-def exposure_data_parsed(exposure_data_path: Path) -> CSVParser:
-    bh = BufferHandler(exposure_data_path)
-    p = CSVParser(bh, delimiter=",", header=True)
-    return p
-
-
 @pytest.fixture(scope="session")
 def table_array() -> np.ndarray:
     data = np.array([[1, 3], [2, 4]])
     return data
+
+
+@pytest.fixture
+def vulnerability_parsed(vulnerability_path: Path) -> CSVParser:
+    bh = BufferHandler(vulnerability_path)
+    p = CSVParser(bh, delimiter=",", header=True)
+    return p

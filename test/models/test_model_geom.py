@@ -7,7 +7,6 @@ def test_geommodel(config_empty: Configurations):
     m = GeomModel(config_empty)
 
     # Assert some simple stuff
-    assert m.exposure_data == {}
     assert m.exposure_geoms == {}
 
 

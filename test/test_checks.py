@@ -13,7 +13,6 @@ from fiat.check import (
     check_exp_columns,
     check_exp_derived_types,
     check_exp_grid_dmfs,
-    check_exp_index_col,
     check_geom_extent,
     check_grid_exact,
     check_hazard_band_names,
@@ -184,28 +183,6 @@ def test_check_exp_grid_dmfs_pass():
     check_exp_grid_dmfs(
         fns=["foo", "bar"],
         dmfs=["foo", "bar", "baz"],
-    )
-
-
-def test_check_exp_index_col_fail():
-    # Call the function with the index_col not present
-    with pytest.raises(
-        FIATDataError,
-        match=re.escape("Index column ('foo') not found in baz"),
-    ):
-        check_exp_index_col(
-            columns=["bar", "spooky"],
-            index_col="foo",
-            path="baz",
-        )
-
-
-def test_check_exp_index_col_pass():
-    # Call the function with the index_col not present
-    check_exp_index_col(
-        columns=["foo", "bar", "spooky"],
-        index_col="foo",
-        path="baz",
     )
 
 
