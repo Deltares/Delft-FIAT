@@ -1,6 +1,6 @@
 import numpy as np
 
-from fiat.fio.handler import BufferHandler
+from fiat.fio.handler import FileBufferHandler
 from fiat.fio.parser import CSVParser
 from fiat.struct.table import Table, TableLazy
 
@@ -104,7 +104,7 @@ def test_tablelazy(vulnerability_parsed: CSVParser):
 
     # Assert some simple stuff
     assert "water depth" in t.columns
-    assert isinstance(t.data, BufferHandler)
+    assert isinstance(t.data, FileBufferHandler)
     assert t.dtypes == [float, float, float]
     assert t.index[:5] == (0, 1, 2, 3, 4)
     assert t.index_name == "index"

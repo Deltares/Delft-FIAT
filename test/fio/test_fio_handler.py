@@ -4,12 +4,12 @@ from pathlib import Path
 
 import pytest
 
-from fiat.fio.handler import BufferHandler
+from fiat.fio.handler import FileBufferHandler
 
 
 def test_buffer_handler_basic(vulnerability_path: Path):
     # Open the handler
-    h = BufferHandler(vulnerability_path)
+    h = FileBufferHandler(vulnerability_path)
 
     # Assert some simple stuff
     assert h.nchar == b"\n"
@@ -29,7 +29,7 @@ def test_buffer_handler_basic(vulnerability_path: Path):
 
 def test_buffer_handler_newline(vulnerability_win_path: Path):
     # Open the handler
-    h = BufferHandler(vulnerability_win_path)
+    h = FileBufferHandler(vulnerability_win_path)
 
     # Assert that the newline is windows like (not unix)
     assert h.nchar == b"\r\n"
@@ -42,7 +42,7 @@ def test_buffer_handler_newline(vulnerability_win_path: Path):
 
 def test_buffer_handler_newline_back(vulnerability_path: Path):
     # Open the handler
-    h = BufferHandler(vulnerability_path)
+    h = FileBufferHandler(vulnerability_path)
 
     # Bit of voodoo to remove the last newline char
     buffer = BytesIO()
@@ -61,7 +61,7 @@ def test_buffer_handler_newline_back(vulnerability_path: Path):
 
 def test_buffer_handler_context(vulnerability_path: Path):
     # Open the handler
-    h = BufferHandler(vulnerability_path)
+    h = FileBufferHandler(vulnerability_path)
 
     # Open the handler via context manager
     with h as handler:
@@ -76,7 +76,7 @@ def test_buffer_handler_context(vulnerability_path: Path):
 
 def test_buffer_handler_reduce(vulnerability_path: Path):
     # Open the handler
-    h = BufferHandler(vulnerability_path)
+    h = FileBufferHandler(vulnerability_path)
 
     # Dump it to bytes
     dump = pickle.dumps(h)
@@ -88,12 +88,12 @@ def test_buffer_handler_reduce(vulnerability_path: Path):
     obj = pickle.loads(dump)
 
     # Assert the object
-    assert isinstance(obj, BufferHandler)
+    assert isinstance(obj, FileBufferHandler)
 
 
 def test_buffer_handler_errors(vulnerability_path: Path):
     # Open the handler
-    h = BufferHandler(vulnerability_path)
+    h = FileBufferHandler(vulnerability_path)
 
     # This part is a bit hacky, but direct setting of a stream is not supported
     buffer = BytesIO()

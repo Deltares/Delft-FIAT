@@ -145,18 +145,6 @@ class GeomModel(BaseModel):
                 )
             _w = None
 
-    def get_exposure_meta(self):
-        """Get the exposure meta regarding the data itself (fields etc.)."""
-        # Get the relevant column headers
-        meta = {}
-        for item in self.exposure_geoms.values():
-            self._discover_exposure_meta(
-                item.layer._columns,
-                meta=meta,
-                index_col=self.cfg.get("exposure.geom.settings.index"),
-            )
-        self.cfg.set("_exposure_meta", meta)
-
     def read_exposure(
         self,
         path: Path | str = None,

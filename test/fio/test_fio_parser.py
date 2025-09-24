@@ -3,14 +3,14 @@ from io import BytesIO
 
 import pytest
 
-from fiat.fio.handler import BufferHandler
+from fiat.fio.handler import BufferHandler, FileBufferHandler
 from fiat.fio.parser import CSVParser
 
 
-def test_csvparser_default(handler: BufferHandler):
+def test_csvparser_default(file_buffer_handler: FileBufferHandler):
     # Kickstart the parser
     pa = CSVParser(
-        handler,
+        file_buffer_handler,
         delimiter=",",
         header=True,
         index=None,  # This is the most default config in general
@@ -25,10 +25,10 @@ def test_csvparser_default(handler: BufferHandler):
     assert pa.dtypes == [float, float, float]
 
 
-def test_csvparser_delimiter(handler: BufferHandler):
+def test_csvparser_delimiter(file_buffer_handler: FileBufferHandler):
     # Kickstart the parser
     pa = CSVParser(
-        handler,
+        file_buffer_handler,
         delimiter=";",  # This of course makes no sense for this dataset
         header=True,
         index=None,
@@ -43,16 +43,10 @@ def test_csvparser_delimiter(handler: BufferHandler):
     assert "water depth,struct_1" in pa.columns[0]  # One big header
 
 
-def test_csvparser_dtypes(handler: BufferHandler):
-    # Set a dummy stream
-    s = BytesIO()
-    s.write(b"#dtypes=str,int,int\nindex,val1,val2\nfp1,1,2\nfp2,3,4\n")
-    s.seek(0)
-    handler.stream = s
-    handler.stream_info()
+def test_csvparser_dtypes(buffer_handler: BufferHandler):
     # Kickstart the parser
     pa = CSVParser(
-        handler,
+        buffer_handler,
         delimiter=",",
         header=True,
         index=None,
@@ -64,10 +58,10 @@ def test_csvparser_dtypes(handler: BufferHandler):
     assert pa.dtypes == [str, int, int]
 
 
-def test_csvparser_meta(handler: BufferHandler):
+def test_csvparser_meta(file_buffer_handler: FileBufferHandler):
     # Kickstart the parser
     pa = CSVParser(
-        handler,
+        file_buffer_handler,
         delimiter=",",
         header=True,
         index="water depth",
@@ -78,10 +72,10 @@ def test_csvparser_meta(handler: BufferHandler):
     assert pa.dtypes == [float, float, float]
 
 
-def test_csvparser_no_index(handler: BufferHandler):
+def test_csvparser_no_index(file_buffer_handler: FileBufferHandler):
     # Kickstart the parser
     pa = CSVParser(
-        handler,
+        file_buffer_handler,
         delimiter=",",
         header=True,
         index="water depth",
@@ -94,10 +88,10 @@ def test_csvparser_no_index(handler: BufferHandler):
     assert pa.nrow == 21
 
 
-def test_csvparser_no_header(handler: BufferHandler):
+def test_csvparser_no_header(file_buffer_handler: FileBufferHandler):
     # Kickstart the parser
     pa = CSVParser(
-        handler,
+        file_buffer_handler,
         delimiter=",",
         header=False,
         index=None,
@@ -112,14 +106,14 @@ def test_csvparser_no_header(handler: BufferHandler):
     assert pa.dtypes == [str, str, str]  # Header included which are strings
 
 
-def test_csvparser_no_errors(handler: BufferHandler):
+def test_csvparser_no_errors(file_buffer_handler: FileBufferHandler):
     # Index something thats not there
     with pytest.raises(
         ValueError,
         match=r"^Given index column \(some_var\) not found in the columns \(.*\)$",
     ):
         _ = CSVParser(
-            handler,
+            file_buffer_handler,
             delimiter=",",
             header=True,
             index="some_var",
@@ -127,7 +121,7 @@ def test_csvparser_no_errors(handler: BufferHandler):
 
     # To check the dtype error a pre-made parser is created
     pa = CSVParser(
-        handler,
+        file_buffer_handler,
         delimiter=",",
         header=True,
         index=None,
@@ -147,14 +141,14 @@ match the amount of columns in the dataset (3)",
     # To check for the metadata error
     s = BytesIO()
     s.write(b"#foo,bar")
-    handler.stream = s
+    file_buffer_handler.stream = s
 
     with pytest.raises(
         ValueError,
         match=re.escape("Metadata should contain one equals sign ('=')"),
     ):
         _ = CSVParser(
-            handler,
+            file_buffer_handler,
             delimiter=",",
             header=True,
             index=None,

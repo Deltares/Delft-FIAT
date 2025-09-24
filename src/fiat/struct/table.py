@@ -5,7 +5,7 @@ from typing import Any
 
 from numpy import arange, delete, empty, float64, interp, ndarray
 
-from fiat.fio.handler import BufferHandler
+from fiat.fio.handler import FileBufferHandler
 from fiat.fio.parser import CSVParser
 from fiat.struct.base import TableBase
 from fiat.struct.util import convert_to_numpy_dtype, infer_column_types
@@ -97,7 +97,7 @@ class Table(TableBase):
 
         Parameters
         ----------
-        data : BufferHandler
+        data : FileBufferHandler
             Handler of the steam to a file.
         columns : list | tuple
             Columns (headers) of the file.
@@ -261,7 +261,7 @@ class TableLazy(TableBase):
         columns: list = None,
     ):
         # Set the stream as the data
-        self.data: BufferHandler = parser.data
+        self.data: FileBufferHandler = parser.data
         self.delimiter: str = parser.delimiter
 
         # Get internal indexing

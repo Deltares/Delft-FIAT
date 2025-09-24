@@ -1,6 +1,6 @@
 """The csv parser."""
 
-from fiat.fio.handler import BufferHandler
+from fiat.fio.handler import FileBufferHandler
 from fiat.util import (
     _dtypes_from_string,
     _dtypes_reversed,
@@ -16,7 +16,7 @@ class CSVParser:
 
     Parameters
     ----------
-    handler : BufferHandler
+    handler : FileBufferHandler
         The handler of the stream to the file.
     delimiter : str
         The delimiter of the textfile, e.g. ',' or ';'
@@ -28,7 +28,7 @@ class CSVParser:
 
     def __init__(
         self,
-        handler: BufferHandler,
+        handler: FileBufferHandler,
         delimiter: str,
         header: bool,
         index: str | None = None,
@@ -36,7 +36,7 @@ class CSVParser:
         # The internal variables
         self.columns: list = None
         self.delimiter: str = delimiter
-        self.data: BufferHandler = handler
+        self.data: FileBufferHandler = handler
         self.dtypes: list = None
         self.duplicates: list = None
         self.index: list = None

@@ -10,7 +10,7 @@ from fiat.fio import (
     open_geom,
     open_grid,
 )
-from fiat.fio.handler import BufferHandler
+from fiat.fio.handler import FileBufferHandler
 from fiat.struct import Table, TableLazy
 
 
@@ -77,7 +77,7 @@ def test_open_csv_lazy(vulnerability_path: Path):
 
     # Assert some simple stuff
     assert isinstance(ds, TableLazy)
-    assert isinstance(ds.data, BufferHandler)  # A stream handler is the data
+    assert isinstance(ds.data, FileBufferHandler)  # A stream handler is the data
 
 
 def test_open_geom_context(exposure_geom_path: Path):

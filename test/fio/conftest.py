@@ -1,10 +1,11 @@
 import shutil
+from io import BytesIO
 from pathlib import Path
 
 import pytest
 
 from fiat.fio import open_geom
-from fiat.fio.handler import BufferHandler
+from fiat.fio.handler import BufferHandler, FileBufferHandler
 
 
 ## Paths to data and temporary data
@@ -52,17 +53,29 @@ def hazard_event_tmp_path(tmp_path: Path, hazard_event_path: Path) -> Path:
 
 
 ## Objects/ data structures
-@pytest.fixture(scope="session")
-def handler(vulnerability_path: Path) -> BufferHandler:
-    h = BufferHandler(vulnerability_path)
+@pytest.fixture
+def buffer() -> BytesIO:
+    b = BytesIO()
+    b.write(
+        b"""#dtypes=str,int,int
+index,val1,val2
+fp1,1,2
+fp2,3,4
+"""
+    )
+    b.seek(0)
+    return b
+
+
+@pytest.fixture
+def buffer_handler(buffer: BytesIO) -> BufferHandler:
+    h = BufferHandler(buffer)
     return h
 
 
-## Objects/ data structures
-@pytest.fixture
-def handler_dummy(vulnerability_path: Path) -> BufferHandler:
-    h = BufferHandler(vulnerability_path)
-
+@pytest.fixture(scope="session")
+def file_buffer_handler(vulnerability_path: Path) -> FileBufferHandler:
+    h = FileBufferHandler(vulnerability_path)
     return h
 
 

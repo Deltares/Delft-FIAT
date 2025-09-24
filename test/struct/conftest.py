@@ -5,7 +5,7 @@ import pytest
 from osgeo import ogr, osr
 
 from fiat.fio import GeomIO, GridIO, open_geom, open_grid
-from fiat.fio.handler import BufferHandler
+from fiat.fio.handler import FileBufferHandler
 from fiat.fio.parser import CSVParser
 
 
@@ -45,6 +45,6 @@ def table_array() -> np.ndarray:
 
 @pytest.fixture
 def vulnerability_parsed(vulnerability_path: Path) -> CSVParser:
-    bh = BufferHandler(vulnerability_path)
+    bh = FileBufferHandler(vulnerability_path)
     p = CSVParser(bh, delimiter=",", header=True)
     return p
