@@ -10,11 +10,15 @@ __all__ = ["GeomLayer"]
 
 
 class GeomLayer(BaseStruct):
-    """Geometries container."""
+    """Geometries source object.
+
+    Used to access and modify the features in a layer.
+    """
 
     def __init__(self, *args, **kwargs):
         # For typing
         self._obj: ogr.Layer | None = None
+        self._obj_ref: weakref.ReferenceType | None = None
         self._count: int = 0
         self.mode: int = 0
         raise AttributeError("No constructer defined")

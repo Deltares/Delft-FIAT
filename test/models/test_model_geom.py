@@ -1,5 +1,6 @@
 from fiat.cfg import Configurations
 from fiat.models import GeomModel
+from fiat.struct import Container
 
 
 def test_geommodel(config_empty: Configurations):
@@ -7,7 +8,8 @@ def test_geommodel(config_empty: Configurations):
     m = GeomModel(config_empty)
 
     # Assert some simple stuff
-    assert m.exposure_geoms == {}
+    assert isinstance(m.exposure, Container)
+    assert len(m.exposure) == 0
 
 
 def test_geommodel_properties(config_empty: Configurations):

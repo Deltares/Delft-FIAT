@@ -18,6 +18,7 @@ def test_geomio_read_only(exposure_geom_path: Path):
     assert gio.mode == 0
     assert get_srs_repr(gio.srs) == "EPSG:4326"  # Induced from layer
     assert isinstance(gio.layer, GeomLayer)
+    assert hash(gio) == hash(exposure_geom_path)
 
 
 def test_geomio_read_no_srs(

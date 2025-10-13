@@ -192,17 +192,12 @@ multiple datasets (subsets). Chose one of the following subsets: {keys}"
 ## Exposure
 def check_exp_columns(
     columns: tuple | list,
-    index_col: str,
     mandatory_columns: tuple | list = [],
 ):
     """Check the columns of the exposure data."""
-    _man_columns = [
-        index_col,
-    ] + mandatory_columns
-
-    _check = [item in columns for item in _man_columns]
+    _check = [item in columns for item in mandatory_columns]
     if not all(_check):
-        _missing = [item for item, b in zip(_man_columns, _check) if not b]
+        _missing = [item for item, b in zip(mandatory_columns, _check) if not b]
         msg = f"Missing mandatory exposure columns: {_missing}"
         raise FIATDataError(msg)
 

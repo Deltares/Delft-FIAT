@@ -97,18 +97,16 @@ def test_check_exp_columns_fail():
     ):
         check_exp_columns(
             ["object_id", "ground_elevtn"],
-            index_col="object_id",
             mandatory_columns=MANDATORY_COLUMNS,
         )
 
     # Call the function with missing index column
     with pytest.raises(
         FIATDataError,
-        match=re.escape("Missing mandatory exposure columns: ['object_id']"),
+        match=re.escape("Missing mandatory exposure columns: ['ground_elevtn']"),
     ):
         check_exp_columns(
-            ["ground_elevtn", "ground_flht"],
-            index_col="object_id",
+            ["ground_flht"],
             mandatory_columns=MANDATORY_COLUMNS,
         )
 
@@ -117,7 +115,6 @@ def test_check_exp_columns_pass():
     # Call the function with all columns there
     check_exp_columns(
         ["object_id", "ground_elevtn", "ground_flht"],
-        index_col="object_id",
         mandatory_columns=MANDATORY_COLUMNS,
     )
 

@@ -24,12 +24,10 @@ from fiat.job import execute_pool, generate_jobs
 from fiat.log import setup_mp_log, spawn_logger
 from fiat.models import worker_geom
 from fiat.models.base import BaseModel
-from fiat.models.util import (
-    GEOM_DEFAULT_CHUNK,
-)
+from fiat.struct import Container
+from fiat.struct.container import FieldMeta
 from fiat.util import (
     EXPOSURE_GEOM_FILE,
-    create_1d_chunk,
     discover_exp_columns,
     generate_output_columns,
     generic_path_check,
@@ -37,6 +35,46 @@ from fiat.util import (
 )
 
 logger = spawn_logger("fiat.model.geom")
+
+
+def field_meta(
+    columns: dict,
+    mandatory_columns: list | tuple,
+    new_columns: list | tuple,
+    exposure_types: list | tuple,
+    band_names: list | tuple,
+    risk: bool,
+):
+    """Simple method for sorting out the exposure meta."""  # noqa: D401
+    # Check the exposure column headers
+    check_exp_columns(
+        list(columns.keys()),
+        mandatory_columns=mandatory_columns,
+    )
+
+    # Check the found columns
+    types = {}
+    for t in exposure_types:
+        types[t] = {}
+        found, found_idx, missing = discover_exp_columns(columns, type=t)
+        check_exp_derived_types(t, found, missing)
+        types[t] = found_idx
+
+    ## Information for output
+    extra = []
+    if risk:
+        extra = ["ead"]
+    new, length, total = generate_output_columns(
+        new_columns,
+        types,
+        extra=extra,
+        suffix=band_names,
+    )
+
+    # Set the indices for the outgoing columns
+    idxs = list(range(len(columns), len(columns) + len(new)))
+
+    return FieldMeta(new=new, length=length, indices=idxs, total=total)
 
 
 class GeomModel(BaseModel):
@@ -58,6 +96,7 @@ class GeomModel(BaseModel):
         super().__init__(cfg)
 
         # Set/ declare some variables
+        self.exposure: Container = Container()
         self.exposure_types: list[str] = self.cfg.get("exposure.types", ["damage"])
 
         # Setup the geometry model
@@ -67,58 +106,6 @@ class GeomModel(BaseModel):
         BaseModel.__del__(self)
 
     ## Set(up) methods
-    def _discover_exposure_meta(
-        self,
-        columns: dict,
-        index_col: str,
-    ):
-        """Simple method for sorting out the exposure meta."""  # noqa: D401
-        # Check the exposure column headers
-        check_exp_columns(
-            list(columns.keys()),
-            index_col=index_col,
-            mandatory_columns=getattr(self.module, "MANDATORY_COLUMNS"),
-        )
-
-        # Check the found columns
-        types = {}
-        for t in self.exposure_types:
-            types[t] = {}
-            found, found_idx, missing = discover_exp_columns(columns, type=t)
-            check_exp_derived_types(t, found, missing)
-            types[t] = found_idx
-
-        ## Information for output
-        extra = []
-        if self.risk:
-            extra = ["ead"]
-        new_fields, len1, total_idx = generate_output_columns(
-            getattr(self.module, "NEW_COLUMNS"),
-            types,
-            extra=extra,
-            suffix=self.cfg.get("hazard.band_names"),
-        )
-
-        # Set the indices for the outgoing columns
-        idxs = list(range(len(columns), len(columns) + len(new_fields)))
-
-        return idxs
-
-    def _set_chunking(self):
-        """Set the chunking size."""
-        # Determine maximum geometry dataset size
-        max_geom_size = max(
-            [item.layer.size for item in self.exposure_geoms.values()],
-        )
-        # Set the 1D chunks
-        self.chunks = create_1d_chunk(
-            max_geom_size,
-            self.threads,
-        )
-        # Set the write size chunking
-        chunk_int = self.cfg.get("model.geom.chunk", GEOM_DEFAULT_CHUNK)
-        self.cfg.set("model.geom.chunk", chunk_int)
-
     def _setup_output_files(self):
         """Set up the output files.
 
@@ -221,11 +208,11 @@ class GeomModel(BaseModel):
             # check if it falls within the extent of the hazard map
             check_geom_extent(
                 data.layer.bounds,
-                self.hazard_grid.bounds,
+                self.hazard.bounds,
             )
 
             # Set the data
-            self.exposure_geoms[idx] = data
+            self.exposure.set(data)
             # Set config entry
             entry["file"] = path
             entry["settings"] = kw
@@ -247,11 +234,7 @@ class GeomModel(BaseModel):
             self._mp_manager = Manager()
         self._queue = self._mp_manager.Queue(maxsize=10000)
 
-        # Set the chunking
-        self._set_chunking()
-
         # Create the output directory and files
-        self.get_exposure_meta()
         self.cfg.setup_output_dir()
         self._setup_output_files()
 
@@ -273,9 +256,9 @@ class GeomModel(BaseModel):
             {
                 "cfg": self.cfg,
                 "risk": self.risk,
-                "haz": self.hazard_grid,
-                "vul": self.vulnerability_data,
-                "exp_data": self.exposure_geoms,
+                "haz": self.hazard,
+                "vul": self.vulnerability,
+                "exp_data": self.exposure,
                 "chunk": self.chunks,
                 "queue": self._queue,
                 "lock": lock,

@@ -17,7 +17,7 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
-from fiat.fio import GeomIO, GridIO, open_csv, open_grid
+from fiat.fio import GridIO, open_csv, open_grid
 from fiat.fio.util import deter_band_names
 from fiat.gis import grid
 from fiat.log import spawn_logger
@@ -53,10 +53,8 @@ class BaseModel(metaclass=ABCMeta):
         ## Declarations
         # Model data
         self._srs: osr.SpatialReference | None = None
-        self.exposure_geoms: dict[int, GeomIO] = {}
-        self.exposure_grid: GridIO | None = None
-        self.hazard_grid: GridIO | None = None
-        self.vulnerability_data: Table | None = None
+        self.hazard: GridIO | None = None
+        self.vulnerability: Table | None = None
 
         # Type of calculations
         type = self.cfg.get("model.type", "flood")
@@ -76,7 +74,6 @@ class BaseModel(metaclass=ABCMeta):
         self._mp_manager = None
         self._queue = None
         self._threads = 1
-        self.chunks = []
 
         ## Call the necessary methods at init
         self.srs = self.cfg.get("model.srs.value", "EPSG:4326")
@@ -266,7 +263,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         # Reset to ensure the entry is present
         self.cfg.set(HAZARD_FILE, path)
         # When all is done, add it
-        self.hazard_grid = data
+        self.hazard = data
 
     def read_vulnerability_data(
         self,
@@ -321,7 +318,7 @@ using a step size of: {step_size}"
         # Reset to ensure the entry is present
         self.cfg.set(VULNERABILITY_FILE, path)
         # When all is done, add it
-        self.vulnerability_data = data
+        self.vulnerability = data
 
     ## Run
     @abstractmethod
