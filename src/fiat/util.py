@@ -12,6 +12,7 @@ from pathlib import Path
 from types import FunctionType, ModuleType
 from typing import Any, Generator
 
+import numpy as np
 import regex
 from osgeo import gdal, ogr, osr
 
@@ -241,6 +242,53 @@ def create_1d_chunk(
     )
 
     return chunks
+
+
+def count_table(
+    c: list,
+    ct: np.ndarray,
+    idx: int,
+):
+    """Create an entry of the thread count table."""
+    size = len(c)
+    for i, j in product(range(size), range(size)):
+        ct[idx, i, j] = c[j] - c[i]
+    return ct
+
+
+def thread_weight(
+    size: list,
+    threads: int,
+):
+    """Sort out the weight of the data on all the threads."""
+    # Store the original indices
+    idxs = sorted(range(len(size)), key=lambda k: size[k], reverse=True)
+    ssize = [size[idx] for idx in idxs]
+    # First estimate of the thread weight
+    w = [round((item / sum(ssize)) * threads) for item in ssize]
+
+    # First estimate is good enough
+    if sum(w) == threads and 0 not in w:
+        return w
+
+    # Create a count table
+    ct = np.zeros((len(ssize), threads, threads))
+    for idx, item in enumerate(ssize):
+        c = [item / (i + 1) for i in range(threads)]
+        ct = count_table(c, ct, idx)
+
+    # Check for zeros
+    while 0 in w:
+        # Take the first
+        idx = w.index(0)
+        w[idx] = 1
+        s = ssize[idx]
+        m = [i for i, item in enumerate(w) if item > 1]
+        if len(m) == 0:
+            continue
+        b = [ct[i, w[i] - 1, w[i] - 2] for i in m]
+
+    return b * s
 
 
 # Config related stuff

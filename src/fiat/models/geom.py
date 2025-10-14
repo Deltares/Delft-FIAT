@@ -32,6 +32,7 @@ from fiat.util import (
     generate_output_columns,
     generic_path_check,
     get_srs_repr,
+    thread_weight,
 )
 
 logger = spawn_logger("fiat.model.geom")
@@ -233,6 +234,9 @@ class GeomModel(BaseModel):
         if self._mp_manager is None:
             self._mp_manager = Manager()
         self._queue = self._mp_manager.Queue(maxsize=10000)
+
+        # Get the thread weights
+        _ = thread_weight([60000, 40000, 4600, 500], 8)
 
         # Create the output directory and files
         self.cfg.setup_output_dir()
