@@ -65,7 +65,7 @@ add() {
     # Add new versions if not already present
     for v in "${new_versions[@]}"; do
         if ! printf "%s\n" "${existing_versions[@]}" | grep -qx "$v"; then
-            version_entries+=("{\"name\": \"v$v\", \"version\": \"$v\", \"href\": \"$BASE_URL/v$v/\"}")
+            version_entries+=("{\"name\":\"v$v\",\"version\":\"$v\",\"href\":\"$BASE_URL/v$v/\"}")
             updated=true
         fi
     done
@@ -136,7 +136,7 @@ add() {
     # Rebuild sorted version entries
     sorted_entries=()
     for v in "${sorted_versions[@]}"; do
-        sorted_entries+=("{\"name\": \"v$v\", \"version\": \"$v\", \"href\": \"$BASE_URL/v$v/\"}")
+        sorted_entries+=("{\"name\":\"v$v\",\"version\":\"$v\",\"href\":\"$BASE_URL/v$v/\"}")
     done
 
     # Combine all entries into valid JSON
