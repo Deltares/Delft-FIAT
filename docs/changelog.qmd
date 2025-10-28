@@ -2,8 +2,8 @@
 title: "What's new?"
 ---
 
-## Unreleased
-These are the unreleased changes.
+## v0.4.0 (2025-10-28)
+Improved CLI and settings file.
 
 ### Added
 - Model type (`type`) and calculation modus (`risk`) as model properties
@@ -14,8 +14,6 @@ These are the unreleased changes.
 - Renamed 'hazard.risk' entry is to 'model.risk' in the settings file
 - Renamed 'model.model_type' to 'model.type'
 - Vector reproject chunking now available
-
-### Deprecated
 
 ### Fixed
 - Better handling of errors during calculations
@@ -37,7 +35,7 @@ Small patch.
 - Allow based type (e.g. 'fn_damage' instead of only 'fn_damage_structure') as column header
 
 ## v0.3.0 (2025-03-20)
-Improved API and CLI
+Improved API and CLI.
 
 ### Added
 - Build task for pixi
@@ -195,28 +193,3 @@ The second pre-release of Delft-FIAT.
 - Improved/ updated the page regarding exposure csv
 - Restructered user settings pages
 - Seperated user settings into: Basic, Computational & Optional
-
-## v0.1.0rc1 (2023-11-30)
-This is the first and pre-release of Delft-FIAT. It aims to have a stable version of the `GeomModel` for calculating damages and risk for vector exposure data and an experimental version of the `GridModel` for calculating damages and risk for raster exposure data.
-
-### Added
-- Documentation
-- Command line user interface
-- Main `FIAT` object from which it's run
-- `GeomModel`; the vector based model
-- `GridModel`; the raster based model
-- `Configurations`; for reading the settings file
-- I/O methods and structs
-    - `open_csv` which returns e.g. `Table`
-    - `open_geom` which returns a `GeomSource`
-    - `open_grid` which returns a `GridSource`
-- GIS related operations like:
-    - `geom.reproject` to reproject vector files
-    - `grid.reproject` to reproject raster files
-    - `overlay.clip` to clip a grid based on a polygon
-    - and more...
-- Ability to 'compile'/ freeze FIAT as an application/ binary
-    - Windows
-    - Linux (tested on [Debian](https://www.debian.org/)/ [Ubuntu](https://ubuntu.com/))
-- Some smalller miscellaneous methods and object
-    - In the [API reference](api/index.qmd)
