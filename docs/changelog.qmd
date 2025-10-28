@@ -2,6 +2,19 @@
 title: "What's new?"
 ---
 
+## Unreleased
+These are the unreleased changes.
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Fixed
+
+### Removed
+
 ## v0.4.0 (2025-10-28)
 Improved CLI and settings file.
 
