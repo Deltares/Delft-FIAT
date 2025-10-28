@@ -22,7 +22,7 @@ File paths in the settings can be relative to the settings.toml file or absolute
 | Entry                          | Type    | Required | Default         |
 |:-------------------------------|---------|----------|-----------------|
 | **[model]**                    |         |          |                 |
-| [model](#model_type)           | string  | No       | geom            |
+| [model](#type)                 | string  | No       | geom            |
 | **[output]**                   |         |          |                 |
 | [path](#output)                | string  | No       | output          |
 | **[output.csv]**               |         |          |                 |
@@ -46,7 +46,7 @@ File paths in the settings can be relative to the settings.toml file or absolute
 
 #### [model]
 
-- `model_type`: The type of model. Choice between 'geom' and 'grid'.
+- `type`: The type of model. Choice between 'geom' and 'grid'.
 
 #### [output]
 
