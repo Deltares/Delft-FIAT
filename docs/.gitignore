@@ -7,3 +7,5 @@
 !api/.gitkeep
 *.jupyter_cache/
 objects.json
+
+**/*.quarto_ipynb

@@ -224,7 +224,7 @@ dependencies = { python = "3.14.*" }
 dependencies = { gdal = ">=3.5" }
 
 [tool.pixi.feature.docs]
-dependencies = { quarto = "==1.5.57" }
+dependencies = { quarto = "==1.8.25" }
 
 # Extra information when activating
 [tool.pixi.feature.build.activation]
