@@ -58,4 +58,4 @@ jobs:
           pixi run -e build generate-data
 
       - name: Test Binary
-        run: ./bin/Release/fiat run .testdata/geom_event.toml
+        run: ./bin/release/fiat run .testdata/geom_event.toml
