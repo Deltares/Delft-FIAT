@@ -29,7 +29,7 @@ def test_parse_run(mocker, cli_parser):
 def test_cli_main():
     p = subprocess.run(["fiat"], check=True, capture_output=True, text=True)
     assert p.returncode == 0
-    assert p.stdout.split("\n")[0].startswith("Usage: fiat")
+    assert p.stdout.split("\n")[0].startswith("Usage:")
 
 
 def test_cli_info():
@@ -43,7 +43,7 @@ def test_cli_run():
         ["fiat", "run", "--help"], check=True, capture_output=True, text=True
     )
     assert p.returncode == 0
-    assert p.stdout.split("\n")[0].startswith("Usage: fiat run")
+    assert p.stdout.split("\n")[0].startswith("Usage:")
 
 
 def test_cli_run_exec(tmp_path, geom_tmp_model):

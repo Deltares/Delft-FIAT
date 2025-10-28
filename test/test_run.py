@@ -10,7 +10,7 @@ from fiat.models import GeomModel, GridModel
 def run_model(cfg, p):
     # Execute
     cfg.setup_output_dir(str(p))
-    model_type = cfg.get("model.model_type")
+    model_type = cfg.get("model.type")
     if model_type == "geom":
         mod = GeomModel(cfg)
     elif model_type == "grid":

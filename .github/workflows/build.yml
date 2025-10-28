@@ -43,19 +43,19 @@ jobs:
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@v0.8.13
         with:
-          pixi-version: "v0.49.0"
-          environments: build-linux
+          pixi-version: "v0.58.0"
+          environments: build
           locked: false
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
 
       - name: Build FIAT
         run: |
-          pixi run -e build-linux build
+          pixi run -e build build
 
       - name: Create Testdata
         run: |
-          pixi run -e build-linux generate-data
+          pixi run -e build generate-data
 
       - name: Test Binary
-        run: ./bin/Release/fiat run .testdata/geom_event.toml
+        run: ./bin/release/fiat run .testdata/geom_event.toml

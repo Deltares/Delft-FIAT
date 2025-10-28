@@ -9,9 +9,10 @@ These are the unreleased changes.
 - Model type (`type`) and calculation modus (`risk`) as model properties
 
 ### Changed
-- 'hazard.risk' entry is renamed to 'global.risk' in the settings file
+- Moved 'model.type' (was hazard type) to 'hazard.type'
 - Renamed 'global' section to 'model'
-- Renamed 'global.model' to 'model.model_type'
+- Renamed 'hazard.risk' entry is to 'model.risk' in the settings file
+- Renamed 'model.model_type' to 'model.type'
 - Vector reproject chunking now available
 
 ### Deprecated
@@ -19,6 +20,7 @@ These are the unreleased changes.
 ### Fixed
 - Better handling of errors during calculations
 - Check for module specific (e.g. 'flood') settings entries
+- Cli entry overwrite parsing ('-d' or '--set-entry')
 - Default output vector file format (driver) matches input file format
 - Vector reproject dataset creation error
 

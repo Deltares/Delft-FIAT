@@ -453,7 +453,8 @@ def create_settings_geom():
     """_summary_."""
     doc = {
         "model": {
-            "model_type": "geom",
+            "type": "geom",
+            "risk": False,
             "srs": {
                 "value": "EPSG:4326",
             },
@@ -555,7 +556,8 @@ def create_settings_grid():
     """_summary_."""
     doc = {
         "model": {
-            "model_type": "grid",
+            "type": "grid",
+            "risk": False,
             "srs": {
                 "value": "EPSG:4326",
             },
@@ -566,7 +568,6 @@ def create_settings_grid():
         },
         "hazard": {
             "file": "hazard/event_map.nc",
-            "risk": False,
             "elevation_reference": "DEM",
             "settings": {
                 "srs": "EPSG:4326",
