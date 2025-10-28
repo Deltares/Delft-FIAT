@@ -1,5 +1,68 @@
 [
   {
+    "objectID": "examples/single_event.html",
+    "href": "examples/single_event.html",
+    "title": "Single event",
+    "section": "",
+    "text": "This is a an example of running a tiny single event FIAT model.\nFirst of all, let’s make sure that there is some actual testdata.\n\n! python ../../.testdata/create_test_data.py\n\nNow that we have some testdata, let’s take a look at the settings file.\n\nwith open(\"../../.testdata/geom_event.toml\", \"r\") as r:\n    settings = r.read()\nprint(settings)\n\n[model]\ntype = \"geom\"\nrisk = false\n\n[model.srs]\nvalue = \"EPSG:4326\"\n\n[output]\npath = \"output/geom_event\"\n\n[output.csv]\nname1 = \"output.csv\"\n\n[output.geom]\nname1 = \"spatial.gpkg\"\n\n[hazard]\nfile = \"hazard/event_map.nc\"\nelevation_reference = \"DEM\"\n\n[hazard.settings]\nsrs = \"EPSG:4326\"\n\n[exposure.csv]\nfile = \"exposure/spatial.csv\"\n\n[exposure.geom]\nfile1 = \"exposure/spatial.geojson\"\n\n[exposure.geom.settings]\nsrs = \"EPSG:4326\"\n\n[vulnerability]\nfile = \"vulnerability/vulnerability_curves.csv\"\nstep_size = 0.01\n\n\n\nNow let’s execute the model!\n\n! fiat run ../../.testdata/geom_event.toml\n\n\n###############################################################\n\n        #########    ##          ##      ##############\n        ##           ##         ####         ######\n        ##           ##         ####           ##\n        ##           ##        ##  ##          ##\n        ######       ##        ##  ##          ##\n        ##           ##       ########         ##\n        ##           ##      ##      ##        ##\n        ##           ##     ##        ##       ##\n        ##           ##    ##          ##      ##\n\n###############################################################\n\n                Fast Impact Assessment Tool\n                © Deltares\n\n2025-10-28 14:22:15 INFO    Delft-Fiat version: 0.3.3.dev\n2025-10-28 14:22:15 INFO    Using settings from '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/geom_event.toml'\n2025-10-28 14:22:15 INFO    Model srs set to: 'EPSG:4326'\n2025-10-28 14:22:15 INFO    Using number of threads: 1\n2025-10-28 14:22:15 INFO    Reading hazard data ('event_map.nc')\n2025-10-28 14:22:15 INFO    Executing hazard checks...\n2025-10-28 14:22:15 WARNING Setting the model srs from the hazard data.\n2025-10-28 14:22:15 INFO    Model srs set to: 'EPSG:4326'\n2025-10-28 14:22:15 INFO    Reading vulnerability curves ('vulnerability_curves.csv')\n2025-10-28 14:22:15 INFO    Executing vulnerability checks...\n2025-10-28 14:22:15 INFO    Upscaling vulnerability curves, using a step size of: 0.01\n2025-10-28 14:22:15 INFO    Reading exposure geometry 'file1' ('spatial.geojson')\n2025-10-28 14:22:15 INFO    Executing exposure geometry checks...\n2025-10-28 14:22:15 INFO    Reading exposure data ('spatial.csv')\n2025-10-28 14:22:15 INFO    Executing exposure data checks...\n2025-10-28 14:22:15 INFO    Starting the calculations\n2025-10-28 14:22:15 INFO    Busy...\n2025-10-28 14:22:15 INFO    Calculations time: 0.05 seconds\n2025-10-28 14:22:15 INFO    Output generated in: '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/output/geom_event'\n2025-10-28 14:22:15 INFO    Geom calculation are done!\n\n\nLet’s take a quick look at the output.\n\n# Import a method\nfrom fiat.fio import open_csv\nfrom pathlib import Path\n\n# check the output\nout = open_csv(Path(\"../../.testdata/output/geom_event\", \"output.csv\"), index=\"object_id\")\nprint(out.columns)\n\n('extract_method', 'ground_flht', 'ground_elevtn', 'fn_damage_structure', 'max_damage_structure', 'inun_depth', 'red_fact', 'damage_structure', 'total_damage')\n\n\nAssert that the output is what we would expect.\n\nassert float(out[2, \"total_damage\"]) == 740\nassert float(out[3, \"total_damage\"]) == 1038\n\n\n\n\n Back to top",
+    "crumbs": [
+      "User guide",
+      "Examples",
+      "Single event"
+    ]
+  },
+  {
+    "objectID": "user_guide/settings/index.html",
+    "href": "user_guide/settings/index.html",
+    "title": "Settings",
+    "section": "",
+    "text": "The user must set the model settings in the settings.toml configuration file.\nBesides the necessary/ required setttings one can set:\n\ninput in regard to the computational side of FIAT (e.g. chunking, number of threads etc),\n\nsee this page\n\noptional/ additional input that is not necessary or more data specific,\n\nsee this page\n\n\n\nBasic input\nThis section pertains to all input that is vital for running a FIAT model.\nThese inputs/ entries are listed in the table down below with more detailed information per entry underneath the table.\n\n\n\n\n\n\nNote\n\n\n\nFile paths in the settings can be relative to the settings.toml file or absolute.\n\n\n\n\n\nTable 1: Most basic settings file input\n\n\n\n\n\nEntry\nType\nRequired\nDefault\n\n\n\n\n[model]\n\n\n\n\n\nmodel\nstring\nNo\ngeom\n\n\n[output]\n\n\n\n\n\npath\nstring\nNo\noutput\n\n\n[output.csv]\n\n\n\n\n\nname[n]\nstring\nNo\n-\n\n\n[output.geom]\n\n\n\n\n\nname[n]\nstring\nNo\nspatial[n].gpkg\n\n\n[output.grid]\n\n\n\n\n\nname\nstring\nNo\nead.nc\n\n\n[hazard]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\nelevation_reference\nstring\nYes\n\n\n\n[exposure.csv]\n\n\n\n\n\nfile\nstring\nNo\n-\n\n\n[exposure.geom]\n\n\n\n\n\nfile[n]\nstring\nYes\n\n\n\n[exposure.grid]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\n[vulnerability]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\n\n\n\n\n\n[model]\n\ntype: The type of model. Choice between ‘geom’ and ‘grid’.\n\n\n\n[output]\n\npath: The path to the output folder in the working directory.\n\n\n\n[output.csv]\n\nname[n]: The path to the output CSV file(s) that will be created. These are linked to the input geometry files.\n\n\n\n[output.geom]\n\nname[n]: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.\n\n\n\n\n\n\n\nWarning\n\n\n\nIf provided, the suffix is mandatory. The suffix should match the suffix of the input geometry file for which it is set.\n\n\n\n\n[output.grid]\n\nname: This sets the name and location of the output raster file that contains damages per grid cell.\n\n\n\n[hazard]\n\nfile: The file path to the hazard file.\nelevation_reference: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be “DEM” while in case of a flood-elevation map this should be “datum”.\n\n\n\n[exposure.csv]\n\nfile: The path to the exposure CSV file (recommended to be within the exposure folder) that contains the required information per asset. There can only be one exposure CSV file.\n\n\n\n[exposure.geom]\n\nfile[n]: The path to the exposure vector file (recommended to be within the exposure folder) with the assets’ geometry and object_id. The user can provide multiple vector files. Therefore the ‘[n]’ suffix, as the user can create mulitple entries for vector files (e.g. file1, file2 etc.).\n\n\n\n\n\n\n\nWarning\n\n\n\nThe suffix is mandatory. So if only one file is provided, name it file1.\n\n\n\n\n\n\n\n\nNote\n\n\n\nOnly required when running the geometry based model.\n\n\n\n\n[exposure.grid]\n\nfile: The path to the exposure raster file (recommended to be within the exposure folder).\n\n\n\n\n\n\n\nNote\n\n\n\nOnly required when running the raster based model.\n\n\n\n\n[vulnerability]\n\nfile: The path to the vulnerability curves CSV file within the vulnerability folder that contains the damage curves. Only one vulnerability curves file is allowed.\n\n\n\n\nExample\nAn example of settings file for running a geometry model is given below:\n[output]\npath = \"output\"\n\n[output.csv]\nname = \"output.csv\"\n\n[output.geom]\nname1 = \"spatial.gpkg\"\n\n[hazard]\nfile = \"hazard/SL_10yr_reprojected.tif\"\nelevation_reference = \"DEM\"\nrisk = false\n\n[exposure.geom]\nfile1 = \"./exposure/buildings.gpkg\"\n\n[exposure.csv]\nfile = \"./exposure/exposure.csv\"\n\n[vulnerability]\nfile = \"./vulnerability/vulnerability_curves.csv\"\n\n\n\n\n Back to top",
+    "crumbs": [
+      "User guide",
+      "Settings"
+    ]
+  },
+  {
+    "objectID": "user_guide/index.html",
+    "href": "user_guide/index.html",
+    "title": "User guide",
+    "section": "",
+    "text": "User Settings\n    \n  \n  \n    \n      Data\n    \n  \n  \n    \n      Examples",
+    "crumbs": [
+      "User guide"
+    ]
+  },
+  {
+    "objectID": "user_guide/index.html#quick-start",
+    "href": "user_guide/index.html#quick-start",
+    "title": "User guide",
+    "section": "Quick start",
+    "text": "Quick start\nFIAT computes the (economic) damage and risk of flood events at a specified geographic location based on flood inundation data, exposured assets and vulnerability functions. The model can be configured with a settings file and data inputs:\n\nSettings file\nData\n\nThe HydroMT plugin HydroMT-FIAT can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same folder structure that HydroMT-FIAT creates.",
+    "crumbs": [
+      "User guide"
+    ]
+  },
+  {
+    "objectID": "user_guide/index.html#the-models",
+    "href": "user_guide/index.html#the-models",
+    "title": "User guide",
+    "section": "The models",
+    "text": "The models\nThe data is used by either one or both of the following models:\n\nGeomModel\nGridModel\n\nSome more information about the models can be found here.",
+    "crumbs": [
+      "User guide"
+    ]
+  },
+  {
+    "objectID": "user_guide/index.html#general-user-information",
+    "href": "user_guide/index.html#general-user-information",
+    "title": "User guide",
+    "section": "General User Information",
+    "text": "General User Information\nFIAT derives damages and risk at asset-level based on flood maps and additional inputs such as depth-damage functions, asset locations and their maximum potential damages. For each asset specified in the exposure dataset, the water depth or level is sampled from the flood map at the location of the assets.\n\n\n\n\n\n\nNote\n\n\n\nWater elevations are converted to water depths using the ground elevation of each asset.\n\n\nSee Figure 1 for an overview of the FIAT workflow. To obtain the flood inundation level, FIAT extracts the water depth or level at the location of each asset. For line or polygon assets, either the average or maximum water depth or level and the fraction of the asset are extracted from the hazard map. The inundation depth within buildings or on top of for example, roads, is obtained by subtracting the ground floor height from the water depth. FIAT derives the damage fraction for each asset using its inundation depth and interpolating over its depth-damage curve. Thereafter, the damage to the asset is calculated as the product of the maximum potential damage and the damage fraction. In case an asset is only partially flooded, the damages will be reduced by the dry fraction of the building. Instead of single events, the user can also provide return-period flood maps as input. Hence, FIAT calculates and integrates the associated return-period damages to derive the expected annual damages.\n\n\n\n\n\n\nFigure 1: FIAT Workflow. The damage of the flood water level in each object is determined by flood depth-damage functions, which relate the water level to the maximum potential damage of an asset, returning a damage fraction. The damage fraction is multiplied with the max. potential damage to obtain a monetary damage per object.",
+    "crumbs": [
+      "User guide"
+    ]
+  },
+  {
     "objectID": "user_guide/data/supported.html",
     "href": "user_guide/data/supported.html",
     "title": "Supported formats",
@@ -52,7 +115,7 @@
     "href": "user_guide/data/supported.html#gridded-data-files",
     "title": "Supported formats",
     "section": "Gridded data files",
-    "text": "Gridded data files\nBelow a list is presented of supported drivers (both reading and writing) in regards to the raster files:\n\n\n\n\n\n\nTable 3: Available drivers for gridded data\n\n\n\n\n\n\nFile extension\nDriver\nLong name\n\n\n\n\n\nMEM\nIn Memory raster, vector and multidimensional raster\n\n\n.asc\nAAIGrid\nArc/Info ASCII Grid\n\n\n.bag\nBAG\nBathymetry Attributed Grid\n\n\n.bil\nEHdr\nESRI .hdr Labelled\n\n\n.bmp\nBMP\nMS Windows Device Independent Bitmap\n\n\n.ct1\nCALS\nCALS (Type 1)\n\n\n.cub\nISIS3\nUSGS Astrogeology ISIS cube (Version 3)\n\n\n.dat\nZMap\nZMap Plus Grid\n\n\n.dt2\nDTED\nDTED Elevation Raster\n\n\n.ers\nERS\nERMapper .ers Labelled\n\n\n.gdb\nOpenFileGDB\nESRI FileGeodatabase (using OpenFileGDB)\n\n\n.gif\nGIF\nGraphics Interchange Format (.gif)\n\n\n.gpkg\nGPKG\nGeoPackage\n\n\n.grd\nNWT_GRD\nNorthwood Numeric Grid Format .grd/.tab\n\n\n.gtx\nGTX\nNOAA Vertical Datum .GTX\n\n\n.hf2\nHF2\nHF2/HFZ heightfield raster\n\n\n.hgt\nSRTMHGT\nSRTMHGT File Format\n\n\n.img\nHFA\nErdas Imagine Images (.img)\n\n\n.jpg\nJPEG\nJPEG JFIF\n\n\n.jxl\nJPEGXL\nJPEG-XL\n\n\n.kmz\nKMLSUPEROVERLAY\nKml Super Overlay\n\n\n.kro\nKRO\nKOLOR Raw\n\n\n.lcp\nLCP\nFARSITE v.4 Landscape File (.lcp)\n\n\n.map\nPCRaster\nPCRaster Raster File\n\n\n.mbtiles\nMBTiles\nMBTiles\n\n\n.mpl\nILWIS\nILWIS Raster Map\n\n\n.mrf\nMRF\nMeta Raster Format\n\n\n.nc\nnetCDF\nNetwork Common Data Format\n\n\n.ntf\nNITF\nNational Imagery Transmission Format\n\n\n.pix\nPCIDSK\nPCIDSK Database File\n\n\n.png\nPNG\nPortable Network Graphics\n\n\n.pnm\nPNM\nPortable Pixmap Format (netpbm)\n\n\n.rst\nRST\nIdrisi Raster A.1\n\n\n.rsw\nRMF\nRaster Matrix Format\n\n\n.sg-grd-z\nSAGA\nSAGA GIS Binary Grid (.sdat, .sg-grd-z)\n\n\n.sigdem\nSIGDEM\nScaled Integer Gridded DEM .sigdem\n\n\n.ter\nTerragen\nTerragen heightfield\n\n\n.tif\nGTiff\nGeoTIFF\n\n\n.tiff\nCOG\nCloud optimized GeoTIFF generator\n\n\n.vrt\nVRT\nVirtual Raster\n\n\n.webp\nWEBP\nWEBP\n\n\n.xml\nPDS4\nNASA Planetary Data System 4\n\n\n.xyz\nXYZ\nASCII Gridded XYZ\n\n\n.zarr\nZarr\nZarr",
+    "text": "Gridded data files\nBelow a list is presented of supported drivers (both reading and writing) in regards to the raster files:\n\n\n\n\n\n\nTable 3: Available drivers for gridded data\n\n\n\n\n\n\nFile extension\nDriver\nLong name\n\n\n\n\n\nMEM\nIn Memory raster, vector and multidimensional raster\n\n\n.asc\nAAIGrid\nArc/Info ASCII Grid\n\n\n.bag\nBAG\nBathymetry Attributed Grid\n\n\n.bil\nEHdr\nESRI .hdr Labelled\n\n\n.bmp\nBMP\nMS Windows Device Independent Bitmap\n\n\n.bt\nBT\nVTP .bt (Binary Terrain) 1.3 Format\n\n\n.ct1\nCALS\nCALS (Type 1)\n\n\n.cub\nISIS3\nUSGS Astrogeology ISIS cube (Version 3)\n\n\n.dat\nZMap\nZMap Plus Grid\n\n\n.dt2\nDTED\nDTED Elevation Raster\n\n\n.ers\nERS\nERMapper .ers Labelled\n\n\n.gdb\nOpenFileGDB\nESRI FileGeodatabase (using OpenFileGDB)\n\n\n.gif\nGIF\nGraphics Interchange Format (.gif)\n\n\n.gpkg\nGPKG\nGeoPackage\n\n\n.grd\nNWT_GRD\nNorthwood Numeric Grid Format .grd/.tab\n\n\n.gtx\nGTX\nNOAA Vertical Datum .GTX\n\n\n.hf2\nHF2\nHF2/HFZ heightfield raster\n\n\n.hgt\nSRTMHGT\nSRTMHGT File Format\n\n\n.img\nHFA\nErdas Imagine Images (.img)\n\n\n.jpg\nJPEG\nJPEG JFIF\n\n\n.jxl\nJPEGXL\nJPEG-XL\n\n\n.kmz\nKMLSUPEROVERLAY\nKml Super Overlay\n\n\n.kro\nKRO\nKOLOR Raw\n\n\n.lcp\nLCP\nFARSITE v.4 Landscape File (.lcp)\n\n\n.map\nPCRaster\nPCRaster Raster File\n\n\n.mbtiles\nMBTiles\nMBTiles\n\n\n.mpl\nILWIS\nILWIS Raster Map\n\n\n.mrf\nMRF\nMeta Raster Format\n\n\n.nc\nnetCDF\nNetwork Common Data Format\n\n\n.ntf\nNITF\nNational Imagery Transmission Format\n\n\n.pix\nPCIDSK\nPCIDSK Database File\n\n\n.png\nPNG\nPortable Network Graphics\n\n\n.pnm\nPNM\nPortable Pixmap Format (netpbm)\n\n\n.rst\nRST\nIdrisi Raster A.1\n\n\n.rsw\nRMF\nRaster Matrix Format\n\n\n.sg-grd-z\nSAGA\nSAGA GIS Binary Grid (.sdat, .sg-grd-z)\n\n\n.sigdem\nSIGDEM\nScaled Integer Gridded DEM .sigdem\n\n\n.ter\nTerragen\nTerragen heightfield\n\n\n.tif\nGTiff\nGeoTIFF\n\n\n.tiff\nCOG\nCloud optimized GeoTIFF generator\n\n\n.vrt\nVRT\nVirtual Raster\n\n\n.webp\nWEBP\nWEBP\n\n\n.xml\nPDS4\nNASA Planetary Data System 4\n\n\n.xyz\nXYZ\nASCII Gridded XYZ\n\n\n.zarr\nZarr\nZarr",
     "crumbs": [
       "User guide",
       "Data",
@@ -60,144 +123,104 @@
     ]
   },
   {
-    "objectID": "user_guide/data/vulnerability.html",
-    "href": "user_guide/data/vulnerability.html",
-    "title": "Vulnerability data",
+    "objectID": "user_guide/data/hazard_maps.html",
+    "href": "user_guide/data/hazard_maps.html",
+    "title": "Types of hazard maps",
     "section": "",
-    "text": "The vulnerability of an asset is determined by its building type (e.g. ‘residential 1-story building’) and the inundation depth, also refered to as water depth, during a flood event. Different assests incur different degrees of damage at varying inundation levels. This vulnerability can be quantified via flood depth-damage functions, see for example Figure 1. The damage function relates the water depth to the maximum potential damage per asset and returns the damage fraction (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. The value of the maximum potential damage differs per asset and must be specified in the exposure data.\n\n\n\n\n\n\n\n\nFigure 1: Damage functions of different assets/structures.\n\n\n\n\n\nThe damage functions must be given in a CSV file (vulnerability.csv), located in the vulnerability folder, see for example Table 1. The first column contains the water depth, and then each additional column provides the damage fraction for the corresponding damage function. Three header rows are required, describing the unit of the water depth; #UNIT=&lt;unit&gt;, e.g., #UNIT=m. The second row, named #METHOD, must be defined for each damage-curve separately above the damage curve name. The method refers to the way that multiple flood values will be aggregated per asset in case the area method is used for deriving the inundation depth. The damage curve name must coincide with the name of the damage function defined in the exposure data.\n\n\n\n\n\n\nImportant\n\n\n\nWater depth units (e.g. feet or meters) must be consistent with the units of the flood hazard map and the exposure data (i.e., ground elevation, ground floor height).\n\n\n\n\n\n\nTable 1: Vulnerability data CSV file. The water depth must be in the outer left column followed by the damage functions. The user has the freedom to add multiple damage curves.\n\n\n\n\n\n\n#UNIT=m\n\n\n\n#METHOD\nmean\nmax\n\n\nwater depth\nSTRUCT1\nSTRUCT2\n\n\n\n\n0.00\n0.00\n0.00\n\n\n0.25\n0.00\n0.00\n\n\n0.50\n0.00\n0.00\n\n\n0.75\n0.00\n0.00\n\n\n1.00\n0.00\n0.00\n\n\n1.25\n0.14\n0.20\n\n\n1.50\n0.25\n0.37\n\n\n1.75\n0.35\n0.51\n\n\n2.00\n0.43\n0.63\n\n\n2.25\n0.50\n0.74\n\n\n2.50\n0.57\n0.83\n\n\n2.75\n0.63\n0.92\n\n\n3.00\n0.68\n0.96\n\n\n3.25\n0.73\n0.96\n\n\n3.50\n0.78\n0.96\n\n\n3.75\n0.82\n0.96\n\n\n4.00\n0.86\n0.96\n\n\n4.25\n0.90\n0.96\n\n\n4.50\n0.93\n0.96\n\n\n4.75\n0.96\n0.96\n\n\n5.00\n0.96\n0.96\n\n\n\n\n\n\n\n\nWater depths may be negative for assets that incur damage below the ground floor height, and the user is free to choose any water depth increments in the CSV file. The damage functions can have any name. Multiple damage-functions can be described in the vulnerability curves CSV file by simply adding consecutive columns next to one another.\n\n\n\n\n\n\nTip\n\n\n\nYou can also create damage functions with the HydroMT-FIAT model builder\n\n\n\n\n\n Back to top",
+    "text": "Tip\n\n\n\nThe most advised format for both event and risk is netCDF.",
     "crumbs": [
       "User guide",
       "Data",
-      "Vulnerability data"
+      "Hazard data",
+      "Types of hazard maps"
     ]
   },
   {
-    "objectID": "setup_guide/index.html",
-    "href": "setup_guide/index.html",
-    "title": "Setup guide",
-    "section": "",
-    "text": "Installing FIAT\n    \n  \n  \n    \n      Development install\n    \n  \n  \n    \n      Building FIAT",
-    "crumbs": [
-      "Setup guide"
-    ]
-  },
-  {
-    "objectID": "setup_guide/index.html#overview",
-    "href": "setup_guide/index.html#overview",
-    "title": "Setup guide",
-    "section": "Overview",
-    "text": "Overview\nFIAT requires Python 3.10 or greater, a package manager, and Git to be installed. After that, FIAT can be installed for use or for development, or it can be built as an application/executable.",
-    "crumbs": [
-      "Setup guide"
-    ]
-  },
-  {
-    "objectID": "user_guide/settings/optional.html",
-    "href": "user_guide/settings/optional.html",
-    "title": "Optional input",
-    "section": "",
-    "text": "Here we provide an overview of all optional/ non essential settings that the user can provide to FIAT. These are listed in the table (Table 1) below.\n\n\n\nTable 1: Settings.toml input (required and optional fields)\n\n\n\n\n\nField\nType\nDefault\n\n\n\n\n[model]\n\n\n\n\nloglevel\nstring\nINFO\n\n\nrisk\nboolean\nfalse\n\n\ntype\nstring\nflood\n\n\n[model.srs]\n\n\n\n\nvalue\nstring\nEPSG:4326\n\n\nprefer_global\nbool\nfalse\n\n\n[model.grid]\n\n\n\n\nprefer\nstring\nexposure\n\n\n[hazard]\n\n\n\n\nresampling_method\nint\n0\n\n\nreturn_periods\nlist\n-\n\n\n[hazard.settings]\n\n\n\n\nsrs\nstring\n-\n\n\nsubset\nstring\n-\n\n\nvar_as_band\nboolean\nfalse\n\n\n[exposure]\n\n\n\n\ntypes\nlist\n[‘damage’]\n\n\n[exposure.csv.settings]\n\n\n\n\nindex\nstring\nobject_id\n\n\n[exposure.geom.settings]\n\n\n\n\nindex\nstring\nobject_id\n\n\nsrs\nstring\n-\n\n\n[exposure.grid]\n\n\n\n\nresampling_method\nint\n0\n\n\n[exposure.grid.settings]\n\n\n\n\nsrs\nstring\n-\n\n\nvar_as_band\nboolean\nfalse\n\n\n[vulnerability]\n\n\n\n\nstep_size\nfloat\n0.01\n\n\n[vulnerability.settings]\n\n\n\n\nindex\nstring\n‘water depth’\n\n\n\n\n\n\n\n[model]\n\nloglevel: Set the loglevel of the fiat logger from the settings file. Choose from ‘DEBUG’, ‘INFO’, ‘WARNING’, ‘ERROR’ or ‘DEAD’.\nrisk: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.\ntype: Type of hazard. Should be the same name as the file containing the functions (e.g. ‘flood’ -&gt; fiat.methods.flood)\n\n\n\n[model.srs]\n\nvalue: Global projection for the model and the output. If not defined, the default projection is set to WGS84.\nprefer_global: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e. prefer the hazard projection.\n\n\n\n[model.grid]\n\nprefer: Whether to spatially prefer exposure data or hazard data. The other will be warped when they are not equal. Chose ‘exposure’ or ‘hazard’.\n\n\n\n[hazard]\n\nresampling_method: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see this page\nreturn_periods: Return periods for hazard calculation when they cannot be inferred from the data itself.\n\n\n\n[hazard.settings]\n\nsrs: Projection of the hazard data if it cannot be inferred from the dataset itself.\nsubset: Select a specific subdataset by supplying it’s ID (name) here.\nvar_as_band: Whether or not to read the subdatasets as classic raster band.\n\n\n\n\n\n\n\nNote\n\n\n\nThe entry var_as_band is only applicable to netCDF files.\n\n\n\n\n[exposure]\n\ntypes: Types of exposure. This could be monetary damages (‘damage’), affected people (‘affected’) etc.\n\n\n\n[exposure.csv.settings]\n\nindex: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to ‘object_id’.\n\n\n\n[exposure.geom.settings]\n\nindex: Set the index column of the geom file(s). In case nothing is provided, the default value ‘object_id’ is used.\nsrs: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.\n\n\n\n[exposure.grid]\n\nresampling_method: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see this page\n\n\n\n[exposure.grid.settings]\n\nsrs: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.\nvar_as_band: Whether or not to read the subdatasets as classic raster band.\n\n\n\n\n\n\n\nNote\n\n\n\nThe entry var_as_band is only applicable to netCDF files.\n\n\n\n\n[vulnerability]\n\nstep_size: The internal step size of the vulnerability data. The supplied data is interpolated or averaged depending on the minimal step size of the supplied dataset.\n\n\n\n[vulnerability.settings]\n\nindex: Set the index column of the csv file. In case of the vulnerability csv, if no entry is provided then FIAT will default to ‘water depth’.\n\n\n\n\n\n Back to top",
-    "crumbs": [
-      "User guide",
-      "Settings",
-      "Optional input"
-    ]
-  },
-  {
-    "objectID": "user_guide/settings/computation.html",
-    "href": "user_guide/settings/computation.html",
-    "title": "Computational input",
-    "section": "",
-    "text": "The inputs give the user a bit more control over the computational aspects of FIAT.\n\n\n\nTable 1: Computational FIAT input settings\n\n\n\n\n\nEntry\nType\nDefault\n\n\n\n\n[model]\n\n\n\n\nthreads\ninteger\n1\n\n\n[model.geom]\n\n\n\n\nchunk\ninteger\n-\n\n\n[model.grid]\n\n\n\n\nchunk\nlist\n-\n\n\n\n\n\n\n\n\n\n\n\n\nWarning\n\n\n\nAll settings that are not globally defined (e.g. settings chunk size via hazard.settings) are ill-advised. Please use the global chunking settings.\n\n\n\n[model]\n\nthreads: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.\n\n\n\n[model.geom]\n\nchunk: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.\n\n\n\n\n\n\n\nTip\n\n\n\nThis input benefits from multiple threads.\n\n\n\n\n\n\n\n\nNote\n\n\n\nThis input is only applicable to the GeomModel\n\n\n\n\n[model.grid]\n\nchunk: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be [1024, 1024,].\n\n\n\n\n\n\n\nNote\n\n\n\nThis input is only applicable to the GridModel\n\n\n\n\n\n\n Back to top",
-    "crumbs": [
-      "User guide",
-      "Settings",
-      "Computational input"
-    ]
-  },
-  {
-    "objectID": "user_guide/data/hazard.html",
-    "href": "user_guide/data/hazard.html",
-    "title": "Hazard data",
-    "section": "",
-    "text": "FIAT computes the impact of a flood event or the risk of flooding on a community by using flood maps as hazard input. Flood maps describe the potential flood extent and magnitude in specific geographic areas. Currently, FIAT is only\nThese flood maps can be obtained from various sources. The The Global Flood Database provides an extensive amount of global flood hazard mapping products.\nThe user is free to run the model with a variety of flood scenarios, e.g., including mitigation and adaptation measures over a range of future climate conditions, as long as flood maps are available for those scenarios. The flood maps can be either flood elevation or flood depth maps.\nWith FIAT, the user has the option to assess the impact of a single flood event or the flood risk based on a set of events with multiple return periods. To do the latter, the user must provide multiple hazard maps with the same extent and projection.\nIn each case, some requirements must be met. The hazard files of any map should be made available as a raster file, see the acceptable file types at the bottom of this page. It is recommended to place the hazard files in the ‘hazard’ folder, see the folder structure. The file name is free to be chosen by the user and must simply be refered to in the settings.toml configuration file.",
+    "objectID": "user_guide/data/hazard_maps.html#event",
+    "href": "user_guide/data/hazard_maps.html#event",
+    "title": "Types of hazard maps",
+    "section": "Event",
+    "text": "Event\nEvent maps are generally supplied in singular fashion (i.e. one band per event map). This band just simply contains the hazard values per cell. Let’s have a quick peek at the data using gdalinfo:\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/event_map.nc\nSize is 10, 10\nCoordinate System is:\nGEOGCRS[\"WGS 84\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    ID[\"EPSG\",4326]]\nData axis to CRS axis mapping: 2,1\nOrigin = (4.350000000000000,52.049999999999997)\nPixel Size = (0.010000000000000,-0.010000000000000)\nMetadata:\n  Band1#grid_mapping=crs\n  Band1#long_name=GDAL Band Number 1\n  Band1#_FillValue=9.96921e+36\n  crs#crs_wkt=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  crs#GeoTransform=4.3499999999999996 0.01 0 52.049999999999997 0 -0.01 \n  crs#grid_mapping_name=latitude_longitude\n  crs#inverse_flattening=298.257223563\n  crs#longitude_of_prime_meridian=0\n  crs#long_name=CRS definition\n  crs#semi_major_axis=6378137\n  crs#spatial_ref=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  lat#long_name=latitude\n  lat#standard_name=latitude\n  lat#units=degrees_north\n  lon#long_name=longitude\n  lon#standard_name=longitude\n  lon#units=degrees_east\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.11.4 \"Eganville\", released 2025/09/04\n  NC_GLOBAL#history=Tue Oct 28 14:19:15 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/.testdata/hazard/event_map.nc, ... )\nCorner Coordinates:\nUpper Left  (   4.3500000,  52.0500000) (  4d21' 0.00\"E, 52d 3' 0.00\"N)\nLower Left  (   4.3500000,  51.9500000) (  4d21' 0.00\"E, 51d57' 0.00\"N)\nUpper Right (   4.4500000,  52.0500000) (  4d27' 0.00\"E, 52d 3' 0.00\"N)\nLower Right (   4.4500000,  51.9500000) (  4d27' 0.00\"E, 51d57' 0.00\"N)\nCenter      (   4.4000000,  52.0000000) (  4d24' 0.00\"E, 52d 0' 0.00\"N)\nBand 1 Block=10x1 Type=Float32, ColorInterp=Undefined\n  NoData Value=9.96921e+36\n  Metadata:\n    NETCDF_VARNAME=Band1\n    long_name=GDAL Band Number 1\n    _FillValue=9.96921e+36\n    grid_mapping=crs\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nAllthough netCDF is the preferred format, GeoTIFF’s are also very handy for single events.\n\n\nAs one can see, this dataset has only one band (variable).\nWhen created, it is preferred that the event map is compressed to prevent unneccessary data on the hard drive. More information regarding the compression and others settings can be found here.",
     "crumbs": [
       "User guide",
       "Data",
-      "Hazard data"
+      "Hazard data",
+      "Types of hazard maps"
     ]
   },
   {
-    "objectID": "user_guide/data/hazard.html#types-of-maps",
-    "href": "user_guide/data/hazard.html#types-of-maps",
-    "title": "Hazard data",
-    "section": "Types of maps",
-    "text": "Types of maps\nFIAT knows two types of hazard maps:\n\nEvent maps\nRisk maps\n\nRisk maps are mainly used to calculate the EAD (Estimated Annual Damages). If risk is not set to true in the settings file, the supplied map will be treated as an event map.",
+    "objectID": "user_guide/data/hazard_maps.html#risk",
+    "href": "user_guide/data/hazard_maps.html#risk",
+    "title": "Types of hazard maps",
+    "section": "Risk",
+    "text": "Risk\nRisk maps in gerenal should contain multiple bands.\nThese bands can be either supplied in either one of two ways:\n\nMultiple variables (like normal bands)\nAs a subdataset\n\nLets take a look quick look at the data (again with gdalinfo):\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/risk_map.nc\nSize is 512, 512\nMetadata:\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.11.4 \"Eganville\", released 2025/09/04\n  NC_GLOBAL#history=Tue Oct 28 14:19:15 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/.testdata/hazard/risk_map.nc, ... )\nSubdatasets:\n  SUBDATASET_1_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band1\n  SUBDATASET_1_DESC=[10x10] Band1 (32-bit floating-point)\n  SUBDATASET_2_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band2\n  SUBDATASET_2_DESC=[10x10] Band2 (32-bit floating-point)\n  SUBDATASET_3_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band3\n  SUBDATASET_3_DESC=[10x10] Band3 (32-bit floating-point)\n  SUBDATASET_4_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band4\n  SUBDATASET_4_DESC=[10x10] Band4 (32-bit floating-point)\nCorner Coordinates:\nUpper Left  (    0.0,    0.0)\nLower Left  (    0.0,  512.0)\nUpper Right (  512.0,    0.0)\nLower Right (  512.0,  512.0)\nCenter      (  256.0,  256.0)\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nInstead of seeing normal metadata, we only get an overview of the available subdatasets.\n\n\nMultiple netCDF variables are normally not recognized as bands by the netCDF driver of GDAL. Instead they are interpreted as subdatasets (!). One can set the key var_as_band to true within the settings file to read the subdatasets as bands.\n[hazard]\nfile = &lt;your-file&gt;\nrisk = true\n[hazard.settings]\nvar_as_band = true\nWhen supplied in one subdataset (all bands are within that subdataset), the subset variable within the settings file should be set under the header hazard.settings. The value set to subset should be the name of the desired subdataset.\n[hazard]\nfile = &lt;your-file&gt;\nrisk = true\n[hazard.settings]\nvar_as_band = false\nsubset = &lt;your-wanted-subdataset&gt;\n\nReturn periods\nThe return periods can be set in the settings file by supplying a list via the hazard.return_periods entry. However, the return periods can also be set via the hazard bands directly from the return_period attribute of the bands. This attribute is simply set using either xarray, gdal or hydromt.\nWhen present in all bands, this attribute will be preferred over the return periods specified in the settings file. The reason being that the return period is directly linked to the corresponding band, whereas it is inferred in the case of setting it via the settings file.\nLet’s have a quick peek at the data using gdalinfo (it will be at the bottom):\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/risk_map.nc\nSize is 10, 10\nCoordinate System is:\nGEOGCRS[\"WGS 84\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    ID[\"EPSG\",4326]]\nData axis to CRS axis mapping: 2,1\nOrigin = (4.350000000000000,52.049999999999997)\nPixel Size = (0.010000000000000,-0.010000000000000)\nMetadata:\n  Band1#grid_mapping=crs\n  Band1#long_name=GDAL Band Number 1\n  Band1#return_period=2\n  Band1#_FillValue=9.96921e+36\n  crs#crs_wkt=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  crs#GeoTransform=4.3499999999999996 0.01 0 52.049999999999997 0 -0.01 \n  crs#grid_mapping_name=latitude_longitude\n  crs#inverse_flattening=298.257223563\n  crs#longitude_of_prime_meridian=0\n  crs#long_name=CRS definition\n  crs#semi_major_axis=6378137\n  crs#spatial_ref=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  lat#long_name=latitude\n  lat#standard_name=latitude\n  lat#units=degrees_north\n  lon#long_name=longitude\n  lon#standard_name=longitude\n  lon#units=degrees_east\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.11.4 \"Eganville\", released 2025/09/04\n  NC_GLOBAL#history=Tue Oct 28 14:19:15 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/.testdata/hazard/risk_map.nc, ... )\nCorner Coordinates:\nUpper Left  (   4.3500000,  52.0500000) (  4d21' 0.00\"E, 52d 3' 0.00\"N)\nLower Left  (   4.3500000,  51.9500000) (  4d21' 0.00\"E, 51d57' 0.00\"N)\nUpper Right (   4.4500000,  52.0500000) (  4d27' 0.00\"E, 52d 3' 0.00\"N)\nLower Right (   4.4500000,  51.9500000) (  4d27' 0.00\"E, 51d57' 0.00\"N)\nCenter      (   4.4000000,  52.0000000) (  4d24' 0.00\"E, 52d 0' 0.00\"N)\nBand 1 Block=10x1 Type=Float32, ColorInterp=Undefined\n  NoData Value=9.96921e+36\n  Metadata:\n    NETCDF_VARNAME=Band1\n    long_name=GDAL Band Number 1\n    _FillValue=9.96921e+36\n    grid_mapping=crs\n    return_period=2",
     "crumbs": [
       "User guide",
       "Data",
-      "Hazard data"
+      "Hazard data",
+      "Types of hazard maps"
     ]
   },
   {
-    "objectID": "user_guide/data/hazard.html#supported-formats",
-    "href": "user_guide/data/hazard.html#supported-formats",
-    "title": "Hazard data",
-    "section": "Supported formats",
-    "text": "Supported formats\nAn overview of supported formats is presented here",
-    "crumbs": [
-      "User guide",
-      "Data",
-      "Hazard data"
-    ]
-  },
-  {
-    "objectID": "user_guide/data/exposure/data.html",
-    "href": "user_guide/data/exposure/data.html",
-    "title": "Exposure data",
+    "objectID": "user_guide/data/exposure/geometries.html",
+    "href": "user_guide/data/exposure/geometries.html",
+    "title": "Geometry",
     "section": "",
-    "text": "In the table down below, an overview is provided od the necessary inputs in either the geometry file or the csv file“.\n\n\n\nTable 1: exposure.csv input\n\n\n\n\n\nField\nRequired\nMultiple\nExample\n\n\n\n\nobject_id\nYes\n-\n1\n\n\nobject_name\nNo\n-\nfp_1\n\n\nextract_method\nYes\n-\ncentroid\n\n\nfn_&lt; any &gt;_&lt; any &gt;\nYes\nYes\nstruct_2\n\n\nground_flht\nNo\n-\n4\n\n\nground_elevtn\nNo\n-\n10.11\n\n\nmax_&lt; any &gt;_&lt; any &gt;\nYes\nYes\n193457.00\n\n\n&lt; Additional attributes &gt;\nNo\n\n1205\n\n\n\n\n\n\nA more detailed description of the data fields can be found below.\n\nObject ID\nThe object ID is used to link the geometries to the information in the exposure CSV. The object ID must be unique for each object. At the moment of writing, FIAT does not check whether the object IDs are indeed unique and it is the responsibility of the user to ensure this. At a later stage, FIAT will have a built-in check for this.\n\n\nObject name\nThe object name field can be chosen freely and can serve as a field for identifying the damages assets.\n\n\nExtraction Method\nThe extraction method refers to how the water level or water depth is sampled per asset. The options are (1) centroid, which samples the water level or depth at the estimated centroid inside of the asset, or (2) area, which considers the water level or depth over the entire polygon or line and takes either an average or maximum. The user can set the choice for the latter per damage function, in the vulnerability curves file.\n\n\n\n\n\n\nImportant\n\n\n\nIn case the user selects ‘area’ as extraction method for certain assets, the geometries related to those assets should be a line or polygon.\n\n\n\n\nDamage Functions\nThe user can input as many damage functions and related max potential damages as required. However, at least one damage function and related max potential damage must be provides per asset. Damage function column are named as fn_&lt; exposure_type &gt;_&lt; component &gt; (for exposure types, see here). This name can be chosen freely but it is recommended to give it a descriptive name, such as damage (exposure type) in combination with structure or content (components), and it is required to use the same name in the max potential damage column. (i.e. max_&lt; exposure-type &gt;_&lt; component &gt;) The value that must be entered is the name of the damage function, relating to the names in the corresponding damage functions in the vulnerability curves file. Globally, continental damage functions can be obtained from European Commission’s Joint Research Centre, but it is recommended to use more location-specific functions when available.\n\n\nGround Floor Height\nThe ground floor height column indicates the height of the ground floor of an asset above the ground elevation. For example, when a building is built on poles, the ground floor (finished floor in the US) is lifted off the ground with a certain height. Usually, buildings are at least a certain amount above ground elevation because of the road and sidewalk. This value is used to calculate the water depth inside of the asset, for buildings.\n\n\n\n\n\n\nImportant\n\n\n\nRequired for flood damage calculation, see global model types\n\n\n\n\nGround Elevation\nThe ground elevation is the value of a digital elevation model (DEM) at the location of the asset.\n\n\n\n\n\n\nImportant\n\n\n\nRequired for flood damage calculation, see global model types\n\n\n\n\nMax Potential Damage\nThe maximum potential damage corresponds to the damage functions for each asset. For each damage function type that was assigned, a maximum potential damage must also be assigned. These values represent the maximum damage to, for example, the structure, content, or other (e.g. inventory). There are methods to derive these values, based on building type and area of the building. Globally, maximum damage values per country can be obtained from European Commission’s Joint Research Centre, but it is recommended to use more location-specific damage values. In the US, FEMA Hazus is an industry standard in how to derive these values.\n\n\nAdditional attributes\nAttitional attributes can be added to the exposure CSV file. The added columns can be named freely. The resulting FIAT output contains all data that was put in, therefore they can be used by the FIAT Toolbox to calculate user-specified output metrics. For example, a user could configure the output metrics to always show the number of people affected with a high social vulnerability, per administrative region. The user can add columns to the CSV file manually or with the help of the HydroMT-FIAT model builder, in which the user is free to select a descriptive ‘Label name’ for the additional attributes. If the user wishes to connect the damages per administrative or other aggregation area to a GIS file, the **FIAT Toolbox offers a post-processing tool to do so.\n\n\n\n\n Back to top",
+    "text": "A user can specify one or multiple geometry files in the settings.toml. It is advisable to give descriptive names to the geometry files, e.g., buildings.gpkg or roads.gpkg. Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page. All geometry files must have an attribute object_id. These need to be unique over all geometry files if a csv file with exposure data is provided and corresponding to the object_is’s in the provided csv file.\nIf no csv file provided with the exposure information, that information needs to be present in the geometry files(s) themselves. An overview of all the required input is shown here.\n\n\n\n\n\n\nTipExample\n\n\n\nWhen using a GeoPackage file with roads containing object_ids 1-100, a second GeoPackage file with building footprints should contain object_ids from 101-n. Then, if applicable, those IDs should link to the corresponding rows and IDs in the exposure CSV file.\n\n\nWhen providing a polygon or line geometry file, a user can choose to use the area extraction method (‘extraction method’ = ‘area’, see here) for considering water levels or depths over the whole area of the asset. This can be more appropriate than point estimates for example for large buildings.\n\n\n\n\n\n\nWarning\n\n\n\nAssets cannot be partially or fully outside the hazard map extent! FIAT will stop if it detects any.\n\n\n\nSupported data formats\nAn overview of supported formats is presented here\n\n\n\n\n Back to top",
     "crumbs": [
       "User guide",
       "Data",
       "Exposure data",
-      "Exposure data"
+      "Geometry"
     ]
   },
   {
-    "objectID": "user_guide/data/exposure.html",
-    "href": "user_guide/data/exposure.html",
-    "title": "Exposure data",
+    "objectID": "user_guide/data/exposure/csv.html",
+    "href": "user_guide/data/exposure/csv.html",
+    "title": "CSV",
     "section": "",
-    "text": "The exposure data describe the assets within the region of interest. FIAT allows vector and raster data inputs. It is recommended to place the exposure data in the ‘exposure’ folder, see the folder structure. However, the file name is free to be chosen by the user and must simply be refered to in the settings.toml configuration file.",
+    "text": "The exposure data CSV file contains information about each asset in the area of interest that is optional for the damage calculation. Each row represents one asset, such as a building, road segment, or utility, and each column represents an attribute of the asset, such as its location, elevation or maximum potential damage value. For users that want to create their own exposure data, or modify existing exposure data, a description of the default fields (columns) in the exposure data CSV can be found here.\n\n\n\n\n\n\nTipTip\n\n\n\nUsers can add as many columns to the exposure CSV as they want, for example, to later identify the most damaged administrative areas. All data field will also be saved in the output of FIAT.\n\n\n\n\n\n Back to top",
     "crumbs": [
       "User guide",
       "Data",
-      "Exposure data"
+      "Exposure data",
+      "CSV"
     ]
   },
   {
-    "objectID": "user_guide/data/exposure.html#types-of-data",
-    "href": "user_guide/data/exposure.html#types-of-data",
-    "title": "Exposure data",
-    "section": "Types of Data",
-    "text": "Types of Data\nBecause FIAT consists of two models, the exposure data can be supplied in either a vector format or in raster format\n\nVector data\nFIAT can be used to assess flood damages to buildings, roads, utilities, and other types of structures of which data is available. These type of assets are often spatially represented with vector, or geometry data. Building a FIAT model with geometry exposure data requires two data types:\n\nGeometry file(s)\nCSV file (optional)\n\n\n\nRaster Data\n\n\n\n\n\n\nImportant\n\n\n\nThis functionality is in beta phase\n\n\nRaster files must be pre-processed before being ingested into the FIAT model. Raster projection and extent must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a raster file with the max potential damage per cell is required. A damage function must be assigned to each raster file as well, linking with the damage function name in the meta data to the name in the vulnerability curves file.",
-    "crumbs": [
-      "User guide",
-      "Data",
-      "Exposure data"
-    ]
-  },
-  {
-    "objectID": "setup_guide/kernel/dev.html",
-    "href": "setup_guide/kernel/dev.html",
-    "title": "Development install",
+    "objectID": "setup_guide/kernel/install.html",
+    "href": "setup_guide/kernel/install.html",
+    "title": "Installing FIAT",
     "section": "",
-    "text": "This is for those who wish to contribute to the development of FIAT.\n\nFirst, clone the FIAT repository on Github into a local directory of choice:\n\ncd ~/{your path}\n\ngit clone https://github.com/Deltares/Delft-FIAT.git fiat\n\nCreate a new development environment. Make sure you either have tomli or tomllib (build-in with Python 3.11) in your base enviroment. Go into your cloned FIAT repository folder and create the environment file by running the make_env.py script:\n\ncd ~/{your path}/fiat\n\npython make_env.py dev\n\nThen, create and activate the new environment in conda:\n\nconda env create -f environment.yml\n\nconda activate fiat_dev\n\nTo install all the required dependencies, run:\n\npip install -e .\nThere you go. FIAT is now installed on your local machine for development purposes.\n\n\n\n Back to top",
+    "text": "FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.\n\n\nTo create a new environment follow the steps below.\n\nCreate a new environment:\n\nconda create -n fiat python=3.12.*\n\nActivate the environment:\n\nconda activate fiat`\n\nInstall FIAT from pypi:\n\npip install delft_fiat\n\nInstall FIAT from conda-forge\n\n# When conda-forge is added as a channel\nconda install delft_fiat\n\n# When not\nconda install delft_fiat -c conda-forge\n\nInstall FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use pip install to do so:\n\npip install git+https://github.com/Deltares/Delft-FIAT.git\n\n\n\nIf you want to install FIAT into an existing environment, simply activate the desired environment and run:\npip install git+https://github.com/Deltares/Delft-FIAT.git",
     "crumbs": [
       "Setup guide",
       "FIAT package",
-      "Development install"
+      "Installing FIAT"
+    ]
+  },
+  {
+    "objectID": "setup_guide/kernel/install.html#for-use",
+    "href": "setup_guide/kernel/install.html#for-use",
+    "title": "Installing FIAT",
+    "section": "",
+    "text": "FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.\n\n\nTo create a new environment follow the steps below.\n\nCreate a new environment:\n\nconda create -n fiat python=3.12.*\n\nActivate the environment:\n\nconda activate fiat`\n\nInstall FIAT from pypi:\n\npip install delft_fiat\n\nInstall FIAT from conda-forge\n\n# When conda-forge is added as a channel\nconda install delft_fiat\n\n# When not\nconda install delft_fiat -c conda-forge\n\nInstall FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use pip install to do so:\n\npip install git+https://github.com/Deltares/Delft-FIAT.git\n\n\n\nIf you want to install FIAT into an existing environment, simply activate the desired environment and run:\npip install git+https://github.com/Deltares/Delft-FIAT.git",
+    "crumbs": [
+      "Setup guide",
+      "FIAT package",
+      "Installing FIAT"
+    ]
+  },
+  {
+    "objectID": "setup_guide/kernel/build.html",
+    "href": "setup_guide/kernel/build.html",
+    "title": "Building FIAT",
+    "section": "",
+    "text": "To build FIAT as an executable/ binary, it is required to clone the FIAT repository to your local drive. This required git to be installed on your local machine.\ngit clone git@github.com:Deltares/Delft-FIAT.git\nBesides git, a python installation/ environment with the necessary packages is needed. It is recommended to use miniforge3 for this purpose.\n\nWindowsLinux\n\n\n\nCreate a yml for a seperate build environment:\n\npython make_env.py build\n\nCreate the environment with mamba. This time, FIAT will be automatically installed with the environment:\n\nmamba env create -f environment.yml\n\nGo to the .build/ directory and execute the win64.bat script:\n\ncd ./.build\n\nwin64.bat\nThat’s it. A FIAT application will be located in the {root}/bin/Release folder.\n\n\n\nCreate a yml for a seperate build environment:\n\npython make_env.py build\n\nCreate the environment with mamba. This time, FIAT will be automatically installed with the environment:\n\nmamba env create -f environment.yml\n\nSet the rights of the shell script and exexute it:\n\nchmod u+x .build/linux64.sh\n\n.build/linux64.sh\nThat’s it. A FIAT application will be located in the {root}/bin/Release folder\n\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Setup guide",
+      "FIAT package",
+      "Building FIAT"
     ]
   },
   {
@@ -257,174 +280,58 @@
     ]
   },
   {
-    "objectID": "developments/index.html",
-    "href": "developments/index.html",
-    "title": "Developments",
+    "objectID": "examples/index.html",
+    "href": "examples/index.html",
+    "title": "Examples",
     "section": "",
-    "text": "Welcome to Delft-FIAT. Here we present an overview of what’s going on.",
+    "text": "This part of the documentation is under development. In the future, it will show more examples of how to use FIAT. Until that, this minimal example is available:\n\nSingle event example\n\n\n\n\n Back to top",
     "crumbs": [
-      "Developments"
+      "User guide",
+      "Examples"
     ]
   },
   {
-    "objectID": "developments/index.html#roadmap",
-    "href": "developments/index.html#roadmap",
-    "title": "Developments",
-    "section": "Roadmap",
-    "text": "Roadmap\nWhat are we up to and what are the goals.\n\nQ2/ Q3 2025\n\nFurther stabilize the api and cli\nImprove the grid model performance\nProbably port sections to Cython",
-    "crumbs": [
-      "Developments"
-    ]
-  },
-  {
-    "objectID": "developments/index.html#whats-new",
-    "href": "developments/index.html#whats-new",
-    "title": "Developments",
-    "section": "What’s new…",
-    "text": "What’s new…\nIn order to see what has been done and what has been changed, please see the changelog.",
-    "crumbs": [
-      "Developments"
-    ]
-  },
-  {
-    "objectID": "developments/index.html#contribute",
-    "href": "developments/index.html#contribute",
-    "title": "Developments",
-    "section": "Contribute?",
-    "text": "Contribute?\nWe welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. Our developer guide explains how one can contribute to Delft-FIAT!",
-    "crumbs": [
-      "Developments"
-    ]
-  },
-  {
-    "objectID": "developments/index.html#licencing",
-    "href": "developments/index.html#licencing",
-    "title": "Developments",
-    "section": "Licencing",
-    "text": "Licencing\nThe MIT license applies to all contributions.",
-    "crumbs": [
-      "Developments"
-    ]
-  },
-  {
-    "objectID": "changelog.html",
-    "href": "changelog.html",
-    "title": "What’s new?",
+    "objectID": "developments/guide.html",
+    "href": "developments/guide.html",
+    "title": "Developer guide",
     "section": "",
-    "text": "These are the unreleased changes.\n\n\n\nModel type (type) and calculation modus (risk) as model properties\n\n\n\n\n\n‘hazard.risk’ entry is renamed to ‘global.risk’ in the settings file\nRenamed ‘global’ section to ‘model’\nRenamed ‘global.model’ to ‘model.model_type’\nVector reproject chunking now available\n\n\n\n\n\n\n\n\nBetter handling of errors during calculations\nCheck for module specific (e.g. ‘flood’) settings entries\nDefault output vector file format (driver) matches input file format\nVector reproject dataset creation error",
+    "text": "We welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. This guide provided an overview on how to go about it.",
     "crumbs": [
       "Developments",
-      "What's new?"
+      "Developer guide"
     ]
   },
   {
-    "objectID": "changelog.html#unreleased",
-    "href": "changelog.html#unreleased",
-    "title": "What’s new?",
-    "section": "",
-    "text": "These are the unreleased changes.\n\n\n\nModel type (type) and calculation modus (risk) as model properties\n\n\n\n\n\n‘hazard.risk’ entry is renamed to ‘global.risk’ in the settings file\nRenamed ‘global’ section to ‘model’\nRenamed ‘global.model’ to ‘model.model_type’\nVector reproject chunking now available\n\n\n\n\n\n\n\n\nBetter handling of errors during calculations\nCheck for module specific (e.g. ‘flood’) settings entries\nDefault output vector file format (driver) matches input file format\nVector reproject dataset creation error",
+    "objectID": "developments/guide.html#development-philosophy",
+    "href": "developments/guide.html#development-philosophy",
+    "title": "Developer guide",
+    "section": "Development philosophy",
+    "text": "Development philosophy\nThe aim of FIAT is to be a lean calculation core, focusing on the main tasks of FIAT of combining exposure, vulnerability and hazard data and calculating damages and risk. Developments related to pre- and post-processing of FIAT data should be done in respectively the HydroMT-FIAT and FIAT Toolbox repositories.",
     "crumbs": [
       "Developments",
-      "What's new?"
+      "Developer guide"
     ]
   },
   {
-    "objectID": "changelog.html#v0.3.2-2025-05-01",
-    "href": "changelog.html#v0.3.2-2025-05-01",
-    "title": "What’s new?",
-    "section": "v0.3.2 (2025-05-01)",
-    "text": "v0.3.2 (2025-05-01)\nSmall patch.\n\nFixed\n\nPin function when the point is exactly on the border of the grid",
+    "objectID": "developments/guide.html#sec-issue-conventions",
+    "href": "developments/guide.html#sec-issue-conventions",
+    "title": "Developer guide",
+    "section": "Issue conventions",
+    "text": "Issue conventions\nFIAT has known and unknown bugs. Improvements through bug reports or feature requests in our issue tracker are welcomed. Please search open and closed existing issues, before creating a new one.\nFor issues related to pre- and post-processing of FIAT data, please refer to respectively the HydroMT-FIAT and FIAT Toolbox repositories.",
     "crumbs": [
       "Developments",
-      "What's new?"
+      "Developer guide"
     ]
   },
   {
-    "objectID": "changelog.html#v0.3.1-2025-04-01",
-    "href": "changelog.html#v0.3.1-2025-04-01",
-    "title": "What’s new?",
-    "section": "v0.3.1 (2025-04-01)",
-    "text": "v0.3.1 (2025-04-01)\nSmall patch.\n\nChanged\n\nAllow based type (e.g. ‘fn_damage’ instead of only ‘fn_damage_structure’) as column header",
+    "objectID": "developments/guide.html#guidelines",
+    "href": "developments/guide.html#guidelines",
+    "title": "Developer guide",
+    "section": "Guidelines",
+    "text": "Guidelines\nPlease follow the guidelines when contributing to the FIAT development:\n\nCreate an issue if it does not yet exist, when starting contributing. For more information on the issues, see the contributing page.\nFork the repository.\nDevelop on the repository with descriptive commit messages.\nWe work with Ruff linting, so always format the added or changed code with this library.\nFor each newly developed feature we require a pytest test.\nCreate a Pull Request to the master branch stating the developments made and the related issue.\nOnce reviewed and if accepted, Deltares will merge the developments to the master branch.\n\nWe would like to get in touch with those that want to contribute. Do not hesitate to send us an email [email address coming soon]!",
     "crumbs": [
       "Developments",
-      "What's new?"
-    ]
-  },
-  {
-    "objectID": "changelog.html#v0.3.0-2025-03-20",
-    "href": "changelog.html#v0.3.0-2025-03-20",
-    "title": "What’s new?",
-    "section": "v0.3.0 (2025-03-20)",
-    "text": "v0.3.0 (2025-03-20)\nImproved API and CLI\n\nAdded\n\nBuild task for pixi\n\n\n\nChanged\n\nAllow for geometries outside of the hazard domain\nCsv file output coupled with vector file output\nCli: support for setting config entries\nCli: help messages have improved format\nDefault value for the model srs: “EPSG:4326” (WGS84)\nDefault vector output file format back to GPKG\nExpanded api, not everything needs to be defined in the settings file\nFixed bug in newline sniffer\nMore flexible Configurations class\nOptional CSV file output\nRename ConfigReader to Configurations\nRename all ‘crs’ variables to ‘srs’\nRename io submodule to fio\nSrs set in settings for a file will be used when no srs is present within the file\n\n\n\nDeprecated\n\nFIAT object\n\n\n\nDocumentation\n\nAdded missing settings file entries\nFixed missing docstrings (API)",
-    "crumbs": [
-      "Developments",
-      "What's new?"
-    ]
-  },
-  {
-    "objectID": "changelog.html#v0.2.1-2024-12-05",
-    "href": "changelog.html#v0.2.1-2024-12-05",
-    "title": "What’s new?",
-    "section": "v0.2.1 (2024-12-05)",
-    "text": "v0.2.1 (2024-12-05)\nPatch release for improved performance.\n\nAdded\n\nProfiler for developers\nSniffer for newline character in text files\n\n\n\nChanged\n\nComplete OS independent reading of text files (linux csv’s on windows and vice versa)\nDisabled locks when running ‘single threaded’\nFixed logging of errors during settings file checks\nImproved performance when running without csv\nLogging class Log is now called Logger\nSpecifying destination (‘dst’) is now optional for setup_default_log",
-    "crumbs": [
-      "Developments",
-      "What's new?"
-    ]
-  },
-  {
-    "objectID": "changelog.html#v0.2.0-2024-10-15",
-    "href": "changelog.html#v0.2.0-2024-10-15",
-    "title": "What’s new?",
-    "section": "v0.2.0 (2024-10-15)",
-    "text": "v0.2.0 (2024-10-15)\nAdded small features.\n\nAdded\n\n‘Normal’ exit when keyboard interrupt is triggered over cli\nSupport for grids with non square cells\n\n\n\nChanged\n\nFixed hanging issue with the mp-logging receiver when erroring\nFixed square cell assumption when mapping world coordinates to pixel coordinates\nSupport capitalized entries in the settings toml (again; it was disabled)\nVarious small non breaking fixes",
-    "crumbs": [
-      "Developments",
-      "What's new?"
-    ]
-  },
-  {
-    "objectID": "changelog.html#v0.1.1-2024-10-04",
-    "href": "changelog.html#v0.1.1-2024-10-04",
-    "title": "What’s new?",
-    "section": "v0.1.1 (2024-10-04)",
-    "text": "v0.1.1 (2024-10-04)\nSmall patch release.\n\nChanges\n\nBugfix regarding drivernotfound error in GridSource\nFixed install from conda\nMore functions and objects exposed directly under fiat -&gt; e.g. from fiat import open_grid",
-    "crumbs": [
-      "Developments",
-      "What's new?"
-    ]
-  },
-  {
-    "objectID": "changelog.html#v0.1.0-2024-10-03",
-    "href": "changelog.html#v0.1.0-2024-10-03",
-    "title": "What’s new?",
-    "section": "v0.1.0 (2024-10-03)",
-    "text": "v0.1.0 (2024-10-03)\nThe first full release of Delft-FIAT.\n\nAdded\n\nAttribute size of GeomSource object for in situ size return; count becomes private\nAttribute size of GridSource object for in situ size return; count becomes private\nAttributes dtypes and geom_type of GeomModel\nBuild time to FIAT cli (when build with pyinstaller), viewed with fiat --version\nDifferent types of exposure (e.g. ‘damage’, ‘affected’, ‘outage’ etc.)\nDocker file for docker image creation\nExtra arguments to grid.reproject\nFunction (generate_jobs) to generate jobs for parallelization\nFunction (execute_pool) to execute code in parallel using multiprocessing\nFlood hazard/ damage functions (methods submodule)\nGeneral method of creating output files in GeomModel (_setup_output_files)\nMethod _create_model_dirs of Configurations object for creating result directories in one go\nMethod add_handler of the Log object; user setting of custom stream\nMethod add_feature_with_map of GeomModel to set features with extra info\nMethod create of GeomModel to create an ogr.DataSource (new dataset)\nMethod create_equal_grids of GridModel for making hazard and exposure grid spatially equal\nMethod set of Configurations object\nNot stopping when exposure and hazard grids (GridModel), but instead make them spatially equal\nNumpy &gt;= 2.0.0 support\nPython 3.12 support\nSettings toml file: global setting ‘global.loglevel’; default ‘INFO’\nSettings toml file: exposure setting ‘exposure.types’; default ‘flood’\nSetting return period as a variable in hazard map bands (risk)\nSupport for using pixi for binary creation (properly)\n\n\n\nChanged\n\nBetter version of BufferHandler\nExposure data headers are now lower-/ snakecase (‘object_id’ -&gt; ‘objectId’), see docs\nFixed binary creation in general, but also specifically for GDAL &gt;= v3.9.1\nMade read methods of BaseModel, GeomModel and GridModel public (removed underscore)\nMade csv files (exposure data) optional\nMoved hazard/ damage calculation function to methods submodule\nProper checking for duplicate columns in csv files\nSettings toml file: exposure setting ‘exposure.csv.file’ (becomes optional)\nTesting of workers (not properly caught due to using multiprocessing)\nTesting only based on integers\n\n\n\nDeprecated\n\nBase object _BaseHandler; incompatible with Python 3.12\nFunction open_exp from fiat.io, superseded by general use of open_csv\nMethod add_c_handler in favour of the more generalized add_handler\nMethods _create_output_dir, _create_tmp_dir and _create_risk_dir of the Configurations object\nObject ExposureTable, now done via TableLazy\nResolve stage of GeomModel; now properly handled in GeomModel.run\nSetting return period via the name of the hazard band (risk)\nSettings toml file: global setting ‘global.keep_temp_files’\nSettings toml file: output setting ‘output.geom.chunk’; superseded by ‘global.geom.chunk’\nSupport of Python versions under 3.9.0\nTemporary files (GeomModel)\nTextHandler object; unused\n\n\n\nDocumentation\n\nAdded methods to the api\nCleaner home page\nGetting started remade into Information",
-    "crumbs": [
-      "Developments",
-      "What's new?"
-    ]
-  },
-  {
-    "objectID": "changelog.html#v0.1.0rc2-2024-02-19",
-    "href": "changelog.html#v0.1.0rc2-2024-02-19",
-    "title": "What’s new?",
-    "section": "v0.1.0rc2 (2024-02-19)",
-    "text": "v0.1.0rc2 (2024-02-19)\nThe second pre-release of Delft-FIAT.\n\nAdded\n\nA version switcher for the documentation\nAdded entries for chunking size in the settings file (settings.toml) for GeomModel\nChunking for geometry calculations (GeomModel)\nChunking for resolving temporary GeomModel output\nNew method for writing geometries from a buffer: BufferedGeomWriter\nNew function for merging vector layers: merge_geom_layers\nSetting of amount of threads via cli\n\n\n\nChanged\n\nBetter build environment creation on linux systems\nClarified the cli\nFixed chunking on a single thread\nFixed and clarified the shape (w, h) of GridSource and Grid\nFixed handling of positive nodata values in geometry calculations\nFixed indexing in GridModel calculations\nParallelisation of calculations for GeomModel (not only in risk mode)\nUpdated the installer creation (exe) on Windows (10/11)\nVarious bug fixes\n\n\n\nDeprecated\n\nget_bbox method of GeomSource and GridSource\nSetting: chunk in exposure.geom.settings, deprecated in favour of chunk in global.geom\nSetting: chunk in exposure.grid.settings, deprecated in favour of chunk in global.grid\nSetting: chunk in hazard.settings, deprecated in favour of chunk in global.grid\n\n\n\nDocumentation\n\nAbility to switch between documentation/ software versions\nImproved/ updated the page regarding exposure csv\nRestructered user settings pages\nSeperated user settings into: Basic, Computational & Optional",
-    "crumbs": [
-      "Developments",
-      "What's new?"
-    ]
-  },
-  {
-    "objectID": "changelog.html#v0.1.0rc1-2023-11-30",
-    "href": "changelog.html#v0.1.0rc1-2023-11-30",
-    "title": "What’s new?",
-    "section": "v0.1.0rc1 (2023-11-30)",
-    "text": "v0.1.0rc1 (2023-11-30)\nThis is the first and pre-release of Delft-FIAT. It aims to have a stable version of the GeomModel for calculating damages and risk for vector exposure data and an experimental version of the GridModel for calculating damages and risk for raster exposure data.\n\nAdded\n\nDocumentation\nCommand line user interface\nMain FIAT object from which it’s run\nGeomModel; the vector based model\nGridModel; the raster based model\nConfigurations; for reading the settings file\nI/O methods and structs\n\nopen_csv which returns e.g. Table\nopen_geom which returns a GeomSource\nopen_grid which returns a GridSource\n\nGIS related operations like:\n\ngeom.reproject to reproject vector files\ngrid.reproject to reproject raster files\noverlay.clip to clip a grid based on a polygon\nand more…\n\nAbility to ‘compile’/ freeze FIAT as an application/ binary\n\nWindows\nLinux (tested on Debian/ Ubuntu)\n\nSome smalller miscellaneous methods and object\n\nIn the API reference",
-    "crumbs": [
-      "Developments",
-      "What's new?"
+      "Developer guide"
     ]
   },
   {
@@ -1857,18 +1764,6 @@
       "Basics",
       "Main",
       "Configurations"
-    ]
-  },
-  {
-    "objectID": "examples/single_event.html",
-    "href": "examples/single_event.html",
-    "title": "Single event",
-    "section": "",
-    "text": "This is a an example of running a tiny single event FIAT model.\nFirst of all, let’s make sure that there is some actual testdata.\n\n! python ../../.testdata/create_test_data.py\n\nNow that we have some testdata, let’s take a look at the settings file.\n\nwith open(\"../../.testdata/geom_event.toml\", \"r\") as r:\n    settings = r.read()\nprint(settings)\n\n[model]\nmodel_type = \"geom\"\n\n[model.srs]\nvalue = \"EPSG:4326\"\n\n[output]\npath = \"output/geom_event\"\n\n[output.csv]\nname1 = \"output.csv\"\n\n[output.geom]\nname1 = \"spatial.gpkg\"\n\n[hazard]\nfile = \"hazard/event_map.nc\"\nelevation_reference = \"DEM\"\n\n[hazard.settings]\nsrs = \"EPSG:4326\"\n\n[exposure.csv]\nfile = \"exposure/spatial.csv\"\n\n[exposure.geom]\nfile1 = \"exposure/spatial.geojson\"\n\n[exposure.geom.settings]\nsrs = \"EPSG:4326\"\n\n[vulnerability]\nfile = \"vulnerability/vulnerability_curves.csv\"\nstep_size = 0.01\n\n\n\nNow let’s execute the model!\n\n! fiat run ../../.testdata/geom_event.toml\n\n\n###############################################################\n\n        #########    ##          ##      ##############\n        ##           ##         ####         ######\n        ##           ##         ####           ##\n        ##           ##        ##  ##          ##\n        ######       ##        ##  ##          ##\n        ##           ##       ########         ##\n        ##           ##      ##      ##        ##\n        ##           ##     ##        ##       ##\n        ##           ##    ##          ##      ##\n\n###############################################################\n\n                Fast Impact Assessment Tool\n                © Deltares\n\n2025-07-23 11:33:32 INFO    Delft-Fiat version: 0.3.3.dev\n2025-07-23 11:33:32 INFO    Using settings from '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/geom_event.toml'\n2025-07-23 11:33:32 INFO    Model srs set to: 'EPSG:4326'\n2025-07-23 11:33:32 INFO    Using number of threads: 1\n2025-07-23 11:33:32 INFO    Reading hazard data ('event_map.nc')\n2025-07-23 11:33:32 INFO    Executing hazard checks...\n2025-07-23 11:33:32 WARNING Setting the model srs from the hazard data.\n2025-07-23 11:33:32 INFO    Model srs set to: 'EPSG:4326'\n2025-07-23 11:33:32 INFO    Reading vulnerability curves ('vulnerability_curves.csv')\n2025-07-23 11:33:32 INFO    Executing vulnerability checks...\n2025-07-23 11:33:32 INFO    Upscaling vulnerability curves, using a step size of: 0.01\n2025-07-23 11:33:32 INFO    Reading exposure geometry 'file1' ('spatial.geojson')\n2025-07-23 11:33:32 INFO    Executing exposure geometry checks...\n2025-07-23 11:33:32 INFO    Reading exposure data ('spatial.csv')\n2025-07-23 11:33:32 INFO    Executing exposure data checks...\n2025-07-23 11:33:32 INFO    Starting the calculations\n2025-07-23 11:33:32 INFO    Busy...\n2025-07-23 11:33:32 INFO    Calculations time: 0.04 seconds\n2025-07-23 11:33:32 INFO    Output generated in: '/home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/output/geom_event'\n2025-07-23 11:33:32 INFO    Geom calculation are done!\n\n\nLet’s take a quick look at the output.\n\n# Import a method\nfrom fiat.fio import open_csv\nfrom pathlib import Path\n\n# check the output\nout = open_csv(Path(\"../../.testdata/output/geom_event\", \"output.csv\"), index=\"object_id\")\nprint(out.columns)\n\n('extract_method', 'ground_flht', 'ground_elevtn', 'fn_damage_structure', 'max_damage_structure', 'inun_depth', 'red_fact', 'damage_structure', 'total_damage')\n\n\nAssert that the output is what we would expect.\n\nassert float(out[2, \"total_damage\"]) == 740\nassert float(out[3, \"total_damage\"]) == 1038\n\n\n\n\n Back to top",
-    "crumbs": [
-      "User guide",
-      "Examples",
-      "Single event"
     ]
   },
   {
@@ -3423,59 +3318,189 @@
     ]
   },
   {
-    "objectID": "developments/guide.html",
-    "href": "developments/guide.html",
-    "title": "Developer guide",
+    "objectID": "changelog.html",
+    "href": "changelog.html",
+    "title": "What’s new?",
     "section": "",
-    "text": "We welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. This guide provided an overview on how to go about it.",
+    "text": "These are the unreleased changes.\n\n\n\nModel type (type) and calculation modus (risk) as model properties\n\n\n\n\n\nMoved ‘model.type’ (was hazard type) to ‘hazard.type’\nRenamed ‘global’ section to ‘model’\nRenamed ‘hazard.risk’ entry is to ‘model.risk’ in the settings file\nRenamed ‘model.model_type’ to ‘model.type’\nVector reproject chunking now available\n\n\n\n\n\n\n\n\nBetter handling of errors during calculations\nCheck for module specific (e.g. ‘flood’) settings entries\nCli entry overwrite parsing (‘-d’ or ‘–set-entry’)\nDefault output vector file format (driver) matches input file format\nVector reproject dataset creation error",
     "crumbs": [
       "Developments",
-      "Developer guide"
+      "What's new?"
     ]
   },
   {
-    "objectID": "developments/guide.html#development-philosophy",
-    "href": "developments/guide.html#development-philosophy",
-    "title": "Developer guide",
-    "section": "Development philosophy",
-    "text": "Development philosophy\nThe aim of FIAT is to be a lean calculation core, focusing on the main tasks of FIAT of combining exposure, vulnerability and hazard data and calculating damages and risk. Developments related to pre- and post-processing of FIAT data should be done in respectively the HydroMT-FIAT and FIAT Toolbox repositories.",
-    "crumbs": [
-      "Developments",
-      "Developer guide"
-    ]
-  },
-  {
-    "objectID": "developments/guide.html#sec-issue-conventions",
-    "href": "developments/guide.html#sec-issue-conventions",
-    "title": "Developer guide",
-    "section": "Issue conventions",
-    "text": "Issue conventions\nFIAT has known and unknown bugs. Improvements through bug reports or feature requests in our issue tracker are welcomed. Please search open and closed existing issues, before creating a new one.\nFor issues related to pre- and post-processing of FIAT data, please refer to respectively the HydroMT-FIAT and FIAT Toolbox repositories.",
-    "crumbs": [
-      "Developments",
-      "Developer guide"
-    ]
-  },
-  {
-    "objectID": "developments/guide.html#guidelines",
-    "href": "developments/guide.html#guidelines",
-    "title": "Developer guide",
-    "section": "Guidelines",
-    "text": "Guidelines\nPlease follow the guidelines when contributing to the FIAT development:\n\nCreate an issue if it does not yet exist, when starting contributing. For more information on the issues, see the contributing page.\nFork the repository.\nDevelop on the repository with descriptive commit messages.\nWe work with Ruff linting, so always format the added or changed code with this library.\nFor each newly developed feature we require a pytest test.\nCreate a Pull Request to the master branch stating the developments made and the related issue.\nOnce reviewed and if accepted, Deltares will merge the developments to the master branch.\n\nWe would like to get in touch with those that want to contribute. Do not hesitate to send us an email [email address coming soon]!",
-    "crumbs": [
-      "Developments",
-      "Developer guide"
-    ]
-  },
-  {
-    "objectID": "examples/index.html",
-    "href": "examples/index.html",
-    "title": "Examples",
+    "objectID": "changelog.html#unreleased",
+    "href": "changelog.html#unreleased",
+    "title": "What’s new?",
     "section": "",
-    "text": "This part of the documentation is under development. In the future, it will show more examples of how to use FIAT. Until that, this minimal example is available:\n\nSingle event example\n\n\n\n\n Back to top",
+    "text": "These are the unreleased changes.\n\n\n\nModel type (type) and calculation modus (risk) as model properties\n\n\n\n\n\nMoved ‘model.type’ (was hazard type) to ‘hazard.type’\nRenamed ‘global’ section to ‘model’\nRenamed ‘hazard.risk’ entry is to ‘model.risk’ in the settings file\nRenamed ‘model.model_type’ to ‘model.type’\nVector reproject chunking now available\n\n\n\n\n\n\n\n\nBetter handling of errors during calculations\nCheck for module specific (e.g. ‘flood’) settings entries\nCli entry overwrite parsing (‘-d’ or ‘–set-entry’)\nDefault output vector file format (driver) matches input file format\nVector reproject dataset creation error",
     "crumbs": [
-      "User guide",
-      "Examples"
+      "Developments",
+      "What's new?"
     ]
+  },
+  {
+    "objectID": "changelog.html#v0.3.2-2025-05-01",
+    "href": "changelog.html#v0.3.2-2025-05-01",
+    "title": "What’s new?",
+    "section": "v0.3.2 (2025-05-01)",
+    "text": "v0.3.2 (2025-05-01)\nSmall patch.\n\nFixed\n\nPin function when the point is exactly on the border of the grid",
+    "crumbs": [
+      "Developments",
+      "What's new?"
+    ]
+  },
+  {
+    "objectID": "changelog.html#v0.3.1-2025-04-01",
+    "href": "changelog.html#v0.3.1-2025-04-01",
+    "title": "What’s new?",
+    "section": "v0.3.1 (2025-04-01)",
+    "text": "v0.3.1 (2025-04-01)\nSmall patch.\n\nChanged\n\nAllow based type (e.g. ‘fn_damage’ instead of only ‘fn_damage_structure’) as column header",
+    "crumbs": [
+      "Developments",
+      "What's new?"
+    ]
+  },
+  {
+    "objectID": "changelog.html#v0.3.0-2025-03-20",
+    "href": "changelog.html#v0.3.0-2025-03-20",
+    "title": "What’s new?",
+    "section": "v0.3.0 (2025-03-20)",
+    "text": "v0.3.0 (2025-03-20)\nImproved API and CLI\n\nAdded\n\nBuild task for pixi\n\n\n\nChanged\n\nAllow for geometries outside of the hazard domain\nCsv file output coupled with vector file output\nCli: support for setting config entries\nCli: help messages have improved format\nDefault value for the model srs: “EPSG:4326” (WGS84)\nDefault vector output file format back to GPKG\nExpanded api, not everything needs to be defined in the settings file\nFixed bug in newline sniffer\nMore flexible Configurations class\nOptional CSV file output\nRename ConfigReader to Configurations\nRename all ‘crs’ variables to ‘srs’\nRename io submodule to fio\nSrs set in settings for a file will be used when no srs is present within the file\n\n\n\nDeprecated\n\nFIAT object\n\n\n\nDocumentation\n\nAdded missing settings file entries\nFixed missing docstrings (API)",
+    "crumbs": [
+      "Developments",
+      "What's new?"
+    ]
+  },
+  {
+    "objectID": "changelog.html#v0.2.1-2024-12-05",
+    "href": "changelog.html#v0.2.1-2024-12-05",
+    "title": "What’s new?",
+    "section": "v0.2.1 (2024-12-05)",
+    "text": "v0.2.1 (2024-12-05)\nPatch release for improved performance.\n\nAdded\n\nProfiler for developers\nSniffer for newline character in text files\n\n\n\nChanged\n\nComplete OS independent reading of text files (linux csv’s on windows and vice versa)\nDisabled locks when running ‘single threaded’\nFixed logging of errors during settings file checks\nImproved performance when running without csv\nLogging class Log is now called Logger\nSpecifying destination (‘dst’) is now optional for setup_default_log",
+    "crumbs": [
+      "Developments",
+      "What's new?"
+    ]
+  },
+  {
+    "objectID": "changelog.html#v0.2.0-2024-10-15",
+    "href": "changelog.html#v0.2.0-2024-10-15",
+    "title": "What’s new?",
+    "section": "v0.2.0 (2024-10-15)",
+    "text": "v0.2.0 (2024-10-15)\nAdded small features.\n\nAdded\n\n‘Normal’ exit when keyboard interrupt is triggered over cli\nSupport for grids with non square cells\n\n\n\nChanged\n\nFixed hanging issue with the mp-logging receiver when erroring\nFixed square cell assumption when mapping world coordinates to pixel coordinates\nSupport capitalized entries in the settings toml (again; it was disabled)\nVarious small non breaking fixes",
+    "crumbs": [
+      "Developments",
+      "What's new?"
+    ]
+  },
+  {
+    "objectID": "changelog.html#v0.1.1-2024-10-04",
+    "href": "changelog.html#v0.1.1-2024-10-04",
+    "title": "What’s new?",
+    "section": "v0.1.1 (2024-10-04)",
+    "text": "v0.1.1 (2024-10-04)\nSmall patch release.\n\nChanges\n\nBugfix regarding drivernotfound error in GridSource\nFixed install from conda\nMore functions and objects exposed directly under fiat -&gt; e.g. from fiat import open_grid",
+    "crumbs": [
+      "Developments",
+      "What's new?"
+    ]
+  },
+  {
+    "objectID": "changelog.html#v0.1.0-2024-10-03",
+    "href": "changelog.html#v0.1.0-2024-10-03",
+    "title": "What’s new?",
+    "section": "v0.1.0 (2024-10-03)",
+    "text": "v0.1.0 (2024-10-03)\nThe first full release of Delft-FIAT.\n\nAdded\n\nAttribute size of GeomSource object for in situ size return; count becomes private\nAttribute size of GridSource object for in situ size return; count becomes private\nAttributes dtypes and geom_type of GeomModel\nBuild time to FIAT cli (when build with pyinstaller), viewed with fiat --version\nDifferent types of exposure (e.g. ‘damage’, ‘affected’, ‘outage’ etc.)\nDocker file for docker image creation\nExtra arguments to grid.reproject\nFunction (generate_jobs) to generate jobs for parallelization\nFunction (execute_pool) to execute code in parallel using multiprocessing\nFlood hazard/ damage functions (methods submodule)\nGeneral method of creating output files in GeomModel (_setup_output_files)\nMethod _create_model_dirs of Configurations object for creating result directories in one go\nMethod add_handler of the Log object; user setting of custom stream\nMethod add_feature_with_map of GeomModel to set features with extra info\nMethod create of GeomModel to create an ogr.DataSource (new dataset)\nMethod create_equal_grids of GridModel for making hazard and exposure grid spatially equal\nMethod set of Configurations object\nNot stopping when exposure and hazard grids (GridModel), but instead make them spatially equal\nNumpy &gt;= 2.0.0 support\nPython 3.12 support\nSettings toml file: global setting ‘global.loglevel’; default ‘INFO’\nSettings toml file: exposure setting ‘exposure.types’; default ‘flood’\nSetting return period as a variable in hazard map bands (risk)\nSupport for using pixi for binary creation (properly)\n\n\n\nChanged\n\nBetter version of BufferHandler\nExposure data headers are now lower-/ snakecase (‘object_id’ -&gt; ‘objectId’), see docs\nFixed binary creation in general, but also specifically for GDAL &gt;= v3.9.1\nMade read methods of BaseModel, GeomModel and GridModel public (removed underscore)\nMade csv files (exposure data) optional\nMoved hazard/ damage calculation function to methods submodule\nProper checking for duplicate columns in csv files\nSettings toml file: exposure setting ‘exposure.csv.file’ (becomes optional)\nTesting of workers (not properly caught due to using multiprocessing)\nTesting only based on integers\n\n\n\nDeprecated\n\nBase object _BaseHandler; incompatible with Python 3.12\nFunction open_exp from fiat.io, superseded by general use of open_csv\nMethod add_c_handler in favour of the more generalized add_handler\nMethods _create_output_dir, _create_tmp_dir and _create_risk_dir of the Configurations object\nObject ExposureTable, now done via TableLazy\nResolve stage of GeomModel; now properly handled in GeomModel.run\nSetting return period via the name of the hazard band (risk)\nSettings toml file: global setting ‘global.keep_temp_files’\nSettings toml file: output setting ‘output.geom.chunk’; superseded by ‘global.geom.chunk’\nSupport of Python versions under 3.9.0\nTemporary files (GeomModel)\nTextHandler object; unused\n\n\n\nDocumentation\n\nAdded methods to the api\nCleaner home page\nGetting started remade into Information",
+    "crumbs": [
+      "Developments",
+      "What's new?"
+    ]
+  },
+  {
+    "objectID": "changelog.html#v0.1.0rc2-2024-02-19",
+    "href": "changelog.html#v0.1.0rc2-2024-02-19",
+    "title": "What’s new?",
+    "section": "v0.1.0rc2 (2024-02-19)",
+    "text": "v0.1.0rc2 (2024-02-19)\nThe second pre-release of Delft-FIAT.\n\nAdded\n\nA version switcher for the documentation\nAdded entries for chunking size in the settings file (settings.toml) for GeomModel\nChunking for geometry calculations (GeomModel)\nChunking for resolving temporary GeomModel output\nNew method for writing geometries from a buffer: BufferedGeomWriter\nNew function for merging vector layers: merge_geom_layers\nSetting of amount of threads via cli\n\n\n\nChanged\n\nBetter build environment creation on linux systems\nClarified the cli\nFixed chunking on a single thread\nFixed and clarified the shape (w, h) of GridSource and Grid\nFixed handling of positive nodata values in geometry calculations\nFixed indexing in GridModel calculations\nParallelisation of calculations for GeomModel (not only in risk mode)\nUpdated the installer creation (exe) on Windows (10/11)\nVarious bug fixes\n\n\n\nDeprecated\n\nget_bbox method of GeomSource and GridSource\nSetting: chunk in exposure.geom.settings, deprecated in favour of chunk in global.geom\nSetting: chunk in exposure.grid.settings, deprecated in favour of chunk in global.grid\nSetting: chunk in hazard.settings, deprecated in favour of chunk in global.grid\n\n\n\nDocumentation\n\nAbility to switch between documentation/ software versions\nImproved/ updated the page regarding exposure csv\nRestructered user settings pages\nSeperated user settings into: Basic, Computational & Optional",
+    "crumbs": [
+      "Developments",
+      "What's new?"
+    ]
+  },
+  {
+    "objectID": "changelog.html#v0.1.0rc1-2023-11-30",
+    "href": "changelog.html#v0.1.0rc1-2023-11-30",
+    "title": "What’s new?",
+    "section": "v0.1.0rc1 (2023-11-30)",
+    "text": "v0.1.0rc1 (2023-11-30)\nThis is the first and pre-release of Delft-FIAT. It aims to have a stable version of the GeomModel for calculating damages and risk for vector exposure data and an experimental version of the GridModel for calculating damages and risk for raster exposure data.\n\nAdded\n\nDocumentation\nCommand line user interface\nMain FIAT object from which it’s run\nGeomModel; the vector based model\nGridModel; the raster based model\nConfigurations; for reading the settings file\nI/O methods and structs\n\nopen_csv which returns e.g. Table\nopen_geom which returns a GeomSource\nopen_grid which returns a GridSource\n\nGIS related operations like:\n\ngeom.reproject to reproject vector files\ngrid.reproject to reproject raster files\noverlay.clip to clip a grid based on a polygon\nand more…\n\nAbility to ‘compile’/ freeze FIAT as an application/ binary\n\nWindows\nLinux (tested on Debian/ Ubuntu)\n\nSome smalller miscellaneous methods and object\n\nIn the API reference",
+    "crumbs": [
+      "Developments",
+      "What's new?"
+    ]
+  },
+  {
+    "objectID": "developments/index.html",
+    "href": "developments/index.html",
+    "title": "Developments",
+    "section": "",
+    "text": "Welcome to Delft-FIAT. Here we present an overview of what’s going on.",
+    "crumbs": [
+      "Developments"
+    ]
+  },
+  {
+    "objectID": "developments/index.html#roadmap",
+    "href": "developments/index.html#roadmap",
+    "title": "Developments",
+    "section": "Roadmap",
+    "text": "Roadmap\nWhat are we up to and what are the goals.\n\nQ2/ Q3 2025\n\nFurther stabilize the api and cli\nImprove the grid model performance\nProbably port sections to Cython",
+    "crumbs": [
+      "Developments"
+    ]
+  },
+  {
+    "objectID": "developments/index.html#whats-new",
+    "href": "developments/index.html#whats-new",
+    "title": "Developments",
+    "section": "What’s new…",
+    "text": "What’s new…\nIn order to see what has been done and what has been changed, please see the changelog.",
+    "crumbs": [
+      "Developments"
+    ]
+  },
+  {
+    "objectID": "developments/index.html#contribute",
+    "href": "developments/index.html#contribute",
+    "title": "Developments",
+    "section": "Contribute?",
+    "text": "Contribute?\nWe welcome contributions like bug reports, bug fixes, documentation improvements, enhancements, and ideas. Our developer guide explains how one can contribute to Delft-FIAT!",
+    "crumbs": [
+      "Developments"
+    ]
+  },
+  {
+    "objectID": "developments/index.html#licencing",
+    "href": "developments/index.html#licencing",
+    "title": "Developments",
+    "section": "Licencing",
+    "text": "Licencing\nThe MIT license applies to all contributions.",
+    "crumbs": [
+      "Developments"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Delft-FIAT",
+    "section": "",
+    "text": "A fast impact assessment tool."
+  },
+  {
+    "objectID": "index.html#quick-overview",
+    "href": "index.html#quick-overview",
+    "title": "Delft-FIAT",
+    "section": "Quick overview",
+    "text": "Quick overview\n\n\n\n\n  \n    \n      Information\n    \n  \n  \n    \n      Setup guide\n    \n  \n  \n    \n      How do I use FIAT?\n    \n  \n  \n    \n      Examples\n    \n  \n  \n    \n      API Reference\n    \n  \n  \n    \n      Frequently asked questions"
   },
   {
     "objectID": "info/index.html",
@@ -3500,65 +3525,108 @@
     ]
   },
   {
-    "objectID": "setup_guide/kernel/build.html",
-    "href": "setup_guide/kernel/build.html",
-    "title": "Building FIAT",
+    "objectID": "setup_guide/index.html",
+    "href": "setup_guide/index.html",
+    "title": "Setup guide",
     "section": "",
-    "text": "To build FIAT as an executable/ binary, it is required to clone the FIAT repository to your local drive. This required git to be installed on your local machine.\ngit clone git@github.com:Deltares/Delft-FIAT.git\nBesides git, a python installation/ environment with the necessary packages is needed. It is recommended to use miniforge3 for this purpose.\n\nWindowsLinux\n\n\n\nCreate a yml for a seperate build environment:\n\npython make_env.py build\n\nCreate the environment with mamba. This time, FIAT will be automatically installed with the environment:\n\nmamba env create -f environment.yml\n\nGo to the .build/ directory and execute the win64.bat script:\n\ncd ./.build\n\nwin64.bat\nThat’s it. A FIAT application will be located in the {root}/bin/Release folder.\n\n\n\nCreate a yml for a seperate build environment:\n\npython make_env.py build\n\nCreate the environment with mamba. This time, FIAT will be automatically installed with the environment:\n\nmamba env create -f environment.yml\n\nSet the rights of the shell script and exexute it:\n\nchmod u+x .build/linux64.sh\n\n.build/linux64.sh\nThat’s it. A FIAT application will be located in the {root}/bin/Release folder\n\n\n\n\n\n\n Back to top",
+    "text": "Installing FIAT\n    \n  \n  \n    \n      Development install\n    \n  \n  \n    \n      Building FIAT",
     "crumbs": [
-      "Setup guide",
-      "FIAT package",
-      "Building FIAT"
+      "Setup guide"
     ]
   },
   {
-    "objectID": "setup_guide/kernel/install.html",
-    "href": "setup_guide/kernel/install.html",
-    "title": "Installing FIAT",
-    "section": "",
-    "text": "FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.\n\n\nTo create a new environment follow the steps below.\n\nCreate a new environment:\n\nconda create -n fiat python=3.12.*\n\nActivate the environment:\n\nconda activate fiat`\n\nInstall FIAT from pypi:\n\npip install delft_fiat\n\nInstall FIAT from conda-forge\n\n# When conda-forge is added as a channel\nconda install delft_fiat\n\n# When not\nconda install delft_fiat -c conda-forge\n\nInstall FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use pip install to do so:\n\npip install git+https://github.com/Deltares/Delft-FIAT.git\n\n\n\nIf you want to install FIAT into an existing environment, simply activate the desired environment and run:\npip install git+https://github.com/Deltares/Delft-FIAT.git",
+    "objectID": "setup_guide/index.html#overview",
+    "href": "setup_guide/index.html#overview",
+    "title": "Setup guide",
+    "section": "Overview",
+    "text": "Overview\nFIAT requires Python 3.10 or greater, a package manager, and Git to be installed. After that, FIAT can be installed for use or for development, or it can be built as an application/executable.",
     "crumbs": [
-      "Setup guide",
-      "FIAT package",
-      "Installing FIAT"
+      "Setup guide"
     ]
   },
   {
-    "objectID": "setup_guide/kernel/install.html#for-use",
-    "href": "setup_guide/kernel/install.html#for-use",
-    "title": "Installing FIAT",
+    "objectID": "setup_guide/kernel/dev.html",
+    "href": "setup_guide/kernel/dev.html",
+    "title": "Development install",
     "section": "",
-    "text": "FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.\n\n\nTo create a new environment follow the steps below.\n\nCreate a new environment:\n\nconda create -n fiat python=3.12.*\n\nActivate the environment:\n\nconda activate fiat`\n\nInstall FIAT from pypi:\n\npip install delft_fiat\n\nInstall FIAT from conda-forge\n\n# When conda-forge is added as a channel\nconda install delft_fiat\n\n# When not\nconda install delft_fiat -c conda-forge\n\nInstall FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use pip install to do so:\n\npip install git+https://github.com/Deltares/Delft-FIAT.git\n\n\n\nIf you want to install FIAT into an existing environment, simply activate the desired environment and run:\npip install git+https://github.com/Deltares/Delft-FIAT.git",
+    "text": "This is for those who wish to contribute to the development of FIAT.\n\nFirst, clone the FIAT repository on Github into a local directory of choice:\n\ncd ~/{your path}\n\ngit clone https://github.com/Deltares/Delft-FIAT.git fiat\n\nCreate a new development environment. Make sure you either have tomli or tomllib (build-in with Python 3.11) in your base enviroment. Go into your cloned FIAT repository folder and create the environment file by running the make_env.py script:\n\ncd ~/{your path}/fiat\n\npython make_env.py dev\n\nThen, create and activate the new environment in conda:\n\nconda env create -f environment.yml\n\nconda activate fiat_dev\n\nTo install all the required dependencies, run:\n\npip install -e .\nThere you go. FIAT is now installed on your local machine for development purposes.\n\n\n\n Back to top",
     "crumbs": [
       "Setup guide",
       "FIAT package",
-      "Installing FIAT"
+      "Development install"
     ]
   },
   {
-    "objectID": "user_guide/data/exposure/csv.html",
-    "href": "user_guide/data/exposure/csv.html",
-    "title": "CSV",
+    "objectID": "user_guide/data/exposure.html",
+    "href": "user_guide/data/exposure.html",
+    "title": "Exposure data",
     "section": "",
-    "text": "The exposure data CSV file contains information about each asset in the area of interest that is optional for the damage calculation. Each row represents one asset, such as a building, road segment, or utility, and each column represents an attribute of the asset, such as its location, elevation or maximum potential damage value. For users that want to create their own exposure data, or modify existing exposure data, a description of the default fields (columns) in the exposure data CSV can be found here.\n\n\n\n\n\n\nTip\n\n\n\nUsers can add as many columns to the exposure CSV as they want, for example, to later identify the most damaged administrative areas. All data field will also be saved in the output of FIAT.\n\n\n\n\n\n Back to top",
+    "text": "The exposure data describe the assets within the region of interest. FIAT allows vector and raster data inputs. It is recommended to place the exposure data in the ‘exposure’ folder, see the folder structure. However, the file name is free to be chosen by the user and must simply be refered to in the settings.toml configuration file.",
+    "crumbs": [
+      "User guide",
+      "Data",
+      "Exposure data"
+    ]
+  },
+  {
+    "objectID": "user_guide/data/exposure.html#types-of-data",
+    "href": "user_guide/data/exposure.html#types-of-data",
+    "title": "Exposure data",
+    "section": "Types of Data",
+    "text": "Types of Data\nBecause FIAT consists of two models, the exposure data can be supplied in either a vector format or in raster format\n\nVector data\nFIAT can be used to assess flood damages to buildings, roads, utilities, and other types of structures of which data is available. These type of assets are often spatially represented with vector, or geometry data. Building a FIAT model with geometry exposure data requires two data types:\n\nGeometry file(s)\nCSV file (optional)\n\n\n\nRaster Data\n\n\n\n\n\n\nImportant\n\n\n\nThis functionality is in beta phase\n\n\nRaster files must be pre-processed before being ingested into the FIAT model. Raster projection and extent must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a raster file with the max potential damage per cell is required. A damage function must be assigned to each raster file as well, linking with the damage function name in the meta data to the name in the vulnerability curves file.",
+    "crumbs": [
+      "User guide",
+      "Data",
+      "Exposure data"
+    ]
+  },
+  {
+    "objectID": "user_guide/data/exposure/data.html",
+    "href": "user_guide/data/exposure/data.html",
+    "title": "Exposure data",
+    "section": "",
+    "text": "In the table down below, an overview is provided od the necessary inputs in either the geometry file or the csv file“.\n\n\n\nTable 1: exposure.csv input\n\n\n\n\n\nField\nRequired\nMultiple\nExample\n\n\n\n\nobject_id\nYes\n-\n1\n\n\nobject_name\nNo\n-\nfp_1\n\n\nextract_method\nYes\n-\ncentroid\n\n\nfn_&lt; any &gt;_&lt; any &gt;\nYes\nYes\nstruct_2\n\n\nground_flht\nNo\n-\n4\n\n\nground_elevtn\nNo\n-\n10.11\n\n\nmax_&lt; any &gt;_&lt; any &gt;\nYes\nYes\n193457.00\n\n\n&lt; Additional attributes &gt;\nNo\n\n1205\n\n\n\n\n\n\nA more detailed description of the data fields can be found below.\n\nObject ID\nThe object ID is used to link the geometries to the information in the exposure CSV. The object ID must be unique for each object. At the moment of writing, FIAT does not check whether the object IDs are indeed unique and it is the responsibility of the user to ensure this. At a later stage, FIAT will have a built-in check for this.\n\n\nObject name\nThe object name field can be chosen freely and can serve as a field for identifying the damages assets.\n\n\nExtraction Method\nThe extraction method refers to how the water level or water depth is sampled per asset. The options are (1) centroid, which samples the water level or depth at the estimated centroid inside of the asset, or (2) area, which considers the water level or depth over the entire polygon or line and takes either an average or maximum. The user can set the choice for the latter per damage function, in the vulnerability curves file.\n\n\n\n\n\n\nImportant\n\n\n\nIn case the user selects ‘area’ as extraction method for certain assets, the geometries related to those assets should be a line or polygon.\n\n\n\n\nDamage Functions\nThe user can input as many damage functions and related max potential damages as required. However, at least one damage function and related max potential damage must be provides per asset. Damage function column are named as fn_&lt; exposure_type &gt;_&lt; component &gt; (for exposure types, see here). This name can be chosen freely but it is recommended to give it a descriptive name, such as damage (exposure type) in combination with structure or content (components), and it is required to use the same name in the max potential damage column. (i.e. max_&lt; exposure-type &gt;_&lt; component &gt;) The value that must be entered is the name of the damage function, relating to the names in the corresponding damage functions in the vulnerability curves file. Globally, continental damage functions can be obtained from European Commission’s Joint Research Centre, but it is recommended to use more location-specific functions when available.\n\n\nGround Floor Height\nThe ground floor height column indicates the height of the ground floor of an asset above the ground elevation. For example, when a building is built on poles, the ground floor (finished floor in the US) is lifted off the ground with a certain height. Usually, buildings are at least a certain amount above ground elevation because of the road and sidewalk. This value is used to calculate the water depth inside of the asset, for buildings.\n\n\n\n\n\n\nImportant\n\n\n\nRequired for flood damage calculation, see global model types\n\n\n\n\nGround Elevation\nThe ground elevation is the value of a digital elevation model (DEM) at the location of the asset.\n\n\n\n\n\n\nImportant\n\n\n\nRequired for flood damage calculation, see global model types\n\n\n\n\nMax Potential Damage\nThe maximum potential damage corresponds to the damage functions for each asset. For each damage function type that was assigned, a maximum potential damage must also be assigned. These values represent the maximum damage to, for example, the structure, content, or other (e.g. inventory). There are methods to derive these values, based on building type and area of the building. Globally, maximum damage values per country can be obtained from European Commission’s Joint Research Centre, but it is recommended to use more location-specific damage values. In the US, FEMA Hazus is an industry standard in how to derive these values.\n\n\nAdditional attributes\nAttitional attributes can be added to the exposure CSV file. The added columns can be named freely. The resulting FIAT output contains all data that was put in, therefore they can be used by the FIAT Toolbox to calculate user-specified output metrics. For example, a user could configure the output metrics to always show the number of people affected with a high social vulnerability, per administrative region. The user can add columns to the CSV file manually or with the help of the HydroMT-FIAT model builder, in which the user is free to select a descriptive ‘Label name’ for the additional attributes. If the user wishes to connect the damages per administrative or other aggregation area to a GIS file, the **FIAT Toolbox offers a post-processing tool to do so.\n\n\n\n\n Back to top",
     "crumbs": [
       "User guide",
       "Data",
       "Exposure data",
-      "CSV"
+      "Exposure data"
     ]
   },
   {
-    "objectID": "user_guide/data/exposure/geometries.html",
-    "href": "user_guide/data/exposure/geometries.html",
-    "title": "Geometry",
+    "objectID": "user_guide/data/hazard.html",
+    "href": "user_guide/data/hazard.html",
+    "title": "Hazard data",
     "section": "",
-    "text": "A user can specify one or multiple geometry files in the settings.toml. It is advisable to give descriptive names to the geometry files, e.g., buildings.gpkg or roads.gpkg. Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page. All geometry files must have an attribute object_id. These need to be unique over all geometry files if a csv file with exposure data is provided and corresponding to the object_is’s in the provided csv file.\nIf no csv file provided with the exposure information, that information needs to be present in the geometry files(s) themselves. An overview of all the required input is shown here.\n\n\n\n\n\n\nExample\n\n\n\nWhen using a GeoPackage file with roads containing object_ids 1-100, a second GeoPackage file with building footprints should contain object_ids from 101-n. Then, if applicable, those IDs should link to the corresponding rows and IDs in the exposure CSV file.\n\n\nWhen providing a polygon or line geometry file, a user can choose to use the area extraction method (‘extraction method’ = ‘area’, see here) for considering water levels or depths over the whole area of the asset. This can be more appropriate than point estimates for example for large buildings.\n\n\n\n\n\n\nWarning\n\n\n\nAssets cannot be partially or fully outside the hazard map extent! FIAT will stop if it detects any.\n\n\n\nSupported data formats\nAn overview of supported formats is presented here\n\n\n\n\n Back to top",
+    "text": "FIAT computes the impact of a flood event or the risk of flooding on a community by using flood maps as hazard input. Flood maps describe the potential flood extent and magnitude in specific geographic areas. Currently, FIAT is only\nThese flood maps can be obtained from various sources. The The Global Flood Database provides an extensive amount of global flood hazard mapping products.\nThe user is free to run the model with a variety of flood scenarios, e.g., including mitigation and adaptation measures over a range of future climate conditions, as long as flood maps are available for those scenarios. The flood maps can be either flood elevation or flood depth maps.\nWith FIAT, the user has the option to assess the impact of a single flood event or the flood risk based on a set of events with multiple return periods. To do the latter, the user must provide multiple hazard maps with the same extent and projection.\nIn each case, some requirements must be met. The hazard files of any map should be made available as a raster file, see the acceptable file types at the bottom of this page. It is recommended to place the hazard files in the ‘hazard’ folder, see the folder structure. The file name is free to be chosen by the user and must simply be refered to in the settings.toml configuration file.",
     "crumbs": [
       "User guide",
       "Data",
-      "Exposure data",
-      "Geometry"
+      "Hazard data"
+    ]
+  },
+  {
+    "objectID": "user_guide/data/hazard.html#types-of-maps",
+    "href": "user_guide/data/hazard.html#types-of-maps",
+    "title": "Hazard data",
+    "section": "Types of maps",
+    "text": "Types of maps\nFIAT knows two types of hazard maps:\n\nEvent maps\nRisk maps\n\nRisk maps are mainly used to calculate the EAD (Estimated Annual Damages). If risk is not set to true in the settings file, the supplied map will be treated as an event map.",
+    "crumbs": [
+      "User guide",
+      "Data",
+      "Hazard data"
+    ]
+  },
+  {
+    "objectID": "user_guide/data/hazard.html#supported-formats",
+    "href": "user_guide/data/hazard.html#supported-formats",
+    "title": "Hazard data",
+    "section": "Supported formats",
+    "text": "Supported formats\nAn overview of supported formats is presented here",
+    "crumbs": [
+      "User guide",
+      "Data",
+      "Hazard data"
     ]
   },
   {
@@ -3595,107 +3663,39 @@
     ]
   },
   {
-    "objectID": "user_guide/settings/index.html",
-    "href": "user_guide/settings/index.html",
-    "title": "Settings",
+    "objectID": "user_guide/data/vulnerability.html",
+    "href": "user_guide/data/vulnerability.html",
+    "title": "Vulnerability data",
     "section": "",
-    "text": "The user must set the model settings in the settings.toml configuration file.\nBesides the necessary/ required setttings one can set:\n\ninput in regard to the computational side of FIAT (e.g. chunking, number of threads etc),\n\nsee this page\n\noptional/ additional input that is not necessary or more data specific,\n\nsee this page\n\n\n\nBasic input\nThis section pertains to all input that is vital for running a FIAT model.\nThese inputs/ entries are listed in the table down below with more detailed information per entry underneath the table.\n\n\n\n\n\n\nNote\n\n\n\nFile paths in the settings can be relative to the settings.toml file or absolute.\n\n\n\n\n\nTable 1: Most basic settings file input\n\n\n\n\n\nEntry\nType\nRequired\nDefault\n\n\n\n\n[model]\n\n\n\n\n\nmodel\nstring\nNo\ngeom\n\n\n[output]\n\n\n\n\n\npath\nstring\nNo\noutput\n\n\n[output.csv]\n\n\n\n\n\nname[n]\nstring\nNo\n-\n\n\n[output.geom]\n\n\n\n\n\nname[n]\nstring\nNo\nspatial[n].gpkg\n\n\n[output.grid]\n\n\n\n\n\nname\nstring\nNo\nead.nc\n\n\n[hazard]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\nelevation_reference\nstring\nYes\n\n\n\n[exposure.csv]\n\n\n\n\n\nfile\nstring\nNo\n-\n\n\n[exposure.geom]\n\n\n\n\n\nfile[n]\nstring\nYes\n\n\n\n[exposure.grid]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\n[vulnerability]\n\n\n\n\n\nfile\nstring\nYes\n\n\n\n\n\n\n\n\n[model]\n\nmodel_type: The type of model. Choice between ‘geom’ and ‘grid’.\n\n\n\n[output]\n\npath: The path to the output folder in the working directory.\n\n\n\n[output.csv]\n\nname[n]: The path to the output CSV file(s) that will be created. These are linked to the input geometry files.\n\n\n\n[output.geom]\n\nname[n]: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.\n\n\n\n\n\n\n\nWarning\n\n\n\nIf provided, the suffix is mandatory. The suffix should match the suffix of the input geometry file for which it is set.\n\n\n\n\n[output.grid]\n\nname: This sets the name and location of the output raster file that contains damages per grid cell.\n\n\n\n[hazard]\n\nfile: The file path to the hazard file.\nelevation_reference: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be “DEM” while in case of a flood-elevation map this should be “datum”.\n\n\n\n[exposure.csv]\n\nfile: The path to the exposure CSV file (recommended to be within the exposure folder) that contains the required information per asset. There can only be one exposure CSV file.\n\n\n\n[exposure.geom]\n\nfile[n]: The path to the exposure vector file (recommended to be within the exposure folder) with the assets’ geometry and object_id. The user can provide multiple vector files. Therefore the ‘[n]’ suffix, as the user can create mulitple entries for vector files (e.g. file1, file2 etc.).\n\n\n\n\n\n\n\nWarning\n\n\n\nThe suffix is mandatory. So if only one file is provided, name it file1.\n\n\n\n\n\n\n\n\nNote\n\n\n\nOnly required when running the geometry based model.\n\n\n\n\n[exposure.grid]\n\nfile: The path to the exposure raster file (recommended to be within the exposure folder).\n\n\n\n\n\n\n\nNote\n\n\n\nOnly required when running the raster based model.\n\n\n\n\n[vulnerability]\n\nfile: The path to the vulnerability curves CSV file within the vulnerability folder that contains the damage curves. Only one vulnerability curves file is allowed.\n\n\n\n\nExample\nAn example of settings file for running a geometry model is given below:\n[output]\npath = \"output\"\n\n[output.csv]\nname = \"output.csv\"\n\n[output.geom]\nname1 = \"spatial.gpkg\"\n\n[hazard]\nfile = \"hazard/SL_10yr_reprojected.tif\"\nelevation_reference = \"DEM\"\nrisk = false\n\n[exposure.geom]\nfile1 = \"./exposure/buildings.gpkg\"\n\n[exposure.csv]\nfile = \"./exposure/exposure.csv\"\n\n[vulnerability]\nfile = \"./vulnerability/vulnerability_curves.csv\"\n\n\n\n\n Back to top",
-    "crumbs": [
-      "User guide",
-      "Settings"
-    ]
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Delft-FIAT",
-    "section": "",
-    "text": "A fast impact assessment tool."
-  },
-  {
-    "objectID": "index.html#quick-overview",
-    "href": "index.html#quick-overview",
-    "title": "Delft-FIAT",
-    "section": "Quick overview",
-    "text": "Quick overview\n\n\n\n\n  \n    \n      Information\n    \n  \n  \n    \n      Setup guide\n    \n  \n  \n    \n      How do I use FIAT?\n    \n  \n  \n    \n      Examples\n    \n  \n  \n    \n      API Reference\n    \n  \n  \n    \n      Frequently asked questions"
-  },
-  {
-    "objectID": "user_guide/index.html",
-    "href": "user_guide/index.html",
-    "title": "User guide",
-    "section": "",
-    "text": "User Settings\n    \n  \n  \n    \n      Data\n    \n  \n  \n    \n      Examples",
-    "crumbs": [
-      "User guide"
-    ]
-  },
-  {
-    "objectID": "user_guide/index.html#quick-start",
-    "href": "user_guide/index.html#quick-start",
-    "title": "User guide",
-    "section": "Quick start",
-    "text": "Quick start\nFIAT computes the (economic) damage and risk of flood events at a specified geographic location based on flood inundation data, exposured assets and vulnerability functions. The model can be configured with a settings file and data inputs:\n\nSettings file\nData\n\nThe HydroMT plugin HydroMT-FIAT can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same folder structure that HydroMT-FIAT creates.",
-    "crumbs": [
-      "User guide"
-    ]
-  },
-  {
-    "objectID": "user_guide/index.html#the-models",
-    "href": "user_guide/index.html#the-models",
-    "title": "User guide",
-    "section": "The models",
-    "text": "The models\nThe data is used by either one or both of the following models:\n\nGeomModel\nGridModel\n\nSome more information about the models can be found here.",
-    "crumbs": [
-      "User guide"
-    ]
-  },
-  {
-    "objectID": "user_guide/index.html#general-user-information",
-    "href": "user_guide/index.html#general-user-information",
-    "title": "User guide",
-    "section": "General User Information",
-    "text": "General User Information\nFIAT derives damages and risk at asset-level based on flood maps and additional inputs such as depth-damage functions, asset locations and their maximum potential damages. For each asset specified in the exposure dataset, the water depth or level is sampled from the flood map at the location of the assets.\n\n\n\n\n\n\nNote\n\n\n\nWater elevations are converted to water depths using the ground elevation of each asset.\n\n\nSee Figure 1 for an overview of the FIAT workflow. To obtain the flood inundation level, FIAT extracts the water depth or level at the location of each asset. For line or polygon assets, either the average or maximum water depth or level and the fraction of the asset are extracted from the hazard map. The inundation depth within buildings or on top of for example, roads, is obtained by subtracting the ground floor height from the water depth. FIAT derives the damage fraction for each asset using its inundation depth and interpolating over its depth-damage curve. Thereafter, the damage to the asset is calculated as the product of the maximum potential damage and the damage fraction. In case an asset is only partially flooded, the damages will be reduced by the dry fraction of the building. Instead of single events, the user can also provide return-period flood maps as input. Hence, FIAT calculates and integrates the associated return-period damages to derive the expected annual damages.\n\n\n\n\n\n\nFigure 1: FIAT Workflow. The damage of the flood water level in each object is determined by flood depth-damage functions, which relate the water level to the maximum potential damage of an asset, returning a damage fraction. The damage fraction is multiplied with the max. potential damage to obtain a monetary damage per object.",
-    "crumbs": [
-      "User guide"
-    ]
-  },
-  {
-    "objectID": "user_guide/data/hazard_maps.html",
-    "href": "user_guide/data/hazard_maps.html",
-    "title": "Types of hazard maps",
-    "section": "",
-    "text": "Tip\n\n\n\nThe most advised format for both event and risk is netCDF.",
+    "text": "The vulnerability of an asset is determined by its building type (e.g. ‘residential 1-story building’) and the inundation depth, also refered to as water depth, during a flood event. Different assests incur different degrees of damage at varying inundation levels. This vulnerability can be quantified via flood depth-damage functions, see for example Figure 1. The damage function relates the water depth to the maximum potential damage per asset and returns the damage fraction (a value between 0 and 1). The damage fraction is multiplied by the maximum potential damage to obtain a damage value. The value of the maximum potential damage differs per asset and must be specified in the exposure data.\n\n\n\n\n\n\n\n\nFigure 1: Damage functions of different assets/structures.\n\n\n\n\n\nThe damage functions must be given in a CSV file (vulnerability.csv), located in the vulnerability folder, see for example Table 1. The first column contains the water depth, and then each additional column provides the damage fraction for the corresponding damage function. Three header rows are required, describing the unit of the water depth; #UNIT=&lt;unit&gt;, e.g., #UNIT=m. The second row, named #METHOD, must be defined for each damage-curve separately above the damage curve name. The method refers to the way that multiple flood values will be aggregated per asset in case the area method is used for deriving the inundation depth. The damage curve name must coincide with the name of the damage function defined in the exposure data.\n\n\n\n\n\n\nImportant\n\n\n\nWater depth units (e.g. feet or meters) must be consistent with the units of the flood hazard map and the exposure data (i.e., ground elevation, ground floor height).\n\n\n\n\n\n\nTable 1: Vulnerability data CSV file. The water depth must be in the outer left column followed by the damage functions. The user has the freedom to add multiple damage curves.\n\n\n\n\n\n\n#UNIT=m\n\n\n\n#METHOD\nmean\nmax\n\n\nwater depth\nSTRUCT1\nSTRUCT2\n\n\n\n\n0.00\n0.00\n0.00\n\n\n0.25\n0.00\n0.00\n\n\n0.50\n0.00\n0.00\n\n\n0.75\n0.00\n0.00\n\n\n1.00\n0.00\n0.00\n\n\n1.25\n0.14\n0.20\n\n\n1.50\n0.25\n0.37\n\n\n1.75\n0.35\n0.51\n\n\n2.00\n0.43\n0.63\n\n\n2.25\n0.50\n0.74\n\n\n2.50\n0.57\n0.83\n\n\n2.75\n0.63\n0.92\n\n\n3.00\n0.68\n0.96\n\n\n3.25\n0.73\n0.96\n\n\n3.50\n0.78\n0.96\n\n\n3.75\n0.82\n0.96\n\n\n4.00\n0.86\n0.96\n\n\n4.25\n0.90\n0.96\n\n\n4.50\n0.93\n0.96\n\n\n4.75\n0.96\n0.96\n\n\n5.00\n0.96\n0.96\n\n\n\n\n\n\n\n\nWater depths may be negative for assets that incur damage below the ground floor height, and the user is free to choose any water depth increments in the CSV file. The damage functions can have any name. Multiple damage-functions can be described in the vulnerability curves CSV file by simply adding consecutive columns next to one another.\n\n\n\n\n\n\nTip\n\n\n\nYou can also create damage functions with the HydroMT-FIAT model builder\n\n\n\n\n\n Back to top",
     "crumbs": [
       "User guide",
       "Data",
-      "Hazard data",
-      "Types of hazard maps"
+      "Vulnerability data"
     ]
   },
   {
-    "objectID": "user_guide/data/hazard_maps.html#event",
-    "href": "user_guide/data/hazard_maps.html#event",
-    "title": "Types of hazard maps",
-    "section": "Event",
-    "text": "Event\nEvent maps are generally supplied in singular fashion (i.e. one band per event map). This band just simply contains the hazard values per cell. Let’s have a quick peek at the data using gdalinfo:\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/event_map.nc\nSize is 10, 10\nCoordinate System is:\nGEOGCRS[\"WGS 84\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    ID[\"EPSG\",4326]]\nData axis to CRS axis mapping: 2,1\nOrigin = (4.350000000000000,52.049999999999997)\nPixel Size = (0.010000000000000,-0.010000000000000)\nMetadata:\n  Band1#grid_mapping=crs\n  Band1#long_name=GDAL Band Number 1\n  Band1#_FillValue=9.96921e+36\n  crs#crs_wkt=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  crs#GeoTransform=4.3499999999999996 0.01 0 52.049999999999997 0 -0.01 \n  crs#grid_mapping_name=latitude_longitude\n  crs#inverse_flattening=298.257223563\n  crs#longitude_of_prime_meridian=0\n  crs#long_name=CRS definition\n  crs#semi_major_axis=6378137\n  crs#spatial_ref=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  lat#long_name=latitude\n  lat#standard_name=latitude\n  lat#units=degrees_north\n  lon#long_name=longitude\n  lon#standard_name=longitude\n  lon#units=degrees_east\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.11.3 \"Eganville\", released 2025/07/12\n  NC_GLOBAL#history=Wed Jul 23 11:33:32 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/event_map.nc, ... )\nCorner Coordinates:\nUpper Left  (   4.3500000,  52.0500000) (  4d21' 0.00\"E, 52d 3' 0.00\"N)\nLower Left  (   4.3500000,  51.9500000) (  4d21' 0.00\"E, 51d57' 0.00\"N)\nUpper Right (   4.4500000,  52.0500000) (  4d27' 0.00\"E, 52d 3' 0.00\"N)\nLower Right (   4.4500000,  51.9500000) (  4d27' 0.00\"E, 51d57' 0.00\"N)\nCenter      (   4.4000000,  52.0000000) (  4d24' 0.00\"E, 52d 0' 0.00\"N)\nBand 1 Block=10x1 Type=Float32, ColorInterp=Undefined\n  NoData Value=9.96921e+36\n  Metadata:\n    NETCDF_VARNAME=Band1\n    long_name=GDAL Band Number 1\n    _FillValue=9.96921e+36\n    grid_mapping=crs\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nAllthough netCDF is the preferred format, GeoTIFF’s are also very handy for single events.\n\n\nAs one can see, this dataset has only one band (variable).\nWhen created, it is preferred that the event map is compressed to prevent unneccessary data on the hard drive. More information regarding the compression and others settings can be found here.",
+    "objectID": "user_guide/settings/computation.html",
+    "href": "user_guide/settings/computation.html",
+    "title": "Computational input",
+    "section": "",
+    "text": "The inputs give the user a bit more control over the computational aspects of FIAT.\n\n\n\nTable 1: Computational FIAT input settings\n\n\n\n\n\nEntry\nType\nDefault\n\n\n\n\n[model]\n\n\n\n\nthreads\ninteger\n1\n\n\n[model.geom]\n\n\n\n\nchunk\ninteger\n-\n\n\n[model.grid]\n\n\n\n\nchunk\nlist\n-\n\n\n\n\n\n\n\n\n\n\n\n\nWarning\n\n\n\nAll settings that are not globally defined (e.g. settings chunk size via hazard.settings) are ill-advised. Please use the global chunking settings.\n\n\n\n[model]\n\nthreads: Set the number of threads of the calculations. If this number exceeds the cpu count, the amount of threads will be capped by the cpu count.\n\n\n\n[model.geom]\n\nchunk: Set the chunk size of the geometry calculations. The calculations will then be done in vectors of these lengths in parallel. This settings will also be used for chunking when writing.\n\n\n\n\n\n\n\nTip\n\n\n\nThis input benefits from multiple threads.\n\n\n\n\n\n\n\n\nNote\n\n\n\nThis input is only applicable to the GeomModel\n\n\n\n\n[model.grid]\n\nchunk: Set the chunk size for the gridded calculations. This will chunk the data in rectangles with the goal of reducing the memory foodprint. An example would be [1024, 1024,].\n\n\n\n\n\n\n\nNote\n\n\n\nThis input is only applicable to the GridModel\n\n\n\n\n\n\n Back to top",
     "crumbs": [
       "User guide",
-      "Data",
-      "Hazard data",
-      "Types of hazard maps"
+      "Settings",
+      "Computational input"
     ]
   },
   {
-    "objectID": "user_guide/data/hazard_maps.html#risk",
-    "href": "user_guide/data/hazard_maps.html#risk",
-    "title": "Types of hazard maps",
-    "section": "Risk",
-    "text": "Risk\nRisk maps in gerenal should contain multiple bands.\nThese bands can be either supplied in either one of two ways:\n\nMultiple variables (like normal bands)\nAs a subdataset\n\nLets take a look quick look at the data (again with gdalinfo):\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/risk_map.nc\nSize is 512, 512\nMetadata:\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.11.3 \"Eganville\", released 2025/07/12\n  NC_GLOBAL#history=Wed Jul 23 11:33:32 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/risk_map.nc, ... )\nSubdatasets:\n  SUBDATASET_1_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band1\n  SUBDATASET_1_DESC=[10x10] Band1 (32-bit floating-point)\n  SUBDATASET_2_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band2\n  SUBDATASET_2_DESC=[10x10] Band2 (32-bit floating-point)\n  SUBDATASET_3_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band3\n  SUBDATASET_3_DESC=[10x10] Band3 (32-bit floating-point)\n  SUBDATASET_4_NAME=NETCDF:\"../../../.testdata/hazard/risk_map.nc\":Band4\n  SUBDATASET_4_DESC=[10x10] Band4 (32-bit floating-point)\nCorner Coordinates:\nUpper Left  (    0.0,    0.0)\nLower Left  (    0.0,  512.0)\nUpper Right (  512.0,    0.0)\nLower Right (  512.0,  512.0)\nCenter      (  256.0,  256.0)\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nInstead of seeing normal metadata, we only get an overview of the available subdatasets.\n\n\nMultiple netCDF variables are normally not recognized as bands by the netCDF driver of GDAL. Instead they are interpreted as subdatasets (!). One can set the key var_as_band to true within the settings file to read the subdatasets as bands.\n[hazard]\nfile = &lt;your-file&gt;\nrisk = true\n[hazard.settings]\nvar_as_band = true\nWhen supplied in one subdataset (all bands are within that subdataset), the subset variable within the settings file should be set under the header hazard.settings. The value set to subset should be the name of the desired subdataset.\n[hazard]\nfile = &lt;your-file&gt;\nrisk = true\n[hazard.settings]\nvar_as_band = false\nsubset = &lt;your-wanted-subdataset&gt;\n\nReturn periods\nThe return periods can be set in the settings file by supplying a list via the hazard.return_periods entry. However, the return periods can also be set via the hazard bands directly from the return_period attribute of the bands. This attribute is simply set using either xarray, gdal or hydromt.\nWhen present in all bands, this attribute will be preferred over the return periods specified in the settings file. The reason being that the return period is directly linked to the corresponding band, whereas it is inferred in the case of setting it via the settings file.\nLet’s have a quick peek at the data using gdalinfo (it will be at the bottom):\n\n\n\n\nDriver: netCDF/Network Common Data Format\nFiles: ../../../.testdata/hazard/risk_map.nc\nSize is 10, 10\nCoordinate System is:\nGEOGCRS[\"WGS 84\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    ID[\"EPSG\",4326]]\nData axis to CRS axis mapping: 2,1\nOrigin = (4.350000000000000,52.049999999999997)\nPixel Size = (0.010000000000000,-0.010000000000000)\nMetadata:\n  Band1#grid_mapping=crs\n  Band1#long_name=GDAL Band Number 1\n  Band1#return_period=2\n  Band1#_FillValue=9.96921e+36\n  crs#crs_wkt=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  crs#GeoTransform=4.3499999999999996 0.01 0 52.049999999999997 0 -0.01 \n  crs#grid_mapping_name=latitude_longitude\n  crs#inverse_flattening=298.257223563\n  crs#longitude_of_prime_meridian=0\n  crs#long_name=CRS definition\n  crs#semi_major_axis=6378137\n  crs#spatial_ref=GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]\n  lat#long_name=latitude\n  lat#standard_name=latitude\n  lat#units=degrees_north\n  lon#long_name=longitude\n  lon#standard_name=longitude\n  lon#units=degrees_east\n  NC_GLOBAL#Conventions=CF-1.5\n  NC_GLOBAL#GDAL=GDAL 3.11.3 \"Eganville\", released 2025/07/12\n  NC_GLOBAL#history=Wed Jul 23 11:33:32 2025: GDAL Create( /home/runner/work/Delft-FIAT/Delft-FIAT/docs/examples/../../.testdata/hazard/risk_map.nc, ... )\nCorner Coordinates:\nUpper Left  (   4.3500000,  52.0500000) (  4d21' 0.00\"E, 52d 3' 0.00\"N)\nLower Left  (   4.3500000,  51.9500000) (  4d21' 0.00\"E, 51d57' 0.00\"N)\nUpper Right (   4.4500000,  52.0500000) (  4d27' 0.00\"E, 52d 3' 0.00\"N)\nLower Right (   4.4500000,  51.9500000) (  4d27' 0.00\"E, 51d57' 0.00\"N)\nCenter      (   4.4000000,  52.0000000) (  4d24' 0.00\"E, 52d 0' 0.00\"N)\nBand 1 Block=10x1 Type=Float32, ColorInterp=Undefined\n  NoData Value=9.96921e+36\n  Metadata:\n    NETCDF_VARNAME=Band1\n    long_name=GDAL Band Number 1\n    _FillValue=9.96921e+36\n    grid_mapping=crs\n    return_period=2",
+    "objectID": "user_guide/settings/optional.html",
+    "href": "user_guide/settings/optional.html",
+    "title": "Optional input",
+    "section": "",
+    "text": "Here we provide an overview of all optional/ non essential settings that the user can provide to FIAT. These are listed in the table (Table 1) below.\n\n\n\nTable 1: Settings.toml input (required and optional fields)\n\n\n\n\n\nField\nType\nDefault\n\n\n\n\n[model]\n\n\n\n\nloglevel\nstring\nINFO\n\n\nrisk\nboolean\nfalse\n\n\n[model.srs]\n\n\n\n\nvalue\nstring\nEPSG:4326\n\n\nprefer_global\nbool\nfalse\n\n\n[model.grid]\n\n\n\n\nprefer\nstring\nexposure\n\n\n[hazard]\n\n\n\n\nresampling_method\nint\n0\n\n\nreturn_periods\nlist\n-\n\n\ntype\nstring\nflood\n\n\n[hazard.settings]\n\n\n\n\nsrs\nstring\n-\n\n\nsubset\nstring\n-\n\n\nvar_as_band\nboolean\nfalse\n\n\n[exposure]\n\n\n\n\ntypes\nlist\n[‘damage’]\n\n\n[exposure.csv.settings]\n\n\n\n\nindex\nstring\nobject_id\n\n\n[exposure.geom.settings]\n\n\n\n\nindex\nstring\nobject_id\n\n\nsrs\nstring\n-\n\n\n[exposure.grid]\n\n\n\n\nresampling_method\nint\n0\n\n\n[exposure.grid.settings]\n\n\n\n\nsrs\nstring\n-\n\n\nvar_as_band\nboolean\nfalse\n\n\n[vulnerability]\n\n\n\n\nstep_size\nfloat\n0.01\n\n\n[vulnerability.settings]\n\n\n\n\nindex\nstring\n‘water depth’\n\n\n\n\n\n\n\n[model]\n\nloglevel: Set the loglevel of the fiat logger from the settings file. Choose from ‘DEBUG’, ‘INFO’, ‘WARNING’, ‘ERROR’ or ‘DEAD’.\nrisk: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.\n\n\n\n[model.srs]\n\nvalue: Global projection for the model and the output. If not defined, the default projection is set to WGS84.\nprefer_global: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e. prefer the hazard projection.\n\n\n\n[model.grid]\n\nprefer: Whether to spatially prefer exposure data or hazard data. The other will be warped when they are not equal. Chose ‘exposure’ or ‘hazard’.\n\n\n\n[hazard]\n\nresampling_method: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see this page\nreturn_periods: Return periods for hazard calculation when they cannot be inferred from the data itself.\ntype: Type of hazard. Should be the same name as the file containing the functions (e.g. ‘flood’ -&gt; fiat.methods.flood)\n\n\n\n[hazard.settings]\n\nsrs: Projection of the hazard data if it cannot be inferred from the dataset itself.\nsubset: Select a specific subdataset by supplying it’s ID (name) here.\nvar_as_band: Whether or not to read the subdatasets as classic raster band.\n\n\n\n\n\n\n\nNote\n\n\n\nThe entry var_as_band is only applicable to netCDF files.\n\n\n\n\n[exposure]\n\ntypes: Types of exposure. This could be monetary damages (‘damage’), affected people (‘affected’) etc.\n\n\n\n[exposure.csv.settings]\n\nindex: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to ‘object_id’.\n\n\n\n[exposure.geom.settings]\n\nindex: Set the index column of the geom file(s). In case nothing is provided, the default value ‘object_id’ is used.\nsrs: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.\n\n\n\n[exposure.grid]\n\nresampling_method: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see this page\n\n\n\n[exposure.grid.settings]\n\nsrs: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.\nvar_as_band: Whether or not to read the subdatasets as classic raster band.\n\n\n\n\n\n\n\nNote\n\n\n\nThe entry var_as_band is only applicable to netCDF files.\n\n\n\n\n[vulnerability]\n\nstep_size: The internal step size of the vulnerability data. The supplied data is interpolated or averaged depending on the minimal step size of the supplied dataset.\n\n\n\n[vulnerability.settings]\n\nindex: Set the index column of the csv file. In case of the vulnerability csv, if no entry is provided then FIAT will default to ‘water depth’.\n\n\n\n\n\n Back to top",
     "crumbs": [
       "User guide",
-      "Data",
-      "Hazard data",
-      "Types of hazard maps"
+      "Settings",
+      "Optional input"
     ]
   }
 ]
