@@ -3,14 +3,16 @@ name: Docker Test
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
     paths:
       - Dockerfile
       - pyproject.toml
       - pixi.lock
       - .github/workflows/docker.yml
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
     paths:
       - Dockerfile
       - pyproject.toml
