@@ -3,7 +3,8 @@ name: Versioning
 
 on:
   repository_dispatch:
-      types: [ docs-updated ]
+      types:
+        - docs-updated
   workflow_dispatch:
 
 jobs:
