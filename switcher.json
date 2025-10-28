@@ -1,6 +1,7 @@
 [
   {"name":"latest","version":"latest","href":"https://deltares.github.io/Delft-FIAT/latest/"},
   {"name":"stable","version":"stable","href":"https://deltares.github.io/Delft-FIAT/stable/"},
+  {"name":"v0.3.2","version":"0.3.2","href":"https://deltares.github.io/Delft-FIAT/v0.3.2/"},
   {"name":"v0.3.1","version":"0.3.1","href":"https://deltares.github.io/Delft-FIAT/v0.3.1/"},
   {"name":"v0.3.0","version":"0.3.0","href":"https://deltares.github.io/Delft-FIAT/v0.3.0/"},
   {"name":"v0.2.1","version":"0.2.1","href":"https://deltares.github.io/Delft-FIAT/v0.2.1/"},
