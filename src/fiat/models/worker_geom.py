@@ -67,7 +67,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     """
     # Setup the hazard type module
     sender = Sender(queue=queue)
-    module = importlib.import_module(f"fiat.methods.{cfg.get('model.type')}")
+    module = importlib.import_module(f"fiat.methods.{cfg.get('hazard.type')}")
     func_hazard = getattr(module, "calculate_hazard")
     func_damage = getattr(module, "calculate_damage")
     man_columns = getattr(module, "MANDATORY_COLUMNS")

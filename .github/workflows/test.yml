@@ -3,7 +3,8 @@ name: Test Package
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
     paths:
       - test/*
       - src/fiat/*
@@ -12,7 +13,8 @@ on:
       - pixi.lock
       - .github/workflows/test.yml
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
     paths:
       - test/*
       - src/fiat/*

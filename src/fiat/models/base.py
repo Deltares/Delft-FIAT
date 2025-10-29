@@ -54,10 +54,9 @@ class BaseModel(metaclass=ABCMeta):
         self.vulnerability_data: Table | None = None
 
         # Type of calculations
-        type = self.cfg.get("model.type", "flood")
+        type = self.cfg.get("hazard.type", "flood")
         self.module = importlib.import_module(f"fiat.methods.{type}")
-        self.cfg.set("model.type", type)
-
+        self.cfg.set("hazard.type", type)
         # Risk or event based
         risk = self.cfg.get("model.risk", False)
         self.cfg.set("model.risk", risk)
@@ -151,12 +150,12 @@ exceeds machine thread count ('{max_threads}')"
     @property
     def type(self) -> str:
         """Return the hazard type."""
-        return self.cfg.get("model.type")
+        return self.cfg.get("hazard.type")
 
     @type.setter
     def type(self, value: str):
         """Set the hazard type."""
-        self.cfg.set("model.type", value)
+        self.cfg.set("hazard.type", value)
         self.module = importlib.import_module(f"fiat.methods.{value}")
 
     ## Set(up) methods.
