@@ -36,6 +36,7 @@ ROUND = "round"  # Hate this one...
 SETTINGS = "settings"
 SRS = "srs"
 STEP_SIZE = "step_size"
+THREADS = "threads"
 TYPE = "type"
 VALUE = "value"
 VULNERABILITY = "vulnerability"
@@ -43,7 +44,7 @@ VULNERABILITY = "vulnerability"
 MODEL_RISK = f"{MODEL}.{RISK}"
 MODEL_SRS = f"{MODEL}.{SRS}"
 MODEL_SRS_VALUE = f"{MODEL}.{SRS}.{VALUE}"
-MODEL_THREADS = f"{MODEL}.threads"
+MODEL_THREADS = f"{MODEL}.{THREADS}"
 MODEL_TYPE = f"{MODEL}.{TYPE}"
 # Output
 OUTPUT_PATH = f"{OUTPUT}.{PATH}"
@@ -56,6 +57,7 @@ EXPOSURE_GRID_FILE = f"{EXPOSURE_GRID}.{FILE}"
 EXPOSURE_GRID_SETTINGS = f"{EXPOSURE_GRID}.{SETTINGS}"
 HAZARD_FILE = f"{HAZARD}.{FILE}"
 HAZARD_SETTINGS = f"{HAZARD}.{SETTINGS}"
+HAZARD_TYPE = f"{HAZARD}.{TYPE}"
 VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
 VULNERABILITY_ROUND = f"{VULNERABILITY}.{ROUND}"  # Also f*ck this one
 VULNERABILITY_SETTINGS = f"{VULNERABILITY}.{SETTINGS}"
@@ -245,10 +247,10 @@ def create_1d_chunk(
 
 
 def count_table(
-    c: list,
+    c: list[float],
     ct: np.ndarray,
     idx: int,
-):
+) -> np.ndarray:
     """Create an entry of the thread count table."""
     size = len(c)
     for i, j in product(range(size), range(size)):
@@ -257,9 +259,9 @@ def count_table(
 
 
 def thread_weight(
-    size: list,
+    size: list[int],
     threads: int,
-):
+) -> list[int]:
     """Sort out the weight of the data on all the threads."""
     # Store the original indices
     idxs = sorted(range(len(size)), key=lambda k: size[k], reverse=True)
@@ -287,6 +289,10 @@ def thread_weight(
         if len(m) == 0:
             continue
         b = [ct[i, w[i] - 1, w[i] - 2] for i in m]
+        fl = [s > item for item in b]
+        if not any(fl):
+            continue
+        idx = b.index(min([item for i, item in enumerate(b) if fl[i]]))
 
     return b * s
 
