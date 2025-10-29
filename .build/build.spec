@@ -9,7 +9,7 @@ from fiat.util import generic_directory_check
 
 # Pre build event setup
 app_name = "fiat"
-mode = "Release"
+mode = "release"
 sys.setrecursionlimit(5000)
 
 # Some general information

@@ -415,7 +415,8 @@ def create_settings_geom():
     """Create exposure geometry model settings."""
     doc = {
         "model": {
-            "model_type": "geom",
+            "type": "geom",
+            "risk": False,
             "srs": {
                 "value": "EPSG:4326",
             },
@@ -492,7 +493,8 @@ def create_settings_grid():
     """Create exposure grid model settings."""
     doc = {
         "model": {
-            "model_type": "grid",
+            "type": "grid",
+            "risk": False,
             "srs": {
                 "value": "EPSG:4326",
             },
@@ -507,7 +509,6 @@ def create_settings_grid():
         },
         "hazard": {
             "file": "event_map.nc",
-            "risk": False,
             "elevation_reference": "DEM",
             "settings": {
                 "srs": "EPSG:4326",

@@ -94,9 +94,9 @@ def run(args):
     logger.info(f"Delft-Fiat version: {__version__}")
 
     # Kickstart the model
-    model_type = cfg.get("model.model_type", "geom")
+    model_type = cfg.get("model.type", "geom")
     module_entries = get_module_attr(
-        f"fiat.methods.{cfg.get('model.type', 'flood')}",
+        f"fiat.methods.{cfg.get('hazard.type', 'flood')}",
         "MANDATORY_ENTRIES",
     )
     check_config_entries(

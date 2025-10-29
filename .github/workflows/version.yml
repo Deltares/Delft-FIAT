@@ -3,7 +3,8 @@ name: Versioning
 
 on:
   repository_dispatch:
-      types: [ docs-updated ]
+      types:
+        - docs-updated
   workflow_dispatch:
 
 jobs:
@@ -16,12 +17,11 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.13"]
         include:
           - os: ubuntu-latest
             label: linux-64
 
-    name: ${{ matrix.os }} - py${{ matrix.python-version }}
+    name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -30,10 +30,14 @@ jobs:
         with:
             ref: gh-pages
 
+      - name: Install package(s)
+        run: |
+          sudo apt install -y jq
+
       - name: Run versioning script
         id: check
         run: |
-          python .scripts/version.py
+          ./version.sh
         continue-on-error: true
 
       - name: Adjust stable symbolic link

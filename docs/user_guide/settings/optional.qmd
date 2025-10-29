@@ -9,7 +9,6 @@ Here we provide an overview of all optional/ non essential settings that the use
 | **[model]**                            |         |               |
 | [loglevel](#model)                     | string  | INFO          |
 | [risk](#model)                         | boolean | false         |
-| [type](#model)                         | string  | flood         |
 | **[model.srs]**                        |         |               |
 | [value](#model.srs)                    | string  | EPSG:4326     |
 | [global](#model.srs)            | bool    | false         |
@@ -18,6 +17,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 | **[hazard]**                           |         |               |
 | [resampling_method](#hazard)           | int     | 0             |
 | [return_periods](#hazard)              | list    | -             |
+| [type](#hazard)                        | string  | flood         |
 | **[hazard.settings]**                  |         |               |
 | [srs](#hazard)                         | string  | -             |
 | [subset](#hazard.settings)             | string  | -             |
@@ -46,8 +46,6 @@ Here we provide an overview of all optional/ non essential settings that the use
 
 - `risk`: In case of a risk calculation this must be set to "true", for a single events this must be set to "false".
 
-- `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.methods.flood`)
-
 #### [model.srs]
 
 - `value`: Global projection for the model and the output. If not defined, the default projection is set to WGS84.
@@ -63,6 +61,8 @@ Here we provide an overview of all optional/ non essential settings that the use
 - `resampling_method`: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see [this page](https://gdal.org/api/gdalwarp_cpp.html#_CPPv415GDALResampleAlg)
 
 - `return_periods`: Return periods for hazard calculation when they cannot be inferred from the data itself.
+
+- `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.methods.flood`)
 
 ####  [hazard.settings]
 
