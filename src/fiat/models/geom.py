@@ -29,10 +29,10 @@ from fiat.struct.container import FieldMeta
 from fiat.util import (
     EXPOSURE_GEOM_FILE,
     discover_exp_columns,
+    distribute_threads,
     generate_output_columns,
     generic_path_check,
     get_srs_repr,
-    thread_weight,
 )
 
 logger = spawn_logger("fiat.model.geom")
@@ -236,7 +236,7 @@ class GeomModel(BaseModel):
         self._queue = self._mp_manager.Queue(maxsize=10000)
 
         # Get the thread weights
-        _ = thread_weight([60000, 40000, 4600, 500], 8)
+        _ = distribute_threads([60000, 40000, 4600, 500], 8)
 
         # Create the output directory and files
         self.cfg.setup_output_dir()

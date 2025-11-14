@@ -246,55 +246,98 @@ def create_1d_chunk(
     return chunks
 
 
-def count_table(
-    c: list[float],
-    ct: np.ndarray,
-    idx: int,
-) -> np.ndarray:
-    """Create an entry of the thread count table."""
-    size = len(c)
-    for i, j in product(range(size), range(size)):
-        ct[idx, i, j] = c[j] - c[i]
-    return ct
+def _load_diff(
+    size: int,
+    threads: int,
+    diff: int,
+    max_threads: int,
+) -> float:
+    """Difference in load by adding or removed threads."""
+    cur = max(threads, 1)
+    new = max(threads + diff, 1)
+    # Cant take that single thread away, so infinite
+    if cur == 1 and cur == new:
+        return np.inf
+    # Cant exceed system max
+    if cur == max_threads and new >= max_threads:
+        return 0
+    # The difference in load
+    diff = (size / cur) - (size / new)
+    return abs(diff)
 
 
-def thread_weight(
+def _diff_table(
+    sizes: list[int],
+    threads_diss: list[int],
+    max_threads: int,
+) -> tuple[np.ndarray]:
+    """Create a conditional table of load improvements."""
+    # Setup the variables
+    n = len(sizes)
+    flags = np.zeros((n, n))
+    diff = np.ones((n, n)) * np.inf
+    multi = [item > 1 for item in threads_diss]
+    # Loop through the coordinates
+    for i, j in product(range(n), range(n)):
+        if i == j:  # Diagonal (Cant take from self)
+            continue
+        if not multi[j]:  # No threads to take
+            continue
+        val = _load_diff(sizes[i], threads_diss[i], 1, max_threads) - _load_diff(
+            sizes[j], threads_diss[j], -1, max_threads
+        )
+        if val > 0:  # We have a winner
+            flags[i, j] = 1
+            diff[i, j] = val
+    return flags, diff
+
+
+def distribute_threads(
     size: list[int],
     threads: int,
 ) -> list[int]:
     """Sort out the weight of the data on all the threads."""
-    # Store the original indices
-    idxs = sorted(range(len(size)), key=lambda k: size[k], reverse=True)
-    ssize = [size[idx] for idx in idxs]
+    n = len(size)
     # First estimate of the thread weight
-    w = [round((item / sum(ssize)) * threads) for item in ssize]
+    thread_diss = [round((item / sum(size)) * threads) for item in size]
 
-    # First estimate is good enough
-    if sum(w) == threads and 0 not in w:
-        return w
-
-    # Create a count table
-    ct = np.zeros((len(ssize), threads, threads))
-    for idx, item in enumerate(ssize):
-        c = [item / (i + 1) for i in range(threads)]
-        ct = count_table(c, ct, idx)
-
-    # Check for zeros
-    while 0 in w:
+    # Check for sizes with no threads assigned
+    while 0 in thread_diss:
         # Take the first
-        idx = w.index(0)
-        w[idx] = 1
-        s = ssize[idx]
-        m = [i for i, item in enumerate(w) if item > 1]
-        if len(m) == 0:
+        idx = thread_diss.index(0)
+        thread_diss[idx] = 1
+        # Check if there are others with multiple threads
+        multi = [i for i, item in enumerate(thread_diss) if item > 1]
+        if len(multi) == 0:
             continue
-        b = [ct[i, w[i] - 1, w[i] - 2] for i in m]
-        fl = [s > item for item in b]
-        if not any(fl):
+        # See it there is benefit to taking on of those threads
+        # For the one with zero threads
+        extra = [_load_diff(size[i], thread_diss[i], -1, threads) for i in multi]
+        benefit = [size[idx] > item for item in extra]
+        if not any(benefit):
             continue
-        idx = b.index(min([item for i, item in enumerate(b) if fl[i]]))
+        # Extract one from the one with more than one, dawai
+        idx = extra.index(min([item for i, item in enumerate(extra) if benefit[i]]))
+        thread_diss[multi[idx]] -= 1
 
-    return b * s
+    # Check for at least all the available threads
+    while sum(thread_diss) < threads:
+        red = [
+            _load_diff(item, thread_diss[i], 1, threads) for i, item in enumerate(size)
+        ]
+        idx = red.index(max(red))
+        thread_diss[idx] += 1
+
+    # Redistribute according to size
+    while True:
+        flags, diff = _diff_table(size, thread_diss, threads)
+        if not np.any(flags):
+            break
+        idxmin = np.argmin(diff)
+        thread_diss[idxmin // n] += 1
+        thread_diss[idxmin % n] -= 1
+
+    return thread_diss
 
 
 # Config related stuff
