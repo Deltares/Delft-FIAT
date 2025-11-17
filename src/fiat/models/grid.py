@@ -52,10 +52,6 @@ class GridModel(BaseModel):
     def __del__(self):
         BaseModel.__del__(self)
 
-    def _setup_output_files(self):
-        """Ensure that it's defined."""
-        pass
-
     def create_equal_grids(self):
         """Make the hazard and exposure grid equal spatially if necessary."""
         if self.equal:

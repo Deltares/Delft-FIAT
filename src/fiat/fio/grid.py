@@ -101,8 +101,9 @@ multiple variables.
         if not subset:
             subset = None
         self.subset: str = subset
+        path = self.path
         if subset is not None and not var_as_band:
-            self._path = Path(
+            path = Path(
                 f"{driver.upper()}:" + f'"{file}"' + f":{subset}",
             )
 
@@ -119,7 +120,7 @@ multiple variables.
 
         # Otherwise open an existing dataset
         self.src = gdal.OpenEx(
-            self._path.as_posix(),
+            path.as_posix(),
             nOpenFlags=self.mode,
             open_options=open_options,
         )

@@ -4,13 +4,11 @@ import os
 from io import BytesIO, FileIO
 from multiprocessing.synchronize import Lock
 from pathlib import Path
-from typing import Any
 
-from osgeo import ogr, osr
+from osgeo import gdal, ogr, osr
 
 from fiat.fio.fopen import open_geom
 from fiat.fio.geom import GeomIO
-from fiat.fio.misc import merge_geom_layers
 from fiat.util import (
     NEWLINE_CHAR,
     DummyLock,
@@ -26,10 +24,6 @@ class BufferedGeomWriter:
     ----------
     file : Path | str
         Path to the file.
-    srs : osr.SpatialReference
-        The spatial reference system of the file (and the buffer).
-    layer_defn : ogr.FeatureDefn, optional
-        The definition of the layer, by default None
     buffer_size : int, optional
         The size of the buffer, by default 100000
     lock : Lock, optional
@@ -39,14 +33,12 @@ class BufferedGeomWriter:
     def __init__(
         self,
         file: Path | str,
-        srs: osr.SpatialReference,
-        layer_defn: ogr.FeatureDefn = None,
         buffer_size: int = 100000,  # geometries
         lock: Lock = None,
     ):
         # Ensure pathlib.Path
-        file = Path(file)
-        self.file: Path = file
+        path = Path(file)
+        self.path: Path = path
 
         # Set the lock
         self.lock: Lock | DummyLock = lock
@@ -57,62 +49,68 @@ class BufferedGeomWriter:
         self.pid: int = os.getpid()
 
         # Set for later use
-        self.srs: osr.SpatialReference = srs
-        self.flds: dict[str:int] = {}
+        self.defn: ogr.FeatureDefn | None = None
+        self.srs: osr.SpatialReference | None = None
+        self.flds: dict[str, int] = {}
         self.n: int = 1
 
-        if layer_defn is None:
-            with open_geom(self.file, mode="r") as _r:
-                layer_defn = _r.layer.defn
-            _r = None
-        self.layer_defn: ogr.FeatureDefn = layer_defn
-
         # Create the buffer
-        self.buffer: GeomIO = open_geom(f"/vsimem/{file.stem}.gpkg", mode="w")
-        self.buffer.create_layer(
-            srs,
-            layer_defn.GetGeomType(),
-        )
-        self.buffer.layer.set_from_defn(
-            layer_defn,
-        )
+        self.buffer: GeomIO = open_geom(f"/vsimem/{file.stem}.fgb", mode="w")
+
         # Set some check vars
         # TODO: do this based om memory foodprint
-        # Needs some reseach into ogr's memory tracking
+        # Needs some reseach into ogr's exposed memory tracking
         self.max_size: int = buffer_size
         self.size: int = 0
 
     def __del__(self):
         self.buffer = None
         self.layer_defn = None
+        self.srs = None
 
-    def __reduce__(self) -> str | tuple[Any, ...]:
-        pass
+    ## State altering
+    def close(self):
+        """Close the buffer."""
+        # Flush on last time
+        self.write()
+        self.buffer.delete(all=True)
+        self.buffer.close()
 
-    def _reset_buffer(self):
+    def reset_buffer(self):
+        """Reset the buffer to an empty dataset/ layer."""
         # Delete
-        self.buffer.delete()
+        self.buffer.delete(all=True)
 
         # Re-create
-        self.buffer.create_layer(
-            self.srs,
-            self.layer_defn.GetGeomType(),
-        )
-        self.buffer.layer.set_from_defn(
-            self.layer_defn,
-        )
-        self.create_fields(self.flds)
+        self.buffer.create(self.buffer.path)
+        self.setup_layer(self.defn, self.srs, self.flds)
 
         # Reset current size
         self.size = 0
 
-    def close(self):
-        """Close the buffer."""
-        # Flush on last time
-        self.to_drive()
-        self.buffer.delete(all=True)
-        self.buffer.close()
+    ## I/O
+    def write(self):
+        """Dump the buffer to the drive."""
+        # Block while writing to the drive
+        self.buffer.flush()
+        self.buffer.src.Close()
 
+        # Lock and merge/ write
+        self.lock.acquire()
+        ds = gdal.VectorTranslate(
+            self.path.as_posix(),
+            self.buffer.path.as_posix(),
+            format="FlatGeobuf",
+            accessMode="append",
+        )
+        ds.Close()
+        ds = None
+        self.lock.release()
+
+        # self.buffer = self.buffer.reopen(mode="w")
+        self.reset_buffer()
+
+    ## Mutating methods
     def add_feature(
         self,
         ft: ogr.Feature,
@@ -125,7 +123,7 @@ class BufferedGeomWriter:
             The feature.
         """
         if self.size + 1 > self.max_size:
-            self.to_drive()
+            self.write()
         self.buffer.layer.add_feature(ft)
 
         self.size += 1
@@ -146,7 +144,7 @@ class BufferedGeomWriter:
 the fields in the buffer.
         """
         if self.size + 1 > self.max_size:
-            self.to_drive()
+            self.write()
         self.buffer.layer.add_feature_with_map(
             ft,
             fmap=fmap,
@@ -154,32 +152,24 @@ the fields in the buffer.
 
         self.size += 1
 
-    def create_fields(
+    def setup_layer(
         self,
-        flds: zip,
+        defn: ogr.FeatureDefn,
+        srs: osr.SpatialReference,
+        flds: dict | zip,
     ):
-        """Create new fields in the buffer dataset."""
-        _new = dict(flds)
-        self.flds.update(_new)
+        """Set up a layer for the buffer."""
+        # Create the layer
+        self.buffer.create_layer(srs, geom_type=defn.GetGeomType())
+        self.buffer.layer.set_from_defn(defn)
+        # Update the internals
+        self.srs = srs
+        self.defn = defn
 
-        self.buffer.layer.create_fields(
-            _new,
-        )
-
-    def to_drive(self):
-        """Dump the buffer to the drive."""
-        # Block while writing to the drive
-        # self.buffer.close()
-        self.lock.acquire()
-        merge_geom_layers(
-            self.file.as_posix(),
-            f"/vsimem/{self.file.stem}.gpkg",
-            out_layer_name=self.file.stem,
-        )
-        self.lock.release()
-
-        # self.buffer = self.buffer.reopen(mode="w")
-        self._reset_buffer()
+        # Update the layer with new fields
+        flds = dict(flds)  # Ensure typing
+        self.flds.update(flds)  # Combine with existing
+        self.buffer.layer.create_fields(flds)
 
 
 class BufferedTextWriter(BytesIO):

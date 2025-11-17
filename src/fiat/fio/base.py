@@ -34,7 +34,6 @@ class BaseIO(metaclass=ABCMeta):
 
         # Set the pathing
         self.path: Path = Path(file)
-        self._path: Path = Path(file)  # Seems funny, needed later
 
         # Check the mode
         if mode not in BaseIO._mode_map:

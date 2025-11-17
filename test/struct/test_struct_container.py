@@ -94,7 +94,7 @@ def test_container_delete_error():
         c.delete({})  # Empty dict is of course stupid, but still
 
 
-def test_container_clean():
+def test_container_clear():
     # Create the object
     c = Container()
 
@@ -105,8 +105,8 @@ def test_container_clean():
     assert len(c._h) == 2
     assert len(c._db) == 2
 
-    # Clean the container
-    c.clean()
+    # Clear the container
+    c.clear()
     # Assert the state now
     assert len(c._h) == 0
     assert len(c._db) == 0

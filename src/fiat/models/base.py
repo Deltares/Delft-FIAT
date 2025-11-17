@@ -159,14 +159,6 @@ exceeds machine thread count ('{max_threads}')"
         self.cfg.set("hazard.type", value)
         self.module = importlib.import_module(f"fiat.methods.{value}")
 
-    ## Set(up) methods.
-    @abstractmethod
-    def _setup_output_files(
-        self,
-    ):
-        """Set up output files."""
-        raise NotImplementedError(NEED_IMPLEMENTED)
-
     ## Read data methods
     def read_hazard_grid(
         self,

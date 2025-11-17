@@ -14,7 +14,7 @@ from fiat.fio import (
 from fiat.gis import geom, overlay
 from fiat.methods.ead import calculate_ead, risk_density
 from fiat.models.util import get_field_values
-from fiat.struct import Table
+from fiat.struct import FieldMeta, Table
 
 
 def worker(
@@ -22,8 +22,8 @@ def worker(
     risk: bool,
     haz: GridIO,
     vul: Table,
-    exp_geom: GeomIO,
-    idx: int,
+    exp: GeomIO,
+    meta: FieldMeta,
     chunk: tuple | list,
     queue: Queue,
     lock: Lock,
@@ -70,29 +70,24 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         rp_coef.reverse()
 
     # Check if there actually is data for this chunk
-    if chunk[0] > exp_geom.layer._count:
+    if chunk[0] > exp.layer._count:
         return
 
-    # Some meta for the specific geometry file
-    field_meta = cfg.get("_exposure_meta")[idx]
-    slen = field_meta["slen"]
-    total_idx = field_meta["total_idx"]
-    types = field_meta["types"]
-    idxs = field_meta["idxs"]
-    man_columns_idxs = [exp_geom.layer.fields.index(item) for item in man_columns]
-    mid = exp_geom.layer.fields.index("extract_method")
+    # Some meta for the specific geometry fil
+    man_columns_idxs = [exp.layer.fields.index(item) for item in man_columns]
+    mid = exp.layer.fields.index("extract_method")
 
     # Setup the dataset buffer writer
-    out_geom = Path(cfg.get(f"output.geom.name{idx}"))
-    out_writer = BufferedGeomWriter(
-        Path(cfg.get("output.path"), out_geom),
-        exp_geom.layer.srs,
-        buffer_size=cfg.get("model.geom.chunk"),
+    writer = BufferedGeomWriter(
+        Path(cfg.get("output.path"), f"{exp.path.stem}.fgb"),
         lock=lock,
+    )
+    writer.setup_layer(
+        defn=exp.layer.defn, srs=exp.srs, flds=zip(meta.new, [4] * len(meta.new))
     )
 
     # Loop over all the geometries in a reduced manner
-    for ft in exp_geom.layer.reduced_iter(*chunk):
+    for ft in exp.layer.reduced_iter(*chunk):
         out = []
         in_info, method, haz_kwargs = get_field_values(
             ft,
@@ -122,7 +117,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
                 *haz_kwargs,
             )
             out += [haz_value, red_fact]
-            for _, item in types.items():
+            for _, item in meta.types.items():
                 out += func_damage(
                     haz_value,
                     red_fact,
@@ -137,22 +132,22 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         # At last do (if set) risk calculation
         if risk:
             i = 0
-            for ti in total_idx:
+            for ti in meta.total:
                 ead = round(
-                    calculate_ead(rp_coef, out[ti - i :: -slen]),
+                    calculate_ead(rp_coef, out[ti - i :: -meta.length]),
                     rounding,
                 )
                 out.append(ead)
                 i += 1
 
         # Write the feature to the in memory dataset
-        out_writer.add_feature_with_map(
+        writer.add_feature_with_map(
             ft,
             zip(
-                idxs,
+                meta.indices,
                 out,
             ),
         )
 
-    out_writer.close()
-    out_writer = None
+    writer.close()
+    writer = None

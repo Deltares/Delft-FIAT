@@ -4,7 +4,7 @@ import copy
 from dataclasses import dataclass
 from typing import Any
 
-__all__ = ["Container"]
+__all__ = ["Container", "FieldMeta"]
 
 
 class Container:
@@ -47,8 +47,8 @@ class Container:
         self._db.append(key)
         self.__dict__[key] = value
 
-    def clean(self):
-        """Clean the entire container."""
+    def clear(self):
+        """Clear the entire container."""
         cur = copy.deepcopy(self._h)
         for item in cur:
             self.delete(item)
@@ -74,7 +74,10 @@ class Container:
 
 @dataclass
 class FieldMeta:
+    """Small container for exposure metadata."""
+
     new: list
     length: int
     indices: list
     total: list
+    types: dict

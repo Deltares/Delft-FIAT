@@ -224,7 +224,7 @@ def create_windows(
         )
 
 
-def create_1d_chunk(
+def create_1d_chunks(
     length: int,
     parts: int,
 ) -> tuple:
@@ -509,75 +509,67 @@ def read_gridsource_layers(
     return out
 
 
-def _create_geom_driver_map(
-    write: bool = False,
+def _check_geom_driver_capabilities(
+    idx: int,
+    type: str,
+) -> tuple[gdal.Driver, list] | tuple[None]:
+    """Return driver when it has the necessary capabilities."""
+    driver = gdal.GetDriver(idx)
+    # Check the create capability
+    if not driver.GetMetadataItem(gdal.DCAP_CREATE):
+        return None, None
+    # Check on vector driver
+    if (
+        type == gdal.DCAP_VECTOR
+        and not driver.GetMetadataItem(gdal.DCAP_VECTOR)
+        and not driver.GetMetadataItem(gdal.DCAP_CREATE_LAYER)
+    ):
+        return None, None
+    # Check on Raster driver
+    if (
+        type == gdal.DCAP_RASTER
+        and not driver.GetMetadataItem(gdal.DCAP_RASTER)
+        and not driver.GetMetadataItem(gdal.DCAP_CREATECOPY)
+    ):
+        return None, None
+    # Get the extension
+    ext = driver.GetMetadataItem(gdal.DMD_EXTENSION) or driver.GetMetadataItem(
+        gdal.DMD_EXTENSIONS
+    )
+    # If None, cant do anything
+    if ext is None:
+        return None, None
+    # Get the extension from the returned str or list
+    if len(ext.split(" ")) > 1:
+        exts = ext.split(" ")
+        if driver.ShortName.lower() in exts:
+            ext = driver.ShortName.lower()
+        else:
+            ext = ext.split(" ")[-1]
+    return driver, ext
+
+
+def _create_driver_map(
+    type: str,
 ) -> dict:
     """Create a map of geometry drivers."""
-    geom_drivers = {}
-    _c = gdal.GetDriverCount()
+    drivers = {}
+    count = gdal.GetDriverCount()
 
-    for idx in range(_c):
-        dr = gdal.GetDriver(idx)
-        if dr.GetMetadataItem(gdal.DCAP_VECTOR):
-            edit = dr.GetMetadataItem(gdal.DCAP_DELETE_FIELD)
-            if write and edit is None:
-                continue
-            if dr.GetMetadataItem(gdal.DCAP_CREATE) or dr.GetMetadataItem(
-                gdal.DCAP_CREATE_LAYER
-            ):
-                ext = dr.GetMetadataItem(gdal.DMD_EXTENSION) or dr.GetMetadataItem(
-                    gdal.DMD_EXTENSIONS
-                )
-                if ext is None:
-                    continue
-                if len(ext.split(" ")) > 1:
-                    exts = ext.split(" ")
-                    if dr.ShortName.lower() in exts:
-                        ext = dr.ShortName.lower()
-                    else:
-                        ext = ext.split(" ")[-1]
-                if len(ext) > 0:
-                    ext = "." + ext
-                    geom_drivers[ext] = dr.ShortName
+    for idx in range(count):
+        driver, ext = _check_geom_driver_capabilities(idx, type=type)
+        if driver is None:
+            continue
+        if len(ext) > 0:
+            ext = "." + ext
+            drivers[ext] = driver.ShortName
 
-    return geom_drivers
+    return drivers
 
 
-GEOM_READ_DRIVER_MAP = _create_geom_driver_map()
-GEOM_WRITE_DRIVER_MAP = _create_geom_driver_map(write=True)
-GEOM_WRITE_DRIVER_MAP[""] = "Memory"
-
-
-def _create_grid_driver_map() -> dict:
-    """Create a map of grid drivers."""
-    grid_drivers = {}
-    _c = gdal.GetDriverCount()
-
-    for idx in range(_c):
-        dr = gdal.GetDriver(idx)
-        if dr.GetMetadataItem(gdal.DCAP_RASTER):
-            if dr.GetMetadataItem(gdal.DCAP_CREATE) or dr.GetMetadataItem(
-                gdal.DCAP_CREATECOPY
-            ):
-                ext = dr.GetMetadataItem(gdal.DMD_EXTENSION) or dr.GetMetadataItem(
-                    gdal.DMD_EXTENSIONS
-                )
-                if ext is None:
-                    continue
-                if len(ext.split(" ")) > 1:
-                    exts = ext.split(" ")
-                    if dr.ShortName.lower() in exts:
-                        ext = dr.ShortName.lower()
-                    else:
-                        ext = ext.split(" ")[-1]
-                if len(ext) > 0:
-                    ext = "." + ext
-                    grid_drivers[ext] = dr.ShortName
-
-    return grid_drivers
-
-
-GRID_DRIVER_MAP = _create_grid_driver_map()
+GEOM_DRIVER_MAP = _create_driver_map(type=gdal.DCAP_VECTOR)
+GEOM_DRIVER_MAP[""] = "MEM"
+GRID_DRIVER_MAP = _create_driver_map(type=gdal.DCAP_RASTER)
 GRID_DRIVER_MAP[""] = "MEM"
 
 

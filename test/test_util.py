@@ -5,10 +5,9 @@ import pytest
 
 from fiat.fio import GridIO
 from fiat.util import (
-    GEOM_READ_DRIVER_MAP,
-    GEOM_WRITE_DRIVER_MAP,
+    GEOM_DRIVER_MAP,
     GRID_DRIVER_MAP,
-    create_1d_chunk,
+    create_1d_chunks,
     create_dir,
     create_windows,
     deter_dec,
@@ -30,9 +29,9 @@ from fiat.util import (
 )
 
 
-def test_create_1d_chunk_few():
+def test_create_1d_chunks_few():
     # Call the function
-    chunks = list(create_1d_chunk(500, 6))
+    chunks = list(create_1d_chunks(500, 6))
 
     # Assert the output
     assert len(chunks) == 6
@@ -40,9 +39,9 @@ def test_create_1d_chunk_few():
     assert chunks[-1] == (421, 500)
 
 
-def test_create_1d_chunk_many():
+def test_create_1d_chunks_many():
     # Call the function
-    chunks = list(create_1d_chunk(500, 20))
+    chunks = list(create_1d_chunks(500, 20))
 
     # Assert the output
     assert len(chunks) == 20
@@ -133,10 +132,11 @@ def test_discover_columns_missing(exposure_cols: dict):
 
 def test_driver_maps():
     # Simply assert some key drivers
-    assert ".gpkg" in GEOM_WRITE_DRIVER_MAP
-    assert ".nc" not in GEOM_WRITE_DRIVER_MAP
-    assert ".nc" in GEOM_READ_DRIVER_MAP
+    assert ".gpkg" in GEOM_DRIVER_MAP
+    assert ".tif" not in GEOM_DRIVER_MAP
+    assert ".nc" in GEOM_DRIVER_MAP
     assert ".nc" in GRID_DRIVER_MAP
+    assert ".fgb" not in GRID_DRIVER_MAP
 
 
 def test_find_duplicated():
