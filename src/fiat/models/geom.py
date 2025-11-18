@@ -25,6 +25,7 @@ from fiat.models.worker_geom import worker
 from fiat.struct import Container
 from fiat.util import (
     EXPOSURE_GEOM_FILE,
+    EXPOSURE_GEOM_SETTINGS,
     create_1d_chunks,
     distribute_threads,
     generic_path_check,
@@ -97,7 +98,9 @@ class GeomModel(BaseModel):
         cfg = []
 
         # Get the settings
-        settings = self.cfg.get("exposure.geom.settings", {})
+        settings = self.cfg.get(EXPOSURE_GEOM_SETTINGS, {})
+        if not isinstance(settings, list):
+            settings = [settings]  # Legacy purpose
         if not h:
             settings = [kwargs] * len(paths)
 

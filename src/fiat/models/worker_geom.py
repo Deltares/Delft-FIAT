@@ -6,6 +6,8 @@ from multiprocessing.queues import Queue
 from multiprocessing.synchronize import Lock
 from pathlib import Path
 
+from osgeo import ogr
+
 from fiat.fio import (
     BufferedGeomWriter,
     GeomIO,
@@ -69,10 +71,6 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         rp_coef = risk_density(cfg.get("hazard.return_periods"))
         rp_coef.reverse()
 
-    # Check if there actually is data for this chunk
-    if chunk[0] > exp.layer._count:
-        return
-
     # Some meta for the specific geometry fil
     man_columns_idxs = [exp.layer.fields.index(item) for item in man_columns]
     mid = exp.layer.fields.index("extract_method")
@@ -83,13 +81,15 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         lock=lock,
     )
     writer.setup_layer(
-        defn=exp.layer.defn, srs=exp.srs, flds=zip(meta.new, [4] * len(meta.new))
+        defn=exp.layer.defn,
+        srs=exp.srs,
+        flds=zip(meta.new, [ogr.OFTReal] * len(meta.new)),
     )
 
     # Loop over all the geometries in a reduced manner
     for ft in exp.layer.reduced_iter(*chunk):
         out = []
-        in_info, method, haz_kwargs = get_field_values(
+        method, haz_kwargs = get_field_values(
             ft,
             mid,
             man_columns_idxs,
@@ -121,7 +121,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
                 out += func_damage(
                     haz_value,
                     red_fact,
-                    in_info,
+                    ft,
                     item,
                     vul,
                     vul_min,

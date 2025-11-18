@@ -1,6 +1,5 @@
 """Checks for the data of FIAT."""
 
-import re
 from pathlib import Path
 
 from osgeo import osr

@@ -21,7 +21,7 @@ def get_field_values(
     """Get exposure info from feature."""
     method = ft.GetField(mid)
     haz = [ft.GetField(idx) for idx in idxs_haz]
-    return ft, method, haz
+    return method, haz
 
 
 def csv_def_file(
