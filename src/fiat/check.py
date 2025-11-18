@@ -15,13 +15,11 @@ logger = spawn_logger("fiat.checks")
 
 ## Config
 def check_config_entries(
-    keys: tuple,
+    cfg: Configurations,
     mandatory_entries: list | tuple,
 ):
     """Check the mandatory config entries."""
-    _check = [
-        any([re.match(item, value) for value in keys]) for item in mandatory_entries
-    ]
+    _check = [cfg.get(item) for item in mandatory_entries]
     if not all(_check):
         _missing = [item for item, b in zip(mandatory_entries, _check) if not b]
         msg = f"Missing mandatory entries in the settings. Please fill in the \
