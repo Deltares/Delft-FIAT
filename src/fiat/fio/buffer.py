@@ -55,7 +55,7 @@ class BufferedGeomWriter:
         self.n: int = 1
 
         # Create the buffer
-        self.buffer: GeomIO = open_geom(f"/vsimem/{file.stem}.fgb", mode="w")
+        self.buffer: GeomIO = open_geom(f"/vsimem/{file.stem}.gpkg", mode="w")
 
         # Set some check vars
         # TODO: do this based om memory foodprint
@@ -93,14 +93,14 @@ class BufferedGeomWriter:
         """Dump the buffer to the drive."""
         # Block while writing to the drive
         self.buffer.flush()
-        self.buffer.src.Close()
+        # self.buffer.src.Close()
 
         # Lock and merge/ write
         self.lock.acquire()
         ds = gdal.VectorTranslate(
             self.path.as_posix(),
             self.buffer.path.as_posix(),
-            format="FlatGeobuf",
+            format="GPKG",
             accessMode="append",
         )
         ds.Close()

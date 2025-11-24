@@ -77,8 +77,8 @@ of the [GeomModel](/api/GeomModel.qmd) object.
 
     # Setup the dataset buffer writer
     writer = BufferedGeomWriter(
-        Path(cfg.get("output.path"), f"{exp.path.stem}.fgb"),
-        lock=lock,
+        Path(cfg.get("output.path"), f"{exp.path.stem}_{chunk[0]}.gpkg"),
+        lock=None,
     )
     writer.setup_layer(
         defn=exp.layer.defn,

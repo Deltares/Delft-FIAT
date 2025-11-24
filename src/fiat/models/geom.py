@@ -7,6 +7,8 @@ from itertools import chain
 from multiprocessing import Manager
 from pathlib import Path
 
+from osgeo_utils.ogrmerge import ogrmerge
+
 from fiat.cfg import Configurations
 from fiat.check import (
     check_geom_extent,
@@ -232,6 +234,19 @@ class GeomModel(BaseModel):
                 threads=self.threads,
             )
             _e = time.time() - _s
+
+            ogrmerge(
+                src_datasets=[
+                    item.as_posix()
+                    for item in Path(self.cfg.get("output.path")).glob("spatial_*.gpkg")
+                ],
+                dst_filename=Path(self.cfg.get("output.path"), "spatial.gpkg"),
+                driver_name="GPKG",
+                append=True,
+                overwrite_ds=True,
+                single_layer=True,
+                layer_name_template="spatial",
+            )
 
             logger.info(f"Calculations time: {round(_e, 2)} seconds")
 

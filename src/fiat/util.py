@@ -519,17 +519,16 @@ def _check_geom_driver_capabilities(
     if not driver.GetMetadataItem(gdal.DCAP_CREATE):
         return None, None
     # Check on vector driver
-    if (
-        type == gdal.DCAP_VECTOR
-        and not driver.GetMetadataItem(gdal.DCAP_VECTOR)
-        and not driver.GetMetadataItem(gdal.DCAP_CREATE_LAYER)
+    if type == gdal.DCAP_VECTOR and (
+        not driver.GetMetadataItem(gdal.DCAP_VECTOR)
+        or not driver.GetMetadataItem(gdal.DCAP_CREATE_LAYER)
+        # or not driver.GetMetadataItem(gdal.DCAP_UPDATE)
     ):
         return None, None
     # Check on Raster driver
-    if (
-        type == gdal.DCAP_RASTER
-        and not driver.GetMetadataItem(gdal.DCAP_RASTER)
-        and not driver.GetMetadataItem(gdal.DCAP_CREATECOPY)
+    if type == gdal.DCAP_RASTER and (
+        not driver.GetMetadataItem(gdal.DCAP_RASTER)
+        or not driver.GetMetadataItem(gdal.DCAP_CREATECOPY)
     ):
         return None, None
     # Get the extension

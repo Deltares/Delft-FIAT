@@ -40,7 +40,7 @@ class GeomIO(BaseIO):
     gm = GeomIO(< path-to-file >)
 
     # Index it!
-    feature = gm[1]
+    feature = gm.layer[1]
     ```
     """
 
@@ -219,7 +219,7 @@ class GeomIO(BaseIO):
         all : bool, optional
             Delete everything, including the data source, by default False
         """
-        check = self._layer is not None
+        check = self._layer is not None and not all
         if check and gdal.DCAP_DELETE_LAYER in self.driver_meta:
             name = self.layer.name
             self._layer = None
