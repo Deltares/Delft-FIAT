@@ -15,7 +15,7 @@ import os
 import sys
 
 from PyInstaller.compat import is_darwin, is_win
-from PyInstaller.utils.hooks import logger
+from PyInstaller.log import logger
 
 # Location of the binary
 if hasattr(sys, "real_prefix"):  # check if in a virtual environment
