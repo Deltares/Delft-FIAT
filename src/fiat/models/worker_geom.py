@@ -47,6 +47,8 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The vulnerability data.
     exp : GeomIO
         The exposure geometries.
+    meta : FieldMeta
+        Metadata specific to the exposure data.
     chunk : tuple | list
         The chunk to run through.
     queue : Queue
@@ -73,17 +75,17 @@ of the [GeomModel](/api/GeomModel.qmd) object.
 
     # Some meta for the specific geometry fil
     man_columns_idxs = [exp.layer.fields.index(item) for item in man_columns]
-    mid = exp.layer.fields.index("extract_method")
+    mid = exp.layer.fields.index("method")
 
     # Setup the dataset buffer writer
     writer = BufferedGeomWriter(
-        Path(cfg.get("output.path"), f"{exp.path.stem}_{chunk[0]}.gpkg"),
-        lock=None,
+        Path(cfg.get("output.path"), f"{exp.path.stem}.gpkg"),
+        lock=lock,
     )
-    writer.setup_layer(
+    writer.setup(
         defn=exp.layer.defn,
         srs=exp.srs,
-        flds=zip(meta.new, [ogr.OFTReal] * len(meta.new)),
+        extra_fields=zip(meta.new, [ogr.OFTReal] * len(meta.new)),
     )
 
     # Loop over all the geometries in a reduced manner

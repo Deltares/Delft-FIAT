@@ -37,7 +37,7 @@ Please fill in the following missing entries: ['vulnerability.file']"
         ),
     ):
         check_config_entries(
-            ("hazard.file",),
+            Configurations(**{"hazard": {"file": "foo"}}),
             MANDATORY_MODEL_ENTRIES,
         )
 
@@ -45,7 +45,7 @@ Please fill in the following missing entries: ['vulnerability.file']"
 def test_check_config_entries_pass():
     # Call the function with all entries present
     check_config_entries(
-        ("hazard.file", "vulnerability.file"),
+        Configurations(**{"hazard": {"file": "foo"}, "vulnerability": {"file": "bar"}}),
         MANDATORY_MODEL_ENTRIES,
     )
 
@@ -93,20 +93,10 @@ def test_check_exp_columns_fail():
     # Call the function with missing Mandatory column
     with pytest.raises(
         FIATDataError,
-        match=re.escape("Missing mandatory exposure columns: ['ground_flht']"),
+        match=re.escape("Missing mandatory exposure columns: ['ref']"),
     ):
         check_exp_columns(
-            ["object_id", "ground_elevtn"],
-            mandatory_columns=MANDATORY_COLUMNS,
-        )
-
-    # Call the function with missing index column
-    with pytest.raises(
-        FIATDataError,
-        match=re.escape("Missing mandatory exposure columns: ['ground_elevtn']"),
-    ):
-        check_exp_columns(
-            ["ground_flht"],
+            ["object_id"],
             mandatory_columns=MANDATORY_COLUMNS,
         )
 
@@ -114,7 +104,7 @@ def test_check_exp_columns_fail():
 def test_check_exp_columns_pass():
     # Call the function with all columns there
     check_exp_columns(
-        ["object_id", "ground_elevtn", "ground_flht"],
+        ["object_id", "ref"],
         mandatory_columns=MANDATORY_COLUMNS,
     )
 

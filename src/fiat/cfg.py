@@ -4,7 +4,7 @@ import tomllib
 from pathlib import Path
 from typing import Any, cast
 
-from fiat.util import OUTPUT, OUTPUT_PATH, create_dir
+from fiat.util import OUTPUT, OUTPUT_PATH, generic_directory_check
 
 
 def get_item(
@@ -191,9 +191,9 @@ class Configurations(dict):
         """
         if path is None:
             path = self.get(OUTPUT_PATH)
-        _p = create_dir(
-            self.path,
-            path,
+        _p = generic_directory_check(
+            path=path,
+            root=self.path,
         )
         self.set(OUTPUT_PATH, _p)
 

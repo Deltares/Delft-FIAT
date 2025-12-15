@@ -113,7 +113,7 @@ def hazard_event_data(hazard_event_path: Path) -> GridIO:
 
 
 @pytest.fixture(scope="session")
-def hazard_risk_sub_data(hazard_risk_path: Path) -> GridIO:
+def hazard_risk_data(hazard_risk_path: Path) -> GridIO:
     ds = open_grid(hazard_risk_path, var_as_band=False)  # Read only
     assert isinstance(ds, GridIO)
     return ds
@@ -169,14 +169,14 @@ class CapLogger(Logger):
 
 
 @pytest.fixture
-def log_capture() -> io.StringIO:
+def log_buffer() -> io.StringIO:
     buffer = io.StringIO()
     return buffer
 
 
 @pytest.fixture
-def caplog(log_capture: io.StringIO) -> Logger:
+def caplog(log_buffer: io.StringIO) -> CapLogger:
     logger = CapLogger("fiat")
     logger._handlers = []
-    logger.add_stream_handler(name="Capture", level=2, stream=log_capture)
+    logger.add_stream_handler(name="Capture", level=2, stream=log_buffer)
     return logger

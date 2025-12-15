@@ -18,32 +18,32 @@ def test_streamhandler():
 
 
 def test_streamhandler_emit(
-    log_capture: io.StringIO,
+    log_buffer: io.StringIO,
     log_item: LogItem,
 ):
     # Setup the object
     # Force into a buffer to get the output
-    h = StreamHandler(level=2, stream=log_capture)
+    h = StreamHandler(level=2, stream=log_buffer)
     assert h._name == "Stream1"
 
     # Emit a message
     h.emit(log_item)
 
     # Assert the message in the logging
-    log_capture.seek(0)
-    cap = log_capture.read()
+    log_buffer.seek(0)
+    cap = log_buffer.read()
     assert "A logging message" in cap
     assert "INFO" in cap
     assert datetime.datetime.now().strftime("%Y-%m-%d") in cap
 
 
 def test_streamhandler_formatter(
-    log_capture: io.StringIO,
+    log_buffer: io.StringIO,
     log_item: LogItem,
     formatter: MessageFormatter,
 ):
     # Setup the object
-    h = StreamHandler(level=2, stream=log_capture)
+    h = StreamHandler(level=2, stream=log_buffer)
     # Set the formatter
     h.set_formatter(formatter)  # This has no datetime in it
 
@@ -51,8 +51,8 @@ def test_streamhandler_formatter(
     h.emit(log_item)
 
     # Assert the message in the logging
-    log_capture.seek(0)
-    cap = log_capture.read()
+    log_buffer.seek(0)
+    cap = log_buffer.read()
     assert "A logging message" in cap
     assert "INFO" in cap
     # No longer a datetime as a result of the custom formatter

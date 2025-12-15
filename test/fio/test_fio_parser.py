@@ -106,7 +106,7 @@ def test_csvparser_no_header(file_buffer_handler: FileBufferHandler):
     assert pa.dtypes == [str, str, str]  # Header included which are strings
 
 
-def test_csvparser_no_errors(file_buffer_handler: FileBufferHandler):
+def test_csvparser_errors(file_buffer_handler: FileBufferHandler):
     # Index something thats not there
     with pytest.raises(
         ValueError,

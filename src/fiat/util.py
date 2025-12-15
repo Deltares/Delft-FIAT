@@ -468,7 +468,7 @@ def get_srs_repr(
         Representing string.
     """
     if srs is None:
-        raise ValueError("'srs' can not be 'None'.")
+        raise ValueError("'srs' can not be None.")
     _auth_c = srs.GetAuthorityCode(None)
     _auth_n = srs.GetAuthorityName(None)
 
@@ -573,36 +573,31 @@ GRID_DRIVER_MAP[""] = "MEM"
 
 
 # I/O stuff
-def create_dir(
-    root: Path | str,
-    path: Path | str,
-) -> Path:
-    """Create directory when it does not yet exist."""
-    _p = Path(path)
-    if not _p.is_absolute():
-        _p = Path(root, _p)
-    generic_directory_check(_p)
-    return _p
-
-
 def generic_directory_check(
     path: Path | str,
+    root: Path | str | None = None,
 ) -> Path:
-    """Check if a directory exists.
+    """Check if a directory exists, create when it does not yet exist.
 
     Parameters
     ----------
     path : Path | str
         Path to the directory.
+    root : str
+        Current root/ working directory.
     """
+    root = root or Path.cwd()
     path = Path(path)
+    if not path.is_absolute():
+        path = Path(root, path)
     if not path.exists():
         path.mkdir(parents=True)
+    return path
 
 
 def generic_path_check(
-    path: str,
-    root: str,
+    path: Path | str,
+    root: Path | str | None = None,
 ) -> Path:
     """Check whether a file exists.
 
@@ -611,13 +606,14 @@ def generic_path_check(
     path : str
         Path to the file.
     root : str
-        Current root directory.
+        Current root/ working directory.
 
     Returns
     -------
     Path
         Absolute path to the file.
     """
+    root = root or Path.cwd()
     path = Path(path)
     if not path.is_absolute():
         path = Path(root, path)
@@ -689,30 +685,29 @@ class DummyLock:
 
     def acquire(self):
         """Call dummy acquire."""
-        pass
+        ...
 
     def release(self):
         """Call dummy release."""
-        pass
+        ...
 
 
 class DummyWriter:
     """Mimic the behaviour of an object that is capable of writing."""
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, *args, **kwargs): ...
 
     def close(self):
         """Call dummy close."""
-        pass
+        ...
 
-    def write(self, *args):
+    def add(self, *args):
         """Call dummy write."""
-        pass
+        ...
 
-    def write_iterable(self, *args):
+    def add_iterable(self, *args):
         """Call dummy write iterable."""
-        pass
+        ...
 
 
 # Typing related stuff

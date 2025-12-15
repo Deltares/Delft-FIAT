@@ -17,7 +17,7 @@ _file = Path(inspect.getfile(lambda: None))
 project_root = _file.parents[1]
 build_dir = Path(project_root, ".build")
 
-generic_directory_check(Path(project_root, "bin"))
+generic_directory_check("bin", project_root)
 
 # Set the build time for '--version' usage
 now = time.localtime(time.time())

@@ -33,7 +33,6 @@ File paths in the settings can be relative to the settings.toml file or absolute
 | [name](#output.grid)           | string  | No       | ead.nc          |
 | **[hazard]**                   |         |          |                 |
 | [file](#hazard)                | string  | Yes      |                 |
-| [elevation_reference](#hazard) | string  | Yes      |                 |
 | **[exposure.csv]**             |         |          |                 |
 | [file](#exposure.csv)          | string  | No       | -               |
 | **[exposure.geom]**            |         |          |                 |
@@ -72,8 +71,6 @@ If provided, the suffix is mandatory. The suffix should match the suffix of the 
 
 - `file`: The file path to the hazard file.
 
-- `elevation_reference`: This indicates the elevation reference of the flood map. In case of a flood-depth map this should be "DEM" while in case of a flood-elevation map this should be "datum".
-
 #### [exposure.csv]
 
 - `file`: The path to the exposure CSV file (recommended to be within the [exposure directory](../data/index.qmd)) that contains the [required information](../data/exposure.qmd) per asset. There can only be one exposure CSV file.
@@ -106,6 +103,9 @@ Only required when running the raster based model.
 An example of settings file for running a geometry model is given below:
 
 ```toml
+[model]
+risk = false
+
 [output]
 path = "output"
 
@@ -117,8 +117,6 @@ name1 = "spatial.gpkg"
 
 [hazard]
 file = "hazard/SL_10yr_reprojected.tif"
-elevation_reference = "DEM"
-risk = false
 
 [exposure.geom]
 file1 = "./exposure/buildings.gpkg"

@@ -49,9 +49,6 @@ class BufferedGeomWriter:
         self.pid: int = os.getpid()
 
         # Set for later use
-        self.defn: ogr.FeatureDefn | None = None
-        self.srs: osr.SpatialReference | None = None
-        self.flds: dict[str, int] = {}
         self.n: int = 1
 
         # Create the buffer
@@ -65,31 +62,37 @@ class BufferedGeomWriter:
 
     def __del__(self):
         self.buffer = None
-        self.layer_defn = None
-        self.srs = None
 
     ## State altering
-    def close(self):
+    def close(self) -> None:
         """Close the buffer."""
         # Flush on last time
-        self.write()
+        if self.buffer.layer is not None:
+            self.write(reset=False)
         self.buffer.delete(all=True)
         self.buffer.close()
 
     def reset_buffer(self):
         """Reset the buffer to an empty dataset/ layer."""
+        if self.buffer.layer is None:
+            return
+        # Get the define
+        defn = self.buffer.layer.defn
+        srs = self.buffer.srs
         # Delete
-        self.buffer.delete(all=True)
+        self.buffer.delete()
 
         # Re-create
-        self.buffer.create(self.buffer.path)
-        self.setup_layer(self.defn, self.srs, self.flds)
+        # self.buffer.create(self.buffer.path)
+        self.setup(defn, srs)
 
         # Reset current size
         self.size = 0
+        defn = None
+        srs = None
 
     ## I/O
-    def write(self):
+    def write(self, reset: bool = True) -> None:
         """Dump the buffer to the drive."""
         # Block while writing to the drive
         self.buffer.flush()
@@ -108,13 +111,14 @@ class BufferedGeomWriter:
         self.lock.release()
 
         # self.buffer = self.buffer.reopen(mode="w")
-        self.reset_buffer()
+        if reset:
+            self.reset_buffer()
 
     ## Mutating methods
     def add_feature(
         self,
         ft: ogr.Feature,
-    ):
+    ) -> None:
         """Add a feature to the buffer.
 
         Parameters
@@ -125,14 +129,14 @@ class BufferedGeomWriter:
         if self.size + 1 > self.max_size:
             self.write()
         self.buffer.layer.add_feature(ft)
-
+        # Added a new feature, so plus 1
         self.size += 1
 
     def add_feature_with_map(
         self,
         ft: ogr.Feature,
         fmap: dict,
-    ):
+    ) -> None:
         """Add a feature to the buffer with additional field info.
 
         Parameters
@@ -149,27 +153,24 @@ the fields in the buffer.
             ft,
             fmap=fmap,
         )
-
+        # Added a new feature, so plus 1
         self.size += 1
 
-    def setup_layer(
+    def setup(
         self,
         defn: ogr.FeatureDefn,
         srs: osr.SpatialReference,
-        flds: dict | zip,
-    ):
+        extra_fields: dict | zip | None = None,
+    ) -> None:
         """Set up a layer for the buffer."""
         # Create the layer
         self.buffer.create_layer(srs, geom_type=defn.GetGeomType())
         self.buffer.layer.set_from_defn(defn)
-        # Update the internals
-        self.srs = srs
-        self.defn = defn
 
         # Update the layer with new fields
-        flds = dict(flds)  # Ensure typing
-        self.flds.update(flds)  # Combine with existing
-        self.buffer.layer.create_fields(flds)
+        if extra_fields is not None:
+            extra_fields = dict(extra_fields)  # Ensure typing
+            self.buffer.layer.create_fields(extra_fields)
 
 
 class BufferedTextWriter(BytesIO):
@@ -206,16 +207,17 @@ class BufferedTextWriter(BytesIO):
         )
         self.max_size = buffer_size
 
-    def close(self):
+    def close(self) -> None:
         """Close the writer and the buffer."""
         # Flush on last time
-        self.to_drive()
+        self.write()
         self.stream.close()
 
         # Close the buffer
         BytesIO.close(self)
 
-    def to_drive(self):
+    ## I/O
+    def write(self) -> None:
         """Dump to buffer to the drive."""
         self.seek(0)
 
@@ -230,10 +232,11 @@ class BufferedTextWriter(BytesIO):
         self.truncate(0)
         self.seek(0)
 
-    def write(
+    ## Mutating methods
+    def add(
         self,
         b: bytes,
-    ):
+    ) -> None:
         """Write bytes to the buffer.
 
         Parameters
@@ -242,14 +245,14 @@ class BufferedTextWriter(BytesIO):
             Bytes to write.
         """
         if self.tell() + len(b) > self.max_size:
-            self.to_drive()
+            self.write()
         BytesIO.write(self, b)
 
-    def write_iterable(self, *args):
+    def add_iterable(self, *args) -> None:
         """Write a multiple entries to the buffer."""
         by = b""
         for arg in args:
             by += ("," + "{}," * len(arg)).format(*arg).rstrip(",").encode()
         by = by.lstrip(b",")
         by += NEWLINE_CHAR.encode()
-        self.write(by)
+        self.add(by)

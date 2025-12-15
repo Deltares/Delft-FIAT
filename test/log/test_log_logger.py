@@ -31,12 +31,12 @@ def test_logger_handlers(tmp_path: Path):
 
 
 def test_logger_emit(
-    log_capture: io.StringIO,
+    log_buffer: io.StringIO,
 ):
     # Create the object
     l = Logger("tmp", level=1)  # Debug mode for testing
     # Add a handler
-    l.add_stream_handler(level=1, name="stream", stream=log_capture)
+    l.add_stream_handler(level=1, name="stream", stream=log_buffer)
 
     # Emit messages
     l.debug("Debug message")
@@ -46,8 +46,8 @@ def test_logger_emit(
     l.dead("Dead message")
 
     # Assert the outputs
-    log_capture.seek(0)
-    cap = log_capture.read()
+    log_buffer.seek(0)
+    cap = log_buffer.read()
     assert "Debug message" in cap
     assert "Info message" in cap
     assert "Warning message" in cap

@@ -110,9 +110,11 @@ def reproject(
 
     mem_gs = BufferedGeomWriter(
         fname,
-        srs=out_srs,
-        layer_defn=layer_defn,
         buffer_size=chunk,
+    )
+    mem_gs.setup(
+        defn=layer_defn,
+        srs=out_srs,
     )
 
     for ft in gs.layer:

@@ -20,9 +20,8 @@ directories = (
 fields = {
     "object_id": {"type": ogr.OFTInteger},
     "object_name": {"type": ogr.OFTString},
-    "extract_method": {"type": ogr.OFTString},
-    "ground_elevtn": {"type": ogr.OFTReal},
-    "ground_flht": {"type": ogr.OFTReal},
+    "method": {"type": ogr.OFTString},
+    "ref": {"type": ogr.OFTReal},
     "fn_damage_structure": {"type": ogr.OFTString},
     "max_damage_structure": {"type": ogr.OFTReal},
 }
@@ -90,9 +89,8 @@ def create_exposure_geoms(epsg=None):
         ft.SetField(1, f"fp_{idx+1}")
         ft.SetField(2, "area")
         ft.SetField(3, 0)
-        ft.SetField(4, 0)
-        ft.SetField(5, dmc)
-        ft.SetField(6, (idx + 1) * 1000)
+        ft.SetField(4, dmc)
+        ft.SetField(5, (idx + 1) * 1000)
         ft.SetGeometry(geom)
         # Add the feature to the layer
         layer.CreateFeature(ft)
@@ -140,9 +138,8 @@ def create_exposure_geoms_5th():
     ft.SetField(1, f"fp_{5}")
     ft.SetField(2, "area")
     ft.SetField(3, 0)
-    ft.SetField(4, 0)
-    ft.SetField(5, "struct_1")
-    ft.SetField(6, (5 + 1) * 1000)
+    ft.SetField(4, "struct_1")
+    ft.SetField(5, (5 + 1) * 1000)
     ft.SetGeometry(geom)
     # Add the feature to the layer
     layer.CreateFeature(ft)
@@ -200,9 +197,8 @@ def create_exposure_geoms_outside():
         ft.SetField(1, f"fp_{idx+1}")
         ft.SetField(2, "area")
         ft.SetField(3, 0)
-        ft.SetField(4, 0)
-        ft.SetField(5, dmc)
-        ft.SetField(6, (idx + 1) * 1000)
+        ft.SetField(4, dmc)
+        ft.SetField(5, (idx + 1) * 1000)
         ft.SetGeometry(geom)
         # Add the feature to the layer
         layer.CreateFeature(ft)
@@ -431,7 +427,6 @@ def create_settings_geom():
         },
         "hazard": {
             "file": "event_map.nc",
-            "elevation_reference": "DEM",
             "settings": {
                 "srs": "EPSG:4326",
             },
@@ -509,7 +504,6 @@ def create_settings_grid():
         },
         "hazard": {
             "file": "event_map.nc",
-            "elevation_reference": "DEM",
             "settings": {
                 "srs": "EPSG:4326",
             },

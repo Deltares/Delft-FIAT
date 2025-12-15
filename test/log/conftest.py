@@ -30,6 +30,6 @@ def mp_queue() -> Queue:
 
 
 @pytest.fixture
-def stream_capture(log_capture: io.StringIO) -> StreamHandler:
-    h = StreamHandler(level=2, stream=log_capture, name="stream")
+def stream_capture(log_buffer: io.StringIO) -> StreamHandler:
+    h = StreamHandler(level=2, stream=log_buffer, name="stream")
     return h
