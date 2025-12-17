@@ -20,7 +20,6 @@ directories = (
 fields = {
     "object_id": {"type": ogr.OFTInteger},
     "object_name": {"type": ogr.OFTString},
-    "method": {"type": ogr.OFTString},
     "ref": {"type": ogr.OFTReal},
     "fn_damage_structure": {"type": ogr.OFTString},
     "max_damage_structure": {"type": ogr.OFTReal},
@@ -87,10 +86,9 @@ def create_exposure_geoms(epsg=None):
         # Set the field values and geometry
         ft.SetField(0, idx + 1)
         ft.SetField(1, f"fp_{idx+1}")
-        ft.SetField(2, "area")
-        ft.SetField(3, 0)
-        ft.SetField(4, dmc)
-        ft.SetField(5, (idx + 1) * 1000)
+        ft.SetField(2, 0)
+        ft.SetField(3, dmc)
+        ft.SetField(4, (idx + 1) * 1000)
         ft.SetGeometry(geom)
         # Add the feature to the layer
         layer.CreateFeature(ft)
@@ -136,10 +134,9 @@ def create_exposure_geoms_5th():
     # Set the fields and geometry
     ft.SetField(0, 5)
     ft.SetField(1, f"fp_{5}")
-    ft.SetField(2, "area")
-    ft.SetField(3, 0)
-    ft.SetField(4, "struct_1")
-    ft.SetField(5, (5 + 1) * 1000)
+    ft.SetField(2, 0)
+    ft.SetField(3, "struct_1")
+    ft.SetField(4, (5 + 1) * 1000)
     ft.SetGeometry(geom)
     # Add the feature to the layer
     layer.CreateFeature(ft)
@@ -195,10 +192,9 @@ def create_exposure_geoms_outside():
         # Set the field values and geometry
         ft.SetField(0, idx + 1)
         ft.SetField(1, f"fp_{idx+1}")
-        ft.SetField(2, "area")
-        ft.SetField(3, 0)
-        ft.SetField(4, dmc)
-        ft.SetField(5, (idx + 1) * 1000)
+        ft.SetField(2, 0)
+        ft.SetField(3, dmc)
+        ft.SetField(4, (idx + 1) * 1000)
         ft.SetGeometry(geom)
         # Add the feature to the layer
         layer.CreateFeature(ft)
@@ -394,7 +390,7 @@ def create_hazard_risk_map():
             data[x, y] = 3.6 - ((x + y) * 0.2)
         data *= fc
         band.WriteArray(data)
-        band.SetMetadataItem("return_period", f"{rps[idx]}")
+        band.SetMetadataItem("rp", f"{rps[idx]}")
         band.FlushCache()
         band = None
 

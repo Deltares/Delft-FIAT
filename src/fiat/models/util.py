@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-from osgeo import ogr
-
 from fiat.fio import GridIO
 from fiat.util import NEWLINE_CHAR
 
@@ -12,17 +10,6 @@ GRID_PREFER = {
     False: "hazard",
     True: "exposure",
 }
-
-
-def get_field_values(
-    ft: ogr.Feature,
-    mid: int,
-    idxs_haz: list | tuple,
-) -> tuple:
-    """Get exposure info from feature."""
-    method = ft.GetField(mid)
-    haz = [ft.GetField(idx) for idx in idxs_haz]
-    return method, haz
 
 
 def deter_band_names(
@@ -63,15 +50,3 @@ def csv_def_file(
 
     with open(p, "wb") as _dw:
         _dw.write(header)
-
-
-def get_file_entries(
-    files: list[dict] | None,
-    paths: list[Path | str] | None,
-) -> tuple:
-    """Get multiple file entries from the configurations."""
-    if paths is None:
-        paths = [item.get("file", None) for item in files]
-    else:
-        files = [{} for _ in paths]
-    return files, paths

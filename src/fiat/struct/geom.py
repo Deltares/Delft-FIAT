@@ -1,6 +1,7 @@
 """A python wrapper structure for ogr Layer."""
 
 import weakref
+from typing import Generator
 
 from osgeo import gdal, ogr, osr
 
@@ -81,7 +82,7 @@ class GeomLayer(BaseStruct):
         self,
         si: int,
         ei: int,
-    ):
+    ) -> Generator[ogr.Feature]:
         """Yield items on an interval.
 
         Creates a python generator.

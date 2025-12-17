@@ -1,5 +1,6 @@
 """Base FIAT utility."""
 
+import copy
 import importlib
 import math
 import os
@@ -421,34 +422,34 @@ missing values.
 
 
 def generate_output_columns(
-    specific_columns: tuple | list,
+    columns: list,
     exposure_types: dict,
     extra: tuple | list = [],
     suffix: tuple | list = [""],
 ) -> tuple:
     """Generate the output columns."""
-    default = specific_columns + ["red_fact"]
+    columns = copy.deepcopy(columns)
     total = []
 
     # Loop over the exposure types
     for key, value in exposure_types.items():
-        default += [f"{key}{item}" for item in value["fn"].keys()]
-        total.append(len(default))
-        default += [f"total_{key}"]
+        columns += [f"{key}{item}" for item in value["fn"].keys()]
+        total.append(len(columns))
+        columns += [f"total_{key}"]
 
-    total = [item - len(default) for item in total]
+    total = [item - len(columns) for item in total]
 
     out = []
     if len(suffix) == 1 and not suffix[0]:
-        out = default
+        out = columns
     else:
         for name in suffix:
-            add = [f"{item}_{name}" for item in default]
+            add = [f"{item}_{name}" for item in columns]
             out += add
 
     out += [f"{x}_{y}" for x, y in product(extra, exposure_types.keys())]
 
-    return out, len(default), total
+    return out, len(columns), total
 
 
 # GIS related utility

@@ -82,7 +82,7 @@ def test_buffered_geom_writer_setup_layer_with_fields(
     )
     # Assert the current state
     assert w.buffer.layer is None
-    assert len(exposure_geom_dataset.layer.fields) == 6
+    assert len(exposure_geom_dataset.layer.fields) == 5
 
     # Setup the (buffer) layer
     w.setup(
@@ -94,7 +94,7 @@ def test_buffered_geom_writer_setup_layer_with_fields(
     # Assert the state
     assert w.buffer.layer is not None
     assert "object_id" in w.buffer.layer.fields
-    assert len(w.buffer.layer.fields) == 7
+    assert len(w.buffer.layer.fields) == 6
     assert "foo" in w.buffer.layer.fields
 
     # Close the data

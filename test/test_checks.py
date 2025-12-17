@@ -351,20 +351,20 @@ def test_check_internal_srs_pass():
     )
 
 
-def test_check_vs_srs_fail(srs: osr.SpatialReference):
-    # Setup up another srs
-    other = osr.SpatialReference()
-    other.ImportFromEPSG(3857)
+def test_check_vs_srs_fail(
+    srs_4326: osr.SpatialReference,
+    srs_3857: osr.SpatialReference,
+):
     # Call the function with the different srs
-    b = check_vs_srs(srs, other)
+    b = check_vs_srs(srs_4326, srs_3857)
 
     # Assert the output
     assert not b
 
 
-def test_check_vs_srs_pass(srs: osr.SpatialReference):
+def test_check_vs_srs_pass(srs_4326: osr.SpatialReference):
     # Call the function with the different srs
-    b = check_vs_srs(srs, srs)
+    b = check_vs_srs(srs_4326, srs_4326)
 
     # Assert the output
     assert b

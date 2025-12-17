@@ -9,7 +9,6 @@ from fiat.methods.util import AREA_METHODS
 from fiat.struct import Table
 
 MANDATORY_COLUMNS = ["ref"]
-MANDATORY_ENTRIES = []
 NEW_COLUMNS = ["depth"]
 
 

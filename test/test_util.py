@@ -277,43 +277,43 @@ def test_flatten_dict():
 def test_generate_output_columns(exposure_data_fn: dict):
     # Call the function
     new_fields, len1, total_idx = generate_output_columns(
-        specific_columns=["inun_depth"],
+        columns=["depth"],
         exposure_types={"damage": exposure_data_fn},
     )
 
     # Assert the output
-    assert len(new_fields) == 4
-    assert new_fields[2] == "damage_structure"
-    assert len1 == 4
+    assert len(new_fields) == 3
+    assert new_fields[1] == "damage_structure"
+    assert len1 == 3
     assert total_idx[0] == -1
 
 
 def test_generate_output_columns_extra(exposure_data_fn: dict):
     # Call the function
     new_fields, len1, _ = generate_output_columns(
-        specific_columns=["inun_depth"],
+        columns=["depth"],
         exposure_types={"damage": exposure_data_fn},
         extra=["ead"],
     )
 
     # Assert the output
-    assert len1 == 5
+    assert len1 == 4
     assert new_fields[-1] == "ead_damage"
 
 
 def test_generate_output_columns_multi(exposure_data_fn: dict):
     # Call the function
     new_fields, len1, _ = generate_output_columns(
-        specific_columns=["inun_depth"],
+        columns=["depth"],
         exposure_types={"damage": exposure_data_fn},
         extra=["ead"],
         suffix=["1", "2"],
     )
 
     # Assert the output
-    assert len1 == 4
-    assert len(new_fields) == 9
-    assert new_fields[4] == "inun_depth_2"
+    assert len1 == 3
+    assert len(new_fields) == 7
+    assert new_fields[3] == "depth_2"
 
 
 def test_generic_path_check(
@@ -375,9 +375,9 @@ def test_get_module_attr():
     assert attr == ["depth"]
 
 
-def test_get_srs_repr(srs: osr.SpatialReference):
+def test_get_srs_repr(srs_4326: osr.SpatialReference):
     # Call the function
-    r = get_srs_repr(srs)
+    r = get_srs_repr(srs_4326)
 
     # Assert the output
     assert r == "EPSG:4326"
@@ -393,7 +393,7 @@ def test_get_srs_repr_proj():
     assert r.startswith("+proj")
 
 
-def test_get_srs_repr_error(srs: osr.SpatialReference):
+def test_get_srs_repr_error():
     # Call the function with no srs as input
     with pytest.raises(
         ValueError,

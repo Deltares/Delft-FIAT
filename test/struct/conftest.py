@@ -11,19 +11,19 @@ from fiat.fio.parser import CSVParser
 
 ## I/O structures needed for this testing
 @pytest.fixture
-def exposure_geom_write(srs: osr.SpatialReference) -> GeomIO:
+def exposure_geom_write(srs_4326: osr.SpatialReference) -> GeomIO:
     ds = open_geom("tmp", mode="w")  # Write only
     assert isinstance(ds, GeomIO)
-    ds.create_layer(srs, 1)
+    ds.create_layer(srs_4326, 1)
     return ds
 
 
 @pytest.fixture
-def hazard_write(srs: osr.SpatialReference) -> GridIO:
+def hazard_write(srs_4326: osr.SpatialReference) -> GridIO:
     ds = open_grid("tmp", mode="w")  # Write only
     assert isinstance(ds, GridIO)
     ds.create(shape=(2, 3), nb=1, type=6)  # 6 = float32
-    ds.set_source_srs(srs)
+    ds.set_source_srs(srs_4326)
     return ds
 
 

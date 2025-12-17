@@ -149,7 +149,7 @@ def test_basemodel_read_hazard_risk(
     # Assert the state
     assert m.hazard is not None
     assert isinstance(m.hazard, GridIO)
-    assert m.cfg.get("hazard.return_periods") == [2.0, 5.0, 10.0, 25.0]
+    assert m.cfg.get("hazard.rp") == [2.0, 5.0, 10.0, 25.0]
 
 
 def test_basemodel_read_hazard_warnings(
@@ -202,7 +202,6 @@ def test_basemodel_read_vulnerability(
     assert isinstance(m.vulnerability, Table)
     # Had been upscaled so a long index
     assert len(m.vulnerability.index) == 501
-    assert m._rounding == 2
 
 
 def test_basemodel_read_vulnerability_argument(
@@ -238,4 +237,3 @@ def test_basemodel_read_vulnerability_step_size(
     assert isinstance(m.vulnerability, Table)
     # Had been upscaled so a long index
     assert len(m.vulnerability.index) == 61
-    assert m._rounding == 1

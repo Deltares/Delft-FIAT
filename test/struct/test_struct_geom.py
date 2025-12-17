@@ -44,7 +44,7 @@ def test_geomlayer_field_properties(exposure_geom_dataset: GeomIO):
 
     # Assert the important attributes and properties
     assert gl.columns[:2] == ("object_id", "object_name")  # Field headers
-    assert len(gl.columns) == 6
+    assert len(gl.columns) == 5
     assert gl.dtypes[:2] == [0, 4]  # i.e. int and string
     assert gl.fields[:2] == ["object_id", "object_name"]  # Field headers
     assert isinstance(gl.defn, ogr.FeatureDefn)

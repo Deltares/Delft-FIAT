@@ -120,33 +120,46 @@ def hazard_risk_data(hazard_risk_path: Path) -> GridIO:
 
 
 @pytest.fixture
-def mocked_exp_grid(mocker: MockerFixture, srs: osr.SpatialReference) -> MagicMock:
+def mocked_exp_grid(
+    mocker: MockerFixture,
+    srs_4326: osr.SpatialReference,
+) -> MagicMock:
     grid = mocker.create_autospec(GridIO)
     # Set attributes for practical use
     type(grid).geotransform = PropertyMock(
         side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
     )
-    type(grid).srs = PropertyMock(side_effect=lambda: srs)
+    type(grid).srs = PropertyMock(side_effect=lambda: srs_4326)
     type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
     return grid
 
 
 @pytest.fixture
-def mocked_hazard_grid(mocker: MockerFixture, srs: osr.SpatialReference) -> MagicMock:
+def mocked_hazard_grid(
+    mocker: MockerFixture,
+    srs_4326: osr.SpatialReference,
+) -> MagicMock:
     grid = mocker.create_autospec(GridIO)
     # Set attributes for practical use
     type(grid).geotransform = PropertyMock(
         side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
     )
-    type(grid).srs = PropertyMock(side_effect=lambda: srs)
+    type(grid).srs = PropertyMock(side_effect=lambda: srs_4326)
     type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
     return grid
 
 
 @pytest.fixture(scope="session")
-def srs() -> osr.SpatialReference:
+def srs_4326() -> osr.SpatialReference:
     s = osr.SpatialReference()
     s.SetFromUserInput("EPSG:4326")
+    return s
+
+
+@pytest.fixture(scope="session")
+def srs_3857() -> osr.SpatialReference:
+    s = osr.SpatialReference()
+    s.SetFromUserInput("EPSG:3857")
     return s
 
 
