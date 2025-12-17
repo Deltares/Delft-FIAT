@@ -1,6 +1,5 @@
 """Geom model of FIAT."""
 
-import os
 import sys
 import time
 from itertools import chain
@@ -18,9 +17,10 @@ from fiat.fio import (
 )
 from fiat.gis import geom
 from fiat.job import execute_pool, generate_jobs
-from fiat.log import setup_mp_log, spawn_logger
+from fiat.log import spawn_logger
 from fiat.models.base import BaseModel
 from fiat.models.geom_util import get_exposure_meta
+from fiat.models.util import deter_band_names
 from fiat.models.worker_geom import worker
 from fiat.struct import Container
 from fiat.util import (
@@ -88,7 +88,8 @@ class GeomModel(BaseModel):
         # Hierarchy: 1) signature, 2) configurations
         paths = None
         if path is not None:
-            paths = list(self.cfg.path.glob(path))
+            path = Path(self.cfg.path, path)
+            paths = list(path.parent.glob(path.name))
         paths = paths or self.cfg.get(EXPOSURE_GEOM_FILE)
         h = paths == self.cfg.get(EXPOSURE_GEOM_FILE)
         if not isinstance(paths, list):
@@ -139,12 +140,6 @@ class GeomModel(BaseModel):
                 logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
                 data = geom.reproject(data, self.srs.ExportToWkt())
 
-            # check if it falls within the extent of the hazard map
-            check_geom_extent(
-                data.layer.bounds,
-                self.hazard.bounds,
-            )
-
             # Set the data
             self.exposure.set(data)
             # Set config entry
@@ -176,25 +171,22 @@ class GeomModel(BaseModel):
 
         # Create the output directory and files
         self.cfg.setup_output_dir()
-
-        # Setup the mp logger for missing stuff
-        _receiver = setup_mp_log(
-            self._queue, "missing", level=2, dst=self.cfg.get("output.path")
-        )
         logger.info("Starting the calculations")
-
-        # Start the receiver (which is in a seperate thread)
-        _receiver.start()
 
         # Setup the jobs
         jobs_list = []
         for exposure, count in zip(self.exposure, threads):
+            # Check the extent
+            check_geom_extent(
+                exposure.layer.bounds,
+                self.hazard.bounds,
+            )
             # Get the exposure field meta
             meta = get_exposure_meta(
                 exposure.layer._columns,
                 module=self.module,
                 exposure_types=self.exposure_types,
-                band_names=self.cfg.get("hazard.band_names"),
+                band_names=deter_band_names(self.hazard),
                 risk=self.risk,
             )
             # Get the chunks based on the load distribution
@@ -243,18 +235,6 @@ class GeomModel(BaseModel):
         else:
             logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
             logger.info("Geom calculation are done!")
-
-        _receiver.close()
-        _receiver.close_handlers()
-        if _receiver.count > 0:
-            logger.warning(
-                f"Some objects had missing data. For more info: \
-'missing.log' in '{self.cfg.get('output.path')}'"
-            )
-        else:
-            os.unlink(
-                Path(self.cfg.get("output.path"), "missing.log"),
-            )
 
         # Shutdown the manager
         self._mp_manager.shutdown()

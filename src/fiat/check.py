@@ -131,22 +131,6 @@ def check_vs_srs(
 
 
 ## Hazard
-def check_hazard_band_names(
-    bnames: list,
-    risk: bool,
-    rp: list,
-    count: int,
-):
-    """Check the band names of the hazard data."""
-    if risk:
-        return [f"{n}y" for n in rp]
-
-    if count == 1:
-        return [""]
-
-    return bnames
-
-
 def check_hazard_rp(
     rp_bands: list,
     rp_cfg: list,

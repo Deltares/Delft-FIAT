@@ -11,14 +11,12 @@ from osgeo import osr
 from fiat.cfg import Configurations
 from fiat.check import (
     check_duplicate_columns,
-    check_hazard_band_names,
     check_hazard_rp,
     check_hazard_subsets,
     check_internal_srs,
     check_vs_srs,
 )
 from fiat.fio import GridIO, open_csv, open_grid
-from fiat.fio.util import deter_band_names
 from fiat.gis import grid
 from fiat.log import spawn_logger
 from fiat.struct import Table
@@ -26,7 +24,6 @@ from fiat.util import (
     HAZARD_FILE,
     NEED_IMPLEMENTED,
     VULNERABILITY_FILE,
-    deter_dec,
     generic_path_check,
     get_srs_repr,
 )
@@ -63,10 +60,6 @@ class BaseModel(metaclass=ABCMeta):
         # Risk or event based
         risk = self.cfg.get("model.risk", False)
         self.cfg.set("model.risk", risk)
-
-        # Vulnerability data
-        self._rounding = 2
-        self.cfg.set("vulnerability.round", self._rounding)
 
         # Threading stuff
         self._mp_ctx = get_context("spawn")
@@ -223,7 +216,7 @@ exceeds machine thread count ('{max_threads}')"
 model spatial reference ('{get_srs_repr(self.srs)}')"
             )
             logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
-            _resalg = self.cfg.get("hazard.resampling_method", 0)
+            _resalg = self.cfg.get("hazard.resalg", 0)
             data = grid.reproject(
                 data,
                 dst_srs=self.srs.ExportToWkt(),
@@ -232,24 +225,13 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # check risk return periods
         if self.risk:
-            band_rps = [
-                data[idx].get_metadata_item("return_period") for idx in range(data.size)
-            ]
+            band_rps = [data[idx].get_metadata_item("rp") for idx in range(data.size)]
             rp = check_hazard_rp(
                 band_rps,
-                self.cfg.get("hazard.return_periods"),
+                self.cfg.get("hazard.rp"),
                 path,
             )
-            self.cfg.set("hazard.return_periods", rp)
-
-        # Information for output
-        ns = check_hazard_band_names(
-            deter_band_names(data),
-            self.risk,
-            self.cfg.get("hazard.return_periods"),
-            data.size,
-        )
-        self.cfg.set("hazard.band_names", ns)
+            self.cfg.set("hazard.rp", rp)
 
         # Reset to ensure the entry is present
         self.cfg.set(HAZARD_FILE, path)
@@ -297,9 +279,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # upscale the data (can be done after the checks)
         step_size = self.cfg.get("vulnerability.step_size", 0.01)
-        self._rounding = deter_dec(step_size)
-        self.cfg.set("vulnerability.round", self._rounding)
-
+        self.cfg.set("vulnerability.step_size", step_size)
         logger.info(
             f"Upscaling vulnerability curves, \
 using a step size of: {step_size}"

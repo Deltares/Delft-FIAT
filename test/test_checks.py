@@ -15,7 +15,6 @@ from fiat.check import (
     check_exp_grid_dmfs,
     check_geom_extent,
     check_grid_exact,
-    check_hazard_band_names,
     check_hazard_rp,
     check_hazard_subsets,
     check_internal_srs,
@@ -278,25 +277,6 @@ def test_check_grid_exact_pass(
     # Assert the output
     assert b
     assert caplog.text == ""
-
-
-def test_check_hazard_band_names():
-    # Call the function
-    b = check_hazard_band_names(["foo", "bar"], risk=False, rp=None, count=2)
-    # Assert the output
-    assert b == ["foo", "bar"]
-
-    # Count is one
-    b = check_hazard_band_names(["foo", "bar"], risk=False, rp=None, count=1)
-    # Assert the output
-    assert b == [""]
-
-
-def test_check_hazard_band_names_risk():
-    # Call the function
-    b = check_hazard_band_names(["foo", "bar"], risk=True, rp=[1, 2], count=2)
-    # Assert the output
-    assert b == ["1y", "2y"]
 
 
 def test_check_hazard_rp_fail():

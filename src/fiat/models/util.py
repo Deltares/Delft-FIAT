@@ -4,6 +4,7 @@ from pathlib import Path
 
 from osgeo import ogr
 
+from fiat.fio import GridIO
 from fiat.util import NEWLINE_CHAR
 
 GEOM_DEFAULT_CHUNK = 50000
@@ -22,6 +23,25 @@ def get_field_values(
     method = ft.GetField(mid)
     haz = [ft.GetField(idx) for idx in idxs_haz]
     return method, haz
+
+
+def deter_band_names(
+    obj: GridIO,
+) -> list:
+    """Determine the names of the bands.
+
+    If the bands do not have any names of themselves,
+    they will be set to a default.
+    """
+    names = []
+    for n in range(obj.size):
+        name = obj.get_band_name(n)
+        if not name:
+            names.append(f"band{n+1}")
+            continue
+        names.append(name)
+
+    return names
 
 
 def csv_def_file(
