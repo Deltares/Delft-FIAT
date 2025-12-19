@@ -1,5 +1,5 @@
 ---
-name: Versioning
+name: Pages versioning
 
 on:
   repository_dispatch:
@@ -16,7 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os:
+          - "ubuntu-latest"
         include:
           - os: ubuntu-latest
             label: linux-64
@@ -26,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
             ref: gh-pages
 

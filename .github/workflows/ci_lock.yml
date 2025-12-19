@@ -1,5 +1,5 @@
 ---
-name: Lockfile Update
+name: Update lockfile
 
 permissions:
   contents: write
@@ -20,7 +20,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os:
+          - "ubuntu-latest"
         include:
           - os: ubuntu-latest
             label: linux-64
@@ -30,10 +31,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up pixi
-        uses: prefix-dev/setup-pixi@v0.8.13
+        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
           run-install: false
 
@@ -43,7 +44,7 @@ jobs:
           pixi update --json | pixi exec pixi-diff-to-markdown >> diff.md
 
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Update pixi lockfile

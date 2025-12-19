@@ -1,5 +1,5 @@
 ---
-name: Publish to PyPI
+name: Pypi release
 
 on:
   release:
@@ -11,39 +11,38 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-distributions:
-
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         name: Install Python
         with:
           python-version: "3.13"
 
-      - name: generate env
+      - name: Setup build packages
         run: |
           pip install build tomli twine wheel
 
-      - name: Build artifacts
+      - name: Build sdist/ wheel
         run: |
           python -m build --sdist
           python -m build --wheel
           python -m twine check dist/*
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload sdist/ wheel
+        uses: actions/upload-artifact@v5
         with:
-          name: releases
+          name: source-distribution
           path: dist
 
-  test-built-dist:
-    needs: build-distributions
-
+  test-build:
+    needs: build
     defaults:
       run:
         shell: bash -l {0}
@@ -51,7 +50,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os:
+          - "ubuntu-latest"
         include:
           - os: ubuntu-latest
             label: linux-64
@@ -59,21 +59,21 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup pixi env
-        uses: prefix-dev/setup-pixi@v0.8.13
+        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.49.0"
+          pixi-version: "v0.62.0"
           environments: slim
           locked: false
           cache: true
-          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+          cache-write: false
 
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
-          name: releases
+          name: source-distribution
           path: dist
 
       - name: List contents of built dist
@@ -81,54 +81,49 @@ jobs:
           ls -ltrh
           ls -ltrh dist
 
-      - name: Verify the built dist/wheel is valid
+      - name: Verify dist/ wheel
         run: |
           pixi run python -m pip install dist/delft_fiat*.whl
           pixi run fiat --help
 
-  upload-to-test-pypi:
-    needs: test-built-dist
-
+  upload-testpypi:
+    needs: test-build
     if: github.event_name == 'push'
-
-    runs-on: ubuntu-latest
-
     environment:
       name: testpypi
       url: https://test.pypi.org/p/Delft-FIAT
-
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
 
     steps:
-      - name: Download the sdist and wheel
-        uses: actions/download-artifact@v4
+      - name: Download sdist/ wheel
+        uses: actions/download-artifact@v6
         with:
-          name: releases
-          path: dist/
-      - name: Publish package to TestPyPI
+          name: source-distribution
+          path: dist
+
+      - name: Publish TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
 
-  upload-to-pypi:
-    needs: test-built-dist
-
+  upload-pypi:
+    needs: test-build
     if: ${{ github.event_name == 'release' && !github.event.act  }}
-
-    runs-on: ubuntu-latest
-
     environment:
       name: pypi
       url: https://pypi.org/p/Delft-FIAT
-
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
 
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download sdist/ wheel
+        uses: actions/download-artifact@v6
         with:
-          name: releases
+          name: source-distribution
           path: dist
-      - name: Publish package to PyPI
+
+      - name: Publish PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

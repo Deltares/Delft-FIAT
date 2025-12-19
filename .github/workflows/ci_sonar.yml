@@ -5,12 +5,10 @@ on:
     branches:
       - master
     paths:
-      - src/fiat/*
-      - test/*
+      - src/fiat/**/*
   pull_request:
     paths:
-      - src/fiat/*
-      - test/*
+      - src/fiat/**/*
     types:
       - opened
       - synchronize

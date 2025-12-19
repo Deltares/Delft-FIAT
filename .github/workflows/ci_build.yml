@@ -1,5 +1,5 @@
 ---
-name: Build Binary
+name: Build
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
       - master
     paths:
       - .build/*
-      - src/fiat/*
+      - src/fiat/**/*
       - pyproject.toml
       - pixi.lock
       - .github/workflows/build.yml
@@ -16,7 +16,7 @@ on:
       - master
     paths:
       - .build/*
-      - src/fiat/*
+      - src/fiat/**/*
       - pyproject.toml
       - pixi.lock
       - .github/workflows/build.yml
@@ -30,7 +30,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os:
+          - "ubuntu-latest"
         include:
           - os: ubuntu-latest
             label: linux-64
@@ -40,12 +41,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup pixi env
-        uses: prefix-dev/setup-pixi@v0.8.13
+        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.58.0"
+          pixi-version: "v0.62.0"
           environments: build
           locked: false
           cache: true

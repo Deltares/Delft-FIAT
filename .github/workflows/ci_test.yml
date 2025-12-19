@@ -1,0 +1,46 @@
+---
+name: Test Package
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - src/fiat/**/*
+      - test/**/*
+      - pixi.lock
+      - pyproject.toml
+      - .github/workflows/ci_test.yml
+      - .github/workflows/test.yml
+  pull_request:
+    branches:
+      - master
+    paths:
+      - src/fiat/**/*
+      - test/**/*
+      - pixi.lock
+      - pyproject.toml
+      - .github/workflows/ci_test.yml
+      - .github/workflows/test.yml
+
+jobs:
+  test:
+    name: "${{ matrix.label }} - py${{ matrix.python-version }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "ubuntu-latest"
+          - "windows-latest"
+        python-version: ["311", "312", "313"]
+        include:
+          - os: ubuntu-latest
+            label: linux-64
+          - os: windows-latest
+            label: win-64
+
+    uses: ./.github/workflows/test.yml
+    with:
+      os: ${{ matrix.os }}
+      python-version: ${{ matrix.python-version }}
