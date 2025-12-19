@@ -11,19 +11,24 @@ from osgeo import osr
 from fiat.cfg import Configurations
 from fiat.check import (
     check_duplicate_columns,
-    check_hazard_band_names,
-    check_hazard_rp,
     check_hazard_subsets,
     check_internal_srs,
     check_vs_srs,
 )
-from fiat.fio import GeomIO, GridIO, open_csv, open_grid
-from fiat.fio.util import deter_band_names
+from fiat.fio import GridIO, open_csv, open_grid
 from fiat.gis import grid
 from fiat.log import spawn_logger
-from fiat.models.util import check_file_for_read
-from fiat.struct import Table, TableLazy
-from fiat.util import NEED_IMPLEMENTED, deter_dec, get_srs_repr
+from fiat.struct import Table
+from fiat.util import (
+    HAZARD_FILE,
+    HAZARD_TYPE,
+    MODEL_RISK,
+    MODEL_SRS_VALUE,
+    NEED_IMPLEMENTED,
+    VULNERABILITY_FILE,
+    generic_path_check,
+    get_srs_repr,
+)
 
 logger = spawn_logger("fiat.model")
 
@@ -47,34 +52,23 @@ class BaseModel(metaclass=ABCMeta):
         ## Declarations
         # Model data
         self._srs: osr.SpatialReference | None = None
-        self.exposure_data: dict[int, TableLazy] | None = None
-        self.exposure_geoms: dict[int, GeomIO] | None = None
-        self.exposure_grid: GridIO | None = None
-        self.hazard_grid: GridIO | None = None
-        self.vulnerability_data: Table | None = None
+        self.hazard: GridIO | None = None
+        self.vulnerability: Table | None = None
 
         # Type of calculations
-        type = self.cfg.get("hazard.type", "flood")
-        self.module = importlib.import_module(f"fiat.methods.{type}")
-        self.cfg.set("hazard.type", type)
+        self._type = self.cfg.get(HAZARD_TYPE, "flood")
+        self.module = importlib.import_module(f"fiat.methods.{self.type}")
         # Risk or event based
-        risk = self.cfg.get("model.risk", False)
-        self.cfg.set("model.risk", risk)
-
-        # Vulnerability data
-        self._vul_step_size = 0.01
-        self._rounding = 2
-        self.cfg.set("vulnerability.round", self._rounding)
+        self._risk = self.cfg.get(MODEL_RISK, False)
 
         # Threading stuff
         self._mp_ctx = get_context("spawn")
         self._mp_manager = None
         self._queue = None
         self._threads = 1
-        self.chunks = []
 
         ## Call the necessary methods at init
-        self.srs = self.cfg.get("model.srs.value", "EPSG:4326")
+        self.srs = self.cfg.get(MODEL_SRS_VALUE, "EPSG:4326")
         self.threads = self.cfg.get("model.threads")
         self.read_hazard_grid()
         self.read_vulnerability_data()
@@ -90,12 +84,12 @@ class BaseModel(metaclass=ABCMeta):
     @property
     def risk(self) -> bool:
         """Return the calculation modus."""
-        return self.cfg.get("model.risk")
+        return self._risk
 
     @risk.setter
     def risk(self, value: bool):
         """Set the calculation modus."""
-        self.cfg.set("model.risk", value)
+        self._risk = value
 
     @property
     def srs(self) -> osr.SpatialReference:
@@ -150,21 +144,13 @@ exceeds machine thread count ('{max_threads}')"
     @property
     def type(self) -> str:
         """Return the hazard type."""
-        return self.cfg.get("hazard.type")
+        return self._type
 
     @type.setter
     def type(self, value: str):
         """Set the hazard type."""
-        self.cfg.set("hazard.type", value)
+        self._type = value
         self.module = importlib.import_module(f"fiat.methods.{value}")
-
-    ## Set(up) methods.
-    @abstractmethod
-    def _setup_output_files(
-        self,
-    ):
-        """Set up output files."""
-        raise NotImplementedError(NEED_IMPLEMENTED)
 
     ## Read data methods
     def read_hazard_grid(
@@ -185,10 +171,12 @@ exceeds machine thread count ('{max_threads}')"
             Keyword arguments for reading. These are passed into [open_grid]\
 (/api/fio/open_grid.qmd) after which into [GridIO](/api/GridIO.qmd)/
         """
-        file_entry = "hazard.file"
-        path = check_file_for_read(self.cfg, file_entry, path)
+        # Sort the pathing
+        # Hierarchy: 1) signature, 2) configurations
+        path = path or self.cfg.get(HAZARD_FILE)
         if path is None:
             return
+        path = generic_path_check(path, root=self.cfg.path)
         logger.info(f"Reading hazard data ('{path.name}')")
 
         # Set the extra arguments from the settings file
@@ -216,7 +204,7 @@ exceeds machine thread count ('{max_threads}')"
             path.name,
         )
 
-        if not self.cfg.get("model.srs.prefer_global", False):
+        if not self.cfg.get("model.srs.global", False):
             logger.warning("Setting the model srs from the hazard data.")
             self.srs = get_srs_repr(data.srs)
 
@@ -228,38 +216,17 @@ exceeds machine thread count ('{max_threads}')"
 model spatial reference ('{get_srs_repr(self.srs)}')"
             )
             logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
-            _resalg = self.cfg.get("hazard.resampling_method", 0)
+            _resalg = self.cfg.get("hazard.resalg", 0)
             data = grid.reproject(
                 data,
                 dst_srs=self.srs.ExportToWkt(),
                 resample=_resalg,
             )
 
-        # check risk return periods
-        if self.risk:
-            band_rps = [
-                data[idx].get_metadata_item("return_period") for idx in range(data.size)
-            ]
-            rp = check_hazard_rp(
-                band_rps,
-                self.cfg.get("hazard.return_periods"),
-                path,
-            )
-            self.cfg.set("hazard.return_periods", rp)
-
-        # Information for output
-        ns = check_hazard_band_names(
-            deter_band_names(data),
-            self.risk,
-            self.cfg.get("hazard.return_periods"),
-            data.size,
-        )
-        self.cfg.set("hazard.band_names", ns)
-
         # Reset to ensure the entry is present
-        self.cfg.set(file_entry, path)
+        self.cfg.set(HAZARD_FILE, path)
         # When all is done, add it
-        self.hazard_grid = data
+        self.hazard = data
 
     def read_vulnerability_data(
         self,
@@ -274,15 +241,17 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         Parameters
         ----------
         path : Path | str, optional
-            Path to the vulnerabulity data, by default None
-        kwargs : dict, optional
+            Path to the vulnerabulity data, by default None.
+        **kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_csv]\
-(/api/fio/open_csv.qmd) after which into [Table](/api/Table.qmd)/
+(/api/fio/open_csv.qmd) after which into [Table](/api/Table.qmd)/.
         """
-        file_entry = "vulnerability.file"
-        path = check_file_for_read(self.cfg, file_entry, path)
+        # Sort the pathing
+        # Hierarchy: 1) signature, 2) configurations
+        path = path or self.cfg.get(VULNERABILITY_FILE)
         if path is None:
             return
+        path = generic_path_check(path, root=self.cfg.path)
         logger.info(f"Reading vulnerability curves ('{path.name}')")
 
         # Setting the keyword arguments from settings file
@@ -299,21 +268,18 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         check_duplicate_columns(data.duplicate_columns)
 
         # upscale the data (can be done after the checks)
-        if "vulnerability.step_size" in self.cfg:
-            self._vul_step_size = self.cfg.get("vulnerability.step_size")
-            self._rounding = deter_dec(self._vul_step_size)
-            self.cfg.set("vulnerability.round", self._rounding)
-
+        step_size = self.cfg.get("vulnerability.step_size", 0.01)
+        self.cfg.set("vulnerability.step_size", step_size)
         logger.info(
             f"Upscaling vulnerability curves, \
-using a step size of: {self._vul_step_size}"
+using a step size of: {step_size}"
         )
-        data.upscale(self._vul_step_size, inplace=True)
+        data.upscale(step_size, inplace=True)
 
         # Reset to ensure the entry is present
-        self.cfg.set(file_entry, path)
+        self.cfg.set(VULNERABILITY_FILE, path)
         # When all is done, add it
-        self.vulnerability_data = data
+        self.vulnerability = data
 
     ## Run
     @abstractmethod

@@ -12,15 +12,6 @@ class GridBand(BaseStruct):
     """A source object for a specific raster band.
 
     Acquired by indexing a GridIO object.
-
-    Parameters
-    ----------
-    band : gdal.Band
-        A band defined by GDAL.
-    chunk : tuple, optional
-        Chunk size in x direction and y direction.
-    mode : str, optional
-        The I/O mode. Either `r` for reading or `w` for writing.
     """
 
     def __init__(self, *args, **kwargs):

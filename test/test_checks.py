@@ -13,18 +13,18 @@ from fiat.check import (
     check_exp_columns,
     check_exp_derived_types,
     check_exp_grid_dmfs,
-    check_exp_index_col,
     check_geom_extent,
     check_grid_exact,
-    check_hazard_band_names,
     check_hazard_rp,
     check_hazard_subsets,
+    check_input_data,
     check_internal_srs,
     check_vs_srs,
 )
 from fiat.error import FIATDataError
 from fiat.log import Logger
 from fiat.methods.flood import MANDATORY_COLUMNS
+from fiat.struct import Container
 from fiat.util import MANDATORY_MODEL_ENTRIES
 
 
@@ -38,7 +38,7 @@ Please fill in the following missing entries: ['vulnerability.file']"
         ),
     ):
         check_config_entries(
-            ("hazard.file",),
+            Configurations(**{"hazard": {"file": "foo"}}),
             MANDATORY_MODEL_ENTRIES,
         )
 
@@ -46,7 +46,7 @@ Please fill in the following missing entries: ['vulnerability.file']"
 def test_check_config_entries_pass():
     # Call the function with all entries present
     check_config_entries(
-        ("hazard.file", "vulnerability.file"),
+        Configurations(**{"hazard": {"file": "foo"}, "vulnerability": {"file": "bar"}}),
         MANDATORY_MODEL_ENTRIES,
     )
 
@@ -94,22 +94,10 @@ def test_check_exp_columns_fail():
     # Call the function with missing Mandatory column
     with pytest.raises(
         FIATDataError,
-        match=re.escape("Missing mandatory exposure columns: ['ground_flht']"),
+        match=re.escape("Missing mandatory exposure columns: ['ref']"),
     ):
         check_exp_columns(
-            ["object_id", "ground_elevtn"],
-            index_col="object_id",
-            mandatory_columns=MANDATORY_COLUMNS,
-        )
-
-    # Call the function with missing index column
-    with pytest.raises(
-        FIATDataError,
-        match=re.escape("Missing mandatory exposure columns: ['object_id']"),
-    ):
-        check_exp_columns(
-            ["ground_elevtn", "ground_flht"],
-            index_col="object_id",
+            ["object_id"],
             mandatory_columns=MANDATORY_COLUMNS,
         )
 
@@ -117,8 +105,7 @@ def test_check_exp_columns_fail():
 def test_check_exp_columns_pass():
     # Call the function with all columns there
     check_exp_columns(
-        ["object_id", "ground_elevtn", "ground_flht"],
-        index_col="object_id",
+        ["object_id", "ref"],
         mandatory_columns=MANDATORY_COLUMNS,
     )
 
@@ -184,28 +171,6 @@ def test_check_exp_grid_dmfs_pass():
     check_exp_grid_dmfs(
         fns=["foo", "bar"],
         dmfs=["foo", "bar", "baz"],
-    )
-
-
-def test_check_exp_index_col_fail():
-    # Call the function with the index_col not present
-    with pytest.raises(
-        FIATDataError,
-        match=re.escape("Index column ('foo') not found in baz"),
-    ):
-        check_exp_index_col(
-            columns=["bar", "spooky"],
-            index_col="foo",
-            path="baz",
-        )
-
-
-def test_check_exp_index_col_pass():
-    # Call the function with the index_col not present
-    check_exp_index_col(
-        columns=["foo", "bar", "spooky"],
-        index_col="foo",
-        path="baz",
     )
 
 
@@ -316,25 +281,6 @@ def test_check_grid_exact_pass(
     assert caplog.text == ""
 
 
-def test_check_hazard_band_names():
-    # Call the function
-    b = check_hazard_band_names(["foo", "bar"], risk=False, rp=None, count=2)
-    # Assert the output
-    assert b == ["foo", "bar"]
-
-    # Count is one
-    b = check_hazard_band_names(["foo", "bar"], risk=False, rp=None, count=1)
-    # Assert the output
-    assert b == [""]
-
-
-def test_check_hazard_band_names_risk():
-    # Call the function
-    b = check_hazard_band_names(["foo", "bar"], risk=True, rp=[1, 2], count=2)
-    # Assert the output
-    assert b == ["1y", "2y"]
-
-
 def test_check_hazard_rp_fail():
     # Call the function with a missing rp value compared to the bands
     with pytest.raises(
@@ -344,7 +290,6 @@ for the risk calculation",
     ):
         check_hazard_rp(
             rp_bands=["a", "b", "c", "d"],
-            rp_cfg=[1.0, 2.0, 5.0],
             path=Path("tmp.txt"),
         )
 
@@ -352,8 +297,7 @@ for the risk calculation",
 def test_check_hazard_rp_pass():
     # Call the function with everything present and matching
     rp = check_hazard_rp(
-        rp_bands=["a", "b", "c", "d"],
-        rp_cfg=[1.0, 2.0, 5.0, 10.0],
+        rp_bands=["1", "2", "5", "10"],
         path=Path("tmp.txt"),
     )
 
@@ -384,6 +328,54 @@ def test_check_hazard_subsets_pass():
     )
 
 
+def test_check_input_data_pass():
+    # Call the function
+    check_input_data(["foo", 2, int])
+
+
+def test_check_input_data_container_pass():
+    # Create a container
+    c = Container()
+    c.set(2)
+    # Call the function
+    check_input_data(["foo", c, int])
+
+
+def test_check_input_data_fail():
+    with pytest.raises(
+        TypeError,
+        match="foo is incorrectly set, currently of type int",
+    ):
+        # Call the function with the wrong type
+        check_input_data(["foo", 2, str])
+
+    with pytest.raises(
+        TypeError,
+        match="foo is incorrectly set, currently of type NoneType",
+    ):
+        # Call the function when None
+        check_input_data(["foo", None, str])
+
+
+def test_check_input_data_container_fail():
+    # Create an empty container
+    c = Container()
+    with pytest.raises(
+        ValueError,
+        match="foo is empty",
+    ):
+        # Call the function with the wrong type
+        check_input_data(["foo", c, str])
+
+    c.set(2)
+    with pytest.raises(
+        TypeError,
+        match="Wrong type encountered in foo",
+    ):
+        # Call the function when None
+        check_input_data(["foo", c, str])
+
+
 def test_check_internal_srs_fail():
     # Call the function with no known srs
     with pytest.raises(
@@ -407,20 +399,20 @@ def test_check_internal_srs_pass():
     )
 
 
-def test_check_vs_srs_fail(srs: osr.SpatialReference):
-    # Setup up another srs
-    other = osr.SpatialReference()
-    other.ImportFromEPSG(3857)
+def test_check_vs_srs_fail(
+    srs_4326: osr.SpatialReference,
+    srs_3857: osr.SpatialReference,
+):
     # Call the function with the different srs
-    b = check_vs_srs(srs, other)
+    b = check_vs_srs(srs_4326, srs_3857)
 
     # Assert the output
     assert not b
 
 
-def test_check_vs_srs_pass(srs: osr.SpatialReference):
+def test_check_vs_srs_pass(srs_4326: osr.SpatialReference):
     # Call the function with the different srs
-    b = check_vs_srs(srs, srs)
+    b = check_vs_srs(srs_4326, srs_4326)
 
     # Assert the output
     assert b

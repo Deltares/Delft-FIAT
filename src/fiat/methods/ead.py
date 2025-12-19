@@ -3,7 +3,7 @@
 import math
 
 
-def calculate_ead(
+def fn_ead(
     rp_coef: list,
     dms: list,
 ) -> float:
@@ -30,7 +30,7 @@ def calculate_ead(
     return ead
 
 
-def risk_density(
+def fn_density(
     rp: list | tuple,
 ) -> list:
     """Calculate the risk density factors from return periods values.

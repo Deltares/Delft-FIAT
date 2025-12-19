@@ -8,16 +8,13 @@ from osgeo import ogr
 from fiat.methods.util import AREA_METHODS
 from fiat.struct import Table
 
-MANDATORY_COLUMNS = ["ground_flht", "ground_elevtn"]
-MANDATORY_ENTRIES = ["hazard.elevation_reference"]
-NEW_COLUMNS = ["inun_depth"]
+MANDATORY_COLUMNS = ["ref"]
+NEW_COLUMNS = ["depth"]
 
 
-def calculate_hazard(
+def fn_hazard(
     hazard: list,
-    reference: str,
-    ground_flht: float,
-    ground_elevtn: float = 0,
+    ref: float,
     method: str = "mean",
 ) -> float:
     """Calculate the hazard value for flood hazard.
@@ -26,13 +23,8 @@ def calculate_hazard(
     ----------
     hazard : list
         Raw hazard values.
-    reference : str
-        Reference, either 'dem' or 'datum'.
-    ground_flht : float
-        The height of the floor of an object (.e.g the door elevation).
-    ground_elevtn : float, optional
-        Ground height in reference to e.g. the ocean.
-        (Needed when 'reference' is 'datum')
+    ref : float
+        Reference to the hazard values.
     method : str, optional
         Chose 'max' or 'mean' for either the maximum value or the average,
         by default 'mean'.
@@ -42,15 +34,9 @@ def calculate_hazard(
     float
         A representative hazard value.
     """
-    _ge = 0
-    if reference.lower() == "datum" and not math.isnan(ground_elevtn):
-        # The hazard data is referenced to a Datum
-        # (e.g., for flooding this is the water elevation).
-        _ge = ground_elevtn
-
     # Remove the negative hazard values to 0.
     raw_l = len(hazard)
-    hazard = [n - _ge for n in hazard if (n - _ge) > 0.0001]
+    hazard = [n - ref for n in hazard if (n - ref) > 0.0001]
 
     if not hazard:
         return math.nan, math.nan
@@ -65,13 +51,10 @@ def calculate_hazard(
     else:
         hazard = hazard[0]
 
-    # Subtract the Ground Floor Height from the hazard value
-    hazard -= ground_flht
-
     return hazard, redf
 
 
-def calculate_damage(
+def fn_impact(
     hazard_value: float | int,
     red_fact: float | int,
     ft: ogr.Feature | list,
@@ -136,7 +119,7 @@ def calculate_damage(
     return out
 
 
-def calculate_damage_single(
+def fn_impact_single(
     hazard_value: float | int,
     red_fact: float | int,
     fn: str,
@@ -145,7 +128,7 @@ def calculate_damage_single(
     vul_min: float | int,
     vul_max: float | int,
     vul_round: int,
-) -> tuple:
+) -> int | str:
     """Calculate the damage corresponding with the hazard value.
 
     Parameters
@@ -176,11 +159,8 @@ def calculate_damage_single(
     """
     # Calculate the damage per catagory, and in total (_td)
     if isnan(hazard_value) or fn is None or fn == "nan":
-        val = "nan"
-    else:
-        hazard_value = max(min(vul_max, hazard_value), vul_min)
-        f = vuln[round(hazard_value, vul_round), fn]
-        val = f * maxv * red_fact
-        val = round(val, 2)
-
-    return val
+        return "nan"
+    hazard_value = max(min(vul_max, hazard_value), vul_min)
+    f = vuln[round(hazard_value, vul_round), fn]
+    val = f * maxv * red_fact
+    return round(val, 2)

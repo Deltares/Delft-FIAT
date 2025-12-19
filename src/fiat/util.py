@@ -1,5 +1,6 @@
 """Base FIAT utility."""
 
+import copy
 import importlib
 import math
 import os
@@ -12,26 +13,68 @@ from pathlib import Path
 from types import FunctionType, ModuleType
 from typing import Any, Generator
 
+import numpy as np
 import regex
 from osgeo import gdal, ogr, osr
 
-## Model entries
-MODEL_THREADS = "model.threads"
-MODEL_TYPE = "model.type"
+## Config entries
+# Building blocks
+CHUNK = "chunk"
+EXPOSURE = "exposure"
+FIAT = "fiat"
+FILE = "file"
+GEOM = "geom"
+GRID = "grid"
+HAZARD = "hazard"
+INDEX = "index"
+METHODS = "methods"
+MODEL = "model"
+NAME = "name"
+OUTPUT = "output"
+PATH = "path"
+RISK = "risk"
+SETTINGS = "settings"
+SRS = "srs"
+STEP_SIZE = "step_size"
+THREADS = "threads"
+TYPE = "type"
+VALUE = "value"
+VULNERABILITY = "vulnerability"
+# Model settings
+MODEL_RISK = f"{MODEL}.{RISK}"
+MODEL_SRS = f"{MODEL}.{SRS}"
+MODEL_SRS_VALUE = f"{MODEL}.{SRS}.{VALUE}"
+MODEL_THREADS = f"{MODEL}.{THREADS}"
+MODEL_TYPE = f"{MODEL}.{TYPE}"
+# Output
+OUTPUT_PATH = f"{OUTPUT}.{PATH}"
+# Input
+EXPOSURE_GEOM = f"{EXPOSURE}.{GEOM}"
+EXPOSURE_GEOM_FILE = f"{EXPOSURE_GEOM}.{FILE}"
+EXPOSURE_GEOM_SETTINGS = f"{EXPOSURE_GEOM}.{SETTINGS}"
+EXPOSURE_GRID = f"{EXPOSURE}.{GRID}"
+EXPOSURE_GRID_FILE = f"{EXPOSURE_GRID}.{FILE}"
+EXPOSURE_GRID_SETTINGS = f"{EXPOSURE_GRID}.{SETTINGS}"
+HAZARD_FILE = f"{HAZARD}.{FILE}"
+HAZARD_SETTINGS = f"{HAZARD}.{SETTINGS}"
+HAZARD_TYPE = f"{HAZARD}.{TYPE}"
+VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
+VULNERABILITY_SETTINGS = f"{VULNERABILITY}.{SETTINGS}"
 
-## Define the variables for FIAT
+## Define other string variables
+OBJECT_ID = "object_id"
+
+## Define function variables for FIAT
 BLACKLIST = type, ModuleType, FunctionType
 DD_NEED_IMPLEMENTED = "Dunder method needs to be implemented."
 DD_NOT_IMPLEMENTED = "Dunder method not yet implemented."
 FILE_ATTRIBUTE_HIDDEN = 0x02
 MANDATORY_MODEL_ENTRIES = [
-    "hazard.file",
-    "vulnerability.file",
+    HAZARD_FILE,
+    VULNERABILITY_FILE,
 ]
-MANDATORY_GEOM_ENTRIES = [
-    r"exposure.geom.file\d+",
-]
-MANDATORY_GRID_ENTRIES = ["exposure.grid.file"]
+MANDATORY_GEOM_ENTRIES = [EXPOSURE_GEOM_FILE]
+MANDATORY_GRID_ENTRIES = [EXPOSURE_GRID_FILE]
 NEWLINE_CHAR = os.linesep
 NEED_IMPLEMENTED = "Method needs to be implemented."
 NOT_IMPLEMENTED = "Method not yet implemented."
@@ -180,7 +223,7 @@ def create_windows(
         )
 
 
-def create_1d_chunk(
+def create_1d_chunks(
     length: int,
     parts: int,
 ) -> tuple:
@@ -200,6 +243,100 @@ def create_1d_chunk(
     )
 
     return chunks
+
+
+def _load_diff(
+    size: int,
+    threads: int,
+    diff: int,
+    max_threads: int,
+) -> float:
+    """Difference in load by adding or removed threads."""
+    cur = max(threads, 1)
+    new = max(threads + diff, 1)
+    # Cant take that single thread away, so infinite
+    if cur == 1 and cur == new:
+        return np.inf
+    # Cant exceed system max
+    if cur == max_threads and new >= max_threads:
+        return 0
+    # The difference in load
+    diff = (size / cur) - (size / new)
+    return abs(diff)
+
+
+def _diff_table(
+    sizes: list[int],
+    threads_diss: list[int],
+    max_threads: int,
+) -> tuple[np.ndarray]:
+    """Create a conditional table of load improvements."""
+    # Setup the variables
+    n = len(sizes)
+    flags = np.zeros((n, n))
+    diff = np.ones((n, n)) * np.inf
+    multi = [item > 1 for item in threads_diss]
+    # Loop through the coordinates
+    for i, j in product(range(n), range(n)):
+        if i == j:  # Diagonal (Cant take from self)
+            continue
+        if not multi[j]:  # No threads to take
+            continue
+        val = _load_diff(sizes[i], threads_diss[i], 1, max_threads) - _load_diff(
+            sizes[j], threads_diss[j], -1, max_threads
+        )
+        if val > 0:  # We have a winner
+            flags[i, j] = 1
+            diff[i, j] = val
+    return flags, diff
+
+
+def distribute_threads(
+    size: list[int],
+    threads: int,
+) -> list[int]:
+    """Sort out the weight of the data on all the threads."""
+    n = len(size)
+    # First estimate of the thread weight
+    thread_diss = [round((item / sum(size)) * threads) for item in size]
+
+    # Check for sizes with no threads assigned
+    while 0 in thread_diss:
+        # Take the first
+        idx = thread_diss.index(0)
+        thread_diss[idx] = 1
+        # Check if there are others with multiple threads
+        multi = [i for i, item in enumerate(thread_diss) if item > 1]
+        if len(multi) == 0:
+            continue
+        # See it there is benefit to taking on of those threads
+        # For the one with zero threads
+        extra = [_load_diff(size[i], thread_diss[i], -1, threads) for i in multi]
+        benefit = [size[idx] > item for item in extra]
+        if not any(benefit):
+            continue
+        # Extract one from the one with more than one, dawai
+        idx = extra.index(min([item for i, item in enumerate(extra) if benefit[i]]))
+        thread_diss[multi[idx]] -= 1
+
+    # Check for at least all the available threads
+    while sum(thread_diss) < threads:
+        red = [
+            _load_diff(item, thread_diss[i], 1, threads) for i, item in enumerate(size)
+        ]
+        idx = red.index(max(red))
+        thread_diss[idx] += 1
+
+    # Redistribute according to size
+    while True:
+        flags, diff = _diff_table(size, thread_diss, threads)
+        if not np.any(flags):
+            break
+        idxmin = np.argmin(diff)
+        thread_diss[idxmin // n] += 1
+        thread_diss[idxmin % n] -= 1
+
+    return thread_diss
 
 
 # Config related stuff
@@ -283,34 +420,34 @@ missing values.
 
 
 def generate_output_columns(
-    specific_columns: tuple | list,
+    columns: list,
     exposure_types: dict,
     extra: tuple | list = [],
     suffix: tuple | list = [""],
 ) -> tuple:
     """Generate the output columns."""
-    default = specific_columns + ["red_fact"]
-    total_idx = []
+    columns = copy.deepcopy(columns)
+    total = []
 
     # Loop over the exposure types
     for key, value in exposure_types.items():
-        default += [f"{key}{item}" for item in value["fn"].keys()]
-        total_idx.append(len(default))
-        default += [f"total_{key}"]
+        columns += [f"{key}{item}" for item in value["fn"].keys()]
+        total.append(len(columns))
+        columns += [f"total_{key}"]
 
-    total_idx = [item - len(default) for item in total_idx]
+    total = [item - len(columns) for item in total]
 
     out = []
     if len(suffix) == 1 and not suffix[0]:
-        out = default
+        out = columns
     else:
         for name in suffix:
-            add = [f"{item}_{name}" for item in default]
+            add = [f"{item}_{name}" for item in columns]
             out += add
 
     out += [f"{x}_{y}" for x, y in product(extra, exposure_types.keys())]
 
-    return out, len(default), total_idx
+    return out, len(columns), total
 
 
 # GIS related utility
@@ -330,7 +467,7 @@ def get_srs_repr(
         Representing string.
     """
     if srs is None:
-        raise ValueError("'srs' can not be 'None'.")
+        raise ValueError("'srs' can not be None.")
     _auth_c = srs.GetAuthorityCode(None)
     _auth_n = srs.GetAuthorityName(None)
 
@@ -371,109 +508,95 @@ def read_gridsource_layers(
     return out
 
 
-def _create_geom_driver_map(
-    write: bool = False,
+def _check_geom_driver_capabilities(
+    idx: int,
+    type: str,
+) -> tuple[gdal.Driver, list] | tuple[None]:
+    """Return driver when it has the necessary capabilities."""
+    driver = gdal.GetDriver(idx)
+    # Check the create capability
+    if not driver.GetMetadataItem(gdal.DCAP_CREATE):
+        return None, None
+    # Check on vector driver
+    if type == gdal.DCAP_VECTOR and (
+        not driver.GetMetadataItem(gdal.DCAP_VECTOR)
+        or not driver.GetMetadataItem(gdal.DCAP_CREATE_LAYER)
+        # or not driver.GetMetadataItem(gdal.DCAP_UPDATE)
+    ):
+        return None, None
+    # Check on Raster driver
+    if type == gdal.DCAP_RASTER and (
+        not driver.GetMetadataItem(gdal.DCAP_RASTER)
+        or not driver.GetMetadataItem(gdal.DCAP_CREATECOPY)
+    ):
+        return None, None
+    # Get the extension
+    ext = driver.GetMetadataItem(gdal.DMD_EXTENSION) or driver.GetMetadataItem(
+        gdal.DMD_EXTENSIONS
+    )
+    # If None, cant do anything
+    if ext is None:
+        return None, None
+    # Get the extension from the returned str or list
+    if len(ext.split(" ")) > 1:
+        exts = ext.split(" ")
+        if driver.ShortName.lower() in exts:
+            ext = driver.ShortName.lower()
+        else:
+            ext = ext.split(" ")[-1]
+    return driver, ext
+
+
+def _create_driver_map(
+    type: str,
 ) -> dict:
     """Create a map of geometry drivers."""
-    geom_drivers = {}
-    _c = gdal.GetDriverCount()
+    drivers = {}
+    count = gdal.GetDriverCount()
 
-    for idx in range(_c):
-        dr = gdal.GetDriver(idx)
-        if dr.GetMetadataItem(gdal.DCAP_VECTOR):
-            edit = dr.GetMetadataItem(gdal.DCAP_DELETE_FIELD)
-            if write and edit is None:
-                continue
-            if dr.GetMetadataItem(gdal.DCAP_CREATE) or dr.GetMetadataItem(
-                gdal.DCAP_CREATE_LAYER
-            ):
-                ext = dr.GetMetadataItem(gdal.DMD_EXTENSION) or dr.GetMetadataItem(
-                    gdal.DMD_EXTENSIONS
-                )
-                if ext is None:
-                    continue
-                if len(ext.split(" ")) > 1:
-                    exts = ext.split(" ")
-                    if dr.ShortName.lower() in exts:
-                        ext = dr.ShortName.lower()
-                    else:
-                        ext = ext.split(" ")[-1]
-                if len(ext) > 0:
-                    ext = "." + ext
-                    geom_drivers[ext] = dr.ShortName
+    for idx in range(count):
+        driver, ext = _check_geom_driver_capabilities(idx, type=type)
+        if driver is None:
+            continue
+        if len(ext) > 0:
+            ext = "." + ext
+            drivers[ext] = driver.ShortName
 
-    return geom_drivers
+    return drivers
 
 
-GEOM_READ_DRIVER_MAP = _create_geom_driver_map()
-GEOM_WRITE_DRIVER_MAP = _create_geom_driver_map(write=True)
-GEOM_WRITE_DRIVER_MAP[""] = "Memory"
-
-
-def _create_grid_driver_map() -> dict:
-    """Create a map of grid drivers."""
-    grid_drivers = {}
-    _c = gdal.GetDriverCount()
-
-    for idx in range(_c):
-        dr = gdal.GetDriver(idx)
-        if dr.GetMetadataItem(gdal.DCAP_RASTER):
-            if dr.GetMetadataItem(gdal.DCAP_CREATE) or dr.GetMetadataItem(
-                gdal.DCAP_CREATECOPY
-            ):
-                ext = dr.GetMetadataItem(gdal.DMD_EXTENSION) or dr.GetMetadataItem(
-                    gdal.DMD_EXTENSIONS
-                )
-                if ext is None:
-                    continue
-                if len(ext.split(" ")) > 1:
-                    exts = ext.split(" ")
-                    if dr.ShortName.lower() in exts:
-                        ext = dr.ShortName.lower()
-                    else:
-                        ext = ext.split(" ")[-1]
-                if len(ext) > 0:
-                    ext = "." + ext
-                    grid_drivers[ext] = dr.ShortName
-
-    return grid_drivers
-
-
-GRID_DRIVER_MAP = _create_grid_driver_map()
+GEOM_DRIVER_MAP = _create_driver_map(type=gdal.DCAP_VECTOR)
+GEOM_DRIVER_MAP[""] = "MEM"
+GRID_DRIVER_MAP = _create_driver_map(type=gdal.DCAP_RASTER)
 GRID_DRIVER_MAP[""] = "MEM"
 
 
 # I/O stuff
-def create_dir(
-    root: Path | str,
+def generic_directory_check(
     path: Path | str,
+    root: Path | str | None = None,
 ) -> Path:
-    """Create directory when it does not yet exist."""
-    _p = Path(path)
-    if not _p.is_absolute():
-        _p = Path(root, _p)
-    generic_folder_check(_p)
-    return _p
-
-
-def generic_folder_check(
-    path: Path | str,
-) -> Path:
-    """Check if a directory exists.
+    """Check if a directory exists, create when it does not yet exist.
 
     Parameters
     ----------
     path : Path | str
         Path to the directory.
+    root : str
+        Current root/ working directory.
     """
+    root = root or Path.cwd()
     path = Path(path)
+    if not path.is_absolute():
+        path = Path(root, path)
     if not path.exists():
         path.mkdir(parents=True)
+    return path
 
 
 def generic_path_check(
-    path: str,
-    root: str,
+    path: Path | str,
+    root: Path | str | None = None,
 ) -> Path:
     """Check whether a file exists.
 
@@ -482,13 +605,14 @@ def generic_path_check(
     path : str
         Path to the file.
     root : str
-        Current root directory.
+        Current root/ working directory.
 
     Returns
     -------
     Path
         Absolute path to the file.
     """
+    root = root or Path.cwd()
     path = Path(path)
     if not path.is_absolute():
         path = Path(root, path)
@@ -560,30 +684,29 @@ class DummyLock:
 
     def acquire(self):
         """Call dummy acquire."""
-        pass
+        ...
 
     def release(self):
         """Call dummy release."""
-        pass
+        ...
 
 
 class DummyWriter:
     """Mimic the behaviour of an object that is capable of writing."""
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, *args, **kwargs): ...
 
     def close(self):
         """Call dummy close."""
-        pass
+        ...
 
-    def write(self, *args):
+    def add(self, *args):
         """Call dummy write."""
-        pass
+        ...
 
-    def write_iterable(self, *args):
+    def add_iterable(self, *args):
         """Call dummy write iterable."""
-        pass
+        ...
 
 
 # Typing related stuff

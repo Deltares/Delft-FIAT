@@ -1,13 +1,11 @@
 """The FIAT model workers."""
 
-import re
-from pathlib import Path
-
-from osgeo import ogr
-
-from fiat.cfg import Configurations
-from fiat.struct import TableLazy
-from fiat.util import NEWLINE_CHAR, generic_path_check, replace_empty
+from fiat.check import check_hazard_rp
+from fiat.fio import GridIO
+from fiat.methods.ead import fn_density
+from fiat.struct import Table
+from fiat.struct.container import HazardMeta, VulnerabilityMeta
+from fiat.util import deter_dec
 
 GEOM_DEFAULT_CHUNK = 50000
 GRID_PREFER = {
@@ -16,91 +14,63 @@ GRID_PREFER = {
 }
 
 
-def check_file_for_read(
-    cfg: Configurations,
-    entry: str,
-    path: Path | str | None = None,
-) -> Path:
-    """Quick check on the input for reading."""
-    path = path or cfg.get(entry)
-    if path is None:
-        return
-    return generic_path_check(path, cfg.path)
+def get_band_names(
+    obj: GridIO,
+) -> list:
+    """Determine the names of the bands.
 
-
-def exposure_from_geom(
-    ft: ogr.Feature,
-    exp: TableLazy,
-    oid: int,
-    mid: int,
-    idxs_haz: list | tuple,
-    pattern: object,
-) -> tuple:
-    """Get exposure info from feature."""
-    method = ft.GetField(mid)
-    haz = [ft.GetField(idx) for idx in idxs_haz]
-    return ft, [ft.GetField(oid)], method, haz
-
-
-def exposure_from_csv(
-    ft: ogr.Feature,
-    exp: TableLazy,
-    oid: int,
-    mid: int,
-    idxs_haz: list | tuple,
-    pattern: object,
-) -> tuple:
-    """Get exposure info from csv file."""
-    ft_info_raw = exp[ft.GetField(oid)]
-    if ft_info_raw is None:
-        return None, None, None, None
-
-    ft_info = replace_empty(pattern.split(ft_info_raw))
-    ft_info = [x(y) for x, y in zip(exp.dtypes, ft_info)]
-    method = ft_info[exp._columns["extract_method"]].lower()
-    haz = [ft_info[idx] for idx in idxs_haz]
-    return ft_info, ft_info, method, haz
-
-
-EXPOSURE_FIELDS = {
-    True: exposure_from_geom,
-    False: exposure_from_csv,
-}
-
-
-def csv_def_file(
-    p: Path | str,
-    columns: tuple | list,
-) -> None:
-    """Set up the outgoing csv file.
-
-    Parameters
-    ----------
-    p : Path | str
-        Path to the file.
-    columns : tuple | list
-        Headers to be added to the file.
+    If the bands do not have any names of themselves,
+    they will be set to a default.
     """
-    header = b""
-    header += ",".join(columns).encode()
-    header += NEWLINE_CHAR.encode()
+    names = []
+    for n in range(obj.size):
+        name = obj.get_band_name(n)
+        if not name:
+            names.append(f"band{n+1}")
+            continue
+        names.append(name)
 
-    with open(p, "wb") as _dw:
-        _dw.write(header)
+    return names
 
 
-def get_file_entries(
-    cfg: Configurations,
-    base_str: str,
-    paths: list[Path] | None,
-) -> tuple:
-    """Get multiple file entries from the configurations."""
-    pattern = rf"^{base_str}(\d+)$"
+def get_hazard_meta(
+    hazard: GridIO,
+    risk: bool,
+) -> HazardMeta:
+    """Obtain some metadata from the hazard data."""
+    names = get_band_names(hazard)
 
-    if paths is None:
-        files = [item for item in list(cfg) if re.match(pattern, item)]
-        paths = [None] * len(files)
-    else:
-        files = [f"{base_str}{idx+1}" for idx in range(len(paths))]
+    # Look at risk specific info
+    d = None
+    rp = None
+    if risk:
+        rp = [hazard[idx].get_metadata_item("rp") for idx in range(hazard.size)]
+        rp = check_hazard_rp(
+            rp,
+            hazard.path,
+        )
+        d = fn_density(rp)
 
-    return files, paths, pattern
+    # Fill in the meta
+    meta = HazardMeta(
+        density=d,
+        names=names,
+        rp=rp,
+        risk=risk,
+    )
+    return meta
+
+
+def get_vulnerability_meta(
+    vulnerability: Table,
+) -> VulnerabilityMeta:
+    """Obtain some metadata from the vulnerability data."""
+    imin = min(vulnerability.index)
+    imax = max(vulnerability.index)
+    sigdec = deter_dec((imax - imin) / len(vulnerability.index))
+    meta = VulnerabilityMeta(
+        min=imin,
+        max=imax,
+        sigdec=sigdec,
+    )
+    return meta

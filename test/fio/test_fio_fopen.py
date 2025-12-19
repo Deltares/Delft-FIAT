@@ -10,77 +10,74 @@ from fiat.fio import (
     open_geom,
     open_grid,
 )
-from fiat.fio.handler import BufferHandler
+from fiat.fio.handler import FileBufferHandler
 from fiat.struct import Table, TableLazy
 
 
-def test_open_csv_default(exposure_data_path: Path):
+def test_open_csv_default(vulnerability_path: Path):
     # Open the dataset
-    ds = open_csv(exposure_data_path)
+    ds = open_csv(vulnerability_path)
 
     # Assert some simple stuff
     assert isinstance(ds, Table)
     assert isinstance(ds.data, np.ndarray)
 
 
-def test_open_csv_delimiter(exposure_data_path: Path):
+def test_open_csv_delimiter(vulnerability_path: Path):
     # Open the dataset
-    ds = open_csv(exposure_data_path)
+    ds = open_csv(vulnerability_path)
 
     # Assert the shape
-    assert ds.shape == (5, 6)  # 5 rows and 6 columns
+    assert ds.shape == (21, 3)  # 5 rows and 6 columns
 
     # Select another delimiter (wrong one)
-    ds = open_csv(exposure_data_path, delimiter=";")
+    ds = open_csv(vulnerability_path, delimiter=";")
 
     # Assert the shape
-    assert ds.shape == (5, 1)  # No more columns as they can't be separated
+    assert ds.shape == (21, 1)  # No more columns as they can't be separated
 
 
-def test_open_csv_header(exposure_data_path: Path):
+def test_open_csv_header(vulnerability_path: Path):
     # Open the dataset
-    ds = open_csv(exposure_data_path, header=True)  # Which is default
+    ds = open_csv(vulnerability_path, header=True)  # Which is default
 
     # Assert the columns
     assert ds.columns == (
-        "object_id",
-        "extract_method",
-        "ground_flht",
-        "ground_elevtn",
-        "fn_damage_structure",
-        "max_damage_structure",
+        "water depth",
+        "struct_1",
+        "struct_2",
     )  # Very specific, but this should be True for this dataset
 
     # No header
-    ds = open_csv(exposure_data_path, header=False)
+    ds = open_csv(vulnerability_path, header=False)
 
     # Assert the default columns
-    assert ds.columns == ("col_0", "col_1", "col_2", "col_3", "col_4", "col_5")
+    assert ds.columns == ("col_0", "col_1", "col_2")
 
 
-def test_open_csv_index(exposure_data_path: Path):
+def test_open_csv_index(vulnerability_path: Path):
     # Open the dataset
-    ds = open_csv(exposure_data_path, index=None)  # Which is default
+    ds = open_csv(vulnerability_path, index=None)  # Which is default
 
     # Assert the index and name
     assert ds.index_name == "index"
-    assert ds.index == (0, 1, 2, 3, 4)  # Default
+    assert ds.index[:5] == (0, 1, 2, 3, 4)  # Default
 
     # Open with selected header
-    ds = open_csv(exposure_data_path, index="object_id")
+    ds = open_csv(vulnerability_path, index="water depth")
 
     # Assert the new index
-    assert ds.index_name == "object_id"
-    assert ds.index == (1, 2, 3, 4, 5)
+    assert ds.index_name == "water depth"
+    assert ds.index[:5] == (0.0, 0.25, 0.5, 0.75, 1.0)
 
 
-def test_open_csv_lazy(exposure_data_path: Path):
+def test_open_csv_lazy(vulnerability_path: Path):
     # Open the dataset in lazy mode
-    ds = open_csv(exposure_data_path, lazy=True)
+    ds = open_csv(vulnerability_path, lazy=True)
 
     # Assert some simple stuff
     assert isinstance(ds, TableLazy)
-    assert isinstance(ds.data, BufferHandler)  # A stream handler is the data
+    assert isinstance(ds.data, FileBufferHandler)  # A stream handler is the data
 
 
 def test_open_geom_context(exposure_geom_path: Path):

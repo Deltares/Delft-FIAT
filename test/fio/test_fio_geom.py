@@ -18,11 +18,12 @@ def test_geomio_read_only(exposure_geom_path: Path):
     assert gio.mode == 0
     assert get_srs_repr(gio.srs) == "EPSG:4326"  # Induced from layer
     assert isinstance(gio.layer, GeomLayer)
+    assert hash(gio) == hash(exposure_geom_path)
 
 
 def test_geomio_read_no_srs(
     exposure_geom_no_srs_path: Path,
-    srs: osr.SpatialReference,
+    srs_4326: osr.SpatialReference,
 ):
     # Open a Dataset
     gio = GeomIO(exposure_geom_no_srs_path)
@@ -46,7 +47,7 @@ def test_geomio_read_no_srs(
     # Or set directly
     gio._srs = None
     assert gio.srs is None
-    gio.srs = srs
+    gio.srs = srs_4326
 
     # Assert the srs
     assert get_srs_repr(gio.srs) == "EPSG:4326"
@@ -113,7 +114,7 @@ def test_geomio_delete(exposure_geom_tmp_path: Path):
     assert gio.src is None  # If src is None, layer cannot be requested
 
 
-def test_geomio_write(tmp_path: Path, srs: osr.SpatialReference):
+def test_geomio_write(tmp_path: Path, srs_4326: osr.SpatialReference):
     p = Path(tmp_path, "tmp.geojson")
     # Open the dataset
     gio = GeomIO(p, mode="w")
@@ -125,7 +126,7 @@ def test_geomio_write(tmp_path: Path, srs: osr.SpatialReference):
     assert gio.layer is None  # But no layer present
 
     # Create a layer
-    gio.create_layer(srs, geom_type=1)  # Point
+    gio.create_layer(srs_4326, geom_type=1)  # Point
     # Assert there is a layer
     assert gio.layer is not None
     assert ogr.GeometryTypeToName(gio.layer.geom_type) == "Point"

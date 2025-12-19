@@ -100,7 +100,7 @@ def run(args):
         "MANDATORY_ENTRIES",
     )
     check_config_entries(
-        cfg.keys(),
+        cfg,
         MANDATORY_MODEL_ENTRIES + _models[model_type]["input"] + module_entries,
     )
     obj = _models[model_type]["model"](cfg)

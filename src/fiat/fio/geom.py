@@ -9,8 +9,7 @@ from fiat.error import DriverNotFoundError
 from fiat.fio.base import BaseIO
 from fiat.struct import GeomLayer
 from fiat.util import (
-    GEOM_READ_DRIVER_MAP,
-    GEOM_WRITE_DRIVER_MAP,
+    GEOM_DRIVER_MAP,
     get_srs_repr,
 )
 
@@ -41,7 +40,7 @@ class GeomIO(BaseIO):
     gm = GeomIO(< path-to-file >)
 
     # Index it!
-    feature = gm[1]
+    feature = gm.layer[1]
     ```
     """
 
@@ -68,17 +67,12 @@ class GeomIO(BaseIO):
         # Supercharge
         BaseIO.__init__(self, file, mode)
 
-        # Select the driver map based on the mode
-        _map = GEOM_READ_DRIVER_MAP
-        if self.mode == 2:
-            _map = GEOM_WRITE_DRIVER_MAP
-
         # Check for the driver
-        if self.path.suffix not in _map:
+        if self.path.suffix not in GEOM_DRIVER_MAP:
             raise DriverNotFoundError(gog="Geometry", path=self.path)
 
         # Set the driver and retrieve info
-        driver: str = _map[self.path.suffix]
+        driver: str = GEOM_DRIVER_MAP[self.path.suffix]
         self.driver: gdal.Driver = ogr.GetDriverByName(driver)
 
         # Read or create a data source depending on the mode
@@ -186,7 +180,9 @@ class GeomIO(BaseIO):
             Path to the data source.
         """
         self.src = None
+        path = Path(path)  # Ensure typing
         self.src = self.driver.CreateDataSource(path.as_posix())
+        self.path = path  # Overwrite the path
 
     @BaseIO.check_mode
     @BaseIO.check_state
@@ -223,7 +219,7 @@ class GeomIO(BaseIO):
         all : bool, optional
             Delete everything, including the data source, by default False
         """
-        check = self._layer is not None
+        check = self._layer is not None and not all
         if check and gdal.DCAP_DELETE_LAYER in self.driver_meta:
             name = self.layer.name
             self._layer = None

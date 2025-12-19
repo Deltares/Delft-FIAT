@@ -3,7 +3,7 @@
 from concurrent.futures import ProcessPoolExecutor, wait
 from itertools import product
 from multiprocessing.context import SpawnContext
-from typing import Callable, Generator
+from typing import Callable, Generator, Iterator
 
 from fiat.log import spawn_logger
 
@@ -54,7 +54,7 @@ def generate_jobs(
 def execute_pool(
     ctx: SpawnContext,
     func: Callable,
-    jobs: Generator,
+    jobs: Generator | Iterator,
     threads: int,
 ):
     """Execute a python process pool.
@@ -65,7 +65,7 @@ def execute_pool(
         Context of the current process.
     func : Callable
         To be executed function.
-    jobs : Generator
+    jobs : Generator | Iterator
         A job generator. Returns single dictionaries.
     threads : int
         Number of threads.

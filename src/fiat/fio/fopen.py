@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fiat.fio.geom import GeomIO
 from fiat.fio.grid import GridIO
-from fiat.fio.handler import BufferHandler
+from fiat.fio.handler import FileBufferHandler
 from fiat.fio.parser import CSVParser
 from fiat.struct import Table, TableLazy
 
@@ -39,7 +39,7 @@ def open_csv(
     Table | TableLazy
         Object holding parsed csv data.
     """
-    handler = BufferHandler(file)
+    handler = FileBufferHandler(file)
 
     parser = CSVParser(
         handler,

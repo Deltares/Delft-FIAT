@@ -1,26 +1,26 @@
 """Checks for the data of FIAT."""
 
-import re
 from pathlib import Path
+from typing import Any
 
 from osgeo import osr
 
+from fiat.cfg import Configurations
 from fiat.error import FIATDataError
 from fiat.log import spawn_logger
-from fiat.util import deter_type, get_srs_repr
+from fiat.struct import Container
+from fiat.util import EXPOSURE_GRID_FILE, deter_type, get_srs_repr
 
 logger = spawn_logger("fiat.checks")
 
 
 ## Config
 def check_config_entries(
-    keys: tuple,
+    cfg: Configurations,
     mandatory_entries: list | tuple,
 ):
     """Check the mandatory config entries."""
-    _check = [
-        any([re.match(item, value) for value in keys]) for item in mandatory_entries
-    ]
+    _check = [cfg.get(item) for item in mandatory_entries]
     if not all(_check):
         _missing = [item for item, b in zip(mandatory_entries, _check) if not b]
         msg = f"Missing mandatory entries in the settings. Please fill in the \
@@ -29,22 +29,14 @@ following missing entries: {_missing}"
 
 
 def check_config_grid(
-    cfg: object,
+    cfg: Configurations,
 ):
     """Check the grid config entries."""
-    _req_fields = [
-        "exposure.grid.file",
-    ]
-    _all_grid = [item for item in cfg if item.startswith("exposure.grid")]
-    if len(_all_grid) == 0:
-        return False
-
-    _check = [item in _all_grid for item in _req_fields]
-    if not all(_check):
-        _missing = [item for item, b in zip(_req_fields, _check) if not b]
+    entry = cfg.get(EXPOSURE_GRID_FILE)
+    if entry is None:
         logger.warning(
             f"Info for the grid (raster) model was found, but not all. \
-{_missing} was/ were missing"
+            {EXPOSURE_GRID_FILE} was/ were missing"
         )
         return False
 
@@ -140,26 +132,30 @@ def check_vs_srs(
     return True
 
 
-## Hazard
-def check_hazard_band_names(
-    bnames: list,
-    risk: bool,
-    rp: list,
-    count: int,
+## Input Data
+def check_input_data(
+    *input: list[str, Any, type],
 ):
-    """Check the band names of the hazard data."""
-    if risk:
-        return [f"{n}y" for n in rp]
+    """Check if all input data is present."""
+    for item in input:
+        name, data, dtype = item
+        if isinstance(data, Container):
+            if len(data) == 0:
+                raise ValueError(f"{name} is empty")
+            check = [isinstance(e, dtype) for e in data]
+            if not all(check):
+                raise TypeError(f"Wrong type encountered in {name}")
+            continue
+        if data is None or not isinstance(data, dtype):
+            raise TypeError(
+                f"{name} is incorrectly set, \
+currently of type {data.__class__.__name__}"
+            )
 
-    if count == 1:
-        return [""]
 
-    return bnames
-
-
+## Hazard
 def check_hazard_rp(
     rp_bands: list,
-    rp_cfg: list,
     path: Path,
 ):
     """Check the return periods of the hazard data.
@@ -172,15 +168,8 @@ def check_hazard_rp(
     if deter_type(bn_str, l - 1) != 3:
         return [float(n) for n in rp_bands]
 
-    if rp_cfg is not None:
-        if len(rp_cfg) == len(rp_bands):
-            rp_str = "\n".join([str(n) for n in rp_cfg]).encode()
-            if deter_type(rp_str, l - 1) != 3:
-                return [float(n) for n in rp_cfg]
-
     msg = f"'{path.name}': cannot determine the return periods for \
-the risk calculation. Return periods specified with the bands are: {rp_bands}, \
-return periods in settings toml are: {rp_cfg}"
+the risk calculation."
     raise FIATDataError(msg)
 
 
@@ -199,17 +188,12 @@ multiple datasets (subsets). Chose one of the following subsets: {keys}"
 ## Exposure
 def check_exp_columns(
     columns: tuple | list,
-    index_col: str,
     mandatory_columns: tuple | list = [],
 ):
     """Check the columns of the exposure data."""
-    _man_columns = [
-        index_col,
-    ] + mandatory_columns
-
-    _check = [item in columns for item in _man_columns]
+    _check = [item in columns for item in mandatory_columns]
     if not all(_check):
-        _missing = [item for item, b in zip(_man_columns, _check) if not b]
+        _missing = [item for item, b in zip(mandatory_columns, _check) if not b]
         msg = f"Missing mandatory exposure columns: {_missing}"
         raise FIATDataError(msg)
 
@@ -244,16 +228,6 @@ def check_exp_grid_dmfs(
         _missing = [item for item, b in zip(fns, _check) if not b]
         msg = f"Unknown damage function identifier found in exposure grid: {_missing}"
         raise FIATDataError(msg)
-
-
-def check_exp_index_col(
-    columns: tuple | list,
-    index_col: type,
-    path: Path | str,
-):
-    """Check whether the index column exists in the exposure geometry dataset."""
-    if index_col not in columns:
-        raise FIATDataError(f"Index column ('{index_col}') not found in {path}")
 
 
 ## Vulnerability

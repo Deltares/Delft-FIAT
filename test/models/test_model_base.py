@@ -20,11 +20,8 @@ def test_basemodel(config_empty: Configurations):
 
     # Assert some simple stuff
     # Data should be None still
-    assert m.exposure_data is None
-    assert m.exposure_geoms is None
-    assert m.exposure_grid is None
-    assert m.hazard_grid is None
-    assert m.vulnerability_data is None
+    assert m.hazard is None
+    assert m.vulnerability is None
 
 
 def test_basemodel_general_properties(config_empty: Configurations):
@@ -116,8 +113,8 @@ def test_basemodel_read_hazard_config(
     m = BaseModel(config_empty)
 
     # Assert the state
-    assert m.hazard_grid is not None
-    assert isinstance(m.hazard_grid, GridIO)
+    assert m.hazard is not None
+    assert isinstance(m.hazard, GridIO)
 
 
 def test_basemodel_read_hazard_argument(
@@ -127,14 +124,14 @@ def test_basemodel_read_hazard_argument(
     # Creat the object, which directly tries to read from the config
     m = BaseModel(config_empty)
     # Assert the current state
-    assert m.hazard_grid is None
+    assert m.hazard is None
 
     # Read with an argument
     m.read_hazard_grid(path=hazard_event_path)
 
     # Assert the state
-    assert m.hazard_grid is not None
-    assert isinstance(m.hazard_grid, GridIO)
+    assert m.hazard is not None
+    assert isinstance(m.hazard, GridIO)
 
 
 def test_basemodel_read_hazard_risk(
@@ -150,9 +147,8 @@ def test_basemodel_read_hazard_risk(
     m = BaseModel(config_empty)
 
     # Assert the state
-    assert m.hazard_grid is not None
-    assert isinstance(m.hazard_grid, GridIO)
-    assert m.cfg.get("hazard.return_periods") == [2.0, 5.0, 10.0, 25.0]
+    assert m.hazard is not None
+    assert isinstance(m.hazard, GridIO)
 
 
 def test_basemodel_read_hazard_warnings(
@@ -172,7 +168,7 @@ def test_basemodel_read_hazard_warnings(
 
     # Prefer global SRS over hazard SRS
     m.srs = "EPSG:3857"
-    m.cfg.set("model.srs.prefer_global", True)
+    m.cfg.set("model.srs.global", True)
 
     # Re-read the hazard data
     m.read_hazard_grid()
@@ -201,11 +197,10 @@ def test_basemodel_read_vulnerability(
     m = BaseModel(config_empty)
 
     # Assert the state
-    assert m.vulnerability_data is not None
-    assert isinstance(m.vulnerability_data, Table)
+    assert m.vulnerability is not None
+    assert isinstance(m.vulnerability, Table)
     # Had been upscaled so a long index
-    assert len(m.vulnerability_data.index) == 501
-    assert m._vul_step_size == 0.01
+    assert len(m.vulnerability.index) == 501
 
 
 def test_basemodel_read_vulnerability_argument(
@@ -215,14 +210,14 @@ def test_basemodel_read_vulnerability_argument(
     # Create the object
     m = BaseModel(config_empty)
     # Assert the current state
-    assert m.vulnerability_data is None
+    assert m.vulnerability is None
 
     # Read the data via argument
     m.read_vulnerability_data(path=vulnerability_path)
 
     # Assert the state
-    assert m.vulnerability_data is not None
-    assert isinstance(m.vulnerability_data, Table)
+    assert m.vulnerability is not None
+    assert isinstance(m.vulnerability, Table)
 
 
 def test_basemodel_read_vulnerability_step_size(
@@ -237,8 +232,7 @@ def test_basemodel_read_vulnerability_step_size(
     m = BaseModel(config_empty)
 
     # Assert the state
-    assert m.vulnerability_data is not None
-    assert isinstance(m.vulnerability_data, Table)
+    assert m.vulnerability is not None
+    assert isinstance(m.vulnerability, Table)
     # Had been upscaled so a long index
-    assert len(m.vulnerability_data.index) == 61
-    assert m._vul_step_size == 0.1
+    assert len(m.vulnerability.index) == 61

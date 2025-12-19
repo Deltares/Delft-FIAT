@@ -23,10 +23,10 @@ def hazard_event_repr(hazard_event_path: Path) -> GridIO:
 
 
 @pytest.fixture
-def hazard_tif(tmp_path: Path, srs: osr.SpatialReference) -> GridIO:
+def hazard_tif(tmp_path: Path, srs_4326: osr.SpatialReference) -> GridIO:
     ds = open_grid(Path(tmp_path, "tmp.tif"), "w")
     ds.create(shape=(10, 10), nb=1, type=gdal.GDT_Float32)
-    ds.set_source_srs(srs)
+    ds.set_source_srs(srs_4326)
     ds.geotransform = (0.0, 1.0, 0.0, 10.0, 0.0, -1.0)
     ds.close()
     return ds.reopen()

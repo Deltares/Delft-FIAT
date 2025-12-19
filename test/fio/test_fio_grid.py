@@ -23,7 +23,7 @@ def test_gridio_read_only(hazard_event_path: Path):
 
 def test_geomio_read_no_srs(
     hazard_event_no_srs_path: Path,
-    srs: osr.SpatialReference,
+    srs_4326: osr.SpatialReference,
 ):
     # Open a Dataset
     gio = GridIO(hazard_event_no_srs_path)
@@ -47,7 +47,7 @@ def test_geomio_read_no_srs(
     # Or set directly
     gio._srs = None
     assert gio.srs is None
-    gio.srs = srs
+    gio.srs = srs_4326
 
     # Assert the srs
     assert get_srs_repr(gio.srs) == "EPSG:4326"
@@ -156,7 +156,7 @@ def test_gridio_append(hazard_event_path: Path):
     assert len(gio.bands) == 1
 
 
-def test_gridio_write(tmp_path: Path, srs: osr.SpatialReference):
+def test_gridio_write(tmp_path: Path, srs_4326: osr.SpatialReference):
     p = Path(tmp_path, "tmp.tif")  # Make a path
     # Open the dataset
     gio = GridIO(p, mode="w")
@@ -180,7 +180,7 @@ def test_gridio_write(tmp_path: Path, srs: osr.SpatialReference):
 
     # Source srs is None
     assert gio.srs is None
-    gio.set_source_srs(srs)
+    gio.set_source_srs(srs_4326)
 
     # Assert the srs
     assert get_srs_repr(gio.srs) == "EPSG:4326"

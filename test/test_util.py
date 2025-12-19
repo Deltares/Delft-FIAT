@@ -1,24 +1,31 @@
+from io import BytesIO
 from pathlib import Path
 
 import numpy as np
 import pytest
+from osgeo import osr
 
 from fiat.fio import GridIO
 from fiat.util import (
-    GEOM_READ_DRIVER_MAP,
-    GEOM_WRITE_DRIVER_MAP,
+    GEOM_DRIVER_MAP,
     GRID_DRIVER_MAP,
-    create_1d_chunk,
-    create_dir,
+    DummyLock,
+    DummyWriter,
+    _diff_table,
+    _load_diff,
+    create_1d_chunks,
     create_windows,
     deter_dec,
     deter_type,
     discover_exp_columns,
+    distribute_threads,
     find_duplicates,
     flatten_dict,
     generate_output_columns,
+    generic_directory_check,
     generic_path_check,
     get_module_attr,
+    get_srs_repr,
     mean,
     object_size,
     re_filter,
@@ -30,9 +37,50 @@ from fiat.util import (
 )
 
 
-def test_create_1d_chunk_few():
+def test__load_diff():
     # Call the function
-    chunks = list(create_1d_chunk(500, 6))
+    rl = _load_diff(size=100000, threads=5, diff=-1, max_threads=8)
+    rm = _load_diff(size=100000, threads=5, diff=1, max_threads=8)
+
+    # Assert the output
+    assert int(rl) == 5000
+    assert int(rm) == 3333
+
+
+def test__load_diff_inf():
+    # Call the function going below 1
+    r = _load_diff(size=100000, threads=1, diff=-1, max_threads=8)
+
+    # Assert the output
+    assert r == np.inf
+
+
+def test__load_diff_zero():
+    # Call the function going over the max
+    r = _load_diff(size=100000, threads=8, diff=1, max_threads=8)
+
+    # Assert the output
+    assert r == 0
+
+
+def test__diff_table():
+    # Call the function
+    f, d = _diff_table(
+        sizes=[100000, 4000, 20000, 50],
+        threads_diss=[5, 1, 1, 1],
+        max_threads=8,
+    )
+
+    # Assert the output
+    assert np.sum(f) == 1
+    assert f[2, 0] == 1
+    assert int(d[2, 0]) == 5000
+    assert d[2, 1] == np.inf
+
+
+def test_create_1d_chunks_few():
+    # Call the function
+    chunks = list(create_1d_chunks(500, 6))
 
     # Assert the output
     assert len(chunks) == 6
@@ -40,28 +88,14 @@ def test_create_1d_chunk_few():
     assert chunks[-1] == (421, 500)
 
 
-def test_create_1d_chunk_many():
+def test_create_1d_chunks_many():
     # Call the function
-    chunks = list(create_1d_chunk(500, 20))
+    chunks = list(create_1d_chunks(500, 20))
 
     # Assert the output
     assert len(chunks) == 20
     assert chunks[0] == (1, 25)
     assert chunks[-1] == (476, 500)
-
-
-def test_create_dir(tmp_path: Path):
-    # Create a path an assert it's state
-    new_dir = Path("output")
-    assert new_dir.is_absolute() == False
-    assert Path(tmp_path, new_dir).exists() == False
-
-    # Call the function
-    new_dir = create_dir(root=tmp_path, path=new_dir)
-
-    # Assert the properties and existence of the directory
-    assert new_dir.exists()
-    assert new_dir.is_absolute()
 
 
 def test_create_windows_even():
@@ -131,12 +165,76 @@ def test_discover_columns_missing(exposure_cols: dict):
     assert missing == ["_content"]
 
 
+def test_distribute_threads():
+    # Call the function
+    t = distribute_threads(
+        size=[100000, 4000, 20000, 50],
+        threads=8,
+    )
+
+    # Assert the output
+    assert t == [4, 1, 2, 1]
+
+
+def test_distribute_threads_single():
+    # Call the function
+    t = distribute_threads(
+        size=[100000],
+        threads=8,
+    )
+
+    # Assert the output
+    assert t == [8]
+
+
+def test_distribute_threads_one():
+    # Call the function
+    t = distribute_threads(
+        size=[100000, 4000, 20000, 50],
+        threads=1,
+    )
+
+    # Assert the output
+    assert t == [1, 1, 1, 1]
+
+
+def test_distribute_threads_fill():
+    # Call the function
+    t = distribute_threads(
+        size=[100000, 25000, 25000],
+        threads=8,
+    )
+
+    # Assert the output
+    assert t == [4, 2, 2]
+
+
 def test_driver_maps():
     # Simply assert some key drivers
-    assert ".gpkg" in GEOM_WRITE_DRIVER_MAP
-    assert ".nc" not in GEOM_WRITE_DRIVER_MAP
-    assert ".nc" in GEOM_READ_DRIVER_MAP
+    assert ".gpkg" in GEOM_DRIVER_MAP
+    assert ".tif" not in GEOM_DRIVER_MAP
+    assert ".nc" in GEOM_DRIVER_MAP
     assert ".nc" in GRID_DRIVER_MAP
+    assert ".fgb" not in GRID_DRIVER_MAP
+
+
+def test_dummy_lock():
+    # Create the object
+    l = DummyLock()
+
+    # Empty so calling the methods shouldnt do anything
+    l.acquire()
+    l.release()
+
+
+def test_dummy_writer():
+    # Create the object
+    w = DummyWriter()
+
+    # Empty so calling the methods shouldnt do anything
+    w.add()
+    w.add_iterable()
+    w.close()
 
 
 def test_find_duplicated():
@@ -179,43 +277,43 @@ def test_flatten_dict():
 def test_generate_output_columns(exposure_data_fn: dict):
     # Call the function
     new_fields, len1, total_idx = generate_output_columns(
-        specific_columns=["inun_depth"],
+        columns=["depth"],
         exposure_types={"damage": exposure_data_fn},
     )
 
     # Assert the output
-    assert len(new_fields) == 4
-    assert new_fields[2] == "damage_structure"
-    assert len1 == 4
+    assert len(new_fields) == 3
+    assert new_fields[1] == "damage_structure"
+    assert len1 == 3
     assert total_idx[0] == -1
 
 
 def test_generate_output_columns_extra(exposure_data_fn: dict):
     # Call the function
     new_fields, len1, _ = generate_output_columns(
-        specific_columns=["inun_depth"],
+        columns=["depth"],
         exposure_types={"damage": exposure_data_fn},
         extra=["ead"],
     )
 
     # Assert the output
-    assert len1 == 5
+    assert len1 == 4
     assert new_fields[-1] == "ead_damage"
 
 
 def test_generate_output_columns_multi(exposure_data_fn: dict):
     # Call the function
     new_fields, len1, _ = generate_output_columns(
-        specific_columns=["inun_depth"],
+        columns=["depth"],
         exposure_types={"damage": exposure_data_fn},
         extra=["ead"],
         suffix=["1", "2"],
     )
 
     # Assert the output
-    assert len1 == 4
-    assert len(new_fields) == 9
-    assert new_fields[4] == "inun_depth_2"
+    assert len1 == 3
+    assert len(new_fields) == 7
+    assert new_fields[3] == "depth_2"
 
 
 def test_generic_path_check(
@@ -244,11 +342,64 @@ def test_generic_path_check_error(
         generic_path_check(p, root=tmp_path)
 
 
+def test_generic_directory_check(tmp_path: Path):
+    # Create a path an assert it's state
+    new_dir = Path("output")
+    assert new_dir.is_absolute() == False
+    assert Path(tmp_path, new_dir).exists() == False
+
+    # Call the function
+    new_dir = generic_directory_check(path=new_dir, root=tmp_path)
+
+    # Assert the properties and existence of the directory
+    assert new_dir.exists()
+    assert new_dir.is_absolute()
+
+
+def test_generic_directory_check_exist(tmp_path: Path):
+    # Create a path an assert it's state
+    assert tmp_path.exists()
+
+    # Call the function
+    new_dir = generic_directory_check(path=tmp_path)
+
+    # Assert the properties and existence of the directory
+    assert new_dir == tmp_path
+    assert new_dir.exists()
+
+
 def test_get_module_attr():
     # Call the function
     attr = get_module_attr("fiat.methods.flood", "NEW_COLUMNS")
     # Assert the output
-    assert attr == ["inun_depth"]
+    assert attr == ["depth"]
+
+
+def test_get_srs_repr(srs_4326: osr.SpatialReference):
+    # Call the function
+    r = get_srs_repr(srs_4326)
+
+    # Assert the output
+    assert r == "EPSG:4326"
+
+
+def test_get_srs_repr_proj():
+    srs = osr.SpatialReference()
+    srs.ImportFromProj4("+proj=longlat +datum=WGS84 +no_defs +type=crs")
+    # Call the function
+    r = get_srs_repr(srs)
+
+    # Assert the output
+    assert r.startswith("+proj")
+
+
+def test_get_srs_repr_error():
+    # Call the function with no srs as input
+    with pytest.raises(
+        ValueError,
+        match="'srs' can not be None.",
+    ):
+        _ = get_srs_repr(None)
 
 
 def test_gridsource_info(hazard_event_data: GridIO):
@@ -267,9 +418,9 @@ def test_gridsource_layers_single(hazard_event_data: GridIO):
     assert layers is None
 
 
-def test_gridsource_layers_multi(hazard_risk_sub_data: GridIO):
+def test_gridsource_layers_multi(hazard_risk_data_subsets: GridIO):
     # Call the function
-    layers = read_gridsource_layers(hazard_risk_sub_data.src)
+    layers = read_gridsource_layers(hazard_risk_data_subsets.src)
     assert len(layers) == 4
     subpath = layers["Band4"]
     assert subpath.startswith("NETCDF")
@@ -336,13 +487,13 @@ def test_regex_pattern(vulnerability_path: Path):
     pat = regex_pattern(delimiter=",")
     elem = pat.split(data)
     # Assert the output
-    assert len(elem) == 47
+    assert len(elem) == 46
 
     # Call the function
     pat = regex_pattern(delimiter=",", multi=True)
     elem = pat.split(data)
     # Assert the output
-    assert len(elem) == 71
+    assert len(elem) == 70
 
 
 def test_regex_pattern_other(vulnerability_path: Path):
@@ -400,3 +551,48 @@ def test_text_chunk_gen(vulnerability_path: Path):
     assert len(cg) == 4
     assert cg[0][0] == 5
     assert cg[3][0] == 3
+
+
+def test_text_chunk_gen_res():
+    # Setup a buffer
+    buffer = BytesIO()
+    buffer.write(b"1,2,3,4\n2,3,4,5")
+    buffer.seek(0)
+    # Setup a pattern
+    pat = regex_pattern(",", multi=True)
+
+    # Call the function
+    cg = text_chunk_gen(
+        buffer,
+        pattern=pat,
+        chunk_size=100,
+    )
+    # Make a list out of it
+    cg = list(cg)
+
+    # Assert the output
+    assert len(cg) == 2
+    assert cg[0][0] == 0
+    assert cg[1][1] == [b"2", b"3", b"4", b"5"]
+
+
+def test_text_chunk_gen_single():
+    # Setup a buffer
+    buffer = BytesIO()
+    buffer.write(b"1,2,3,4")
+    buffer.seek(0)
+    # Setup a pattern
+    pat = regex_pattern(",", multi=True)
+
+    # Call the function
+    cg = text_chunk_gen(
+        buffer,
+        pattern=pat,
+        chunk_size=100,
+    )
+    # Make a list out of it
+    cg = list(cg)
+
+    # Assert the output
+    assert len(cg) == 1
+    assert cg[0][0] == 0

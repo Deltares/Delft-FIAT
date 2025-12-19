@@ -25,22 +25,6 @@ def test_configuration_implicit(tmp_path: Path):
     assert c.filepath == Path(tmp_path, "tmp.toml")
 
 
-def test_configuration_path(testdata_dir: Path):
-    # Create the object
-    c = Configurations(
-        **{
-            "_root": testdata_dir,
-            "foo.file": "path.txt",
-            "hazard.file": "hazard/event_map.nc",  # Actual needed path by the model
-        }
-    )
-
-    # Assert the state
-    assert isinstance(c.get("foo.file"), str)
-    assert isinstance(c.get("hazard.file"), Path)
-    assert c.get("hazard.file").is_absolute()
-
-
 def test_configuration_output(tmp_path: Path):
     # Create the object
     c = Configurations(
@@ -59,9 +43,7 @@ def test_configuration_from_file(testdata_dir: Path):
 
     # Assert the content
     assert c.path == testdata_dir
-    assert "hazard.file" in c
-    assert "exposure.geom.file1" in c
-    assert "vulnerability.file" in c
+    assert c.get("hazard.file") is not None
 
 
 def test_configuration_generate_kwargs():
@@ -116,22 +98,6 @@ def test_configuration_setup_output_dir(tmp_path: Path):
     assert c.get("output.path") == Path(tmp_path, "foo")
 
 
-def test_configuration_setup_output_dir_grid(testdata_dir: Path, tmp_path: Path):
-    # Create the object
-    c = Configurations(
-        _root=testdata_dir,
-        model={"risk": True},
-        exposure={"grid": {"file": "exposure/spatial.nc"}},
-    )
-
-    # Call the method
-    c.setup_output_dir(Path(tmp_path, "output"))
-
-    # Assert the directory
-    assert Path(tmp_path, "output").is_dir()
-    assert Path(tmp_path, "output", "damages").is_dir()
-
-
 def test_configuration_update():
     # Create the object
     c = Configurations()
@@ -139,7 +105,7 @@ def test_configuration_update():
     assert c.get("foo.bar") is None
 
     # Call the method
-    c.update({"foo.bar": "baz"})
+    c.update({"foo": {"bar": "baz"}})
 
     # Assert the state
     assert c.get("foo.bar") == "baz"

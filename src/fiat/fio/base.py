@@ -34,7 +34,6 @@ class BaseIO(metaclass=ABCMeta):
 
         # Set the pathing
         self.path: Path = Path(file)
-        self._path: Path = Path(file)  # Seems funny, needed later
 
         # Check the mode
         if mode not in BaseIO._mode_map:
@@ -53,6 +52,9 @@ class BaseIO(metaclass=ABCMeta):
     def __repr__(self):
         _mem_loc = f"{id(self):#018x}".upper()
         return f"<{self.__class__.__name__} object at {_mem_loc}>"
+
+    def __hash__(self):
+        return hash(self.path)
 
     def __del__(self):
         if not self._closed:
