@@ -290,7 +290,6 @@ for the risk calculation",
     ):
         check_hazard_rp(
             rp_bands=["a", "b", "c", "d"],
-            rp_cfg=[1.0, 2.0, 5.0],
             path=Path("tmp.txt"),
         )
 
@@ -298,8 +297,7 @@ for the risk calculation",
 def test_check_hazard_rp_pass():
     # Call the function with everything present and matching
     rp = check_hazard_rp(
-        rp_bands=["a", "b", "c", "d"],
-        rp_cfg=[1.0, 2.0, 5.0, 10.0],
+        rp_bands=["1", "2", "5", "10"],
         path=Path("tmp.txt"),
     )
 

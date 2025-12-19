@@ -21,6 +21,9 @@ from fiat.log import spawn_logger
 from fiat.struct import Table
 from fiat.util import (
     HAZARD_FILE,
+    HAZARD_TYPE,
+    MODEL_RISK,
+    MODEL_SRS_VALUE,
     NEED_IMPLEMENTED,
     VULNERABILITY_FILE,
     generic_path_check,
@@ -53,10 +56,10 @@ class BaseModel(metaclass=ABCMeta):
         self.vulnerability: Table | None = None
 
         # Type of calculations
-        self.type = self.cfg.get("hazard.type", "flood")
+        self._type = self.cfg.get(HAZARD_TYPE, "flood")
         self.module = importlib.import_module(f"fiat.methods.{self.type}")
         # Risk or event based
-        self.risk = self.cfg.get("model.risk", False)
+        self._risk = self.cfg.get(MODEL_RISK, False)
 
         # Threading stuff
         self._mp_ctx = get_context("spawn")
@@ -65,7 +68,7 @@ class BaseModel(metaclass=ABCMeta):
         self._threads = 1
 
         ## Call the necessary methods at init
-        self.srs = self.cfg.get("model.srs.value", "EPSG:4326")
+        self.srs = self.cfg.get(MODEL_SRS_VALUE, "EPSG:4326")
         self.threads = self.cfg.get("model.threads")
         self.read_hazard_grid()
         self.read_vulnerability_data()
@@ -81,12 +84,12 @@ class BaseModel(metaclass=ABCMeta):
     @property
     def risk(self) -> bool:
         """Return the calculation modus."""
-        return self.cfg.get("model.risk")
+        return self._risk
 
     @risk.setter
     def risk(self, value: bool):
         """Set the calculation modus."""
-        self.cfg.set("model.risk", value)
+        self._risk = value
 
     @property
     def srs(self) -> osr.SpatialReference:
@@ -141,12 +144,12 @@ exceeds machine thread count ('{max_threads}')"
     @property
     def type(self) -> str:
         """Return the hazard type."""
-        return self.cfg.get("hazard.type")
+        return self._type
 
     @type.setter
     def type(self, value: str):
         """Set the hazard type."""
-        self.cfg.set("hazard.type", value)
+        self._type = value
         self.module = importlib.import_module(f"fiat.methods.{value}")
 
     ## Read data methods

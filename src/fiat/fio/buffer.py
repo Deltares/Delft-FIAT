@@ -83,7 +83,6 @@ class BufferedGeomWriter:
         self.buffer.delete()
 
         # Re-create
-        # self.buffer.create(self.buffer.path)
         self.setup(defn, srs)
 
         # Reset current size
@@ -110,7 +109,6 @@ class BufferedGeomWriter:
         ds = None
         self.lock.release()
 
-        # self.buffer = self.buffer.reopen(mode="w")
         if reset:
             self.reset_buffer()
 
@@ -210,14 +208,14 @@ class BufferedTextWriter(BytesIO):
     def close(self) -> None:
         """Close the writer and the buffer."""
         # Flush on last time
-        self.write()
+        self.dump()
         self.stream.close()
 
         # Close the buffer
         BytesIO.close(self)
 
     ## I/O
-    def write(self) -> None:
+    def dump(self) -> None:
         """Dump to buffer to the drive."""
         self.seek(0)
 
@@ -245,8 +243,8 @@ class BufferedTextWriter(BytesIO):
             Bytes to write.
         """
         if self.tell() + len(b) > self.max_size:
-            self.write()
-        BytesIO.write(self, b)
+            self.dump()
+        self.write(b)
 
     def add_iterable(self, *args) -> None:
         """Write a multiple entries to the buffer."""

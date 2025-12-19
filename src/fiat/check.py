@@ -155,7 +155,6 @@ currently of type {data.__class__.__name__}"
 ## Hazard
 def check_hazard_rp(
     rp_bands: list,
-    rp_cfg: list,
     path: Path,
 ):
     """Check the return periods of the hazard data.
@@ -168,15 +167,8 @@ def check_hazard_rp(
     if deter_type(bn_str, l - 1) != 3:
         return [float(n) for n in rp_bands]
 
-    if rp_cfg is not None:
-        if len(rp_cfg) == len(rp_bands):
-            rp_str = "\n".join([str(n) for n in rp_cfg]).encode()
-            if deter_type(rp_str, l - 1) != 3:
-                return [float(n) for n in rp_cfg]
-
     msg = f"'{path.name}': cannot determine the return periods for \
-the risk calculation. Return periods specified with the bands are: {rp_bands}, \
-return periods in settings toml are: {rp_cfg}"
+the risk calculation."
     raise FIATDataError(msg)
 
 

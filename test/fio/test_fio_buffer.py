@@ -231,7 +231,7 @@ def test_buffered_text_writer_write(tmp_path: Path):
     w.add(b"")
 
     # Write the buffer, (also called in `close`)
-    w.write()
+    w.dump()
 
     # Assert that it is empty
     assert w.tell() == 0

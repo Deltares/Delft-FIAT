@@ -225,7 +225,6 @@ class GeomModel(BaseModel):
                     "queue": self._queue,
                     "lock": lock,
                 },
-                # tied=["exp_data", "exp_geom", "idx"],
             )
             jobs_list.append(jobs)
 

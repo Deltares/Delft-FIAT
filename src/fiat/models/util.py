@@ -47,7 +47,6 @@ def get_hazard_meta(
         rp = [hazard[idx].get_metadata_item("rp") for idx in range(hazard.size)]
         rp = check_hazard_rp(
             rp,
-            None,
             hazard.path,
         )
         d = fn_density(rp)

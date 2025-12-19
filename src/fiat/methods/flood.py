@@ -128,7 +128,7 @@ def fn_impact_single(
     vul_min: float | int,
     vul_max: float | int,
     vul_round: int,
-) -> tuple:
+) -> int | str:
     """Calculate the damage corresponding with the hazard value.
 
     Parameters

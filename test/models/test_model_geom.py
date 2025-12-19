@@ -151,7 +151,7 @@ def test_geommodel_run_fail(
     # Assert logging
     assert "Running the model" in caplog.text
     assert "Busy..." in caplog.text
-    assert "No bueno..."
+    assert "No bueno..." in caplog.text
     assert "Model run is done!" not in caplog.text
 
 

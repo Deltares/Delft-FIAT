@@ -74,7 +74,7 @@ def feature_worker(
             *haz_args,
         )
         out_array += [haz]
-        for _, item in exposure_meta.indices_type.items():
+        for item in exposure_meta.indices_type.values():
             out_array += fn_impact(
                 haz,
                 fact,
