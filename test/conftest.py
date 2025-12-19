@@ -114,6 +114,13 @@ def hazard_event_data(hazard_event_path: Path) -> GridIO:
 
 @pytest.fixture(scope="session")
 def hazard_risk_data(hazard_risk_path: Path) -> GridIO:
+    ds = open_grid(hazard_risk_path, var_as_band=True)  # Read only
+    assert isinstance(ds, GridIO)
+    return ds
+
+
+@pytest.fixture(scope="session")
+def hazard_risk_data_subsets(hazard_risk_path: Path) -> GridIO:
     ds = open_grid(hazard_risk_path, var_as_band=False)  # Read only
     assert isinstance(ds, GridIO)
     return ds

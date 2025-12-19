@@ -15,6 +15,7 @@ def test_table(table_array: np.ndarray):
     assert t.index_name == "index"
     assert isinstance(t.data, np.ndarray)
     assert t.dtypes == [np.int64, np.int64]
+    assert len(t) == 2
 
 
 def test_table_general_properties(table_array: np.ndarray):
@@ -111,6 +112,7 @@ def test_tablelazy(vulnerability_parsed: CSVParser):
 
 
 def test_tablelazy_general_properties(vulnerability_parsed: CSVParser):
+    vulnerability_parsed.index_col = 0
     # Set the object
     t = TableLazy(vulnerability_parsed)
 

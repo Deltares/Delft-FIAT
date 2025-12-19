@@ -9,10 +9,13 @@ from pathlib import Path
 from fiat.cfg import Configurations
 from fiat.check import (
     check_geom_extent,
+    check_input_data,
     check_internal_srs,
     check_vs_srs,
 )
 from fiat.fio import (
+    GeomIO,
+    GridIO,
     open_geom,
 )
 from fiat.gis import geom
@@ -20,9 +23,9 @@ from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.models.base import BaseModel
 from fiat.models.geom_util import get_exposure_meta
-from fiat.models.util import deter_band_names
+from fiat.models.util import get_hazard_meta, get_vulnerability_meta
 from fiat.models.worker_geom import worker
-from fiat.struct import Container
+from fiat.struct import Container, Table
 from fiat.util import (
     EXPOSURE_GEOM_FILE,
     EXPOSURE_GEOM_SETTINGS,
@@ -54,7 +57,7 @@ class GeomModel(BaseModel):
         super().__init__(cfg)
 
         # Set/ declare some variables
-        self.exposure: Container = Container()
+        self.exposure: Container[GeomIO] = Container()
         self.exposure_types: list[str] = self.cfg.get("exposure.types", ["damage"])
 
         # Setup the geometry model
@@ -158,20 +161,33 @@ class GeomModel(BaseModel):
 
         Generates output in the specified `output.path` directory.
         """
-        # Setup the manager
-        if self._mp_manager is None:
-            self._mp_manager = Manager()
-        self._queue = self._mp_manager.Queue(maxsize=10000)
+        logger.info("Running the model")
+        # Quick check if all data is set
+        check_input_data(
+            ["hazard", self.hazard, GridIO],
+            ["vulnerability", self.vulnerability, Table],
+            ["exposure", self.exposure, GeomIO],
+        )
+
+        # Setup the basic metadata
+        hazard_meta = get_hazard_meta(self.hazard, risk=self.risk)
+        hazard_meta.type = self.type
+        vulnerability_meta = get_vulnerability_meta(self.vulnerability)
+
+        # Create the output directory and files
+        self.cfg.setup_output_dir()
 
         # Get the thread loads
+        logger.info("Distributing work load")
         threads = distribute_threads(
             size=[item.layer.size for item in self.exposure],
             threads=self.threads,
         )
 
-        # Create the output directory and files
-        self.cfg.setup_output_dir()
-        logger.info("Starting the calculations")
+        # Setup the manager
+        if self._mp_manager is None:
+            self._mp_manager = Manager()
+        self._queue = self._mp_manager.Queue(maxsize=10000)
 
         # Setup the jobs
         jobs_list = []
@@ -182,11 +198,11 @@ class GeomModel(BaseModel):
                 self.hazard.bounds,
             )
             # Get the exposure field meta
-            meta = get_exposure_meta(
+            exposure_meta = get_exposure_meta(
                 exposure.layer._columns,
                 module=self.module,
-                exposure_types=self.exposure_types,
-                band_names=deter_band_names(self.hazard),
+                types=self.exposure_types,
+                bands=hazard_meta.names,
                 risk=self.risk,
             )
             # Get the chunks based on the load distribution
@@ -198,12 +214,13 @@ class GeomModel(BaseModel):
             # Generate the jobs
             jobs = generate_jobs(
                 {
-                    "cfg": self.cfg,
-                    "risk": self.risk,
+                    "output_dir": self.cfg.get("output.path"),
                     "hazard": self.hazard,
+                    "hazard_meta": hazard_meta,
                     "vulnerability": self.vulnerability,
+                    "vulnerability_meta": vulnerability_meta,
                     "exposure": exposure,
-                    "exposure_meta": meta,
+                    "exposure_meta": exposure_meta,
                     "chunk": chunks,
                     "queue": self._queue,
                     "lock": lock,
@@ -224,7 +241,7 @@ class GeomModel(BaseModel):
                 threads=self.threads,
             )
             _e = time.time() - _s
-            logger.info(f"Calculations time: {round(_e, 2)} seconds")
+            logger.info(f"Elapsed time: {round(_e, 2)} seconds")
 
         except BaseException:
             exc_info = sys.exc_info()
@@ -234,7 +251,7 @@ class GeomModel(BaseModel):
 
         else:
             logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
-            logger.info("Geom calculation are done!")
+            logger.info("Model run is done!")
 
         # Shutdown the manager
         self._mp_manager.shutdown()

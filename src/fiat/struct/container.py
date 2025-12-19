@@ -4,11 +4,11 @@ import copy
 from dataclasses import dataclass
 from typing import Any
 
-__all__ = ["Container", "FieldMeta"]
+__all__ = ["Container", "ExposureMeta", "VulnerabilityMeta"]
 
 
 class Container:
-    """Geometry dataset container.
+    """Dataset container.
 
     Datasets are accessable via <Container>.ds[n].
     """
@@ -23,14 +23,14 @@ class Container:
         obj._h = []
         return obj
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._h)
 
     def __iter__(self):
         self._l = 0
         return self
 
-    def __next__(self):
+    def __next__(self) -> Any:
         if self._l < len(self._db):
             self._l += 1
             return self.__dict__[self._db[self._l - 1]]
@@ -47,13 +47,13 @@ class Container:
         self._db.append(key)
         self.__dict__[key] = value
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear the entire container."""
         cur = copy.deepcopy(self._h)
         for item in cur:
             self.delete(item)
 
-    def delete(self, key: str | int):
+    def delete(self, key: str | int) -> None:
         """Remove a dataset from the container."""
         if isinstance(key, str):
             idx = self._db.index(key)
@@ -65,7 +65,7 @@ class Container:
         _ = self.__dict__.pop(self._db[idx])
         _ = self._db.pop(idx)
 
-    def set(self, value: Any):
+    def set(self, value: Any) -> None:
         """Set a dataset."""
         self._i += 1
         n = f"{self._base}{self._i}"
@@ -73,11 +73,32 @@ class Container:
 
 
 @dataclass
-class FieldMeta:
+class ExposureMeta:
     """Small container for exposure metadata."""
 
+    indices_new: list
+    indices_spec: list
+    indices_total: list
+    indices_type: dict
     new: list
-    length: int
-    indices: list
-    total: list
-    types: dict
+    type_length: int
+
+
+@dataclass
+class HazardMeta:
+    """Small container for exposure metadata."""
+
+    density: list
+    names: list
+    rp: list
+    risk: bool
+    type: str = "flood"
+
+
+@dataclass
+class VulnerabilityMeta:
+    """Small container for some vulnerability metadata."""
+
+    min: float | int
+    max: float | int
+    sigdec: int

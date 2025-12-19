@@ -9,5 +9,5 @@ class MethodsProtocol(Protocol):
     MANDATORY_COLUMNS: list
     MANDATORY_ENTRIES: list
     NEW_COLUMNS: list
-    calculate_hazard: Callable
-    calculate_damage: Callable
+    fn_hazard: Callable
+    fn_impact: Callable

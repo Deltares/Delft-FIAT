@@ -1,9 +1,11 @@
 """The FIAT model workers."""
 
-from pathlib import Path
-
+from fiat.check import check_hazard_rp
 from fiat.fio import GridIO
-from fiat.util import NEWLINE_CHAR
+from fiat.methods.ead import fn_density
+from fiat.struct import Table
+from fiat.struct.container import HazardMeta, VulnerabilityMeta
+from fiat.util import deter_dec
 
 GEOM_DEFAULT_CHUNK = 50000
 GRID_PREFER = {
@@ -12,7 +14,7 @@ GRID_PREFER = {
 }
 
 
-def deter_band_names(
+def get_band_names(
     obj: GridIO,
 ) -> list:
     """Determine the names of the bands.
@@ -31,22 +33,45 @@ def deter_band_names(
     return names
 
 
-def csv_def_file(
-    p: Path | str,
-    columns: tuple | list,
-) -> None:
-    """Set up the outgoing csv file.
+def get_hazard_meta(
+    hazard: GridIO,
+    risk: bool,
+) -> HazardMeta:
+    """Obtain some metadata from the hazard data."""
+    names = get_band_names(hazard)
 
-    Parameters
-    ----------
-    p : Path | str
-        Path to the file.
-    columns : tuple | list
-        Headers to be added to the file.
-    """
-    header = b""
-    header += ",".join(columns).encode()
-    header += NEWLINE_CHAR.encode()
+    # Look at risk specific info
+    d = None
+    rp = None
+    if risk:
+        rp = [hazard[idx].get_metadata_item("rp") for idx in range(hazard.size)]
+        rp = check_hazard_rp(
+            rp,
+            None,
+            hazard.path,
+        )
+        d = fn_density(rp)
 
-    with open(p, "wb") as _dw:
-        _dw.write(header)
+    # Fill in the meta
+    meta = HazardMeta(
+        density=d,
+        names=names,
+        rp=rp,
+        risk=risk,
+    )
+    return meta
+
+
+def get_vulnerability_meta(
+    vulnerability: Table,
+) -> VulnerabilityMeta:
+    """Obtain some metadata from the vulnerability data."""
+    imin = min(vulnerability.index)
+    imax = max(vulnerability.index)
+    sigdec = deter_dec((imax - imin) / len(vulnerability.index))
+    meta = VulnerabilityMeta(
+        min=imin,
+        max=imax,
+        sigdec=sigdec,
+    )
+    return meta

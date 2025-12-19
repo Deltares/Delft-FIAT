@@ -12,7 +12,7 @@ MANDATORY_COLUMNS = ["ref"]
 NEW_COLUMNS = ["depth"]
 
 
-def calculate_hazard(
+def fn_hazard(
     hazard: list,
     ref: float,
     method: str = "mean",
@@ -54,7 +54,7 @@ def calculate_hazard(
     return hazard, redf
 
 
-def calculate_damage(
+def fn_impact(
     hazard_value: float | int,
     red_fact: float | int,
     ft: ogr.Feature | list,
@@ -119,7 +119,7 @@ def calculate_damage(
     return out
 
 
-def calculate_damage_single(
+def fn_impact_single(
     hazard_value: float | int,
     red_fact: float | int,
     fn: str,

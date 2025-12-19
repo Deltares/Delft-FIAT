@@ -17,12 +17,14 @@ from fiat.check import (
     check_grid_exact,
     check_hazard_rp,
     check_hazard_subsets,
+    check_input_data,
     check_internal_srs,
     check_vs_srs,
 )
 from fiat.error import FIATDataError
 from fiat.log import Logger
 from fiat.methods.flood import MANDATORY_COLUMNS
+from fiat.struct import Container
 from fiat.util import MANDATORY_MODEL_ENTRIES
 
 
@@ -326,6 +328,54 @@ def test_check_hazard_subsets_pass():
         sub=None,
         path=Path("tmp.nc"),
     )
+
+
+def test_check_input_data_pass():
+    # Call the function
+    check_input_data(["foo", 2, int])
+
+
+def test_check_input_data_container_pass():
+    # Create a container
+    c = Container()
+    c.set(2)
+    # Call the function
+    check_input_data(["foo", c, int])
+
+
+def test_check_input_data_fail():
+    with pytest.raises(
+        TypeError,
+        match="foo is incorrectly set, currently of type int",
+    ):
+        # Call the function with the wrong type
+        check_input_data(["foo", 2, str])
+
+    with pytest.raises(
+        TypeError,
+        match="foo is incorrectly set, currently of type NoneType",
+    ):
+        # Call the function when None
+        check_input_data(["foo", None, str])
+
+
+def test_check_input_data_container_fail():
+    # Create an empty container
+    c = Container()
+    with pytest.raises(
+        ValueError,
+        match="foo is empty",
+    ):
+        # Call the function with the wrong type
+        check_input_data(["foo", c, str])
+
+    c.set(2)
+    with pytest.raises(
+        TypeError,
+        match="Wrong type encountered in foo",
+    ):
+        # Call the function when None
+        check_input_data(["foo", c, str])
 
 
 def test_check_internal_srs_fail():

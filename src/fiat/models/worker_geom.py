@@ -5,6 +5,7 @@ from math import nan
 from multiprocessing.queues import Queue
 from multiprocessing.synchronize import Lock
 from pathlib import Path
+from typing import Callable
 
 from osgeo import ogr
 
@@ -14,18 +15,101 @@ from fiat.fio import (
     GridIO,
 )
 from fiat.gis import overlay
-from fiat.methods.ead import calculate_ead, risk_density
-from fiat.struct import FieldMeta, Table
-from fiat.util import deter_dec
+from fiat.methods.ead import fn_ead
+from fiat.struct import Table
+from fiat.struct.container import ExposureMeta, HazardMeta, VulnerabilityMeta
+
+
+def feature_worker(
+    ft: ogr.Feature,
+    hazard: GridIO,
+    hazard_meta: HazardMeta,
+    vulnerability: Table,
+    vulnerability_meta: VulnerabilityMeta,
+    exposure_meta: ExposureMeta,
+    fn_hazard: Callable,
+    fn_impact: Callable,
+) -> list[float]:
+    """Calculate the impact per feature.
+
+    Parameters
+    ----------
+    ft : ogr.Feature
+        The feature.
+    hazard : GridIO
+        The hazard data.
+    hazard_meta : HazardMeta
+        Metadata specific to the hazard data.
+    vulnerability : Table
+        The vulnerability data.
+    vulnerability_meta : VulnerabilityMeta
+        Metadata specific to the vulnerability data.
+    exposure_meta : ExposureMeta
+        Metadata specific to the exposure data.
+    fn_hazard : Callable
+        The hazard function.
+    fn_impact : Callable
+        The impact function.
+
+    Returns
+    -------
+    list[float]
+        Array containing the impact values for a feature.
+    """
+    # The output array
+    out_array = []
+    haz_args = [ft.GetField(idx) for idx in exposure_meta.indices_spec]
+
+    # Go through the hazard data
+    for band in hazard:
+        # Get the hazard values
+        haz = overlay.clip(
+            ft,
+            band,
+            hazard.geotransform,
+        )
+        haz[haz == band.nodata] = nan
+        haz, fact = fn_hazard(
+            haz.tolist(),
+            *haz_args,
+        )
+        out_array += [haz]
+        for _, item in exposure_meta.indices_type.items():
+            out_array += fn_impact(
+                haz,
+                fact,
+                ft,
+                item,
+                vulnerability,
+                vulnerability_meta.min,
+                vulnerability_meta.max,
+                vulnerability_meta.sigdec,
+            )
+
+    # Process the results to ead when risk mode
+    if hazard_meta.risk:
+        i = 0
+        for ti in exposure_meta.indices_total:
+            ead = round(
+                fn_ead(
+                    hazard_meta.density, out_array[ti - i :: -exposure_meta.type_length]
+                ),
+                vulnerability_meta.sigdec,
+            )
+            out_array.append(ead)
+            i += 1
+
+    return out_array
 
 
 def worker(
-    cfg: dict,
-    risk: bool,
+    output_dir: Path,
     hazard: GridIO,
+    hazard_meta: HazardMeta,
     vulnerability: Table,
+    vulnerability_meta: VulnerabilityMeta,
     exposure: GeomIO,
-    exposure_meta: FieldMeta,
+    exposure_meta: ExposureMeta,
     chunk: tuple | list,
     queue: Queue,
     lock: Lock,
@@ -37,17 +121,19 @@ of the [GeomModel](/api/GeomModel.qmd) object.
 
     Parameters
     ----------
-    cfg : dict
-        The configurations.
-    risk : bool
-        Whether to run in risk-mode.
+    output_dir : Path
+        The directory to which to write the output to.
     hazard : GridIO
         The hazard data.
+    hazard_meta : HazardMeta
+        Metadata specific to the hazard data.
     vulnerability : Table
         The vulnerability data.
+    vulnerability_meta : VulnerabilityMeta
+        Metadata specific to the vulnerability data.
     exposure : GeomIO
         The exposure geometries.
-    exposure_meta : FieldMeta
+    exposure_meta : ExposureMeta
         Metadata specific to the exposure data.
     chunk : tuple | list
         The chunk to run through.
@@ -57,26 +143,13 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The lock for the geometries output.
     """
     # Setup the hazard type module
-    module = importlib.import_module(f"fiat.methods.{cfg.get('hazard.type')}")
-    func_hazard = getattr(module, "calculate_hazard")
-    func_damage = getattr(module, "calculate_damage")
-    man_columns = getattr(module, "MANDATORY_COLUMNS")
-    # Get index for the mandatory columns
-    man_columns_idxs = [exposure.layer.fields.index(item) for item in man_columns]
-
-    # Vulnerability metadata
-    rounding = deter_dec(cfg.get("vulnerability.step_size"))
-    vul_min = min(vulnerability.index)
-    vul_max = max(vulnerability.index)
-
-    # Set up info for risk
-    if risk:
-        rp_coef = risk_density(cfg.get("hazard.return_periods"))
-        rp_coef.reverse()
+    module = importlib.import_module(f"fiat.methods.{hazard_meta.type}")
+    fn_hazard = getattr(module, "fn_hazard")
+    fn_impact = getattr(module, "fn_impact")
 
     # Setup the dataset buffer writer
     writer = BufferedGeomWriter(
-        Path(cfg.get("output.path"), f"{exposure.path.stem}.gpkg"),
+        Path(output_dir, f"{exposure.path.stem}.gpkg"),
         lock=lock,
     )
     writer.setup(
@@ -87,52 +160,23 @@ of the [GeomModel](/api/GeomModel.qmd) object.
 
     # Loop over all the geometries in a reduced manner
     for ft in exposure.layer.reduced_iter(*chunk):
-        out = []
-        haz_kwargs = [ft.GetField(idx) for idx in man_columns_idxs]
-
-        # Go through the hazard data
-        for band in hazard:
-            # Get the hazard values
-            haz = overlay.clip(
-                ft,
-                band,
-                hazard.geotransform,
-            )
-            haz[haz == band.nodata] = nan
-            haz, fact = func_hazard(
-                haz.tolist(),
-                *haz_kwargs,
-            )
-            out += [haz]
-            for _, item in exposure_meta.types.items():
-                out += func_damage(
-                    haz,
-                    fact,
-                    ft,
-                    item,
-                    vulnerability,
-                    vul_min,
-                    vul_max,
-                    rounding,
-                )
-
-        # At last do (if set) risk calculation
-        if risk:
-            i = 0
-            for ti in exposure_meta.total:
-                ead = round(
-                    calculate_ead(rp_coef, out[ti - i :: -exposure_meta.length]),
-                    rounding,
-                )
-                out.append(ead)
-                i += 1
+        out_array = feature_worker(
+            ft=ft,
+            hazard=hazard,
+            hazard_meta=hazard_meta,
+            vulnerability=vulnerability,
+            vulnerability_meta=vulnerability_meta,
+            exposure_meta=exposure_meta,
+            fn_hazard=fn_hazard,
+            fn_impact=fn_impact,
+        )
 
         # Write the feature to the in memory dataset
         writer.add_feature_with_map(
             ft,
             zip(
-                exposure_meta.indices,
-                out,
+                exposure_meta.indices_new,
+                out_array,
             ),
         )
 

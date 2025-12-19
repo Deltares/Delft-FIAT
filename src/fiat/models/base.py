@@ -11,7 +11,6 @@ from osgeo import osr
 from fiat.cfg import Configurations
 from fiat.check import (
     check_duplicate_columns,
-    check_hazard_rp,
     check_hazard_subsets,
     check_internal_srs,
     check_vs_srs,
@@ -54,12 +53,10 @@ class BaseModel(metaclass=ABCMeta):
         self.vulnerability: Table | None = None
 
         # Type of calculations
-        type = self.cfg.get("hazard.type", "flood")
-        self.module = importlib.import_module(f"fiat.methods.{type}")
-        self.cfg.set("hazard.type", type)
+        self.type = self.cfg.get("hazard.type", "flood")
+        self.module = importlib.import_module(f"fiat.methods.{self.type}")
         # Risk or event based
-        risk = self.cfg.get("model.risk", False)
-        self.cfg.set("model.risk", risk)
+        self.risk = self.cfg.get("model.risk", False)
 
         # Threading stuff
         self._mp_ctx = get_context("spawn")
@@ -222,16 +219,6 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
                 dst_srs=self.srs.ExportToWkt(),
                 resample=_resalg,
             )
-
-        # check risk return periods
-        if self.risk:
-            band_rps = [data[idx].get_metadata_item("rp") for idx in range(data.size)]
-            rp = check_hazard_rp(
-                band_rps,
-                self.cfg.get("hazard.rp"),
-                path,
-            )
-            self.cfg.set("hazard.rp", rp)
 
         # Reset to ensure the entry is present
         self.cfg.set(HAZARD_FILE, path)

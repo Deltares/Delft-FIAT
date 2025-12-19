@@ -1,14 +1,14 @@
 import numpy as np
 
 from fiat.methods.flood import (
-    calculate_hazard,
+    fn_hazard,
 )
 from fiat.struct import Table
 
 
-def test_calculate_hazard():
+def test_fn_hazard():
     # Call the function
-    dmg, red_f = calculate_hazard(
+    dmg, red_f = fn_hazard(
         [2.5, 5, 10],
         ref=1.0,
         method="mean",
@@ -19,9 +19,9 @@ def test_calculate_hazard():
     np.testing.assert_almost_equal(red_f, 1.0)
 
 
-def test_calculate_hazard_red():
+def test_fn_hazard_red():
     # Call the function with a zero value added
-    dmg, red_f = calculate_hazard(
+    dmg, red_f = fn_hazard(
         [0, 2.5, 5, 10],
         ref=1.0,
         method="mean",
@@ -32,9 +32,9 @@ def test_calculate_hazard_red():
     np.testing.assert_almost_equal(red_f, 0.75)
 
 
-def test_calculate_hazard_high_ref():
+def test_fn_hazard_high_ref():
     # Call the function with higher ref
-    dmg, red_f = calculate_hazard(
+    dmg, red_f = fn_hazard(
         [0, 2.5, 5, 10],
         ref=2.0,
         method="mean",
@@ -45,9 +45,9 @@ def test_calculate_hazard_high_ref():
     assert int(red_f * 100) == 75
 
 
-def test_calculate_hazard_high_ref_red():
+def test_fn_hazard_high_ref_red():
     # Call the function with different input
-    dmg, red_f = calculate_hazard(
+    dmg, red_f = fn_hazard(
         [0, 1.5, 5, 10],
         ref=2.0,
         method="mean",
@@ -58,7 +58,7 @@ def test_calculate_hazard_high_ref_red():
     assert int(red_f * 100) == 50
 
 
-def test_calculate_damage(
+def test_fn_impact(
     exposure_data_fn: dict,
     vulnerability_data: Table,
 ):

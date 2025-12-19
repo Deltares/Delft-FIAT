@@ -33,7 +33,6 @@ NAME = "name"
 OUTPUT = "output"
 PATH = "path"
 RISK = "risk"
-ROUND = "round"  # Hate this one...
 SETTINGS = "settings"
 SRS = "srs"
 STEP_SIZE = "step_size"
@@ -60,7 +59,6 @@ HAZARD_FILE = f"{HAZARD}.{FILE}"
 HAZARD_SETTINGS = f"{HAZARD}.{SETTINGS}"
 HAZARD_TYPE = f"{HAZARD}.{TYPE}"
 VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
-VULNERABILITY_ROUND = f"{VULNERABILITY}.{ROUND}"  # Also f*ck this one
 VULNERABILITY_SETTINGS = f"{VULNERABILITY}.{SETTINGS}"
 
 ## Define other string variables

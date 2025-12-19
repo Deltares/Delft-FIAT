@@ -25,9 +25,9 @@ maintainers = [
     {name = "B.W. Dalmijn", email = "brendan.dalmijn@deltares.nl"},
 ]
 
-description = "Delft Fast Impact Assessment Tool"
-readme = "README.md"
+description = "Fast Impact Assessment Tool"
 license = "MIT"
+readme = "README.md"
 
 requires-python = ">=3.11"
 dependencies = [
@@ -75,7 +75,9 @@ build = [
     "pyinstaller>=6.0.0",
 ]
 dev = [
+    "build",
     "cython",
+    "mypy",
     "pre-commit",
     "ruff",
     "setuptools>=61.0.0",
@@ -88,10 +90,10 @@ docs = [
     "quartodoc>=0.7.6",
 ]
 test = [
-	"pytest>=2.7.3",
-	"pytest-cov",
+    "pytest>=2.7.3",
+    "pytest-cov",
     "pytest-mock",
-	"responses",
+    "responses",
 ]
 
 [project.urls]
@@ -104,6 +106,11 @@ fiat = "fiat.cli.main:main"
 
 ## Some stuff for pytest and coverage
 [tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+    "serial",
+    "system: marks tests as system tests (deselect with '-m \"not system\"')",
+]
 testpaths = [
     "test",
 ]
@@ -213,12 +220,12 @@ build = { cmd = [
 # Dev specific taskss
 [tool.pixi.feature.dev.tasks]
 # Installation
-install = { depends-on = ["install-pre-commit"] }
 install-pre-commit = "pre-commit install"
+install = { depends-on = ["install-pre-commit"] }
 
 # Linting and code checking
 lint = { cmd = ["pre-commit", "run", "--all"] }
-mypy = { cmd = ["mypy", "."] }
+mypy = { cmd = ["mypy", ".", "--install-types", "--non-interactive"] }
 
 # Tasks for buildings documentation
 [tool.pixi.feature.docs.tasks]
@@ -242,8 +249,36 @@ serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "./docs/_site"] }
 [tool.pixi.feature.test.tasks]
 test = { cmd = ["pytest", "--verbose"] }
 test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
-test-cov = { cmd = ["pytest", "--verbose", "--cov=fiat", "--cov-report", "xml"] }
-test-cov-html = { cmd = ["pytest", "--verbose", "--cov", "--cov-report", "html"] }
+test-cov = { cmd = [
+    "pytest",
+    "-m",
+    "not (integration or system)",
+    "--verbose",
+    "--cov=fiat",
+    "--cov-report",
+    "xml"
+] }
+test-cov-html = { cmd = [
+    "pytest",
+    "-m",
+    "not (integration or system)",
+    "--verbose",
+    "--cov",
+    "--cov-report",
+    "html"
+] }
+test-integration = { cmd = [
+    "pytest",
+    "-m",
+    "integration",
+    "--verbose",
+] }
+test-system = { cmd = [
+    "pytest",
+    "-m",
+    "system",
+    "--verbose",
+] }
 
 ## Dependencies
 [tool.pixi.dependencies]

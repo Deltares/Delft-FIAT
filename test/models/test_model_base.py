@@ -149,7 +149,6 @@ def test_basemodel_read_hazard_risk(
     # Assert the state
     assert m.hazard is not None
     assert isinstance(m.hazard, GridIO)
-    assert m.cfg.get("hazard.rp") == [2.0, 5.0, 10.0, 25.0]
 
 
 def test_basemodel_read_hazard_warnings(

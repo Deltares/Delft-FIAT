@@ -1,12 +1,14 @@
 """Checks for the data of FIAT."""
 
 from pathlib import Path
+from typing import Any
 
 from osgeo import osr
 
 from fiat.cfg import Configurations
 from fiat.error import FIATDataError
 from fiat.log import spawn_logger
+from fiat.struct import Container
 from fiat.util import EXPOSURE_GRID_FILE, deter_type, get_srs_repr
 
 logger = spawn_logger("fiat.checks")
@@ -128,6 +130,26 @@ def check_vs_srs(
         return False
 
     return True
+
+
+## Input Data
+def check_input_data(
+    *input: list[str, Any, type],
+):
+    """Check if all input data is present."""
+    for item in input:
+        name, data, dtype = item
+        if isinstance(data, Container):
+            if len(data) == 0:
+                raise ValueError(f"{name} is empty")
+            if not all([isinstance(e, dtype) for e in data]):
+                raise TypeError(f"Wrong type encountered in {name}")
+            continue
+        if data is None or not isinstance(data, dtype):
+            raise TypeError(
+                f"{name} is incorrectly set, \
+currently of type {data.__class__.__name__}"
+            )
 
 
 ## Hazard

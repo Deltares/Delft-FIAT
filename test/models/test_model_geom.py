@@ -8,7 +8,7 @@ from fiat.cfg import Configurations
 from fiat.fio import GeomIO, GridIO
 from fiat.log import Logger
 from fiat.models import GeomModel
-from fiat.struct import Container
+from fiat.struct import Container, Table
 from fiat.util import get_srs_repr
 
 
@@ -41,14 +41,13 @@ def test_geommodel_read_exposure(config_empty: Configurations):
 
 
 def test_geommodel_read_exposure_config(
-    config_exposure_geom: Configurations,
-    exposure_geom_path: Path,
+    config_read_geom: Configurations,
 ):
     # Create the object
-    m = GeomModel(config_exposure_geom)
+    m = GeomModel(config_read_geom)
 
     # Call the method
-    m.read_exposure(path=exposure_geom_path)
+    m.read_exposure()
 
     # Assert the presense of a dataset
     assert len(m.exposure) == 2
@@ -104,6 +103,7 @@ def test_geommodel_run(
     monkeypatch: Generator[pytest.MonkeyPatch],
     caplog: Logger,
     config_empty: Configurations,
+    vulnerability_data_run: Table,
     hazard_event_data: GridIO,
     exposure_geom_dataset: GeomIO,
 ):
@@ -114,6 +114,7 @@ def test_geommodel_run(
     m = GeomModel(config_empty)
     m.threads = 2
     # Set data like a dummy
+    m.vulnerability = vulnerability_data_run
     m.hazard = hazard_event_data
     m.exposure.set(exposure_geom_dataset)
 
@@ -121,15 +122,16 @@ def test_geommodel_run(
     m.run()
 
     # Assert logging
-    assert "Starting the calculations" in caplog.text
+    assert "Running the model" in caplog.text
     assert "Busy..." in caplog.text
-    assert "Geom calculation are done!" in caplog.text
+    assert "Model run is done!" in caplog.text
 
 
 def test_geommodel_run_fail(
     monkeypatch,
     caplog: Logger,
     config_empty: Configurations,
+    vulnerability_data_run: Table,
     hazard_event_data: GridIO,
     exposure_geom_dataset: GeomIO,
 ):
@@ -139,6 +141,7 @@ def test_geommodel_run_fail(
     # Create the object
     m = GeomModel(config_empty)
     # Set data like a dummy
+    m.vulnerability = vulnerability_data_run
     m.hazard = hazard_event_data
     m.exposure.set(exposure_geom_dataset)
 
@@ -146,7 +149,21 @@ def test_geommodel_run_fail(
     m.run()
 
     # Assert logging
-    assert "Starting the calculations" in caplog.text
+    assert "Running the model" in caplog.text
     assert "Busy..." in caplog.text
     assert "No bueno..."
-    assert "Geom calculation are done!" not in caplog.text
+    assert "Model run is done!" not in caplog.text
+
+
+def test_geommodel_run_errors(
+    config_empty: Configurations,
+):
+    # Create the object
+    m = GeomModel(config_empty)
+
+    # Should error on having no data
+    with pytest.raises(
+        TypeError,
+        match="hazard is incorrectly set, currently of type NoneType",
+    ):
+        m.run()

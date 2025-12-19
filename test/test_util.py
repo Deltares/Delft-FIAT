@@ -418,9 +418,9 @@ def test_gridsource_layers_single(hazard_event_data: GridIO):
     assert layers is None
 
 
-def test_gridsource_layers_multi(hazard_risk_data: GridIO):
+def test_gridsource_layers_multi(hazard_risk_data_subsets: GridIO):
     # Call the function
-    layers = read_gridsource_layers(hazard_risk_data.src)
+    layers = read_gridsource_layers(hazard_risk_data_subsets.src)
     assert len(layers) == 4
     subpath = layers["Band4"]
     assert subpath.startswith("NETCDF")

@@ -182,10 +182,10 @@ quartodoc:
       desc: The hazard functions
       package: fiat.methods
       contents:
-        - ead.risk_density
-        - ead.calculate_ead
-        - flood.calculate_hazard
-        - flood.calculate_damage
+        - ead.fn_density
+        - ead.fn_ead
+        - flood.fn_hazard
+        - flood.fn_impact
 
     # Logging
     - title: Logging
