@@ -64,7 +64,7 @@ jobs:
           chmod u+x _scripts/add_packages.sh
           _scripts/add_packages.sh
 
-      - name: Setup testdata
+      - name: Create testdata
         run: |
           pixi run -e docs testdata
 

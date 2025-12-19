@@ -53,6 +53,6 @@ jobs:
           shell: bash
           image: fiat:latest
           run: |
-            pixi run generate-data
+            pixi run testdata
             pixi run fiat run .testdata/geom_event.toml
             exit

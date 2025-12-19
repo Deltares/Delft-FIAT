@@ -27,6 +27,10 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
 
+      - name: Create testdata
+        run: |
+          pixi run -e test-py${{ inputs.python-version }} testdata
+
       - name: Test
         run: |
           pixi run -e test-py${{ inputs.python-version }} test-cov
@@ -74,6 +78,10 @@ jobs:
           locked: false
           cache: true
           cache-write: false
+
+      - name: Create testdata
+        run: |
+          pixi run -e test-py${{ inputs.python-version }} testdata
 
       - name: Test
         run: |
