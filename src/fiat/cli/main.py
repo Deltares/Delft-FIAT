@@ -17,7 +17,6 @@ from fiat.util import (
     MANDATORY_GEOM_ENTRIES,
     MANDATORY_GRID_ENTRIES,
     MANDATORY_MODEL_ENTRIES,
-    get_module_attr,
 )
 from fiat.version import __version__
 
@@ -95,13 +94,9 @@ def run(args):
 
     # Kickstart the model
     model_type = cfg.get("model.type", "geom")
-    module_entries = get_module_attr(
-        f"fiat.methods.{cfg.get('hazard.type', 'flood')}",
-        "MANDATORY_ENTRIES",
-    )
     check_config_entries(
         cfg,
-        MANDATORY_MODEL_ENTRIES + _models[model_type]["input"] + module_entries,
+        MANDATORY_MODEL_ENTRIES + _models[model_type]["input"],
     )
     obj = _models[model_type]["model"](cfg)
     if args.profile is not None:
