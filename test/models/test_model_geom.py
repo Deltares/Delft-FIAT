@@ -100,7 +100,7 @@ def mockworker_error(*args, **kwargs):
 
 
 def test_geommodel_run(
-    monkeypatch: Generator[pytest.MonkeyPatch],
+    monkeypatch: Generator[pytest.MonkeyPatch, None, None],
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,
@@ -128,7 +128,7 @@ def test_geommodel_run(
 
 
 def test_geommodel_run_fail(
-    monkeypatch,
+    monkeypatch: Generator[pytest.MonkeyPatch, None, None],
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,

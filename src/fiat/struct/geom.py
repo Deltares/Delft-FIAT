@@ -82,7 +82,7 @@ class GeomLayer(BaseStruct):
         self,
         si: int,
         ei: int,
-    ) -> Generator[ogr.Feature]:
+    ) -> Generator[ogr.Feature, None, None]:
         """Yield items on an interval.
 
         Creates a python generator.
