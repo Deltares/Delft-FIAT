@@ -180,7 +180,7 @@ quartodoc:
           children: separate
     - subtitle: Methods
       desc: The hazard functions
-      package: fiat.methods
+      package: fiat.method
       contents:
         - ead.fn_density
         - ead.fn_ead

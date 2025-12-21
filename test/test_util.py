@@ -370,7 +370,7 @@ def test_generic_directory_check_exist(tmp_path: Path):
 
 def test_get_module_attr():
     # Call the function
-    attr = get_module_attr("fiat.methods.flood", "NEW_COLUMNS")
+    attr = get_module_attr("fiat.method.flood", "NEW_COLUMNS")
     # Assert the output
     assert attr == ["depth"]
 

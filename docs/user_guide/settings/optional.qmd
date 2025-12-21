@@ -62,7 +62,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 
 - `return_periods`: Return periods for hazard calculation when they cannot be inferred from the data itself.
 
-- `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.methods.flood`)
+- `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.method.flood`)
 
 ####  [hazard.settings]
 

@@ -9,7 +9,7 @@ from fiat.fio import (
     GridIO,
     open_grid,
 )
-from fiat.methods.ead import fn_density, fn_ead
+from fiat.method.ead import fn_density, fn_ead
 from fiat.struct import Table
 from fiat.util import create_windows
 

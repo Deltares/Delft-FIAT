@@ -3,8 +3,8 @@ from pathlib import Path
 import numpy as np
 
 from fiat.fio import GeomIO, GridIO, open_geom
-from fiat.methods.flood import fn_hazard, fn_impact
-from fiat.models.worker_geom import feature_worker, worker
+from fiat.method.flood import fn_hazard, fn_impact
+from fiat.model.worker_geom import feature_worker, worker
 from fiat.struct import Table
 from fiat.struct.container import ExposureMeta, HazardMeta, VulnerabilityMeta
 

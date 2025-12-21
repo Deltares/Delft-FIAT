@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 
 from fiat.fio import GridIO
-from fiat.models.util import get_band_names, get_hazard_meta, get_vulnerability_meta
+from fiat.model.util import get_band_names, get_hazard_meta, get_vulnerability_meta
 from fiat.struct import Table
 
 

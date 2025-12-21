@@ -6,7 +6,7 @@ import pytest
 from fiat.cfg import Configurations
 from fiat.fio import GridIO
 from fiat.log import Logger
-from fiat.models.base import BaseModel
+from fiat.model.base import BaseModel
 from fiat.struct import Table
 from fiat.util import get_srs_repr
 
@@ -97,7 +97,7 @@ def test_basemodel_type(config_empty: Configurations):
     # This will error as there are no other modules
     with pytest.raises(
         ModuleNotFoundError,
-        match="No module named 'fiat.methods.fatality'",
+        match="No module named 'fiat.method.fatality'",
     ):
         m.type = "fatality"
 

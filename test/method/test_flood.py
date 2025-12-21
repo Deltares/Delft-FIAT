@@ -1,6 +1,6 @@
 import numpy as np
 
-from fiat.methods.flood import (
+from fiat.method.flood import (
     fn_hazard,
 )
 from fiat.struct import Table

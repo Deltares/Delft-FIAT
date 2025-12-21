@@ -15,7 +15,7 @@ from fiat.fio import (
     GridIO,
 )
 from fiat.gis import overlay
-from fiat.methods.ead import fn_ead
+from fiat.method.ead import fn_ead
 from fiat.struct import Table
 from fiat.struct.container import ExposureMeta, HazardMeta, VulnerabilityMeta
 
@@ -143,7 +143,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The lock for the geometries output.
     """
     # Setup the hazard type module
-    module = importlib.import_module(f"fiat.methods.{hazard_meta.type}")
+    module = importlib.import_module(f"fiat.method.{hazard_meta.type}")
     fn_hazard = getattr(module, "fn_hazard")
     fn_impact = getattr(module, "fn_impact")
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-from fiat.methods.ead import fn_density, fn_ead
+from fiat.method.ead import fn_density, fn_ead
 
 
 def test_fn_density():

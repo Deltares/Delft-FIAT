@@ -13,9 +13,9 @@ from fiat.fio import GridIO, open_grid
 from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
-from fiat.models import worker_grid
-from fiat.models.base import BaseModel
-from fiat.models.util import (
+from fiat.model import worker_grid
+from fiat.model.base import BaseModel
+from fiat.model.util import (
     GRID_PREFER,
 )
 from fiat.util import EXPOSURE_GRID_FILE, generic_path_check, get_srs_repr

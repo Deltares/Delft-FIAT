@@ -2,7 +2,7 @@
 
 from fiat.check import check_hazard_rp
 from fiat.fio import GridIO
-from fiat.methods.ead import fn_density
+from fiat.method.ead import fn_density
 from fiat.struct import Table
 from fiat.struct.container import HazardMeta, VulnerabilityMeta
 from fiat.util import deter_dec

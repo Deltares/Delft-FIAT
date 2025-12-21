@@ -1,5 +1,5 @@
-from fiat.methods import flood
-from fiat.models.geom_util import get_exposure_meta
+from fiat.method import flood
+from fiat.model.geom_util import get_exposure_meta
 
 
 def test_get_exposure_meta():

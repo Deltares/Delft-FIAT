@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from fiat.cfg import Configurations
-from fiat.methods.ead import fn_density
+from fiat.method.ead import fn_density
 from fiat.struct import Table
 from fiat.struct.container import ExposureMeta, HazardMeta, VulnerabilityMeta
 

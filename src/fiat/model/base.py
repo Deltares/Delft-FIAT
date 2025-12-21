@@ -57,7 +57,7 @@ class BaseModel(metaclass=ABCMeta):
 
         # Type of calculations
         self._type = self.cfg.get(HAZARD_TYPE, "flood")
-        self.module = importlib.import_module(f"fiat.methods.{self.type}")
+        self.module = importlib.import_module(f"fiat.method.{self.type}")
         # Risk or event based
         self._risk = self.cfg.get(MODEL_RISK, False)
 
@@ -150,7 +150,7 @@ exceeds machine thread count ('{max_threads}')"
     def type(self, value: str):
         """Set the hazard type."""
         self._type = value
-        self.module = importlib.import_module(f"fiat.methods.{value}")
+        self.module = importlib.import_module(f"fiat.method.{value}")
 
     ## Read data methods
     def read_hazard_grid(

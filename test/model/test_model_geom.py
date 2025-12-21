@@ -7,7 +7,7 @@ from osgeo import osr
 from fiat.cfg import Configurations
 from fiat.fio import GeomIO, GridIO
 from fiat.log import Logger
-from fiat.models import GeomModel
+from fiat.model import GeomModel
 from fiat.struct import Container, Table
 from fiat.util import get_srs_repr
 
@@ -108,7 +108,7 @@ def test_geommodel_run(
     exposure_geom_dataset: GeomIO,
 ):
     # Monkeypatch the worker
-    monkeypatch.setattr("fiat.models.geom.worker", mockworker)
+    monkeypatch.setattr("fiat.model.geom.worker", mockworker)
 
     # Create the object
     m = GeomModel(config_empty)
@@ -136,7 +136,7 @@ def test_geommodel_run_fail(
     exposure_geom_dataset: GeomIO,
 ):
     # Monkeypatch the worker
-    monkeypatch.setattr("fiat.models.geom.worker", mockworker_error)
+    monkeypatch.setattr("fiat.model.geom.worker", mockworker_error)
 
     # Create the object
     m = GeomModel(config_empty)

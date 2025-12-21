@@ -5,7 +5,7 @@ import math
 from numpy import isnan
 from osgeo import ogr
 
-from fiat.methods.util import AREA_METHODS
+from fiat.method.util import AREA_METHODS
 from fiat.struct import Table
 
 MANDATORY_COLUMNS = ["ref"]

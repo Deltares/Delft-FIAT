@@ -21,10 +21,10 @@ from fiat.fio import (
 from fiat.gis import geom
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
-from fiat.models.base import BaseModel
-from fiat.models.geom_util import get_exposure_meta
-from fiat.models.util import get_hazard_meta, get_vulnerability_meta
-from fiat.models.worker_geom import worker
+from fiat.model.base import BaseModel
+from fiat.model.geom_util import get_exposure_meta
+from fiat.model.util import get_hazard_meta, get_vulnerability_meta
+from fiat.model.worker_geom import worker
 from fiat.struct import Container, Table
 from fiat.util import (
     EXPOSURE_GEOM_FILE,
