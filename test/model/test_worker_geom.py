@@ -6,7 +6,7 @@ from fiat.fio import GeomIO, GridIO, open_geom
 from fiat.method.flood import fn_hazard, fn_impact
 from fiat.model.worker_geom import feature_worker, worker
 from fiat.struct import Table
-from fiat.struct.container import ExposureMeta, HazardMeta, VulnerabilityMeta
+from fiat.struct.container import ExposureGeomMeta, HazardMeta, VulnerabilityMeta
 
 
 def test_feature_worker(
@@ -15,7 +15,7 @@ def test_feature_worker(
     vulnerability_data_run: Table,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_geom_dataset: GeomIO,
-    exposure_meta_run: ExposureMeta,
+    exposure_meta_run: ExposureGeomMeta,
 ):
     # Call the function
     a = feature_worker(
@@ -39,7 +39,7 @@ def test_feature_worker_risk(
     vulnerability_data_run: Table,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_geom_dataset: GeomIO,
-    exposure_meta_run: ExposureMeta,
+    exposure_meta_run: ExposureGeomMeta,
 ):
     # Call the function
     a = feature_worker(
@@ -69,7 +69,7 @@ def test_worker(
     vulnerability_data_run: Table,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_geom_dataset: GeomIO,
-    exposure_meta_run: ExposureMeta,
+    exposure_meta_run: ExposureGeomMeta,
 ):
     # Call the function
     worker(

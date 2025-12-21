@@ -143,7 +143,7 @@ multiple variables.
         self._cur_index = 0
         return self
 
-    def __next__(self):
+    def __next__(self) -> GridBand:
         if self._cur_index < self._count:
             r = self[self._cur_index]
             self._cur_index += 1
@@ -336,7 +336,7 @@ multiple variables.
         return read_gridsource_layers(self.src)
 
     # Basic I/O methods
-    def close(self):
+    def close(self) -> None:
         """Close the GridIO."""
         BaseIO.close(self)
 
@@ -347,7 +347,7 @@ multiple variables.
 
         gc.collect()
 
-    def flush(self):
+    def flush(self) -> None:
         """Flush the data.
 
         This only serves a purpose in write mode (`mode = 'w'`).
@@ -357,7 +357,7 @@ multiple variables.
             for item in self._bands:
                 item.flush()
 
-    def reopen(self):
+    def reopen(self) -> None:
         """Reopen a closed GridIO."""
         if not self._closed:
             return self
@@ -383,9 +383,9 @@ multiple variables.
         self,
         shape: tuple,
         nb: int,
-        type: int,
+        dtype: int,
         options: list = [],
-    ):
+    ) -> None:
         """Create a new data source.
 
         Only in write (`'w'`) mode.
@@ -396,7 +396,7 @@ multiple variables.
             Shape of the grid. Takes the form of [<x-length>, <y-length>].
         nb : int
             The number of bands in the new data source.
-        type : int
+        dtype : int
             Data type. The values is an integer which is linked to a data type
             recognized by GDAL. See [this page]
             (https://gdal.org/java/org/gdal/gdalconst/
@@ -408,7 +408,7 @@ multiple variables.
             self.path.as_posix(),
             *shape,
             nb,
-            type,
+            dtype,
             options=options,
         )
 
@@ -447,7 +447,7 @@ multiple variables.
     def set_source_srs(
         self,
         srs: osr.SpatialReference,
-    ):
+    ) -> None:
         """Set the srs of the gird.
 
         Only in write (`'w'`) mode.

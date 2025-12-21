@@ -4,7 +4,7 @@ import copy
 from dataclasses import dataclass
 from typing import Any
 
-__all__ = ["Container", "ExposureMeta", "VulnerabilityMeta"]
+__all__ = ["Container", "ExposureGeomMeta", "VulnerabilityMeta"]
 
 
 class Container:
@@ -73,7 +73,7 @@ class Container:
 
 
 @dataclass
-class ExposureMeta:
+class ExposureGeomMeta:
     """Small container for exposure metadata."""
 
     indices_new: list

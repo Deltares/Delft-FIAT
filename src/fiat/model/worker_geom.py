@@ -17,7 +17,7 @@ from fiat.fio import (
 from fiat.gis import overlay
 from fiat.method.ead import fn_ead
 from fiat.struct import Table
-from fiat.struct.container import ExposureMeta, HazardMeta, VulnerabilityMeta
+from fiat.struct.container import ExposureGeomMeta, HazardMeta, VulnerabilityMeta
 
 
 def feature_worker(
@@ -26,7 +26,7 @@ def feature_worker(
     hazard_meta: HazardMeta,
     vulnerability: Table,
     vulnerability_meta: VulnerabilityMeta,
-    exposure_meta: ExposureMeta,
+    exposure_meta: ExposureGeomMeta,
     fn_hazard: Callable,
     fn_impact: Callable,
 ) -> list[float]:
@@ -44,7 +44,7 @@ def feature_worker(
         The vulnerability data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
-    exposure_meta : ExposureMeta
+    exposure_meta : ExposureGeomMeta
         Metadata specific to the exposure data.
     fn_hazard : Callable
         The hazard function.
@@ -109,7 +109,7 @@ def worker(
     vulnerability: Table,
     vulnerability_meta: VulnerabilityMeta,
     exposure: GeomIO,
-    exposure_meta: ExposureMeta,
+    exposure_meta: ExposureGeomMeta,
     chunk: tuple | list,
     queue: Queue,
     lock: Lock,
@@ -133,7 +133,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         Metadata specific to the vulnerability data.
     exposure : GeomIO
         The exposure geometries.
-    exposure_meta : ExposureMeta
+    exposure_meta : ExposureGeomMeta
         Metadata specific to the exposure data.
     chunk : tuple | list
         The chunk to run through.

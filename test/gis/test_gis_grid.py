@@ -61,18 +61,18 @@ def test_reproject_resample(tmp_path: Path, hazard_event_repr: GridIO):
 
 
 def test_reproject_tif(
-    hazard_tif: GridIO,
+    hazard_ds: GridIO,
 ):
     # Assert the current state
-    assert get_srs_repr(hazard_tif.srs) == "EPSG:4326"
+    assert get_srs_repr(hazard_ds.srs) == "EPSG:4326"
     np.testing.assert_array_almost_equal(
-        hazard_tif.bounds,
+        hazard_ds.bounds,
         (0, 0, 10.0, 10.0),
     )
-    assert hazard_tif.shape == (10, 10)
+    assert hazard_ds.shape == (10, 10)
 
     # Call the function
-    gs = reproject(hazard_tif, dst_srs="EPSG:3857")
+    gs = reproject(hazard_ds, dst_srs="EPSG:3857")
 
     # Assert the output
     assert get_srs_repr(gs.srs) == "EPSG:3857"

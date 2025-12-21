@@ -18,6 +18,7 @@ class GridBand(BaseStruct):
         # For typing
         self._obj_ref: weakref.ReferenceType | None = None
         self._obj: gdal.Band | None = None
+        self._chunk: tuple = (0, 0)
         self._x: int = 0
         self._y: int = 0
         self._l: int = 0
@@ -34,7 +35,7 @@ class GridBand(BaseStruct):
         self._reset_chunking()
         return self
 
-    def __next__(self):
+    def __next__(self) -> tuple():
         if self._u > self._y:
             self.flush()
             raise StopIteration
@@ -89,7 +90,7 @@ class GridBand(BaseStruct):
         obj.dtype_name = gdal.GetDataTypeName(obj.dtype)
         obj.dtype_size = gdal.GetDataTypeSize(obj.dtype)
 
-        obj._chunk = obj.shape
+        obj.chunk = obj.shape
         if chunk is not None:
             obj.chunk = chunk
 

@@ -1,7 +1,7 @@
 """Geometry model utility."""
 
 from fiat.check import check_exp_columns, check_exp_derived_types
-from fiat.struct.container import ExposureMeta
+from fiat.struct.container import ExposureGeomMeta
 from fiat.typing import MethodsProtocol
 from fiat.util import discover_exp_columns, generate_output_columns
 
@@ -44,7 +44,7 @@ def get_exposure_meta(
     # Set the indices for the outgoing columns
     indices_new = list(range(len(columns), len(columns) + len(new)))
 
-    meta = ExposureMeta(
+    meta = ExposureGeomMeta(
         indices_new=indices_new,
         indices_spec=indices_spec,
         indices_total=indices_total,

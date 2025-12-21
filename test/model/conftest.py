@@ -5,7 +5,7 @@ import pytest
 from fiat.cfg import Configurations
 from fiat.method.ead import fn_density
 from fiat.struct import Table
-from fiat.struct.container import ExposureMeta, HazardMeta, VulnerabilityMeta
+from fiat.struct.container import ExposureGeomMeta, HazardMeta, VulnerabilityMeta
 
 
 @pytest.fixture
@@ -46,8 +46,8 @@ def density():
 
 
 @pytest.fixture(scope="session")
-def exposure_meta_run() -> ExposureMeta:
-    meta = ExposureMeta(
+def exposure_meta_run() -> ExposureGeomMeta:
+    meta = ExposureGeomMeta(
         indices_new=[5, 6, 7],
         indices_spec=[2],
         indices_total=[-1],
@@ -87,7 +87,7 @@ def vulnerability_data_run(vulnerability_data: Table) -> Table:
 
 
 @pytest.fixture(scope="session")
-def vulnerability_meta_run() -> ExposureMeta:
+def vulnerability_meta_run() -> ExposureGeomMeta:
     meta = VulnerabilityMeta(
         min=0,
         max=5,

@@ -66,7 +66,7 @@ def reproject(
         Output object. A lazy reading of the just creating raster file.
     """
     # Set some kwargs before moving on
-    _gs_kwargs = {
+    gs_kwargs = {
         "chunk": gs.chunk,
     }
 
@@ -108,4 +108,4 @@ def reproject(
     out_srs = None
 
     gs.close()
-    return open_grid(fname, **_gs_kwargs)
+    return open_grid(fname, **gs_kwargs)

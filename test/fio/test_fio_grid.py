@@ -169,7 +169,7 @@ def test_gridio_write(tmp_path: Path, srs_4326: osr.SpatialReference):
     gio.create(
         shape=(7, 5),  # Not square
         nb=2,  # Two bands
-        type=6,  # Float 32 bit
+        dtype=6,  # Float 32 bit
     )
 
     # Assert the information

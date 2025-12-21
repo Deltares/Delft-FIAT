@@ -67,11 +67,11 @@ class GridModel(BaseModel):
         prefer_bool = prefer == "exposure"
 
         # Setup the data sets
-        data = self.exposure_grid
+        data = self.exposure
         data_warp = self.hazard
         if not prefer_bool:
             data = self.hazard
-            data_warp = self.exposure_grid
+            data_warp = self.exposure
 
         # Reproject the data
         logger.info(
@@ -90,7 +90,7 @@ data to {prefer} data"
             self.hazard = data_warped
             self.cfg.set("hazard.file", data_warped.path)
         else:
-            self.exposure_grid = data_warped
+            self.exposure = data_warped
             self.cfg.set("exposure.grid.file", data_warped.path)
 
     def read_exposure(
@@ -132,12 +132,6 @@ data to {prefer} data"
         ## checks
         logger.info("Executing exposure data checks...")
 
-        # Check if all damage functions are correct
-        check_exp_grid_dmfs(
-            [item.get_metadata_item("fn_damage") for item in data],
-            self.vulnerability.columns,
-        )
-
         # Check if there is a srs present
         check_internal_srs(
             data.srs,
@@ -157,45 +151,31 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         # Reset to ensure the entry is present
         self.cfg.set(EXPOSURE_GRID_FILE, path)
         ## When all is done, add it
-        self.exposure_grid = data
-
-    def resolve(self):
-        """Create EAD output from the outputs of different return periods.
-
-        This is done but reading, loading and iterating over the those files.
-        In contrary to the geometry model, this does not concern temporary data.
-
-        - This method might become private.
-        """
-        if self.risk:
-            logger.info("Setting up risk calculations..")
-
-            # Time the function
-            _s = time.time()
-            worker_grid.worker_ead(
-                self.cfg,
-                self.exposure_grid.chunk,
-            )
-            _e = time.time() - _s
-            logger.info(f"Risk calculation time: {round(_e, 2)} seconds")
+        self.exposure = data
 
     def run(self):
         """Run the grid model with provided settings.
 
         Generates output in the specified `output.path` directory.
         """
+        # Check if all damage functions are correct
+        check_exp_grid_dmfs(
+            [item.get_metadata_item("fn_damage") for item in self.exposure],
+            self.vulnerability.columns,
+        )
         # Check for equal hazard and exposure grids
-        self.equal = check_grid_exact(self.hazard, self.exposure_grid)
+        self.equal = check_grid_exact(self.hazard, self.exposure)
         self.create_equal_grids()
 
         # Setup the jobs
+        chunks = []
         jobs = generate_jobs(
             {
-                "cfg": self.cfg,
-                "haz": self.hazard,
-                "idx": range(1, self.hazard.size + 1),
-                "vul": self.vulnerability,
-                "exp": self.exposure_grid,
+                "output_dir": self.cfg.get("output.path"),
+                "hazard": self.hazard,
+                "vulnerability": self.vulnerability,
+                "exposure": self.exposure,
+                "chunk": chunks,
             }
         )
 
@@ -213,6 +193,5 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         # Last logging messages
         _e = time.time() - _s
         logger.info(f"Calculations time: {round(_e, 2)} seconds")
-        self.resolve()
         logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
         logger.info("Grid calculation are done!")
