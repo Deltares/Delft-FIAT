@@ -243,7 +243,8 @@ def create_exposure_grid():
         data[x, y] = 2000 + ((x + y) * 100)
     # Write the data
     band.WriteArray(data)
-    band.SetMetadataItem("fn_damage", "struct_1")
+    band.SetMetadataItem("fn", "struct_1")
+    band.SetNoDataValue(-9999)
 
     # Flush the data
     band.FlushCache()
@@ -295,6 +296,7 @@ def create_hazard_event_map(epsg: int = None):
     for x, y in product(oneD, oneD):
         data[x, y] = 3.6 - ((x + y) * 0.2)
     # Write blyat
+    band.SetNoDataValue(-9999)
     band.WriteArray(data)
 
     # Flush the data
@@ -341,6 +343,7 @@ def create_hazard_event_map_highres():
     for x, y in product(oneD, oneD):
         data[x, y] = 3.6 - ((x + y) * 0.02)
     # Write the data
+    band.SetNoDataValue(-9999)
     band.WriteArray(data)
 
     # Flush the data
@@ -389,8 +392,9 @@ def create_hazard_risk_map():
         for x, y in product(oneD, oneD):
             data[x, y] = 3.6 - ((x + y) * 0.2)
         data *= fc
-        band.WriteArray(data)
         band.SetMetadataItem("rp", f"{rps[idx]}")
+        band.SetNoDataValue(-9999)
+        band.WriteArray(data)
         band.FlushCache()
         band = None
 

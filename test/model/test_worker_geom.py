@@ -14,12 +14,12 @@ def test_feature_worker(
     hazard_meta_run: HazardMeta,
     vulnerability_data_run: Table,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_geom_dataset: GeomIO,
+    exposure_geom_data: GeomIO,
     exposure_meta_run: ExposureGeomMeta,
 ):
     # Call the function
     a = feature_worker(
-        ft=exposure_geom_dataset.layer[0],
+        ft=exposure_geom_data.layer[0],
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
         vulnerability=vulnerability_data_run,
@@ -38,12 +38,12 @@ def test_feature_worker_risk(
     hazard_risk_meta_run: HazardMeta,
     vulnerability_data_run: Table,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_geom_dataset: GeomIO,
+    exposure_geom_data: GeomIO,
     exposure_meta_run: ExposureGeomMeta,
 ):
     # Call the function
     a = feature_worker(
-        ft=exposure_geom_dataset.layer[2],
+        ft=exposure_geom_data.layer[2],
         hazard=hazard_risk_data,
         hazard_meta=hazard_risk_meta_run,
         vulnerability=vulnerability_data_run,
@@ -68,7 +68,7 @@ def test_worker(
     hazard_meta_run: HazardMeta,
     vulnerability_data_run: Table,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_geom_dataset: GeomIO,
+    exposure_geom_data: GeomIO,
     exposure_meta_run: ExposureGeomMeta,
 ):
     # Call the function
@@ -78,7 +78,7 @@ def test_worker(
         hazard_meta=hazard_meta_run,
         vulnerability=vulnerability_data_run,
         vulnerability_meta=vulnerability_meta_run,
-        exposure=exposure_geom_dataset,
+        exposure=exposure_geom_data,
         exposure_meta=exposure_meta_run,
         chunk=(1, 4),
         queue=None,

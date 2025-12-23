@@ -74,7 +74,7 @@ class Container:
 
 @dataclass
 class ExposureGeomMeta:
-    """Small container for exposure metadata."""
+    """Small container for exposure geometry metadata."""
 
     indices_new: list
     indices_spec: list
@@ -82,6 +82,15 @@ class ExposureGeomMeta:
     indices_type: dict
     new: list
     type_length: int
+
+
+@dataclass
+class ExposureGridMeta:
+    """Small container for exposure grid metadata."""
+
+    fn_list: list
+    nb: int
+    new: list
 
 
 @dataclass
@@ -99,6 +108,7 @@ class HazardMeta:
 class VulnerabilityMeta:
     """Small container for some vulnerability metadata."""
 
+    fn_list: list | tuple
     min: float | int
     max: float | int
     sigdec: int

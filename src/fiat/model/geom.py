@@ -199,11 +199,10 @@ class GeomModel(BaseModel):
             )
             # Get the exposure field meta
             exposure_meta = get_exposure_meta(
-                exposure.layer._columns,
+                exposure=exposure,
+                hazard_meta=hazard_meta,
                 module=self.module,
                 types=self.exposure_types,
-                bands=hazard_meta.names,
-                risk=self.risk,
             )
             # Get the chunks based on the load distribution
             chunks = create_1d_chunks(exposure.layer.size, count)

@@ -14,7 +14,8 @@ from fiat.util import (
     _diff_table,
     _load_diff,
     create_1d_chunks,
-    create_windows,
+    create_2d_chunks,
+    create_2d_windows,
     deter_dec,
     deter_type,
     discover_exp_columns,
@@ -98,9 +99,29 @@ def test_create_1d_chunks_many():
     assert chunks[-1] == (476, 500)
 
 
-def test_create_windows_even():
+def test_create_2d_chunks_few():
     # Call the function
-    windows = list(create_windows((10, 10), (2, 2)))
+    chunks = list(create_2d_chunks((500, 350), 2))
+
+    # Assert the output
+    assert len(chunks) == 4
+    assert chunks[0] == (0, 0, 354, 248)
+    assert chunks[2] == (354, 0, 146, 248)
+
+
+def test_create_2d_chunks_many():
+    # Call the function
+    chunks = list(create_2d_chunks((500, 350), 10))
+
+    # Assert the output
+    assert len(chunks) == 16
+    assert chunks[4] == (158, 0, 158, 111)
+    assert chunks[10] == (316, 222, 158, 111)
+
+
+def test_create_2d_windows_even():
+    # Call the function
+    windows = list(create_2d_windows((10, 10), (0, 0), (2, 2)))
 
     # Assert the output
     assert len(windows) == 25
@@ -108,9 +129,9 @@ def test_create_windows_even():
     assert windows[-1] == (8, 8, 2, 2)  # Should nicely fit
 
 
-def test_create_windows_uneven():
+def test_create_2d_windows_uneven():
     # Call the function
-    windows = list(create_windows((10, 10), (4, 4)))
+    windows = list(create_2d_windows((10, 10), (0, 0), (4, 4)))
     assert len(windows) == 9
     assert windows[0] == (0, 0, 4, 4)
     assert windows[-1] == (8, 8, 2, 2)  # It's the same as it does not fit

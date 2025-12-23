@@ -45,7 +45,7 @@ def test_buffered_geom_writer_init_lock(tmp_path: Path):
 
 def test_buffered_geom_writer_setup_layer(
     tmp_path: Path,
-    exposure_geom_dataset: GeomIO,
+    exposure_geom_data: GeomIO,
 ):
     p = Path(tmp_path, "tmp.geojson")
     # Create the writer
@@ -58,8 +58,8 @@ def test_buffered_geom_writer_setup_layer(
 
     # Setup the (buffer) layer
     w.setup(
-        defn=exposure_geom_dataset.layer.defn,
-        srs=exposure_geom_dataset.srs,
+        defn=exposure_geom_data.layer.defn,
+        srs=exposure_geom_data.srs,
     )
 
     # Assert the state
@@ -72,7 +72,7 @@ def test_buffered_geom_writer_setup_layer(
 
 def test_buffered_geom_writer_setup_layer_with_fields(
     tmp_path: Path,
-    exposure_geom_dataset: GeomIO,
+    exposure_geom_data: GeomIO,
 ):
     p = Path(tmp_path, "tmp.geojson")
     # Create the writer
@@ -82,12 +82,12 @@ def test_buffered_geom_writer_setup_layer_with_fields(
     )
     # Assert the current state
     assert w.buffer.layer is None
-    assert len(exposure_geom_dataset.layer.fields) == 5
+    assert len(exposure_geom_data.layer.fields) == 5
 
     # Setup the (buffer) layer
     w.setup(
-        defn=exposure_geom_dataset.layer.defn,
-        srs=exposure_geom_dataset.srs,
+        defn=exposure_geom_data.layer.defn,
+        srs=exposure_geom_data.srs,
         extra_fields={"foo": 0},
     )
 
@@ -103,7 +103,7 @@ def test_buffered_geom_writer_setup_layer_with_fields(
 
 def test_buffered_geom_writer_add(
     tmp_path: Path,
-    exposure_geom_dataset: GeomIO,
+    exposure_geom_data: GeomIO,
 ):
     p = Path(tmp_path, "tmp.geojson")
     # Create the writer
@@ -113,15 +113,15 @@ def test_buffered_geom_writer_add(
     )
     # Create the layer like dummy
     w.buffer.create_layer(
-        srs=exposure_geom_dataset.srs,
-        geom_type=exposure_geom_dataset.layer.geom_type,
+        srs=exposure_geom_data.srs,
+        geom_type=exposure_geom_data.layer.geom_type,
     )
-    w.buffer.layer.set_from_defn(defn=exposure_geom_dataset.layer.defn)
-    w.defn = exposure_geom_dataset.layer.defn
+    w.buffer.layer.set_from_defn(defn=exposure_geom_data.layer.defn)
+    w.defn = exposure_geom_data.layer.defn
 
     # Create a feature that can be written directly
     ft = ogr.Feature(w.buffer.layer.defn)
-    ft.SetFrom(exposure_geom_dataset.layer[0])
+    ft.SetFrom(exposure_geom_data.layer[0])
 
     # Set directly
     w.add_feature(ft)
@@ -131,7 +131,7 @@ def test_buffered_geom_writer_add(
 
 def test_buffered_geom_writer_add_write(
     tmp_path: Path,
-    exposure_geom_dataset: GeomIO,
+    exposure_geom_data: GeomIO,
 ):
     p = Path(tmp_path, "tmp.geojson")
     # Create the writer
@@ -141,15 +141,15 @@ def test_buffered_geom_writer_add_write(
     )
     # Create the layer like dummy
     w.buffer.create_layer(
-        srs=exposure_geom_dataset.srs,
-        geom_type=exposure_geom_dataset.layer.geom_type,
+        srs=exposure_geom_data.srs,
+        geom_type=exposure_geom_data.layer.geom_type,
     )
-    w.buffer.layer.set_from_defn(defn=exposure_geom_dataset.layer.defn)
-    w.defn = exposure_geom_dataset.layer.defn
+    w.buffer.layer.set_from_defn(defn=exposure_geom_data.layer.defn)
+    w.defn = exposure_geom_data.layer.defn
 
     # Create a feature that can be written directly
     ft = ogr.Feature(w.buffer.layer.defn)
-    ft.SetFrom(exposure_geom_dataset.layer[0])
+    ft.SetFrom(exposure_geom_data.layer[0])
 
     # Add another feature
     w.add_feature(ft)
@@ -166,7 +166,7 @@ def test_buffered_geom_writer_add_write(
 
 def test_buffered_geom_writer_add_with_map(
     tmp_path: Path,
-    exposure_geom_dataset: GeomIO,
+    exposure_geom_data: GeomIO,
 ):
     p = Path(tmp_path, "tmp.geojson")
     # Create the writer
@@ -176,23 +176,23 @@ def test_buffered_geom_writer_add_with_map(
     )
     # Create the layer like dummy
     w.buffer.create_layer(
-        srs=exposure_geom_dataset.srs,
-        geom_type=exposure_geom_dataset.layer.geom_type,
+        srs=exposure_geom_data.srs,
+        geom_type=exposure_geom_data.layer.geom_type,
     )
-    w.buffer.layer.set_from_defn(defn=exposure_geom_dataset.layer.defn)
-    w.defn = exposure_geom_dataset.layer.defn
+    w.buffer.layer.set_from_defn(defn=exposure_geom_data.layer.defn)
+    w.defn = exposure_geom_data.layer.defn
 
     # Assert the size of the buffer
     assert w.buffer.layer.size == 0
 
-    w.add_feature_with_map(exposure_geom_dataset.layer[0], fmap={})
+    w.add_feature_with_map(exposure_geom_data.layer[0], fmap={})
     # Assert size of the buffer
     assert w.buffer.layer.size == 1
 
-    w.add_feature_with_map(exposure_geom_dataset.layer[1], fmap={})
+    w.add_feature_with_map(exposure_geom_data.layer[1], fmap={})
     # Assert size of the buffer
     assert w.buffer.layer.size == 2
-    w.add_feature_with_map(exposure_geom_dataset.layer[2], fmap={})
+    w.add_feature_with_map(exposure_geom_data.layer[2], fmap={})
     # Assert size of the buffer after dumping
     assert w.buffer.layer.size == 1
 

@@ -4,8 +4,8 @@ import time
 from pathlib import Path
 
 from fiat.check import (
-    check_exp_grid_dmfs,
     check_grid_exact,
+    check_input_data,
     check_internal_srs,
     check_vs_srs,
 )
@@ -15,10 +15,19 @@ from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model import worker_grid
 from fiat.model.base import BaseModel
+from fiat.model.grid_util import get_exposure_meta
 from fiat.model.util import (
     GRID_PREFER,
+    get_hazard_meta,
+    get_vulnerability_meta,
 )
-from fiat.util import EXPOSURE_GRID_FILE, generic_path_check, get_srs_repr
+from fiat.struct import Table
+from fiat.util import (
+    EXPOSURE_GRID_FILE,
+    create_2d_chunks,
+    generic_path_check,
+    get_srs_repr,
+)
 
 logger = spawn_logger("fiat.model.grid")
 
@@ -158,24 +167,44 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
 
         Generates output in the specified `output.path` directory.
         """
-        # Check if all damage functions are correct
-        check_exp_grid_dmfs(
-            [item.get_metadata_item("fn_damage") for item in self.exposure],
-            self.vulnerability.columns,
+        logger.info("Running the model")
+        # Quick check if all data is set
+        check_input_data(
+            ["hazard", self.hazard, GridIO],
+            ["vulnerability", self.vulnerability, Table],
+            ["exposure", self.exposure, GridIO],
         )
+
+        # Setup the basic metadata
+        hazard_meta = get_hazard_meta(self.hazard, risk=self.risk)
+        hazard_meta.type = self.type
+        vulnerability_meta = get_vulnerability_meta(self.vulnerability)
+        # Get the exposure meta
+        exposure_meta = get_exposure_meta(
+            self.exposure,
+            hazard_meta=hazard_meta,
+            vulnerability_meta=vulnerability_meta,
+        )
+
+        # Create the output directory and files
+        self.cfg.setup_output_dir()
+
         # Check for equal hazard and exposure grids
         self.equal = check_grid_exact(self.hazard, self.exposure)
         self.create_equal_grids()
 
         # Setup the jobs
-        chunks = []
+        chunks = create_2d_chunks(self.hazard.shape_xy, parts=self.threads)
         jobs = generate_jobs(
             {
                 "output_dir": self.cfg.get("output.path"),
                 "hazard": self.hazard,
+                "hazard_meta": hazard_meta,
                 "vulnerability": self.vulnerability,
+                "vulnerability_meta": vulnerability_meta,
                 "exposure": self.exposure,
-                "chunk": chunks,
+                "exposure_meta": exposure_meta,
+                "chunk": list(chunks),
             }
         )
 
@@ -194,4 +223,4 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         _e = time.time() - _s
         logger.info(f"Calculations time: {round(_e, 2)} seconds")
         logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
-        logger.info("Grid calculation are done!")
+        logger.info("Model run is done!")

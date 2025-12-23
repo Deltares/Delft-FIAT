@@ -15,7 +15,7 @@ def test_get_band_names(hazard_event_path: Path):
     names = get_band_names(gio)
 
     # Assert the output
-    assert names == ["Band1"]
+    assert names == ["band1"]
 
 
 def test_get_band_names_empty(tmp_path: Path):
@@ -36,7 +36,7 @@ def test_get_hazard_meta(hazard_event_data: GridIO):
 
     # Assert the output
     assert meta.density is None
-    assert meta.names == ["Band1"]
+    assert meta.names == ["band1"]
     assert meta.risk == False
     assert meta.rp is None
     assert meta.type == "flood"
@@ -52,7 +52,7 @@ def test_get_hazard_meta_risk(hazard_risk_data: GridIO):
         [0.17, 0.18, 0.08, 0.07],
         decimal=2,
     )
-    assert meta.names == ["Band1", "Band2", "Band3", "Band4"]
+    assert meta.names == ["band1", "band2", "band3", "band4"]
     assert meta.risk == True
     assert meta.rp == [2, 5, 10, 25]
     assert meta.type == "flood"

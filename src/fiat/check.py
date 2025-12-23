@@ -218,15 +218,15 @@ maximum potential damage: {missing}"
         )
 
 
-def check_exp_grid_dmfs(
-    fns: tuple | list,
-    dmfs: tuple | list,
+def check_exp_grid_fn(
+    fn_list: tuple | list,
+    fn_available: tuple | list,
 ):
-    """Check the damage functions mentioned in the exposure bands."""
-    _check = [item in dmfs for item in fns]
+    """Check the impact functions mentioned in the exposure bands."""
+    _check = [item in fn_available for item in fn_list]
     if not all(_check):
-        _missing = [item for item, b in zip(fns, _check) if not b]
-        msg = f"Unknown damage function identifier found in exposure grid: {_missing}"
+        _missing = [item for item, b in zip(fn_list, _check) if not b]
+        msg = f"Unknown impact function identifier found in exposure grid: {_missing}"
         raise FIATDataError(msg)
 
 

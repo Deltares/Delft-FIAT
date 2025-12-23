@@ -62,7 +62,7 @@ def exposure_meta_run() -> ExposureGeomMeta:
 def hazard_meta_run():
     meta = HazardMeta(
         density=None,
-        names=["Band1"],
+        names=["band1"],
         rp=None,
         risk=False,
     )
@@ -73,7 +73,7 @@ def hazard_meta_run():
 def hazard_risk_meta_run(density: list):
     meta = HazardMeta(
         density=density,
-        names=["Band1"],
+        names=["band1", "band2", "band3", "band4"],
         rp=[2, 5, 10, 25],
         risk=True,
     )
@@ -89,6 +89,7 @@ def vulnerability_data_run(vulnerability_data: Table) -> Table:
 @pytest.fixture(scope="session")
 def vulnerability_meta_run() -> ExposureGeomMeta:
     meta = VulnerabilityMeta(
+        fn_list=["struct_1", "struct_2"],
         min=0,
         max=5,
         sigdec=2,

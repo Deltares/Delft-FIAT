@@ -43,6 +43,13 @@ def exposure_geom_path(testdata_dir: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
+def exposure_grid_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "exposure", "spatial.nc")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
 def hazard_event_path(testdata_dir: Path) -> Path:
     p = Path(testdata_dir, "event_map.nc")
     assert p.is_file()
@@ -99,9 +106,16 @@ def exposure_data_fn() -> dict:
 
 
 @pytest.fixture(scope="session")
-def exposure_geom_dataset(exposure_geom_path: Path) -> GeomIO:
+def exposure_geom_data(exposure_geom_path: Path) -> GeomIO:
     ds = open_geom(exposure_geom_path)  # Read only
     assert isinstance(ds, GeomIO)
+    return ds
+
+
+@pytest.fixture(scope="session")
+def exposure_grid_data(exposure_grid_path: Path) -> GridIO:
+    ds = open_grid(exposure_grid_path)  # Read only
+    assert isinstance(ds, GridIO)
     return ds
 
 

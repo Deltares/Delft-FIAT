@@ -76,9 +76,9 @@ def feature_worker(
         out_array += [haz]
         for item in exposure_meta.indices_type.values():
             out_array += fn_impact(
+                ft,
                 haz,
                 fact,
-                ft,
                 item,
                 vulnerability,
                 vulnerability_meta.min,

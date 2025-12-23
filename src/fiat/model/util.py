@@ -15,7 +15,7 @@ GRID_PREFER = {
 
 
 def get_band_names(
-    obj: GridIO,
+    ds: GridIO,
 ) -> list:
     """Determine the names of the bands.
 
@@ -23,12 +23,9 @@ def get_band_names(
     they will be set to a default.
     """
     names = []
-    for n in range(obj.size):
-        name = obj.get_band_name(n)
-        if not name:
-            names.append(f"band{n+1}")
-            continue
-        names.append(name)
+    for idx, band in enumerate(ds):
+        name = band.name
+        names.append(name or f"band{idx+1}")
 
     return names
 
@@ -69,6 +66,7 @@ def get_vulnerability_meta(
     imax = max(vulnerability.index)
     sigdec = deter_dec((imax - imin) / len(vulnerability.index))
     meta = VulnerabilityMeta(
+        fn_list=vulnerability.columns,
         min=imin,
         max=imax,
         sigdec=sigdec,

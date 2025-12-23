@@ -187,42 +187,6 @@ def text_chunk_gen(
         yield _nlines, sd
 
 
-def create_windows(
-    shape: tuple,
-    chunk: tuple,
-) -> Generator:
-    """Create chunk windows from a grid.
-
-    Parameters
-    ----------
-    shape : tuple
-        Shape of the grid.
-    chunk : tuple
-        The chunk size.
-
-    Returns
-    -------
-    tuple
-        Tuple containing the upperleft x and y corner and the width and height
-    """
-    _x, _y = shape
-    _lu = tuple(
-        product(
-            range(0, _x, chunk[0]),
-            range(0, _y, chunk[1]),
-        ),
-    )
-    for _l, _u in _lu:
-        w = min(chunk[0], _x - _l)
-        h = min(chunk[1], _y - _u)
-        yield (
-            _l,
-            _u,
-            w,
-            h,
-        )
-
-
 def create_1d_chunks(
     length: int,
     parts: int,
@@ -243,6 +207,64 @@ def create_1d_chunks(
     )
 
     return chunks
+
+
+def create_2d_chunks(
+    shape: tuple[int],
+    parts: int,
+):
+    """Create chunks for 2d vector data."""
+    x, y = shape
+    number = x * y
+    ratio = y / x
+    per_chunk = math.ceil(number / parts)
+    res = round(math.sqrt(per_chunk / ratio))
+
+    yield from create_2d_windows(
+        shape=shape,
+        origin=(0, 0),
+        chunk=(res, round(res * ratio)),
+    )
+
+
+def create_2d_windows(
+    shape: tuple,
+    origin: tuple,
+    chunk: tuple,
+) -> Generator:
+    """Create chunk windows from a grid.
+
+    Parameters
+    ----------
+    shape : tuple
+        Shape of the grid.
+    origin : tuple
+        The origin (array-wise) of the grid.
+    chunk : tuple
+        The chunk size.
+
+    Returns
+    -------
+    tuple
+        Tuple containing the upperleft x and y corner and the width and height
+    """
+    ox, oy = origin
+    x, y = shape
+    lu = tuple(
+        product(
+            range(ox, x, chunk[0]),
+            range(oy, y, chunk[1]),
+        ),
+    )
+    for l, u in lu:
+        w = min(chunk[0], x - l)
+        h = min(chunk[1], y - u)
+        yield (
+            l,
+            u,
+            w,
+            h,
+        )
 
 
 def _load_diff(

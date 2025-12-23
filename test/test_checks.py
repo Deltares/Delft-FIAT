@@ -12,7 +12,7 @@ from fiat.check import (
     check_duplicate_columns,
     check_exp_columns,
     check_exp_derived_types,
-    check_exp_grid_dmfs,
+    check_exp_grid_fn,
     check_geom_extent,
     check_grid_exact,
     check_hazard_rp,
@@ -151,26 +151,26 @@ maximum potential damage: ['content']"
     )
 
 
-def test_check_exp_grid_dmfs_fail():
+def test_check_exp_grid_fn_fail():
     # Call the function with an unknown damage function
     with pytest.raises(
         FIATDataError,
         match=re.escape(
-            "Unknown damage function identifier found in \
+            "Unknown impact function identifier found in \
 exposure grid: ['bar']"
         ),
     ):
-        check_exp_grid_dmfs(
-            fns=["foo", "bar"],
-            dmfs=["foo", "baz"],
+        check_exp_grid_fn(
+            fn_list=["foo", "bar"],
+            fn_available=["foo", "baz"],
         )
 
 
-def test_check_exp_grid_dmfs_pass():
+def test_check_exp_grid_fn_pass():
     # Call the function with all functions known
-    check_exp_grid_dmfs(
-        fns=["foo", "bar"],
-        dmfs=["foo", "bar", "baz"],
+    check_exp_grid_fn(
+        fn_list=["foo", "bar"],
+        fn_available=["foo", "bar", "baz"],
     )
 
 

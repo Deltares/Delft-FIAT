@@ -1,19 +1,20 @@
 """Geometry model utility."""
 
 from fiat.check import check_exp_columns, check_exp_derived_types
-from fiat.struct.container import ExposureGeomMeta
+from fiat.fio import GeomIO
+from fiat.struct.container import ExposureGeomMeta, HazardMeta
 from fiat.typing import MethodsProtocol
 from fiat.util import discover_exp_columns, generate_output_columns
 
 
 def get_exposure_meta(
-    columns: dict,
+    exposure: GeomIO,
+    hazard_meta: HazardMeta,
     module: MethodsProtocol,
     types: list | tuple,
-    bands: list | tuple,
-    risk: bool,
 ):
     """Simple method for sorting out the exposure meta."""  # noqa: D401
+    columns = exposure.layer._columns
     mandatory_columns = getattr(module, "MANDATORY_COLUMNS")
     # Check the exposure column headers
     check_exp_columns(
@@ -32,13 +33,13 @@ def get_exposure_meta(
 
     ## Information for output
     extra = []
-    if risk:
+    if hazard_meta.risk:
         extra = ["ead"]
     new, type_length, indices_total = generate_output_columns(
         getattr(module, "NEW_COLUMNS"),
         types_dict,
         extra=extra,
-        suffix=bands,
+        suffix=hazard_meta.names,
     )
 
     # Set the indices for the outgoing columns

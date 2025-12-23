@@ -171,7 +171,7 @@ multiple variables.
         )
 
     # Internals
-    def _retrieve_bands(self):
+    def _retrieve_bands(self) -> None:
         """Get the bands at any stage."""
         for idx in range(self._count):
             self._bands.append(
@@ -185,22 +185,22 @@ multiple variables.
 
     ## Properties
     @property
-    def band_names(self) -> list:
+    def band_names(self) -> list[str]:
         """Get the names of all bands."""
-        _names = []
+        names = []
         for n in range(self.size):
-            _names.append(self.get_band_name(n))
+            names.append(self[n].name)
 
-        return _names
+        return names
 
     @property
-    def bands(self) -> list:
+    def bands(self) -> list[GridBand]:
         """Return the bands of the dataset."""
         return self._bands
 
     @property
     @BaseIO.check_state
-    def bounds(self) -> tuple:
+    def bounds(self) -> tuple[float]:
         """Return the bounds of the GridIO.
 
         Returns
@@ -218,7 +218,7 @@ multiple variables.
         )
 
     @property
-    def chunk(self) -> tuple:
+    def chunk(self) -> tuple[int]:
         """Return the chunking size.
 
         Returns
@@ -414,33 +414,6 @@ multiple variables.
 
         self._count = nb
         self._retrieve_bands()
-
-    @BaseIO.check_state
-    def get_band_name(self, n: int) -> str:
-        """Get the name of a specific band.
-
-        Parameters
-        ----------
-        n : int
-            Band number.
-
-        Returns
-        -------
-        str
-            Name of the band.
-        """
-        _desc = self[n].description
-        _meta = self[n].meta
-
-        if _desc:
-            return _desc
-
-        _var_meta = [item for item in _meta if "VARNAME" in item]
-
-        if _var_meta:
-            return _meta[_var_meta[0]]
-
-        return ""
 
     @BaseIO.check_mode
     @BaseIO.check_state
