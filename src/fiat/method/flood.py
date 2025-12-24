@@ -8,8 +8,10 @@ from osgeo import ogr
 from fiat.method.util import AREA_METHODS
 from fiat.struct import Table
 
-MANDATORY_COLUMNS = ["ref"]
+COLUMNS = ["ref"]
+NAME = "flood"
 NEW_COLUMNS = ["depth"]
+TYPES = ["water_depth"]
 
 
 def fn_hazard(

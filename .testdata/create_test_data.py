@@ -7,8 +7,8 @@ import os
 from itertools import product
 from pathlib import Path
 
+import numpy as np
 import tomlkit
-from numpy import arange, zeros
 from osgeo import gdal, ogr, osr
 
 p = Path(__file__).parent
@@ -220,7 +220,7 @@ def create_exposure_grid():
         str(Path(p, "exposure", "spatial.nc")),
         10,
         10,
-        1,
+        2,
         gdal.GDT_Float32,
     )
     gtf = (
@@ -234,25 +234,48 @@ def create_exposure_grid():
     src.SetSpatialRef(srs)
     src.SetGeoTransform(gtf)
 
-    # Create the band
+    # Setup band 1
     band = src.GetRasterBand(1)
-    data = zeros((10, 10))
-    oneD = tuple(range(10))
+    data = np.ones((10, 10)) * -9999
     # Create spatially different data
-    for x, y in product(oneD, oneD):
-        data[x, y] = 2000 + ((x + y) * 100)
+    data[0, 1] = 2200
+    data[1, 5] = 3500
+    data[5, 6] = 2700
+    data[3, 9] = 5100
+    data[9, 2] = 4600
+    data[8, 8] = 3200
     # Write the data
     band.WriteArray(data)
     band.SetMetadataItem("fn", "struct_1")
     band.SetNoDataValue(-9999)
-
     # Flush the data
     band.FlushCache()
+    band = None
+
+    # Setup band 2
+    band = src.GetRasterBand(2)
+    data = np.ones((10, 10)) * -9999
+    # Create spatially different data
+    data[0, 1] = 3100
+    data[1, 6] = 4400
+    data[5, 6] = 3600
+    data[4, 4] = 7000
+    data[3, 9] = 6000
+    data[9, 2] = 5500
+    data[8, 8] = 4100
+    # Write the data
+    band.WriteArray(data)
+    band.SetMetadataItem("fn", "struct_2")
+    band.SetNoDataValue(-9999)
+    # Flush the data
+    band.FlushCache()
+    band = None
+
+    # Flush the dataaset
     src.FlushCache()
 
     # Dereference everything
     srs = None
-    band = None
     src = None
     dr = None
 
@@ -290,12 +313,13 @@ def create_hazard_event_map(epsg: int = None):
 
     # Create a band
     band = src.GetRasterBand(1)
-    data = zeros((10, 10))
+    data = np.zeros((10, 10))
     oneD = tuple(range(10))
     # Create spatially different data
     for x, y in product(oneD, oneD):
         data[x, y] = 3.6 - ((x + y) * 0.2)
     # Write blyat
+    band.SetMetadataItem("type", "water_depth")
     band.SetNoDataValue(-9999)
     band.WriteArray(data)
 
@@ -337,12 +361,13 @@ def create_hazard_event_map_highres():
 
     # Create band
     band = src.GetRasterBand(1)
-    data = zeros((100, 100))
+    data = np.zeros((100, 100))
     oneD = tuple(range(100))
     # Create spatially different data
     for x, y in product(oneD, oneD):
         data[x, y] = 3.6 - ((x + y) * 0.02)
     # Write the data
+    band.SetMetadataItem("type", "water_depth")
     band.SetNoDataValue(-9999)
     band.WriteArray(data)
 
@@ -386,13 +411,14 @@ def create_hazard_risk_map():
     rps = [2, 5, 10, 25]
     for idx, fc in enumerate((1.5, 1.8, 1.9, 1.95)):
         band = src.GetRasterBand(idx + 1)
-        data = zeros((10, 10))
+        data = np.zeros((10, 10))
         oneD = tuple(range(10))
         # Create spatially different data
         for x, y in product(oneD, oneD):
             data[x, y] = 3.6 - ((x + y) * 0.2)
         data *= fc
         band.SetMetadataItem("rp", f"{rps[idx]}")
+        band.SetMetadataItem("type", "water_depth")
         band.SetNoDataValue(-9999)
         band.WriteArray(data)
         band.FlushCache()
@@ -513,6 +539,7 @@ def create_settings_grid():
                 "file": "exposure/spatial.nc",
                 "settings": {
                     "srs": "EPSG:4326",
+                    "var_as_band": True,
                 },
             },
         },
@@ -551,7 +578,7 @@ def create_vulnerability():
             return 0
         return r
 
-    wd = arange(0, 5.25, 0.25)
+    wd = np.arange(0, 5.25, 0.25)
     dc1 = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
     dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
 
@@ -574,7 +601,7 @@ def create_vulnerability_win():
             return 0
         return r
 
-    wd = arange(0, 5.25, 0.25)
+    wd = np.arange(0, 5.25, 0.25)
     dc1 = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
     dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
 

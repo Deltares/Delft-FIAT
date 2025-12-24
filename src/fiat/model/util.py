@@ -1,10 +1,15 @@
 """The FIAT model workers."""
 
-from fiat.check import check_hazard_rp
+from typing import Callable
+
+import numpy as np
+
+from fiat.check import check_hazard_identifier, check_hazard_rp, check_hazard_types
 from fiat.fio import GridIO
 from fiat.method.ead import fn_density
 from fiat.struct import Table
 from fiat.struct.container import HazardMeta, VulnerabilityMeta
+from fiat.typing import MethodsProtocol
 from fiat.util import deter_dec
 
 GEOM_DEFAULT_CHUNK = 50000
@@ -30,30 +35,52 @@ def get_band_names(
     return names
 
 
-def get_hazard_meta(
-    hazard: GridIO,
-    risk: bool,
-) -> HazardMeta:
+def get_hazard_meta(hazard: GridIO, risk: bool, method: MethodsProtocol) -> HazardMeta:
     """Obtain some metadata from the hazard data."""
-    names = get_band_names(hazard)
+    # Get the types from the metadata
+    types = [band.get_metadata_item("type") for band in hazard]
+    # Check the typing
+    indices_type = check_hazard_types(
+        types,
+        method.TYPES,
+    )
+
+    # Get the identifiers:
+    identifier = None if not risk else "rp"
+    ids = [str(idx + 1) for idx, _ in enumerate(indices_type[0])]
+    ids_list = [ids] * len(indices_type)
+
+    # If identifier is not None
+    if identifier is not None:
+        ids, ids_list = check_hazard_identifier(
+            [band.get_metadata_item(identifier) for band in hazard],
+            indices_type=indices_type,
+        )
 
     # Look at risk specific info
     d = None
     rp = None
     if risk:
-        rp = [hazard[idx].get_metadata_item("rp") for idx in range(hazard.size)]
-        rp = check_hazard_rp(
-            rp,
-            hazard.path,
-        )
+        rp = check_hazard_rp(ids)
         d = fn_density(rp)
+
+    # Set the grouped indices
+    indices_run = [
+        [indices_type[idx][item.index(idi)] for idx, item in enumerate(ids_list)]
+        for idi in ids
+    ]
 
     # Fill in the meta
     meta = HazardMeta(
         density=d,
-        names=names,
+        ids=ids,
+        indices_run=indices_run,
+        indices_type=indices_type,
+        length=len(ids),
         rp=rp,
         risk=risk,
+        type=method.NAME,
+        type_length=len(method.TYPES),
     )
     return meta
 
@@ -72,3 +99,14 @@ def get_vulnerability_meta(
         sigdec=sigdec,
     )
     return meta
+
+
+def vectorize_function(
+    fn: Callable,
+    skip: int,
+) -> Callable:
+    """Vectorize a function simply."""
+    na = fn.__code__.co_argcount
+    excluced = set(fn.__code__.co_varnames[skip:na])
+    fn_vec = np.vectorize(fn, otypes=[np.float32], excluded=excluced)
+    return fn_vec

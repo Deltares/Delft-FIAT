@@ -1,5 +1,6 @@
 """Checks for the data of FIAT."""
 
+from itertools import chain
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +12,7 @@ from fiat.log import spawn_logger
 from fiat.struct import Container
 from fiat.util import EXPOSURE_GRID_FILE, deter_type, get_srs_repr
 
-logger = spawn_logger("fiat.checks")
+logger = spawn_logger(__name__)
 
 
 ## Config
@@ -154,23 +155,41 @@ currently of type {data.__class__.__name__}"
 
 
 ## Hazard
-def check_hazard_rp(
-    rp_bands: list,
-    path: Path,
+def check_hazard_identifier(
+    ids: list[str],
+    indices_type: list[list[int]],
 ):
-    """Check the return periods of the hazard data.
+    """Check the identifiers in the hazard data."""
+    # Length per
+    l = len(indices_type[0])
+
+    ids_list = []
+    # Per type check the validity
+    for idxs in indices_type:
+        single_type = [ids[i] for i in idxs]
+        if len(set(single_type)) != l:
+            raise FIATDataError(f"Identifiers set incorrectly for type: {single_type}")
+        ids_list.append(single_type)
+
+    # Do a check on the total rp
+    ids = list(set(chain(*ids_list)))  # What a beauty
+    if len(ids) != l:
+        raise FIATDataError(f"Identifiers across types do not match total: {ids}")
+
+    return ids_list[0], ids_list
+
+
+def check_hazard_rp(
+    rp: list,
+) -> list[float]:
+    """Check the typing of the return periods.
 
     Applies to risk calculations.
     """
-    l = len(rp_bands)
-
-    bn_str = "\n".join(rp_bands).encode()
-    if deter_type(bn_str, l - 1) != 3:
-        return [float(n) for n in rp_bands]
-
-    msg = f"'{path.name}': cannot determine the return periods for \
-the risk calculation."
-    raise FIATDataError(msg)
+    bn_str = "\n".join(rp).encode()
+    if deter_type(bn_str, len(rp) - 1) == 3:
+        raise FIATDataError(f"Wrong type in return periods: {rp}")
+    return [float(n) for n in rp]
 
 
 def check_hazard_subsets(
@@ -185,16 +204,42 @@ multiple datasets (subsets). Chose one of the following subsets: {keys}"
         raise FIATDataError(msg)
 
 
+def check_hazard_types(
+    types: list,
+    mandatory_types: list,
+) -> list:
+    """Check the hazard types in the dataset."""
+    check = [item in types for item in mandatory_types]
+    if not all(check):
+        missing = [item for item, b in zip(mandatory_types, check) if not b]
+        msg = f"Missing mandatory hazard types: {missing}"
+        raise FIATDataError(msg)
+
+    # Check the count per type
+    count = [types.count(item) for item in mandatory_types]
+    if not len(set(count)) == 1:
+        raise FIATDataError(
+            f"Different number of datasets per type: {mandatory_types} -> {count}"
+        )
+
+    # Set the indices
+    indices = [
+        [idx for idx, entry in enumerate(types) if entry == item]
+        for item in mandatory_types
+    ]
+    return indices
+
+
 ## Exposure
 def check_exp_columns(
     columns: tuple | list,
     mandatory_columns: tuple | list = [],
 ):
     """Check the columns of the exposure data."""
-    _check = [item in columns for item in mandatory_columns]
-    if not all(_check):
-        _missing = [item for item, b in zip(mandatory_columns, _check) if not b]
-        msg = f"Missing mandatory exposure columns: {_missing}"
+    check = [item in columns for item in mandatory_columns]
+    if not all(check):
+        missing = [item for item, b in zip(mandatory_columns, check) if not b]
+        msg = f"Missing mandatory exposure columns: {missing}"
         raise FIATDataError(msg)
 
 

@@ -12,14 +12,14 @@ def test_get_exposure_meta(
     meta = get_exposure_meta(
         exposure=exposure_geom_data,
         hazard_meta=hazard_meta_run,
-        module=flood,
+        method=flood,
         types=["damage"],
     )
 
     # Assert the output
     assert meta.indices_new == [5, 6, 7]
     assert meta.type_length == 3
-    assert meta.new == ["depth_band1", "damage_structure_band1", "total_damage_band1"]
+    assert meta.new == ["depth_1", "damage_structure_1", "total_damage_1"]
     assert meta.indices_total == [-1]
     assert list(meta.indices_type) == ["damage"]
 
@@ -31,7 +31,7 @@ def test_get_exposure_meta_risk(
     meta = get_exposure_meta(
         exposure=exposure_geom_data,
         hazard_meta=hazard_risk_meta_run,
-        module=flood,
+        method=flood,
         types=["damage"],
     )
 

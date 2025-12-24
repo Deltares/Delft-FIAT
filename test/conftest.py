@@ -114,7 +114,7 @@ def exposure_geom_data(exposure_geom_path: Path) -> GeomIO:
 
 @pytest.fixture(scope="session")
 def exposure_grid_data(exposure_grid_path: Path) -> GridIO:
-    ds = open_grid(exposure_grid_path)  # Read only
+    ds = open_grid(exposure_grid_path, var_as_band=True)  # Read only
     assert isinstance(ds, GridIO)
     return ds
 

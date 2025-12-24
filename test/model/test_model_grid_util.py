@@ -16,6 +16,6 @@ def test_get_exposure_meta(
     )
 
     # Assert the output
-    assert meta.fn_list == ["struct_1"]
-    assert meta.nb == 1
-    assert meta.new == ["band1_band1"]
+    assert meta.fn_list == ["struct_1", "struct_2"]
+    assert meta.nb == 3
+    assert meta.new == ["band1_1", "band2_1", "total_1"]

@@ -7,7 +7,7 @@ from typing import Callable, Generator, Iterator
 
 from fiat.log import spawn_logger
 
-logger = spawn_logger("fiat.job")
+logger = spawn_logger(__name__)
 
 
 def generate_jobs(

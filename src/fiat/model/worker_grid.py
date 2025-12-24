@@ -11,9 +11,22 @@ from fiat.fio import (
     GridIO,
     open_grid,
 )
-from fiat.struct import Table
+from fiat.model.util import vectorize_function
+from fiat.struct import GridBand, Table
 from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
 from fiat.util import create_2d_windows
+
+
+def process_hazard(
+    band: GridBand,
+    window: tuple,
+    vulnerability_meta: VulnerabilityMeta,
+):
+    """Small processor of hazard data chunk."""
+    h = band[*window]
+    h[h == band.nodata] = np.nan
+    h = np.fmax(np.fmin(h, vulnerability_meta.max), vulnerability_meta.min)
+    return h
 
 
 def array_worker(
@@ -52,26 +65,41 @@ def array_worker(
     np.ndarray
         _description_
     """
-    for exp, haz in product(exposure.bands, hazard.bands):
-        # Get the data and set nodata to nan
-        # Get the hazard data clipped to the vulnerability index
-        h = haz[*window]
-        h[h == haz.nodata] = np.nan
-        h = np.fmax(np.fmin(h, vulnerability_meta.max), vulnerability_meta.min)
-        # Get the hazard data
+    out_array = np.zeros((exposure_meta.nb + hazard_meta.risk, *window[2:])) * np.nan
+
+    bn = 0
+    # Loop through the combinations
+    for exp, haz_indices in product(exposure.bands, hazard_meta.indices_run):
+        # Get and process the hazard data
+        h = [
+            process_hazard(
+                hazard[idx], window=window, vulnerability_meta=vulnerability_meta
+            )
+            for idx in haz_indices
+        ]
+        # Get the exposure data
         e = exp[*window]
         e[e == exp.nodata] = np.nan
 
         # Call the impact function
-        out_array = fn_impact(
-            h,
+        out_array[bn] = fn_impact(
+            *h,
             e,
             fact=1,
             vulnerability=vulnerability,
             fn=exposure_meta.fn_list[0],
             sigdec=vulnerability_meta.sigdec,
         )
-        return out_array
+        bn += 1
+
+    # Set the total damages
+    for part, total in zip(exposure_meta.indices_new, exposure_meta.indices_total):
+        mask = np.isnan([out_array[idx] for idx in part]).all(axis=0)
+        out_array[total] = np.nansum([out_array[idx] for idx in part], axis=0)
+        out_array[total][mask] = np.nan
+
+    # Return the array
+    return out_array
 
 
 def worker(
@@ -108,16 +136,13 @@ of the [GridIO](/api/GeomIO.qmd) object.
     chunk : tuple
         The specific chunk to process.
     """
-    # Set some variables for the calculations
-    band_n = ""
-
     # Setup the hazard type module
     module = importlib.import_module(f"fiat.method.{hazard_meta.type}")
     fn = getattr(module, "fn_impact_single")
 
     # Create the outgoing netcdf containing every exposure damages
     out_src = open_grid(
-        Path(output_dir, f"output{band_n}.nc"),
+        Path(output_dir, f"{exposure.path.name}"),
         mode="w",
     )
     out_src.create(
@@ -130,9 +155,7 @@ of the [GridIO](/api/GeomIO.qmd) object.
     out_src.geotransform = exposure.geotransform
 
     # Set up the vectorized function
-    na = fn.__code__.co_argcount
-    excluced = set(fn.__code__.co_varnames[2:na])
-    fn_impact = np.vectorize(fn, otypes=[np.float32], excluded=excluced)
+    fn_impact = vectorize_function(fn=fn, skip=hazard_meta.type_length + 1)
 
     # Loop through the windows
     for window in create_2d_windows(shape=chunk[2:], origin=chunk[0:2], chunk=(10, 10)):
@@ -142,14 +165,14 @@ of the [GridIO](/api/GeomIO.qmd) object.
             vulnerability=vulnerability,
             vulnerability_meta=vulnerability_meta,
             exposure=exposure,
-            exposure_meta=[],
+            exposure_meta=exposure_meta,
             fn_impact=fn_impact,
             window=window,
         )
 
         # Write the chunk
         for idx in range(exposure_meta.nb):
-            out_src[idx].write_chunk(out_array, window[0:2])
+            out_src[idx].write_chunk(out_array[idx], window[0:2])
 
     # Close and dereference
     out_src.close()

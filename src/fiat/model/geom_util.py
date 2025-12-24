@@ -10,12 +10,12 @@ from fiat.util import discover_exp_columns, generate_output_columns
 def get_exposure_meta(
     exposure: GeomIO,
     hazard_meta: HazardMeta,
-    module: MethodsProtocol,
+    method: MethodsProtocol,
     types: list | tuple,
 ):
     """Simple method for sorting out the exposure meta."""  # noqa: D401
     columns = exposure.layer._columns
-    mandatory_columns = getattr(module, "MANDATORY_COLUMNS")
+    mandatory_columns = method.COLUMNS
     # Check the exposure column headers
     check_exp_columns(
         list(columns.keys()),
@@ -36,10 +36,10 @@ def get_exposure_meta(
     if hazard_meta.risk:
         extra = ["ead"]
     new, type_length, indices_total = generate_output_columns(
-        getattr(module, "NEW_COLUMNS"),
+        method.NEW_COLUMNS,
         types_dict,
         extra=extra,
-        suffix=hazard_meta.names,
+        suffix=hazard_meta.ids,
     )
 
     # Set the indices for the outgoing columns

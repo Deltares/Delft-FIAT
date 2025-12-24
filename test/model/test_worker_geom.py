@@ -15,7 +15,7 @@ def test_feature_worker(
     vulnerability_data_run: Table,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_geom_data: GeomIO,
-    exposure_meta_run: ExposureGeomMeta,
+    exposure_geom_meta_run: ExposureGeomMeta,
 ):
     # Call the function
     a = feature_worker(
@@ -24,7 +24,7 @@ def test_feature_worker(
         hazard_meta=hazard_meta_run,
         vulnerability=vulnerability_data_run,
         vulnerability_meta=vulnerability_meta_run,
-        exposure_meta=exposure_meta_run,
+        exposure_meta=exposure_geom_meta_run,
         fn_hazard=fn_hazard,
         fn_impact=fn_impact,
     )
@@ -39,7 +39,7 @@ def test_feature_worker_risk(
     vulnerability_data_run: Table,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_geom_data: GeomIO,
-    exposure_meta_run: ExposureGeomMeta,
+    exposure_geom_meta_run: ExposureGeomMeta,
 ):
     # Call the function
     a = feature_worker(
@@ -48,13 +48,13 @@ def test_feature_worker_risk(
         hazard_meta=hazard_risk_meta_run,
         vulnerability=vulnerability_data_run,
         vulnerability_meta=vulnerability_meta_run,
-        exposure_meta=exposure_meta_run,
+        exposure_meta=exposure_geom_meta_run,
         fn_hazard=fn_hazard,
         fn_impact=fn_impact,
     )
 
     # Assert the output
-    assert len(a) == (exposure_meta_run.type_length * hazard_risk_data.size + 1)
+    assert len(a) == (exposure_geom_meta_run.type_length * hazard_risk_data.size + 1)
     np.testing.assert_almost_equal(a[0], 2.61, decimal=2)
     np.testing.assert_almost_equal(a[2], 1789.2)
     np.testing.assert_almost_equal(a[6], 3.31, decimal=2)
@@ -69,7 +69,7 @@ def test_worker(
     vulnerability_data_run: Table,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_geom_data: GeomIO,
-    exposure_meta_run: ExposureGeomMeta,
+    exposure_geom_meta_run: ExposureGeomMeta,
 ):
     # Call the function
     worker(
@@ -79,7 +79,7 @@ def test_worker(
         vulnerability=vulnerability_data_run,
         vulnerability_meta=vulnerability_meta_run,
         exposure=exposure_geom_data,
-        exposure_meta=exposure_meta_run,
+        exposure_meta=exposure_geom_meta_run,
         chunk=(1, 4),
         queue=None,
         lock=None,

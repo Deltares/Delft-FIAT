@@ -1,6 +1,8 @@
 """The FIAT grid model."""
 
+import sys
 import time
+from multiprocessing import Manager
 from pathlib import Path
 
 from fiat.check import (
@@ -13,7 +15,6 @@ from fiat.fio import GridIO, open_grid
 from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
-from fiat.model import worker_grid
 from fiat.model.base import BaseModel
 from fiat.model.grid_util import get_exposure_meta
 from fiat.model.util import (
@@ -21,6 +22,7 @@ from fiat.model.util import (
     get_hazard_meta,
     get_vulnerability_meta,
 )
+from fiat.model.worker_grid import worker
 from fiat.struct import Table
 from fiat.util import (
     EXPOSURE_GRID_FILE,
@@ -29,7 +31,7 @@ from fiat.util import (
     get_srs_repr,
 )
 
-logger = spawn_logger("fiat.model.grid")
+logger = spawn_logger(__name__)
 
 
 class GridModel(BaseModel):
@@ -176,8 +178,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         )
 
         # Setup the basic metadata
-        hazard_meta = get_hazard_meta(self.hazard, risk=self.risk)
-        hazard_meta.type = self.type
+        hazard_meta = get_hazard_meta(self.hazard, risk=self.risk, method=self.method)
         vulnerability_meta = get_vulnerability_meta(self.vulnerability)
         # Get the exposure meta
         exposure_meta = get_exposure_meta(
@@ -192,6 +193,11 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         # Check for equal hazard and exposure grids
         self.equal = check_grid_exact(self.hazard, self.exposure)
         self.create_equal_grids()
+
+        # Setup the manager
+        if self._mp_manager is None:
+            self._mp_manager = Manager()
+        self._queue = self._mp_manager.Queue(maxsize=10000)
 
         # Setup the jobs
         chunks = create_2d_chunks(self.hazard.shape_xy, parts=self.threads)
@@ -208,19 +214,29 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             }
         )
 
-        # Execute the jobs
-        _s = time.time()
-        logger.info("Busy...")
-        pcount = min(self.threads, self.hazard.size)
-        execute_pool(
-            ctx=self._mp_ctx,
-            func=worker_grid.worker,
-            jobs=jobs,
-            threads=pcount,
-        )
+        # Execute the jobs in a multiprocessing pool
+        # Wrap to prevent weird error propagation with the pipes
+        try:
+            _s = time.time()
+            logger.info("Busy...")
+            execute_pool(
+                ctx=self._mp_ctx,
+                func=worker,
+                jobs=jobs,
+                threads=self.threads,
+            )
+            _e = time.time() - _s
+            logger.info(f"Elapsed time: {round(_e, 2)} seconds")
 
-        # Last logging messages
-        _e = time.time() - _s
-        logger.info(f"Calculations time: {round(_e, 2)} seconds")
-        logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
-        logger.info("Model run is done!")
+        except BaseException:
+            exc_info = sys.exc_info()
+            msg = ",".join([str(item) for item in exc_info[1].args])
+            logger.error(msg)
+            exc_info = None
+
+        else:
+            logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
+            logger.info("Model run is done!")
+
+        # Shutdown the manager
+        self._mp_manager.shutdown()

@@ -76,11 +76,11 @@ class Container:
 class ExposureGeomMeta:
     """Small container for exposure geometry metadata."""
 
-    indices_new: list
-    indices_spec: list
-    indices_total: list
-    indices_type: dict
-    new: list
+    indices_new: list[str]
+    indices_spec: list[str]
+    indices_total: list[str]
+    indices_type: dict[str, Any]
+    new: list[str]
     type_length: int
 
 
@@ -88,27 +88,33 @@ class ExposureGeomMeta:
 class ExposureGridMeta:
     """Small container for exposure grid metadata."""
 
-    fn_list: list
+    fn_list: list[str]
+    indices_new: list[list[int]]
+    indices_total: list[int]
     nb: int
-    new: list
+    new: list[str]
 
 
 @dataclass
 class HazardMeta:
     """Small container for exposure metadata."""
 
-    density: list
-    names: list
-    rp: list
+    density: list[float | int]
+    ids: list[str]
+    indices_run: list[list[int]]
+    indices_type: list[list[str]]
+    length: int
+    rp: list[float]
     risk: bool
-    type: str = "flood"
+    type: str
+    type_length: int
 
 
 @dataclass
 class VulnerabilityMeta:
     """Small container for some vulnerability metadata."""
 
-    fn_list: list | tuple
+    fn_list: list[str] | tuple[str]
     min: float | int
     max: float | int
     sigdec: int

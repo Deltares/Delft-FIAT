@@ -18,6 +18,7 @@ from fiat.gis import overlay
 from fiat.method.ead import fn_ead
 from fiat.struct import Table
 from fiat.struct.container import ExposureGeomMeta, HazardMeta, VulnerabilityMeta
+from fiat.typing import MethodsProtocol
 
 
 def feature_worker(
@@ -142,10 +143,10 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     lock : Lock
         The lock for the geometries output.
     """
-    # Setup the hazard type module
-    module = importlib.import_module(f"fiat.method.{hazard_meta.type}")
-    fn_hazard = getattr(module, "fn_hazard")
-    fn_impact = getattr(module, "fn_impact")
+    # Setup the hazard type method
+    method: MethodsProtocol = importlib.import_module(f"fiat.method.{hazard_meta.type}")
+    fn_hazard = method.fn_hazard
+    fn_impact = method.fn_impact
 
     # Setup the dataset buffer writer
     writer = BufferedGeomWriter(

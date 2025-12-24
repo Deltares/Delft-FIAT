@@ -15,15 +15,17 @@ from fiat.check import (
     check_exp_grid_fn,
     check_geom_extent,
     check_grid_exact,
+    check_hazard_identifier,
     check_hazard_rp,
     check_hazard_subsets,
+    check_hazard_types,
     check_input_data,
     check_internal_srs,
     check_vs_srs,
 )
 from fiat.error import FIATDataError
 from fiat.log import Logger
-from fiat.method.flood import MANDATORY_COLUMNS
+from fiat.method.flood import COLUMNS
 from fiat.struct import Container
 from fiat.util import MANDATORY_MODEL_ENTRIES
 
@@ -98,7 +100,7 @@ def test_check_exp_columns_fail():
     ):
         check_exp_columns(
             ["object_id"],
-            mandatory_columns=MANDATORY_COLUMNS,
+            mandatory_columns=COLUMNS,
         )
 
 
@@ -106,7 +108,7 @@ def test_check_exp_columns_pass():
     # Call the function with all columns there
     check_exp_columns(
         ["object_id", "ref"],
-        mandatory_columns=MANDATORY_COLUMNS,
+        mandatory_columns=COLUMNS,
     )
 
 
@@ -281,28 +283,66 @@ def test_check_grid_exact_pass(
     assert caplog.text == ""
 
 
-def test_check_hazard_rp_fail():
-    # Call the function with a missing rp value compared to the bands
+def test_check_hazard_identifier_fail():
+    # Call the function with a duplicate identifier
     with pytest.raises(
         FIATDataError,
-        match="'tmp.txt': cannot determine the return periods \
-for the risk calculation",
+        match="Data error -> Identifiers set incorrectly for type",
     ):
-        check_hazard_rp(
-            rp_bands=["a", "b", "c", "d"],
-            path=Path("tmp.txt"),
+        check_hazard_identifier(
+            ids=["a", "b", "b", "d"],
+            indices_type=[[0, 1, 2, 3]],
         )
 
 
-def test_check_hazard_rp_pass():
+def test_check_hazard_identifier_pass():
     # Call the function with everything present and matching
-    rp = check_hazard_rp(
-        rp_bands=["1", "2", "5", "10"],
-        path=Path("tmp.txt"),
+    out, _ = check_hazard_identifier(
+        ids=["1", "2", "5", "10"],
+        indices_type=[[0, 1, 2, 3]],
     )
 
     # Assert the output
-    rp == [1.0, 2.0, 5.0, 10.0]
+    assert out == ["1", "2", "5", "10"]
+
+
+def test_check_hazard_identifier_multi_fail():
+    # Call the function with an extra identifier
+    with pytest.raises(
+        FIATDataError,
+        match="Data error -> Identifiers across types do not match total:",
+    ):
+        check_hazard_identifier(
+            ids=["a", "b", "c", "d", "a", "b", "c", "e"],
+            indices_type=[[0, 1, 2, 3], [4, 5, 6, 7]],
+        )
+
+
+def test_check_hazard_identifier_multi_pass():
+    # Call the function with everything present and matching
+    out, _ = check_hazard_identifier(
+        ids=["a", "b", "c", "d", "b", "a", "d", "c"],
+        indices_type=[[0, 1, 2, 3], [4, 5, 6, 7]],
+    )
+
+    # Assert the output
+    assert out == ["a", "b", "c", "d"]
+
+
+def test_check_hazard_rp_fail():
+    # Call the function with a string in there (really a string)
+    with pytest.raises(
+        FIATDataError, match="Data error -> Wrong type in return periods:"
+    ):
+        _ = check_hazard_rp(["2", "5", "foo"])
+
+
+def test_check_hazard_rp_pass():
+    # Call the function
+    out = check_hazard_rp(["2", "5", "10"])
+
+    # Assert the output
+    assert out == [2, 5, 10]
 
 
 def test_check_hazard_subsets_fail():
@@ -326,6 +366,39 @@ def test_check_hazard_subsets_pass():
         sub=None,
         path=Path("tmp.nc"),
     )
+
+
+def test_check_hazard_types_fail():
+    # Call the function with a missing entry
+    with pytest.raises(
+        FIATDataError,
+        match="Missing mandatory hazard types",
+    ):
+        check_hazard_types(
+            types=["foo"],
+            mandatory_types=["foo", "bar"],
+        )
+
+    # Call the function but with too many foo's compared to bar
+    with pytest.raises(
+        FIATDataError,
+        match="Different number of datasets per type",
+    ):
+        check_hazard_types(
+            types=["foo", "foo", "bar"],
+            mandatory_types=["foo", "bar"],
+        )
+
+
+def test_check_hazard_types_pass():
+    # Call the function
+    out = check_hazard_types(
+        types=["foo", "bar", "bar", "foo", "bar", "foo"],
+        mandatory_types=["foo", "bar"],
+    )
+
+    # Assert the output
+    assert out == [[0, 3, 5], [1, 2, 4]]
 
 
 def test_check_input_data_pass():

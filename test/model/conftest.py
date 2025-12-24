@@ -5,7 +5,12 @@ import pytest
 from fiat.cfg import Configurations
 from fiat.method.ead import fn_density
 from fiat.struct import Table
-from fiat.struct.container import ExposureGeomMeta, HazardMeta, VulnerabilityMeta
+from fiat.struct.container import (
+    ExposureGeomMeta,
+    ExposureGridMeta,
+    HazardMeta,
+    VulnerabilityMeta,
+)
 
 
 @pytest.fixture
@@ -30,6 +35,15 @@ def config_read_geom(
 
 
 @pytest.fixture
+def config_read_grid(
+    config: Configurations,
+) -> Configurations:
+    config.set("exposure.grid.file", "exposure/spatial.nc")
+    config.set("exposure.grid.settings.var_as_band", True)
+    return config
+
+
+@pytest.fixture
 def config_run_geom(
     config_empty: Configurations,
 ) -> Configurations:
@@ -46,7 +60,7 @@ def density():
 
 
 @pytest.fixture(scope="session")
-def exposure_meta_run() -> ExposureGeomMeta:
+def exposure_geom_meta_run() -> ExposureGeomMeta:
     meta = ExposureGeomMeta(
         indices_new=[5, 6, 7],
         indices_spec=[2],
@@ -59,12 +73,29 @@ def exposure_meta_run() -> ExposureGeomMeta:
 
 
 @pytest.fixture(scope="session")
+def exposure_grid_meta_run() -> ExposureGridMeta:
+    meta = ExposureGridMeta(
+        fn_list=["struct_1", "struct_2"],
+        indices_new=[[0, 1]],
+        indices_total=[2],
+        nb=3,
+        new=["band1_1", "band2_1", "total_1"],
+    )
+    return meta
+
+
+@pytest.fixture(scope="session")
 def hazard_meta_run():
     meta = HazardMeta(
         density=None,
-        names=["band1"],
+        ids=["1"],
+        indices_run=[[0]],
+        indices_type=[[0]],
+        length=1,
         rp=None,
         risk=False,
+        type="flood",
+        type_length=1,
     )
     return meta
 
@@ -73,9 +104,14 @@ def hazard_meta_run():
 def hazard_risk_meta_run(density: list):
     meta = HazardMeta(
         density=density,
-        names=["band1", "band2", "band3", "band4"],
+        ids=["2", "5", "10", "25"],
+        indices_run=[[0], [1], [2], [3]],
+        indices_type=[[0, 1, 2, 3]],
+        length=4,
         rp=[2, 5, 10, 25],
         risk=True,
+        type="flood",
+        type_length=1,
     )
     return meta
 

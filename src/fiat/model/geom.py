@@ -35,7 +35,7 @@ from fiat.util import (
     get_srs_repr,
 )
 
-logger = spawn_logger("fiat.model.geom")
+logger = spawn_logger(__name__)
 
 
 class GeomModel(BaseModel):
@@ -170,8 +170,7 @@ class GeomModel(BaseModel):
         )
 
         # Setup the basic metadata
-        hazard_meta = get_hazard_meta(self.hazard, risk=self.risk)
-        hazard_meta.type = self.type
+        hazard_meta = get_hazard_meta(self.hazard, risk=self.risk, method=self.method)
         vulnerability_meta = get_vulnerability_meta(self.vulnerability)
 
         # Create the output directory and files
@@ -201,7 +200,7 @@ class GeomModel(BaseModel):
             exposure_meta = get_exposure_meta(
                 exposure=exposure,
                 hazard_meta=hazard_meta,
-                module=self.module,
+                method=self.method,
                 types=self.exposure_types,
             )
             # Get the chunks based on the load distribution
