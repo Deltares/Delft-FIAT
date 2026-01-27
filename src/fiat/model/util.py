@@ -104,9 +104,10 @@ def get_vulnerability_meta(
 def vectorize_function(
     fn: Callable,
     skip: int,
+    dtype: type = np.float32,
 ) -> Callable:
     """Vectorize a function simply."""
     na = fn.__code__.co_argcount
     excluced = set(fn.__code__.co_varnames[skip:na])
-    fn_vec = np.vectorize(fn, otypes=[np.float32], excluded=excluced)
+    fn_vec = np.vectorize(fn, otypes=[dtype], excluded=excluced)
     return fn_vec

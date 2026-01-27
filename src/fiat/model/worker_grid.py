@@ -23,10 +23,13 @@ def process_hazard(
     vulnerability_meta: VulnerabilityMeta,
 ):
     """Small processor of hazard data chunk."""
-    h = band[*window]
-    h[h == band.nodata] = np.nan
-    h = np.fmax(np.fmin(h, vulnerability_meta.max), vulnerability_meta.min)
-    return h
+    out_array = band[*window]
+    out_array[out_array == band.nodata] = np.nan
+    out_array = np.fmax(
+        np.fmin(out_array, vulnerability_meta.max),
+        vulnerability_meta.min,
+    )
+    return out_array
 
 
 def array_worker(
@@ -39,31 +42,31 @@ def array_worker(
     fn_impact: Callable,
     window: tuple,
 ) -> np.ndarray:
-    """_summary_.
+    """Calculate the impact for a chunk of the exposure.
 
     Parameters
     ----------
     hazard : GridIO
-        _description_
+        The hazard data.
     hazard_meta : HazardMeta
-        _description_
+        Metadata specific to the hazard data.
     vulnerability : Table
-        _description_
+        The vulnerability data.
     vulnerability_meta : VulnerabilityMeta
-        _description_
+        Metadata specific to the vulnerability data.
     exposure : GridIO
-        _description_
+        The exposure data.
     exposure_meta : ExposureGridMeta
-        _description_
+        Metadata specific to the exposure data.
     fn_impact : Callable
-        _description_
+        The impact function.
     window : tuple
-        _description_
+        The window of the chunk.
 
     Returns
     -------
     np.ndarray
-        _description_
+        The calculated impact.
     """
     out_array = np.zeros((exposure_meta.nb + hazard_meta.risk, *window[2:])) * np.nan
 
@@ -97,6 +100,20 @@ def array_worker(
         mask = np.isnan([out_array[idx] for idx in part]).all(axis=0)
         out_array[total] = np.nansum([out_array[idx] for idx in part], axis=0)
         out_array[total][mask] = np.nan
+
+    # Risk
+    if hazard_meta.risk:
+        mask = np.isnan(out_array[exposure_meta.indices_total]).all(axis=0)
+        out_array[-1] = np.nansum(
+            [
+                f * a
+                for f, a in zip(
+                    hazard_meta.density, out_array[exposure_meta.indices_total]
+                )
+            ],
+            axis=0,
+        )
+        out_array[-1][mask] = np.nan
 
     # Return the array
     return out_array
@@ -158,7 +175,11 @@ of the [GridIO](/api/GeomIO.qmd) object.
     fn_impact = vectorize_function(fn=fn, skip=hazard_meta.type_length + 1)
 
     # Loop through the windows
-    for window in create_2d_windows(shape=chunk[2:], origin=chunk[0:2], chunk=(10, 10)):
+    for window in create_2d_windows(
+        shape=chunk[2:],
+        origin=chunk[0:2],
+        chunk=(10, 10),
+    ):
         out_array = array_worker(
             hazard=hazard,
             hazard_meta=hazard_meta,

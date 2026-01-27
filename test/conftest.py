@@ -29,7 +29,7 @@ def os_type() -> int:
 
 @pytest.fixture(scope="session")
 def testdata_dir() -> Path:
-    p = Path(TEST_MODULE, "..", ".testdata").resolve()
+    p = Path(TEST_MODULE, "..", "data").resolve()
     assert Path(p, "geom_event.toml").is_file()
     return p
 

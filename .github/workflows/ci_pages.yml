@@ -1,6 +1,5 @@
 ---
 name: Pages versioning
-
 on:
   repository_dispatch:
       types:
@@ -12,22 +11,12 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - "ubuntu-latest"
-        include:
-          - os: ubuntu-latest
-            label: linux-64
-
-    name: ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: linux-64
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
             ref: gh-pages
 

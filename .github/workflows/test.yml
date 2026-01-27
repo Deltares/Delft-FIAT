@@ -13,15 +13,14 @@ jobs:
         shell: bash -e -l {0}
     runs-on: ${{ inputs.os }}
     timeout-minutes: 30
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.62.0"
+          pixi-version: "v0.63.2"
           environments: test-py${{ inputs.python-version }}
           locked: false
           cache: true
@@ -37,7 +36,7 @@ jobs:
 
       - name: Upload coverage
         if: inputs.os == 'ubuntu-latest' && inputs.python-version == '313'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: code-coverage
           path: coverage.xml
@@ -65,15 +64,14 @@ jobs:
     runs-on: ${{ inputs.os }}
     needs: unit
     timeout-minutes: 30
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.62.0"
+          pixi-version: "v0.63.2"
           environments: test-py${{ inputs.python-version }}
           locked: false
           cache: true

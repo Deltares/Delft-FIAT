@@ -1,6 +1,5 @@
 ---
 name: Build Documentation
-
 on:
   push:
     branches:
@@ -9,7 +8,7 @@ on:
       - v*
     paths:
       - docs/**/*
-      - .testdata/*
+      - data/*
       - pyproject.toml
       - .github/workflows/ci_docs.yml
   pull_request:
@@ -17,7 +16,7 @@ on:
       - master
     paths:
       - docs/**/*
-      - .testdata/*
+      - data/*
       - pyproject.toml
       - .github/workflows/ci_docs.yml
 
@@ -29,27 +28,17 @@ jobs:
     env:
       branch_name: ${{ github.head_ref || github.ref_name }}
     timeout-minutes: 30
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - "ubuntu-latest"
-        include:
-          - os: ubuntu-latest
-            label: linux-64
-
-    name: ${{ matrix.label }}
-    runs-on: ${{ matrix.os }}
+    name: linux-64
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.62.0"
+          pixi-version: "v0.63.2"
           environments: docs
           locked: false
           cache: true
