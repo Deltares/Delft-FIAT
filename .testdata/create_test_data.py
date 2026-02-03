@@ -38,7 +38,7 @@ def create_exposure_dbase():
                 dmc = "struct_1"
             else:
                 dmc = "struct_2"
-            f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\n".encode())
+            f.write(f"{n + 1},area,0,0,{dmc},{(n + 1) * 1000}\n".encode())
 
 
 def create_exposure_dbase_missing():
@@ -51,7 +51,7 @@ def create_exposure_dbase_missing():
                 dmc = "struct_1"
             else:
                 dmc = "struct_2"
-            f.write(f"area,0,0,{dmc},{(n+1)*1000}\n")
+            f.write(f"area,0,0,{dmc},{(n + 1) * 1000}\n")
 
 
 def create_exposure_dbase_partial():
@@ -64,7 +64,7 @@ def create_exposure_dbase_partial():
                 dmc = "struct_1"
             else:
                 dmc = "struct_2"
-            f.write(f"{n+1},area,0,0,{dmc},{dmc},{(n+1)*1000}\n")
+            f.write(f"{n + 1},area,0,0,{dmc},{dmc},{(n + 1) * 1000}\n")
 
 
 def create_exposure_dbase_win():
@@ -77,7 +77,7 @@ def create_exposure_dbase_win():
                 dmc = "struct_1"
             else:
                 dmc = "struct_2"
-            f.write(f"{n+1},area,0,0,{dmc},{(n+1)*1000}\r\n".encode())
+            f.write(f"{n + 1},area,0,0,{dmc},{(n + 1) * 1000}\r\n".encode())
 
 
 def create_exposure_geoms():
@@ -118,7 +118,7 @@ def create_exposure_geoms():
         geom = ogr.CreateGeometryFromWkt(geom)
         ft = ogr.Feature(layer.GetLayerDefn())
         ft.SetField("object_id", idx + 1)
-        ft.SetField("object_name", f"fp_{idx+1}")
+        ft.SetField("object_name", f"fp_{idx + 1}")
         ft.SetGeometry(geom)
 
         layer.CreateFeature(ft)
@@ -273,7 +273,7 @@ def create_exposure_geoms_4():
         geom = ogr.CreateGeometryFromWkt(geom)
         ft = ogr.Feature(layer.GetLayerDefn())
         ft.SetField("object_id", idx + 1)
-        ft.SetField("object_name", f"fp_{idx+1}")
+        ft.SetField("object_name", f"fp_{idx + 1}")
         ft.SetGeometry(geom)
 
         layer.CreateFeature(ft)
