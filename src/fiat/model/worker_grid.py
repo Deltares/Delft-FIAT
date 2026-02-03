@@ -2,19 +2,23 @@
 
 import importlib
 from itertools import product
-from pathlib import Path
+from multiprocessing.queues import Queue
 from typing import Callable
 
 import numpy as np
 
 from fiat.fio import (
     GridIO,
-    open_grid,
 )
-from fiat.model.util import vectorize_function
-from fiat.struct import GridBand, Table
+from fiat.struct import GridBand
 from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
 from fiat.util import create_2d_windows
+
+
+def initialize_pool(q: Queue):
+    """Small initializer for the multiprocessing pool."""
+    global pipeline
+    pipeline = q
 
 
 def process_hazard(
@@ -35,7 +39,6 @@ def process_hazard(
 def array_worker(
     hazard: GridIO,
     hazard_meta: HazardMeta,
-    vulnerability: Table,
     vulnerability_meta: VulnerabilityMeta,
     exposure: GridIO,
     exposure_meta: ExposureGridMeta,
@@ -50,8 +53,6 @@ def array_worker(
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
-    vulnerability : Table
-        The vulnerability data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
     exposure : GridIO
@@ -68,7 +69,13 @@ def array_worker(
     np.ndarray
         The calculated impact.
     """
-    out_array = np.zeros((exposure_meta.nb + hazard_meta.risk, *window[2:])) * np.nan
+    out_array = (
+        np.zeros(
+            (exposure_meta.nb + hazard_meta.risk, *window[2:]),
+            dtype=np.float32,
+        )
+        * np.nan
+    )
 
     bn = 0
     # Loop through the combinations
@@ -89,9 +96,7 @@ def array_worker(
             *h,
             e,
             fact=1,
-            vulnerability=vulnerability,
-            fn=exposure_meta.fn_list[0],
-            sigdec=vulnerability_meta.sigdec,
+            fn_curve=vulnerability_meta.fn[exp.get_meta("fn")],
         )
         bn += 1
 
@@ -120,10 +125,9 @@ def array_worker(
 
 
 def worker(
-    output_dir: Path,
+    shm_name: str,
     hazard: GridIO,
     hazard_meta: HazardMeta,
-    vulnerability: Table,
     vulnerability_meta: VulnerabilityMeta,
     exposure: GridIO,
     exposure_meta: ExposureGridMeta,
@@ -136,14 +140,12 @@ of the [GridIO](/api/GeomIO.qmd) object.
 
     Parameters
     ----------
-    output_dir : Path
-        The directory to which to write the output to.
+    shm_name : Path
+        The name of the shared memory.
     hazard : GridIO
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
-    vulnerability : Table
-        The vulnerability data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
     exposure : GridIO
@@ -155,35 +157,17 @@ of the [GridIO](/api/GeomIO.qmd) object.
     """
     # Setup the hazard type module
     module = importlib.import_module(f"fiat.method.{hazard_meta.type}")
-    fn = getattr(module, "fn_impact_single")
-
-    # Create the outgoing netcdf containing every exposure damages
-    out_src = open_grid(
-        Path(output_dir, f"{exposure.path.name}"),
-        mode="w",
-    )
-    out_src.create(
-        shape=exposure.shape_xy,
-        nb=exposure_meta.nb,
-        dtype=exposure.dtype,
-        options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
-    )
-    out_src.set_source_srs(exposure.srs)
-    out_src.geotransform = exposure.geotransform
-
-    # Set up the vectorized function
-    fn_impact = vectorize_function(fn=fn, skip=hazard_meta.type_length + 1)
+    fn_impact = getattr(module, "fn_impact_single")
 
     # Loop through the windows
     for window in create_2d_windows(
         shape=chunk[2:],
         origin=chunk[0:2],
-        chunk=(10, 10),
+        window=(2, 2),
     ):
-        out_array = array_worker(
+        _ = array_worker(
             hazard=hazard,
             hazard_meta=hazard_meta,
-            vulnerability=vulnerability,
             vulnerability_meta=vulnerability_meta,
             exposure=exposure,
             exposure_meta=exposure_meta,
@@ -193,8 +177,7 @@ of the [GridIO](/api/GeomIO.qmd) object.
 
         # Write the chunk
         for idx in range(exposure_meta.nb):
-            out_src[idx].write_chunk(out_array[idx], window[0:2])
+            # out_src[idx].write(out_array[idx], window[0:2])
+            pass
 
     # Close and dereference
-    out_src.close()
-    out_src = None

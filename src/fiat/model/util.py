@@ -3,6 +3,7 @@
 from typing import Callable
 
 import numpy as np
+from scipy.interpolate import make_interp_spline
 
 from fiat.check import check_hazard_identifier, check_hazard_rp, check_hazard_types
 from fiat.fio import GridIO
@@ -10,7 +11,6 @@ from fiat.method.ead import fn_density
 from fiat.struct import Table
 from fiat.struct.container import HazardMeta, VulnerabilityMeta
 from fiat.typing import MethodsProtocol
-from fiat.util import deter_dec
 
 GEOM_DEFAULT_CHUNK = 50000
 GRID_PREFER = {
@@ -38,7 +38,7 @@ def get_band_names(
 def get_hazard_meta(hazard: GridIO, risk: bool, method: MethodsProtocol) -> HazardMeta:
     """Obtain some metadata from the hazard data."""
     # Get the types from the metadata
-    types = [band.get_metadata_item("type") for band in hazard]
+    types = [band.get_meta("type") for band in hazard]
     # Check the typing
     indices_type = check_hazard_types(
         types,
@@ -53,7 +53,7 @@ def get_hazard_meta(hazard: GridIO, risk: bool, method: MethodsProtocol) -> Haza
     # If identifier is not None
     if identifier is not None:
         ids, ids_list = check_hazard_identifier(
-            [band.get_metadata_item(identifier) for band in hazard],
+            [band.get_meta(identifier) for band in hazard],
             indices_type=indices_type,
         )
 
@@ -91,12 +91,16 @@ def get_vulnerability_meta(
     """Obtain some metadata from the vulnerability data."""
     imin = min(vulnerability.index)
     imax = max(vulnerability.index)
-    sigdec = deter_dec((imax - imin) / len(vulnerability.index))
+    fn_list = vulnerability.columns
+    fn = {
+        item: make_interp_spline(vulnerability.index, vulnerability[:, item], k=1)
+        for item in fn_list
+    }
     meta = VulnerabilityMeta(
-        fn_list=vulnerability.columns,
+        fn=fn,
+        fn_list=fn_list,
         min=imin,
         max=imax,
-        sigdec=sigdec,
     )
     return meta
 

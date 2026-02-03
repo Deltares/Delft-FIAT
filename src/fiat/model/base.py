@@ -56,16 +56,16 @@ class BaseModel(metaclass=ABCMeta):
         self.vulnerability: Table | None = None
 
         # Type of calculations
-        self._type = self.cfg.get(HAZARD_TYPE, "flood")
+        self._type: str = self.cfg.get(HAZARD_TYPE, "flood")
         self.method = importlib.import_module(f"fiat.method.{self.type}")
         # Risk or event based
-        self._risk = self.cfg.get(MODEL_RISK, False)
+        self._risk: bool = self.cfg.get(MODEL_RISK, False)
 
         # Threading stuff
-        self._mp_ctx = get_context("spawn")
-        self._mp_manager = None
-        self._queue = None
-        self._threads = 1
+        self.ctx = get_context("spawn")
+        self.queue = None
+        self.shm = None
+        self._threads: int = 1
 
         ## Call the necessary methods at init
         self.srs = self.cfg.get(MODEL_SRS_VALUE, "EPSG:4326")

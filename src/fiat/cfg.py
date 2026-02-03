@@ -58,6 +58,8 @@ class Configurations(dict):
         if root is None:
             root = Path.cwd()
         self.path = Path(root)
+        if not self.path.is_absolute():
+            self.path = Path(Path.cwd(), self.path)
 
         # Set filepath is applicable
         name = settings.get("_name")

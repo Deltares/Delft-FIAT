@@ -1,6 +1,7 @@
 """A python wrapper structure for gdal Band."""
 
 import weakref
+from typing import Any
 
 from numpy import ndarray
 from osgeo import gdal
@@ -141,7 +142,7 @@ class GridBand(BaseStruct):
     @property
     def name(self) -> str | None:
         """Return the name of the band."""
-        n = self.description or self.get_metadata_item("name")
+        n = self.description or self.get_meta("name")
         return n
 
     @property
@@ -180,26 +181,8 @@ class GridBand(BaseStruct):
         """
         return self._x, self._y
 
-    ## get/ set methods
-    def get_metadata_item(
-        self,
-        entry: str,
-    ) -> object:
-        """Get specific metadata item.
-
-        Parameters
-        ----------
-        entry : str
-            Identifier of item.
-
-        Returns
-        -------
-        object
-            Information is present.
-        """
-        return self._obj.GetMetadataItem(entry)
-
-    def write_chunk(
+    ## I/O
+    def write(
         self,
         chunk: ndarray,
         upper_left: tuple | list,
@@ -217,3 +200,41 @@ class GridBand(BaseStruct):
             N.b. these are not coordinates, but indices.
         """
         self._obj.WriteArray(chunk, *upper_left)
+
+    ## Mutating methods
+    def get_meta(
+        self,
+        entry: str,
+    ) -> object:
+        """Get specific metadata item.
+
+        Parameters
+        ----------
+        entry : str
+            Identifier of item.
+
+        Returns
+        -------
+        object
+            Information is present.
+        """
+        return self._obj.GetMetadataItem(entry)
+
+    def set_meta(
+        self,
+        entry: str,
+        value: Any,
+    ) -> object:
+        """Get specific metadata item.
+
+        Parameters
+        ----------
+        entry : str
+            Identifier of item.
+
+        Returns
+        -------
+        object
+            Information is present.
+        """
+        return self._obj.SetMetadataItem(entry, value)

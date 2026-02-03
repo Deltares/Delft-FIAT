@@ -223,14 +223,14 @@ def create_2d_chunks(
     yield from create_2d_windows(
         shape=shape,
         origin=(0, 0),
-        chunk=(res, round(res * ratio)),
+        window=(res, round(res * ratio)),
     )
 
 
 def create_2d_windows(
     shape: tuple,
     origin: tuple,
-    chunk: tuple,
+    window: tuple,
 ) -> Generator:
     """Create chunk windows from a grid.
 
@@ -240,8 +240,8 @@ def create_2d_windows(
         Shape of the grid.
     origin : tuple
         The origin (array-wise) of the grid.
-    chunk : tuple
-        The chunk size.
+    window : tuple
+        The window size.
 
     Returns
     -------
@@ -252,13 +252,13 @@ def create_2d_windows(
     x, y = shape
     lu = tuple(
         product(
-            range(ox, x, chunk[0]),
-            range(oy, y, chunk[1]),
+            range(ox, x, window[0]),
+            range(oy, y, window[1]),
         ),
     )
     for l, u in lu:
-        w = min(chunk[0], x - l)
-        h = min(chunk[1], y - u)
+        w = min(window[0], x - l)
+        h = min(window[1], y - u)
         yield (
             l,
             u,

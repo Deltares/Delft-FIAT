@@ -2,7 +2,7 @@
 
 import copy
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 __all__ = ["Container", "ExposureGeomMeta", "VulnerabilityMeta"]
 
@@ -114,7 +114,7 @@ class HazardMeta:
 class VulnerabilityMeta:
     """Small container for some vulnerability metadata."""
 
+    fn: dict[str, Callable]
     fn_list: list[str] | tuple[str]
     min: float | int
     max: float | int
-    sigdec: int

@@ -7,9 +7,8 @@ from fiat.log.util import (
     LogItem,
     LogLevels,
     check_loglevel,
-    global_acquire,
-    global_release,
 )
+from fiat.thread import global_acquire, global_release
 
 __all__ = ["Logger"]
 

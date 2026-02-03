@@ -217,7 +217,7 @@ def check_hazard_types(
 
     # Check the count per type
     count = [types.count(item) for item in mandatory_types]
-    if not len(set(count)) == 1:
+    if len(set(count)) != 1:
         raise FIATDataError(
             f"Different number of datasets per type: {mandatory_types} -> {count}"
         )

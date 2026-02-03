@@ -1,5 +1,7 @@
 import io
 import platform
+from multiprocessing import get_context
+from multiprocessing.queues import Queue
 from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
@@ -168,6 +170,13 @@ def mocked_hazard_grid(
     type(grid).srs = PropertyMock(side_effect=lambda: srs_4326)
     type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
     return grid
+
+
+@pytest.fixture
+def mp_queue() -> Queue:
+    ctx = get_context()
+    q = Queue(ctx=ctx, maxsize=2)
+    return q
 
 
 @pytest.fixture(scope="session")

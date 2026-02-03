@@ -1,8 +1,9 @@
 """Functions specifically for flood risk calculation."""
 
 import math
+from typing import Callable
 
-from numpy import isnan
+import numpy as np
 from osgeo import ogr
 
 from fiat.method.util import AREA_METHODS
@@ -105,7 +106,7 @@ def fn_impact(
     total = 0
     idx = 0
     for key, col in fn.items():
-        if isnan(hazard) or ft[col] is None or ft[col] == "nan":
+        if np.isnan(hazard) or ft[col] is None or ft[col] == "nan":
             val = "nan"
         else:
             hazard = max(min(maxv, hazard), minv)
@@ -125,36 +126,9 @@ def fn_impact_single(
     hazard: float | int,
     exposure: float | int,
     fact: float | int,
-    vulnerability: Table,
-    fn: str,
-    sigdec: int,
+    fn_curve: Callable,
 ) -> int | str:
-    """Calculate the impact corresponding with the hazard value.
-
-    Parameters
-    ----------
-    hazard : float | int
-        The representative hazard value.
-    fact : float | int
-        The reduction factor. How much to compensate for the lack of touching the grid
-        by an object (geometry).
-    vulnerability : Table
-        Vulnerability data.
-    minv : float | int
-        Minimum value of the index of the vulnerability data.
-    maxv : float | int
-        Maximum value of the index of the vulnerability data.
-    sigdec : int
-        Significant decimals to be used.
-
-    Returns
-    -------
-    tuple
-        Damage values.
-    """
-    # Calculate the damage per catagory, and in total (_td)
-    if isnan(hazard) or fn is None or fn == "nan":
-        return math.nan
-    f = vulnerability[round(float(hazard), sigdec), fn]
+    """."""
+    f = fn_curve(hazard)
     val = f * exposure * fact
-    return round(val, 2)
+    return val

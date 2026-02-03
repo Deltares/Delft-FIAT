@@ -16,7 +16,7 @@ def test_reproject(tmp_path: Path, hazard_event_repr: GridIO):
     )
 
     # Call the function
-    gs = reproject(hazard_event_repr, dst_srs="EPSG:3857", out_dir=tmp_path)
+    gs = reproject(hazard_event_repr, dst_srs="EPSG:3857", output_dir=tmp_path)
 
     # Assert the output
     assert get_srs_repr(gs.srs) == "EPSG:3857"
@@ -48,7 +48,7 @@ def test_reproject_resample(tmp_path: Path, hazard_event_repr: GridIO):
         dst_gtf=gtf,
         dst_height=5,
         dst_width=5,
-        out_dir=Path(tmp_path, "unknown"),
+        output_dir=Path(tmp_path, "unknown"),
     )
 
     # Assert the output

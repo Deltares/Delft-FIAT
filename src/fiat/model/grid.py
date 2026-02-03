@@ -2,11 +2,10 @@
 
 import sys
 import time
-from multiprocessing import Manager
 from pathlib import Path
 
+from fiat.cfg import Configurations
 from fiat.check import (
-    check_grid_exact,
     check_input_data,
     check_internal_srs,
     check_vs_srs,
@@ -16,9 +15,8 @@ from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
-from fiat.model.grid_util import get_exposure_meta
+from fiat.model.grid_util import equal_grid, get_exposure_meta
 from fiat.model.util import (
-    GRID_PREFER,
     get_hazard_meta,
     get_vulnerability_meta,
 )
@@ -49,60 +47,18 @@ class GridModel(BaseModel):
 
     def __init__(
         self,
-        cfg: object,
+        cfg: Configurations,
     ):
         super().__init__(cfg)
 
         # Declare
         self.exposure: GridIO | None = None
-        self.equal = True
 
         # Setup the model
         self.read_exposure()
 
     def __del__(self):
         BaseModel.__del__(self)
-
-    def create_equal_grids(self):
-        """Make the hazard and exposure grid equal spatially if necessary."""
-        if self.equal:
-            return
-
-        # Get which way is preferred to reproject
-        prefer = self.cfg.get("model.grid.prefer", "exposure")
-        if prefer not in ["hazard", "exposure"]:
-            raise ValueError(
-                f"Preference value {prefer} not known. Chose from \
-'hazard' or 'exposure'."
-            )
-        prefer_bool = prefer == "exposure"
-
-        # Setup the data sets
-        data = self.exposure
-        data_warp = self.hazard
-        if not prefer_bool:
-            data = self.hazard
-            data_warp = self.exposure
-
-        # Reproject the data
-        logger.info(
-            f"Reprojecting {GRID_PREFER[not prefer_bool]} \
-data to {prefer} data"
-        )
-        data_warped = grid.reproject(
-            data_warp,
-            get_srs_repr(data.srs),
-            data.geotransform,
-            *data.shape_xy,
-        )
-
-        # Set the output
-        if prefer_bool:
-            self.hazard = data_warped
-            self.cfg.set("hazard.file", data_warped.path)
-        else:
-            self.exposure = data_warped
-            self.cfg.set("exposure.grid.file", data_warped.path)
 
     def read_exposure(
         self,
@@ -191,13 +147,14 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         self.cfg.setup_output_dir()
 
         # Check for equal hazard and exposure grids
-        self.equal = check_grid_exact(self.hazard, self.exposure)
-        self.create_equal_grids()
+        self.hazard, self.exposure = equal_grid(
+            self.hazard,
+            self.exposure,
+            first=self.cfg.get("model.grid.leading", True),
+        )
 
-        # Setup the manager
-        if self._mp_manager is None:
-            self._mp_manager = Manager()
-        self._queue = self._mp_manager.Queue(maxsize=10000)
+        # Setup the queue
+        self.queue = self.ctx.Queue(maxsize=1000)
 
         # Setup the jobs
         chunks = create_2d_chunks(self.hazard.shape_xy, parts=self.threads)
@@ -206,7 +163,6 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
                 "output_dir": self.cfg.get("output.path"),
                 "hazard": self.hazard,
                 "hazard_meta": hazard_meta,
-                "vulnerability": self.vulnerability,
                 "vulnerability_meta": vulnerability_meta,
                 "exposure": self.exposure,
                 "exposure_meta": exposure_meta,
@@ -220,7 +176,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             _s = time.time()
             logger.info("Busy...")
             execute_pool(
-                ctx=self._mp_ctx,
+                ctx=self.ctx,
                 func=worker,
                 jobs=jobs,
                 threads=self.threads,
@@ -237,6 +193,3 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         else:
             logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
             logger.info("Model run is done!")
-
-        # Shutdown the manager
-        self._mp_manager.shutdown()

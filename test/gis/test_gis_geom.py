@@ -71,7 +71,7 @@ def test_reproject(
     assert geom.GetGeometryRef(0).GetPoint_2D(0) == (0.5, 9.5)
 
     # Call the function
-    gs = reproject(exposure_geom_repr, srs="EPSG:3857", out_dir=tmp_path)
+    gs = reproject(exposure_geom_repr, srs="EPSG:3857", output_dir=tmp_path)
 
     # Assert the output
     assert Path(tmp_path, "spatial_repr.geojson").is_file()

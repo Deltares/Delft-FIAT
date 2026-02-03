@@ -51,12 +51,6 @@ multiple variables.
     ```
     """
 
-    _type_map = {
-        "float": gdal.GFT_Real,
-        "int": gdal.GDT_Int16,
-        "str": gdal.GFT_String,
-    }
-
     def __new__(
         cls,
         file: str,

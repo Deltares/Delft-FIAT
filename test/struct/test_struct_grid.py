@@ -95,13 +95,13 @@ def test_gridband_iter(hazard_event_data: GridIO):
     assert window == (8, 8, 2, 2)
 
 
-def test_gridband_get_metadata_item(hazard_event_data: GridIO):
+def test_gridband_get_meta(hazard_event_data: GridIO):
     # Retrieve the grid band from the I/O
     gb = hazard_event_data[0]
 
     # Call the method
-    assert gb.get_metadata_item("NETCDF_VARNAME") == "Band1"
-    assert gb.get_metadata_item("foo") is None  # Gdal stuff...
+    assert gb.get_meta("NETCDF_VARNAME") == "Band1"
+    assert gb.get_meta("foo") is None  # Gdal stuff...
 
 
 def test_gridband_nodata(hazard_write: GridIO):
@@ -116,7 +116,7 @@ def test_gridband_nodata(hazard_write: GridIO):
     assert gb.nodata == -9999
 
 
-def test_gridband_write_chunk(hazard_write: GridIO):
+def test_gridband_write(hazard_write: GridIO):
     # Retrieve the grid band from the I/O
     gb = hazard_write[0]
     # Assert the current state of the data
@@ -126,7 +126,7 @@ def test_gridband_write_chunk(hazard_write: GridIO):
     )
 
     # Write a chunk to the band
-    gb.write_chunk(np.array([[2, 2], [2, 2]]), (0, 0))
+    gb.write(np.array([[2, 2], [2, 2]]), (0, 0))
 
     # Assert the output
     np.testing.assert_array_equal(
