@@ -667,7 +667,7 @@ class CSVParser:
                 count[item] += 1
 
         # Solve unnamed column headers
-        _cols = [_col if _col else f"Unnamed_{_i+1}" for _i, _col in enumerate(_cols)]
+        _cols = [_col if _col else f"Unnamed_{_i + 1}" for _i, _col in enumerate(_cols)]
         self.columns = _cols
 
     def read(
@@ -1738,7 +1738,7 @@ multiple variables.
         for n in range(self.size):
             name = self.get_band_name(n + 1)
             if not name:
-                _names.append(f"band{n+1}")
+                _names.append(f"band{n + 1}")
                 continue
             _names.append(name)
 
