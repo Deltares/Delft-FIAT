@@ -58,7 +58,7 @@ def test_receiver_start(
     # Start the receiver
     r.start(
         fn=worker,
-        name="log_thread",
+        name="test_receiver",
     )
 
     # Assert there is a thread

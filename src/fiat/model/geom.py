@@ -3,7 +3,7 @@
 import sys
 import time
 from itertools import chain
-from multiprocessing import Manager
+from multiprocessing.synchronize import Lock
 from pathlib import Path
 
 from fiat.cfg import Configurations
@@ -24,7 +24,7 @@ from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.geom_util import get_exposure_meta
 from fiat.model.util import get_hazard_meta, get_vulnerability_meta
-from fiat.model.worker_geom import worker
+from fiat.model.worker_geom import initialize_pool, worker
 from fiat.struct import Container, Table
 from fiat.util import (
     EXPOSURE_GEOM_FILE,
@@ -183,10 +183,8 @@ class GeomModel(BaseModel):
             threads=self.threads,
         )
 
-        # Setup the manager
-        if self._mp_manager is None:
-            self._mp_manager = Manager()
-        self._queue = self._mp_manager.Queue(maxsize=10000)
+        # Setup the lock
+        lock = Lock(ctx=self.ctx)
 
         # Setup the jobs
         jobs_list = []
@@ -205,10 +203,6 @@ class GeomModel(BaseModel):
             )
             # Get the chunks based on the load distribution
             chunks = create_1d_chunks(exposure.layer.size, count)
-            # Second setup the lock
-            lock = None
-            if self.threads != 1:
-                lock = self._mp_manager.Lock()
             # Generate the jobs
             jobs = generate_jobs(
                 {
@@ -220,8 +214,6 @@ class GeomModel(BaseModel):
                     "exposure": exposure,
                     "exposure_meta": exposure_meta,
                     "chunk": chunks,
-                    "queue": self._queue,
-                    "lock": lock,
                 },
             )
             jobs_list.append(jobs)
@@ -232,10 +224,12 @@ class GeomModel(BaseModel):
             _s = time.time()
             logger.info("Busy...")
             execute_pool(
-                ctx=self._mp_ctx,
+                ctx=self.ctx,
                 func=worker,
                 jobs=chain(*jobs_list),
                 threads=self.threads,
+                initializer=initialize_pool,
+                initargs=(lock, self.queue),
             )
             _e = time.time() - _s
             logger.info(f"Elapsed time: {round(_e, 2)} seconds")
@@ -249,6 +243,3 @@ class GeomModel(BaseModel):
         else:
             logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
             logger.info("Model run is done!")
-
-        # Shutdown the manager
-        self._mp_manager.shutdown()

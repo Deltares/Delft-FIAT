@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from scipy.interpolate import make_interp_spline
 
 from fiat.cfg import Configurations
 from fiat.method.ead import fn_density
@@ -123,11 +124,20 @@ def vulnerability_data_run(vulnerability_data: Table) -> Table:
 
 
 @pytest.fixture(scope="session")
-def vulnerability_meta_run() -> ExposureGeomMeta:
+def vulnerability_meta_run(vulnerability_data: Table) -> ExposureGeomMeta:
+    fn_list = ["struct_1", "struct_2"]
+    fn = {
+        item: make_interp_spline(
+            vulnerability_data.index,
+            vulnerability_data[:, item],
+            k=1,
+        )
+        for item in fn_list
+    }
     meta = VulnerabilityMeta(
-        fn_list=["struct_1", "struct_2"],
+        fn=fn,
+        fn_list=fn_list,
         min=0,
         max=5,
-        sigdec=2,
     )
     return meta

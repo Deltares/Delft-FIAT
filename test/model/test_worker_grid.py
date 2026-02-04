@@ -6,7 +6,6 @@ from fiat.fio import GridIO, open_grid
 from fiat.method import flood
 from fiat.model.util import vectorize_function
 from fiat.model.worker_grid import array_worker, process_hazard, worker
-from fiat.struct import Table
 from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
 
 
@@ -32,7 +31,6 @@ def test_process_hazard(
 def test_array_worker(
     hazard_event_data: GridIO,
     hazard_meta_run: HazardMeta,
-    vulnerability_data_run: Table,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_grid_data: GridIO,
     exposure_grid_meta_run: ExposureGridMeta,
@@ -46,7 +44,6 @@ def test_array_worker(
     out_array = array_worker(
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
-        vulnerability=vulnerability_data_run,
         vulnerability_meta=vulnerability_meta_run,
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_meta_run,
@@ -58,17 +55,16 @@ def test_array_worker(
     assert out_array.shape == (3, 10, 10)
     np.testing.assert_almost_equal(np.nanmean(out_array[0]), 941, decimal=0)
     np.testing.assert_almost_equal(np.nanmax(out_array[0]), 1897, decimal=0)
-    np.testing.assert_almost_equal(np.nanmean(out_array[1]), 1436, decimal=0)
-    np.testing.assert_almost_equal(np.nanmax(out_array[1]), 3010, decimal=0)
-    np.testing.assert_almost_equal(np.nanmean(out_array[2]), 1962, decimal=0)
-    np.testing.assert_almost_equal(np.nanmax(out_array[2]), 4028, decimal=0)
+    np.testing.assert_almost_equal(np.nanmean(out_array[1]), 2036, decimal=0)
+    np.testing.assert_almost_equal(np.nanmax(out_array[1]), 4410, decimal=0)
+    np.testing.assert_almost_equal(np.nanmean(out_array[2]), 2487, decimal=0)
+    np.testing.assert_almost_equal(np.nanmax(out_array[2]), 4648, decimal=0)
 
 
 def test_worker(
     tmp_path: Path,
     hazard_event_data: GridIO,
     hazard_meta_run: HazardMeta,
-    vulnerability_data_run: Table,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_grid_data: GridIO,
     exposure_grid_meta_run: ExposureGridMeta,
@@ -78,7 +74,6 @@ def test_worker(
         output_dir=tmp_path,
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
-        vulnerability=vulnerability_data_run,
         vulnerability_meta=vulnerability_meta_run,
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_meta_run,

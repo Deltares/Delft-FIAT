@@ -56,6 +56,8 @@ def execute_pool(
     func: Callable,
     jobs: Generator | Iterator,
     threads: int,
+    initializer: Callable | None = None,
+    initargs: list | tuple | None = None,
 ):
     """Execute a python process pool.
 
@@ -84,6 +86,8 @@ def execute_pool(
     pool = ProcessPoolExecutor(
         max_workers=threads,
         mp_context=ctx,
+        initializer=initializer,
+        initargs=initargs,
     )
 
     # Go through all the jobs

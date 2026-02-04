@@ -20,6 +20,19 @@ from fiat.struct import Table
 from fiat.struct.container import ExposureGeomMeta, HazardMeta, VulnerabilityMeta
 from fiat.typing import MethodsProtocol
 
+process_lock = None
+
+
+def initialize_pool(
+    lock: Lock,
+    queue: Queue,
+):
+    """Small initializer for the multiprocessing pool."""
+    global process_lock
+    process_lock = lock
+    global pipeline
+    pipeline = queue
+
 
 def feature_worker(
     ft: ogr.Feature,
@@ -112,8 +125,6 @@ def worker(
     exposure: GeomIO,
     exposure_meta: ExposureGeomMeta,
     chunk: tuple | list,
-    queue: Queue,
-    lock: Lock,
 ):
     """Run the geometry model.
 
@@ -151,7 +162,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     # Setup the dataset buffer writer
     writer = BufferedGeomWriter(
         Path(output_dir, f"{exposure.path.stem}.gpkg"),
-        lock=lock,
+        lock=process_lock,
     )
     writer.setup(
         defn=exposure.layer.defn,

@@ -4,22 +4,9 @@ from multiprocessing.queues import Queue
 
 from fiat.log.handler import BaseHandler
 from fiat.log.util import LogItem
-from fiat.thread import Receiver, Sender
+from fiat.thread import Receiver
 
-__all__ = ["LogReceiver", "LogSender"]
-
-
-class LogSender(BaseHandler, Sender):
-    """Sender object for records.
-
-    Parameters
-    ----------
-    queue : object
-        The queue for the records. Specifically designed for use in multiprocessing.
-    """
-
-    def __init__(self, queue: Queue):
-        super().__init__(queue=queue)
+__all__ = ["LogReceiver"]
 
 
 class LogReceiver(Receiver):

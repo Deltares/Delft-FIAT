@@ -2,12 +2,11 @@
 
 from .logger import Logger
 from .spawn import setup_default_log, setup_mp_log, spawn_logger
-from .thread import Receiver, Sender
+from .thread import LogReceiver
 
 __all__ = [
     "Logger",
-    "Receiver",
-    "Sender",
+    "LogReceiver",
     "setup_default_log",
     "setup_mp_log",
     "spawn_logger",

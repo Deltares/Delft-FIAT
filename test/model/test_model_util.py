@@ -75,7 +75,6 @@ def test_get_vulnerability_meta(vulnerability_data_run: Table):
     # Assert the output
     assert meta.min == 0
     assert meta.max == 5
-    assert meta.sigdec == 3
 
 
 # Create a dummy function

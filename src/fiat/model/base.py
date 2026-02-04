@@ -3,6 +3,7 @@
 import importlib
 from abc import ABCMeta, abstractmethod
 from multiprocessing import get_context
+from multiprocessing.queues import Queue
 from os import cpu_count
 from pathlib import Path
 
@@ -63,7 +64,7 @@ class BaseModel(metaclass=ABCMeta):
 
         # Threading stuff
         self.ctx = get_context("spawn")
-        self.queue = None
+        self.queue = Queue(maxsize=1000, ctx=self.ctx)
         self.shm = None
         self._threads: int = 1
 
