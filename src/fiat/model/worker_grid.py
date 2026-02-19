@@ -10,9 +10,9 @@ import numpy as np
 from fiat.fio import (
     GridIO,
 )
+from fiat.model.util import create_2d_windows
 from fiat.struct import GridBand
 from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
-from fiat.util import create_2d_windows
 
 
 def initialize_pool(q: Queue):
@@ -179,5 +179,3 @@ of the [GridIO](/api/GeomIO.qmd) object.
         for idx in range(exposure_meta.nb):
             # out_src[idx].write(out_array[idx], window[0:2])
             pass
-
-    # Close and dereference

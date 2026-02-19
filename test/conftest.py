@@ -94,19 +94,6 @@ def exposure_cols() -> dict:
     return c
 
 
-@pytest.fixture
-def exposure_data_fn() -> dict:
-    data = {
-        "fn": {
-            "_structure": 1,
-        },
-        "max": {
-            "_structure": 3,
-        },
-    }
-    return data
-
-
 @pytest.fixture(scope="session")
 def exposure_geom_data(exposure_geom_path: Path) -> GeomIO:
     ds = open_geom(exposure_geom_path)  # Read only

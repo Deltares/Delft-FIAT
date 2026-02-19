@@ -106,6 +106,9 @@ multiple variables.
         self._count: int = 0
         self._chunk: tuple | None = None
         self._dtype: int | None = None
+        self._gtf: tuple[float] | None = None
+        self._x: int | None = None
+        self._y: int | None = None
         self._srs: osr.SpatialReference | None = None
 
         # If write mode, consider initialized
@@ -120,13 +123,14 @@ multiple variables.
         )
         self._count = self.src.RasterCount
 
+        # Set the bands and spatial info
+        self._retrieve_bands()
+        self._retrieve_spatial_info()
+
         # Set the chunking
         self._chunk = self.shape
         if chunk is not None:
             self._chunk = chunk
-
-        # Set the bands
-        self._retrieve_bands()
 
         # Set the 'external' srs
         if srs is not None:
@@ -176,6 +180,13 @@ multiple variables.
                     mode=self.mode,
                 )
             )
+
+    def _retrieve_spatial_info(self) -> None:
+        if self.src is None:
+            return
+        self._x = self.src.RasterXSize
+        self._y = self.src.RasterYSize
+        self._gtf = self.src.GetGeoTransform()
 
     ## Properties
     @property
@@ -254,7 +265,7 @@ multiple variables.
     @BaseIO.check_state
     def geotransform(self) -> tuple:
         """Return the geo transform of the grid."""
-        return self.src.GetGeoTransform()
+        return self._gtf
 
     @geotransform.setter
     @BaseIO.check_mode
@@ -267,6 +278,7 @@ multiple variables.
             An affine matrix.
         """
         self.src.SetGeoTransform(affine)
+        self._retrieve_spatial_info()
 
     @property
     @BaseIO.check_state
@@ -281,8 +293,8 @@ multiple variables.
             Contains size in y direction and x direction.
         """
         return (
-            self.src.RasterYSize,
-            self.src.RasterXSize,
+            self._y,
+            self._x,
         )
 
     @property
@@ -298,8 +310,8 @@ multiple variables.
             Contains size in x direction and y direction.
         """
         return (
-            self.src.RasterXSize,
-            self.src.RasterYSize,
+            self._x,
+            self._y,
         )
 
     @property
@@ -408,6 +420,7 @@ multiple variables.
 
         self._count = nb
         self._retrieve_bands()
+        self._retrieve_spatial_info()
 
     @BaseIO.check_mode
     @BaseIO.check_state

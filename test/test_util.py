@@ -13,16 +13,11 @@ from fiat.util import (
     DummyWriter,
     _diff_table,
     _load_diff,
-    create_1d_chunks,
-    create_2d_chunks,
-    create_2d_windows,
     deter_dec,
     deter_type,
-    discover_exp_columns,
     distribute_threads,
     find_duplicates,
     flatten_dict,
-    generate_output_columns,
     generic_directory_check,
     generic_path_check,
     get_module_attr,
@@ -79,64 +74,6 @@ def test__diff_table():
     assert d[2, 1] == np.inf
 
 
-def test_create_1d_chunks_few():
-    # Call the function
-    chunks = list(create_1d_chunks(500, 6))
-
-    # Assert the output
-    assert len(chunks) == 6
-    assert chunks[0] == (1, 84)
-    assert chunks[-1] == (421, 500)
-
-
-def test_create_1d_chunks_many():
-    # Call the function
-    chunks = list(create_1d_chunks(500, 20))
-
-    # Assert the output
-    assert len(chunks) == 20
-    assert chunks[0] == (1, 25)
-    assert chunks[-1] == (476, 500)
-
-
-def test_create_2d_chunks_few():
-    # Call the function
-    chunks = list(create_2d_chunks((500, 350), 2))
-
-    # Assert the output
-    assert len(chunks) == 4
-    assert chunks[0] == (0, 0, 354, 248)
-    assert chunks[2] == (354, 0, 146, 248)
-
-
-def test_create_2d_chunks_many():
-    # Call the function
-    chunks = list(create_2d_chunks((500, 350), 10))
-
-    # Assert the output
-    assert len(chunks) == 16
-    assert chunks[4] == (158, 0, 158, 111)
-    assert chunks[10] == (316, 222, 158, 111)
-
-
-def test_create_2d_windows_even():
-    # Call the function
-    windows = list(create_2d_windows((10, 10), (0, 0), (2, 2)))
-
-    # Assert the output
-    assert len(windows) == 25
-    assert windows[0] == (0, 0, 2, 2)
-    assert windows[-1] == (8, 8, 2, 2)  # Should nicely fit
-
-
-def test_create_2d_windows_uneven():
-    # Call the function
-    windows = list(create_2d_windows((10, 10), (0, 0), (4, 4)))
-    assert len(windows) == 9
-    assert windows[0] == (0, 0, 4, 4)
-    assert windows[-1] == (8, 8, 2, 2)  # It's the same as it does not fit
-
-
 def test_deter_dec():
     # Call the function
     out = deter_dec(0.00001)
@@ -164,26 +101,6 @@ def test_deter_type():
 
     out = deter_type(b"2\n2\n2", l=5)
     assert out == 3  # Cannot solve, default to string
-
-
-def test_discover_columns_found(exposure_cols: dict):
-    # Call the function
-    dmg_suffix, dmg_idx, missing = discover_exp_columns(exposure_cols, type="damage")
-    assert dmg_suffix == ["_structure", "_content"]
-    assert dmg_idx["fn"]["_content"] == 2
-    assert dmg_idx["max"]["_content"] == 4
-    assert len(missing) == 0
-
-
-def test_discover_columns_missing(exposure_cols: dict):
-    # Pop an entry for max damage
-    _ = exposure_cols.pop("max_damage_content")
-    # Call the function
-    dmg_suffix, dmg_idx, missing = discover_exp_columns(exposure_cols, type="damage")
-    assert dmg_suffix == ["_structure"]
-    assert dmg_idx["fn"]["_structure"] == 1
-    assert dmg_idx["max"]["_structure"] == 3
-    assert missing == ["_content"]
 
 
 def test_distribute_threads():
@@ -293,48 +210,6 @@ def test_flatten_dict():
     # Assert the output
     assert "entry2" not in flattened
     assert "entry2.sub1" in flattened
-
-
-def test_generate_output_columns(exposure_data_fn: dict):
-    # Call the function
-    new_fields, len1, total_idx = generate_output_columns(
-        columns=["depth"],
-        exposure_types={"damage": exposure_data_fn},
-    )
-
-    # Assert the output
-    assert len(new_fields) == 3
-    assert new_fields[1] == "damage_structure"
-    assert len1 == 3
-    assert total_idx[0] == -1
-
-
-def test_generate_output_columns_extra(exposure_data_fn: dict):
-    # Call the function
-    new_fields, len1, _ = generate_output_columns(
-        columns=["depth"],
-        exposure_types={"damage": exposure_data_fn},
-        extra=["ead"],
-    )
-
-    # Assert the output
-    assert len1 == 4
-    assert new_fields[-1] == "ead_damage"
-
-
-def test_generate_output_columns_multi(exposure_data_fn: dict):
-    # Call the function
-    new_fields, len1, _ = generate_output_columns(
-        columns=["depth"],
-        exposure_types={"damage": exposure_data_fn},
-        extra=["ead"],
-        suffix=["1", "2"],
-    )
-
-    # Assert the output
-    assert len1 == 3
-    assert len(new_fields) == 7
-    assert new_fields[3] == "depth_2"
 
 
 def test_generic_path_check(

@@ -1,6 +1,8 @@
-"""The FIAT model workers."""
+"""The FIAT model utilities."""
 
-from typing import Callable
+import math
+from itertools import product
+from typing import Callable, Generator
 
 import numpy as np
 from scipy.interpolate import make_interp_spline
@@ -19,6 +21,86 @@ GRID_PREFER = {
 }
 
 
+def create_1d_chunks(
+    length: int,
+    parts: int,
+) -> tuple:
+    """Create chunks for 1d vector data."""
+    part = math.ceil(
+        length / parts,
+    )
+    series = list(
+        range(0, length, part),
+    ) + [length]
+    _series = series.copy()
+    _series.remove(_series[0])
+    series = [_i + 1 for _i in series]
+
+    chunks = tuple(
+        zip(series[:-1], _series),
+    )
+
+    return chunks
+
+
+def create_2d_chunks(
+    shape: tuple[int],
+    parts: int,
+):
+    """Create chunks for 2d vector data."""
+    x, y = shape
+    number = x * y
+    ratio = y / x
+    per_chunk = math.ceil(number / parts)
+    res = round(math.sqrt(per_chunk / ratio))
+
+    yield from create_2d_windows(
+        shape=shape,
+        origin=(0, 0),
+        window=(res, round(res * ratio)),
+    )
+
+
+def create_2d_windows(
+    shape: tuple,
+    origin: tuple,
+    window: tuple,
+) -> Generator:
+    """Create chunk windows from a grid.
+
+    Parameters
+    ----------
+    shape : tuple
+        Shape of the grid.
+    origin : tuple
+        The origin (array-wise) of the grid.
+    window : tuple
+        The window size.
+
+    Returns
+    -------
+    tuple
+        Tuple containing the upperleft x and y corner and the width and height
+    """
+    ox, oy = origin
+    x, y = shape
+    lu = tuple(
+        product(
+            range(ox, x, window[0]),
+            range(oy, y, window[1]),
+        ),
+    )
+    for l, u in lu:
+        w = min(window[0], x - l)
+        h = min(window[1], y - u)
+        yield (
+            l,
+            u,
+            w,
+            h,
+        )
+
+
 def get_band_names(
     ds: GridIO,
 ) -> list:
@@ -35,7 +117,11 @@ def get_band_names(
     return names
 
 
-def get_hazard_meta(hazard: GridIO, risk: bool, method: MethodsProtocol) -> HazardMeta:
+def get_hazard_meta(
+    hazard: GridIO,
+    risk: bool,
+    method: MethodsProtocol,
+) -> HazardMeta:
     """Obtain some metadata from the hazard data."""
     # Get the types from the metadata
     types = [band.get_meta("type") for band in hazard]

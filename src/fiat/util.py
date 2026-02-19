@@ -1,11 +1,11 @@
 """Base FIAT utility."""
 
-import copy
 import importlib
 import math
 import os
 import re
 import sys
+import time
 from collections.abc import MutableMapping
 from gc import get_referents
 from itertools import product
@@ -187,86 +187,6 @@ def text_chunk_gen(
         yield _nlines, sd
 
 
-def create_1d_chunks(
-    length: int,
-    parts: int,
-) -> tuple:
-    """Create chunks for 1d vector data."""
-    part = math.ceil(
-        length / parts,
-    )
-    series = list(
-        range(0, length, part),
-    ) + [length]
-    _series = series.copy()
-    _series.remove(_series[0])
-    series = [_i + 1 for _i in series]
-
-    chunks = tuple(
-        zip(series[:-1], _series),
-    )
-
-    return chunks
-
-
-def create_2d_chunks(
-    shape: tuple[int],
-    parts: int,
-):
-    """Create chunks for 2d vector data."""
-    x, y = shape
-    number = x * y
-    ratio = y / x
-    per_chunk = math.ceil(number / parts)
-    res = round(math.sqrt(per_chunk / ratio))
-
-    yield from create_2d_windows(
-        shape=shape,
-        origin=(0, 0),
-        window=(res, round(res * ratio)),
-    )
-
-
-def create_2d_windows(
-    shape: tuple,
-    origin: tuple,
-    window: tuple,
-) -> Generator:
-    """Create chunk windows from a grid.
-
-    Parameters
-    ----------
-    shape : tuple
-        Shape of the grid.
-    origin : tuple
-        The origin (array-wise) of the grid.
-    window : tuple
-        The window size.
-
-    Returns
-    -------
-    tuple
-        Tuple containing the upperleft x and y corner and the width and height
-    """
-    ox, oy = origin
-    x, y = shape
-    lu = tuple(
-        product(
-            range(ox, x, window[0]),
-            range(oy, y, window[1]),
-        ),
-    )
-    for l, u in lu:
-        w = min(window[0], x - l)
-        h = min(window[1], y - u)
-        yield (
-            l,
-            u,
-            w,
-            h,
-        )
-
-
 def _load_diff(
     size: int,
     threads: int,
@@ -386,90 +306,6 @@ def flatten_dict(
     (https://www.freecodecamp.org/news/how-to-flatten-a-dictionary-in-python-in-4-different-ways/).
     """
     return dict(_flatten_dict_gen(d, parent_key, sep))
-
-
-# Exposure specific utility
-def discover_exp_columns(
-    columns: dict,
-    type: str,
-) -> tuple:
-    """Figure out the which are the exposure related columns.
-
-    Parameters
-    ----------
-    columns : dict
-        The columns.
-    type : str
-        Type of exposure, e.g. damage or affected
-
-    Returns
-    -------
-    tuple
-        Exposure suffix (e.g. structure for damage), index of the columns, \
-missing values.
-    """
-    dmg_idx = {}
-
-    # Get column values
-    column_vals = list(columns.keys())
-
-    # Patterns
-    fn_pat = rf"^fn_{type}(_\w+)?$"
-    max_pat = rf"^max_{type}(_\w+)?$"
-
-    # Filter the current columns
-    dmg = re_filter(column_vals, fn_pat)
-    dmg_suffix = [re.findall(fn_pat, item)[0] for item in dmg]
-    mpd = re_filter(column_vals, max_pat)
-    mpd_suffix = [re.findall(max_pat, item)[0] for item in mpd]
-
-    # Check the overlap
-    _check = [item in mpd_suffix for item in dmg_suffix]
-
-    # Determine the missing values
-    missing = [item for item, b in zip(dmg_suffix, _check) if not b]
-    for item in missing:
-        dmg_suffix.remove(item)
-
-    fn = {}
-    maxv = {}
-    for val in dmg_suffix:
-        fn.update({val: columns[f"fn_{type}{val}"]})
-        maxv.update({val: columns[f"max_{type}{val}"]})
-    dmg_idx.update({"fn": fn, "max": maxv})
-
-    return dmg_suffix, dmg_idx, missing
-
-
-def generate_output_columns(
-    columns: list,
-    exposure_types: dict,
-    extra: tuple | list = [],
-    suffix: tuple | list = [""],
-) -> tuple:
-    """Generate the output columns."""
-    columns = copy.deepcopy(columns)
-    total = []
-
-    # Loop over the exposure types
-    for key, value in exposure_types.items():
-        columns += [f"{key}{item}" for item in value["fn"].keys()]
-        total.append(len(columns))
-        columns += [f"total_{key}"]
-
-    total = [item - len(columns) for item in total]
-
-    out = []
-    if len(suffix) == 1 and not suffix[0]:
-        out = columns
-    else:
-        for name in suffix:
-            add = [f"{item}_{name}" for item in columns]
-            out += add
-
-    out += [f"{x}_{y}" for x, y in product(extra, exposure_types.keys())]
-
-    return out, len(columns), total
 
 
 # GIS related utility
@@ -698,6 +534,24 @@ def object_size(obj):
         objects = get_referents(*need_referents)
 
     return size
+
+
+def timeit(n: int = 200000):
+    """Small timing decorater."""
+
+    def timeit(fn):
+        def inner(*args, **kwargs):
+            time_array = []
+            for _ in range(n):
+                s = time.time()
+                fn(*args, **kwargs)
+                e = time.time() - s
+                time_array.append(e)
+            return sum(time_array)
+
+        return inner
+
+    return timeit
 
 
 # Objects for dummy usage

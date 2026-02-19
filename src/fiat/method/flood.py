@@ -3,11 +3,7 @@
 import math
 from typing import Callable
 
-import numpy as np
-from osgeo import ogr
-
 from fiat.method.util import AREA_METHODS
-from fiat.struct import Table
 
 COLUMNS = ["ref"]
 NAME = "flood"
@@ -39,96 +35,38 @@ def fn_hazard(
     """
     # Remove the negative hazard values to 0.
     raw_l = len(hazard)
-    hazard = [n - ref for n in hazard if (n - ref) > 0.0001]
-
+    hazard = [n for n in hazard if n > 0]
     if not hazard:
         return math.nan, math.nan
-
-    redf = 1
-
-    if method.lower() == "mean":
-        redf = len(hazard) / raw_l
-
-    if len(hazard) > 1:
-        hazard = AREA_METHODS[method.lower()](hazard)
-    else:
-        hazard = hazard[0]
-
+    redf = len(hazard) / raw_l
+    hazard = AREA_METHODS[method](hazard) - ref
     return hazard, redf
 
 
 def fn_impact(
-    ft: ogr.Feature | list,
-    hazard: float | int,
-    fact: float | int,
-    indices_type: dict,
-    vulnerability: Table,
-    minv: float | int,
-    maxv: float | int,
-    sigdec: int,
-) -> tuple:
-    """Calculate the damage corresponding with the hazard value.
-
-    Parameters
-    ----------
-    ft : ogr.Feature | list
-        A feature or feature info (whichever has to contain the exposure data).
-        See docs on running FIAT with an without csv.
-    hazard : float | int
-        The representative hazard value.
-    fact : float | int
-        The reduction factor. How much to compensate for the lack of touching the grid
-        by an object (geometry).
-    indices_type : dict
-        The exposure types and corresponding column id's.
-    vulnerability : Table
-        Vulnerability data.
-    minv : float | int
-        Minimum value of the index of the vulnerability data.
-    maxv : float | int
-        Maximum value of the index of the vulnerability data.
-    sigdec : int
-        Significant decimals to be used.
-
-    Returns
-    -------
-    tuple
-        Damage values.
-    """
-    # unpack type_dict
-    fn = indices_type["fn"]
-    exposure = indices_type["max"]
-
-    # Define outgoing list of values
-    out = [0] * (len(fn) + 1)
-
-    # Calculate the damage per catagory, and in total (_td)
-    total = 0
-    idx = 0
-    for key, col in fn.items():
-        if np.isnan(hazard) or ft[col] is None or ft[col] == "nan":
-            val = "nan"
-        else:
-            hazard = max(min(maxv, hazard), minv)
-            f = vulnerability[round(hazard, sigdec), ft[col]]
-            val = f * ft[exposure[key]] * fact
-            val = round(val, 2)
-            total += val
-        out[idx] = val
-        idx += 1
-
-    out[-1] = round(total, 2)
-
-    return out
-
-
-def fn_impact_single(
     hazard: float | int,
     exposure: float | int,
     fact: float | int,
     fn_curve: Callable,
-) -> int | str:
-    """."""
+) -> float:
+    """_summary_.
+
+    Parameters
+    ----------
+    hazard : float | int
+        _description_
+    exposure : float | int
+        _description_
+    fact : float | int
+        _description_
+    fn_curve : Callable
+        _description_
+
+    Returns
+    -------
+    float
+        _description_
+    """
     f = fn_curve(hazard)
     val = f * exposure * fact
     return val

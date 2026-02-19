@@ -1,3 +1,4 @@
+from itertools import product
 from pathlib import Path
 
 import pytest
@@ -63,11 +64,34 @@ def density():
 @pytest.fixture(scope="session")
 def exposure_geom_meta_run() -> ExposureGeomMeta:
     meta = ExposureGeomMeta(
+        indices_impact={"damage": [(1,)]},
         indices_new=[5, 6, 7],
         indices_spec=[2],
-        indices_total=[-1],
-        indices_type={"damage": {"fn": {"_structure": 3}, "max": {"_structure": 4}}},
-        new=["depth_Band1", "damage_structure_Band1", "total_damage_Band1"],
+        indices_total={"damage": [2]},
+        indices_type={"damage": [[3, 4]]},
+        new=["depth_1", "damage_structure_1", "total_damage_1"],
+        new_length=3,
+        type_length=3,
+    )
+    return meta
+
+
+@pytest.fixture(scope="session")
+def exposure_geom_risk_meta_run() -> ExposureGeomMeta:
+    meta = ExposureGeomMeta(
+        indices_impact={"damage": [(1,), (4,), (7,), (10,)]},
+        indices_new=list(range(5, 18, 1)),
+        indices_spec=[2],
+        indices_total={"damage": [2, 5, 8, 11]},
+        indices_type={"damage": [[3, 4]]},
+        new=[
+            f"{y}_{x}"
+            for x, y in product(
+                [2, 5, 10, 25], ["depth", "damage_structure", "total_damage"]
+            )
+        ]
+        + ["ead_damage"],
+        new_length=13,
         type_length=3,
     )
     return meta

@@ -4,7 +4,6 @@ import numpy as np
 
 from fiat.fio import GridIO, open_grid
 from fiat.method import flood
-from fiat.model.util import vectorize_function
 from fiat.model.worker_grid import array_worker, process_hazard, worker
 from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
 
@@ -35,11 +34,6 @@ def test_array_worker(
     exposure_grid_data: GridIO,
     exposure_grid_meta_run: ExposureGridMeta,
 ):
-    # Set up the vectorized function
-    fn_impact = vectorize_function(
-        fn=flood.fn_impact_single, skip=hazard_meta_run.type_length + 1
-    )
-
     # Call the function
     out_array = array_worker(
         hazard=hazard_event_data,
@@ -47,7 +41,7 @@ def test_array_worker(
         vulnerability_meta=vulnerability_meta_run,
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_meta_run,
-        fn_impact=fn_impact,
+        fn_impact=flood.fn_impact,
         window=(0, 0, 10, 10),
     )
 

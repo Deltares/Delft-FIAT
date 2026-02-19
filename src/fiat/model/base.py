@@ -268,15 +268,6 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         # Column check
         check_duplicate_columns(data.duplicate_columns)
 
-        # upscale the data (can be done after the checks)
-        step_size = self.cfg.get("vulnerability.step_size", 0.01)
-        self.cfg.set("vulnerability.step_size", step_size)
-        logger.info(
-            f"Upscaling vulnerability curves, \
-using a step size of: {step_size}"
-        )
-        data.upscale(step_size, inplace=True)
-
         # Reset to ensure the entry is present
         self.cfg.set(VULNERABILITY_FILE, path)
         # When all is done, add it

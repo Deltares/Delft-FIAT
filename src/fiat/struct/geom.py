@@ -212,7 +212,7 @@ class GeomLayer(BaseStruct):
             The feature to be added.
         fmap : zip
             Extra fields data, i.e. a zip object of fields id's
-            and the correspondingv alues
+            and the corresponding values.
         """
         ft = ogr.Feature(self.defn)
         ft.SetFrom(in_ft)

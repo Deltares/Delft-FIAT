@@ -17,6 +17,7 @@ from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.grid_util import equal_grid, get_exposure_meta
 from fiat.model.util import (
+    create_2d_chunks,
     get_hazard_meta,
     get_vulnerability_meta,
 )
@@ -24,7 +25,6 @@ from fiat.model.worker_grid import worker
 from fiat.struct import Table
 from fiat.util import (
     EXPOSURE_GRID_FILE,
-    create_2d_chunks,
     generic_path_check,
     get_srs_repr,
 )

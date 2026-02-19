@@ -2,18 +2,45 @@ import numpy as np
 from osgeo import ogr
 
 from fiat.fio import GridIO
-from fiat.gis.overlay import clip, clip_weighted, intersect_cell, pin
+from fiat.gis.overlay import clip, clip_weighted, intersect_cell, mask, pin
+
+
+def test_mask_linestring(
+    feature_linestring: ogr.Feature,
+    hazard_event_data: GridIO,
+):
+    # Call the function
+    m, w = mask(
+        geom=feature_linestring.GetGeometryRef(),
+        gtf=hazard_event_data.geotransform,
+        shape=hazard_event_data.shape_xy,
+    )
+
+    # Assert the output
+    assert m.shape == (2, 4)
+    assert np.sum(m) == 6
+    assert m[0, 0] == 0
+    assert m[1, 3] == 0
+    assert isinstance(w, tuple)
+    assert w == (1, 7, 4, 2)
 
 
 def test_clip_linestring(
     feature_linestring: ogr.Feature,
     hazard_event_data: GridIO,
 ):
+    # Mask first
+    m, w = mask(
+        geom=feature_linestring.GetGeometryRef(),
+        gtf=hazard_event_data.geotransform,
+        shape=hazard_event_data.shape_xy,
+    )
+
     # Call the function
     c = clip(
-        ft=feature_linestring,
         band=hazard_event_data[0],
-        gtf=hazard_event_data.geotransform,
+        mask=m,
+        window=w,
     )
 
     # Assert the output
@@ -23,15 +50,40 @@ def test_clip_linestring(
     )
 
 
-def test_clip_polygon(
+def test_mask_polygon(
     feature_polygon: ogr.Feature,
     hazard_event_data: GridIO,
 ):
     # Call the function
-    c = clip(
-        ft=feature_polygon,
-        band=hazard_event_data[0],
+    m, w = mask(
+        geom=feature_polygon.GetGeometryRef(),
         gtf=hazard_event_data.geotransform,
+        shape=hazard_event_data.shape_xy,
+    )
+
+    # Assert the output
+    assert m.shape == (2, 2)
+    assert np.sum(m) == 4
+    assert isinstance(w, tuple)
+    assert w == (1, 7, 2, 2)
+
+
+def test_clip_polygon(
+    feature_polygon: ogr.Feature,
+    hazard_event_data: GridIO,
+):
+    # Mask first
+    m, w = mask(
+        geom=feature_polygon.GetGeometryRef(),
+        gtf=hazard_event_data.geotransform,
+        shape=hazard_event_data.shape_xy,
+    )
+
+    # Call the function
+    c = clip(
+        band=hazard_event_data[0],
+        mask=m,
+        window=w,
     )
 
     # Assert the output
@@ -41,15 +93,42 @@ def test_clip_polygon(
     )
 
 
-def test_clip_polygon_complex(
+def test_mask_polygon_complex(
     feature_polygon_complex: ogr.Feature,
     hazard_event_data: GridIO,
 ):
     # Call the function
-    c = clip(
-        ft=feature_polygon_complex,
-        band=hazard_event_data[0],
+    m, w = mask(
+        geom=feature_polygon_complex.GetGeometryRef(),
         gtf=hazard_event_data.geotransform,
+        shape=hazard_event_data.shape_xy,
+    )
+
+    # Assert the output
+    assert m.shape == (4, 3)
+    assert np.sum(m) == 10
+    assert m[0, 2] == 0
+    assert m[1, 2] == 0
+    assert isinstance(w, tuple)
+    assert w == (4, 4, 3, 4)
+
+
+def test_clip_polygon_complex(
+    feature_polygon_complex: ogr.Feature,
+    hazard_event_data: GridIO,
+):
+    # Mask first
+    m, w = mask(
+        geom=feature_polygon_complex.GetGeometryRef(),
+        gtf=hazard_event_data.geotransform,
+        shape=hazard_event_data.shape_xy,
+    )
+
+    # Call the function
+    c = clip(
+        band=hazard_event_data[0],
+        mask=m,
+        window=w,
     )
 
     # Assert the output

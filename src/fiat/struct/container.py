@@ -76,11 +76,13 @@ class Container:
 class ExposureGeomMeta:
     """Small container for exposure geometry metadata."""
 
+    indices_impact: dict[str, list]
     indices_new: list[str]
     indices_spec: list[str]
-    indices_total: list[str]
+    indices_total: dict[str, list]
     indices_type: dict[str, Any]
     new: list[str]
+    new_length: int
     type_length: int
 
 
