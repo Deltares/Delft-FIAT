@@ -77,8 +77,6 @@ def feature_worker(
         Array containing the impact values for a feature.
     """
     # The output array
-    if ft.GetField(0) == 1:
-        pass
     out_array = [0.0] * exposure_meta.new_length
     haz_args = [ft.GetField(idx) for idx in exposure_meta.indices_spec]
 
@@ -156,10 +154,6 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         Metadata specific to the exposure data.
     chunk : tuple | list
         The chunk to run through.
-    queue : Queue
-        A Queue for logging back to the main thread.
-    lock : Lock
-        The lock for the geometries output.
     """
     # Setup the hazard type method
     method: MethodsProtocol = importlib.import_module(f"fiat.method.{hazard_meta.type}")

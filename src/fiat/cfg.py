@@ -104,7 +104,7 @@ class Configurations(dict):
         path = Path(path)
 
         # Open the file
-        with open(path, "rb") as f:
+        with open(path, mode="rb") as f:
             settings = tomllib.load(f)
 
         # Create the object

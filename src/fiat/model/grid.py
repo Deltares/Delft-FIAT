@@ -16,12 +16,13 @@ from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.grid_util import equal_grid, get_exposure_meta
+from fiat.model.grid_worker import worker
+from fiat.model.grid_writer import GridWriter, create_grid_handle
 from fiat.model.util import (
     create_2d_chunks,
     get_hazard_meta,
     get_vulnerability_meta,
 )
-from fiat.model.worker_grid import worker
 from fiat.struct import Table
 from fiat.util import (
     EXPOSURE_GRID_FILE,
@@ -126,7 +127,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         Generates output in the specified `output.path` directory.
         """
         logger.info("Running the model")
-        # Quick check if all data is set
+        # Quick check if all cdata is set
         check_input_data(
             ["hazard", self.hazard, GridIO],
             ["vulnerability", self.vulnerability, Table],
@@ -153,21 +154,27 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             first=self.cfg.get("model.grid.leading", True),
         )
 
-        # Setup the queue
-        self.queue = self.ctx.Queue(maxsize=1000)
-
         # Setup the jobs
-        chunks = create_2d_chunks(self.hazard.shape_xy, parts=self.threads)
+        chunks = create_2d_chunks(self.hazard.shape, parts=self.threads)
         jobs = generate_jobs(
             {
-                "output_dir": self.cfg.get("output.path"),
+                "mem_id": "foo",
                 "hazard": self.hazard,
                 "hazard_meta": hazard_meta,
                 "vulnerability_meta": vulnerability_meta,
                 "exposure": self.exposure,
                 "exposure_meta": exposure_meta,
                 "chunk": list(chunks),
-            }
+            },
+            tied=["mem_id", "chunk"],
+        )
+
+        # Setup the queue and the writer
+        self.queue = self.ctx.Queue(maxsize=1000)
+        handle = create_grid_handle()
+        writer = GridWriter(queue=self.queue, handle=handle)
+        writer.setup_components(
+            mem_ids=[f"grid_worker{idx}" for idx in range(self.threads)],
         )
 
         # Execute the jobs in a multiprocessing pool

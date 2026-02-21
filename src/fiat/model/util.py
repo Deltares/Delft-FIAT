@@ -25,7 +25,20 @@ def create_1d_chunks(
     length: int,
     parts: int,
 ) -> tuple:
-    """Create chunks for 1d vector data."""
+    """Create chunks for 1d vector data.
+
+    Parameters
+    ----------
+    length : int
+        Length of the series.
+    parts : int
+        Number of parts in which to divide the series.
+
+    Returns
+    -------
+    tuple
+        A tuple containing tuples with start and stop indices.
+    """
     part = math.ceil(
         length / parts,
     )
@@ -46,26 +59,69 @@ def create_1d_chunks(
 def create_2d_chunks(
     shape: tuple[int],
     parts: int,
-):
-    """Create chunks for 2d vector data."""
-    x, y = shape
-    number = x * y
-    ratio = y / x
-    per_chunk = math.ceil(number / parts)
-    res = round(math.sqrt(per_chunk / ratio))
+) -> Generator[tuple]:
+    """Create rectangular chunks roughly equal in number of cells.
 
-    yield from create_2d_windows(
-        shape=shape,
-        origin=(0, 0),
-        window=(res, round(res * ratio)),
-    )
+    Parameters
+    ----------
+    shape : tuple[int]
+        The shape of the origin grid.
+    parts : int
+        The number of parts in which the grid (shape) should be divided.
+
+    Yields
+    ------
+    Generator[tuple]
+        A generator of window tuples.
+        These tuple are defined as: (x_origin, y_origin, width, height).
+    """
+    # Set up the base numbers for determining the chunks
+    base = math.floor(math.sqrt(parts))
+    s1 = max(base, parts // base)  # Large side
+    s1_idx = shape.index(max(shape))
+    s2 = min(base, parts // base)  # Short side
+    number = [s1] * s2
+    for idx in range(parts % s1):
+        number[idx] += 1
+
+    # Larger side division per short side element
+    large_side = []
+    for item in number:
+        elem = [shape[s1_idx] // item for _ in range(item)]
+        for idx in range(shape[s1_idx] % item):
+            elem[idx] += 1
+        large_side.append(elem)
+
+    # Sorter side division
+    short_div = [shape[1 - s1_idx] * item / sum(number) for item in number]
+    left_over = [item - math.floor(item) for item in short_div]
+    short_side = [math.floor(item) for item in short_div]
+    while not sum(short_side) == shape[1 - s1_idx]:
+        idx = left_over.index(max(left_over))
+        short_side[idx] += 1
+        left_over[idx] = 0
+    short_side = [[item] for item in short_side]
+
+    # Add the divisions to a list representing the shape indices
+    setup = [None, None]
+    setup[s1_idx] = large_side
+    setup[1 - s1_idx] = short_side
+
+    # Yield the windows starting of course with an origin of 0,0
+    cur = [0, 0]
+    for row in zip(*setup):
+        for y, x in product(*row):
+            yield ((*cur, x, y))
+            cur[0] += x
+        cur[1] += y
+        cur[0] = 0
 
 
 def create_2d_windows(
     shape: tuple,
     origin: tuple,
     window: tuple,
-) -> Generator:
+) -> Generator[tuple]:
     """Create chunk windows from a grid.
 
     Parameters

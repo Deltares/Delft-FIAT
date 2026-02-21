@@ -1,9 +1,11 @@
+from typing import Callable
+
 import numpy as np
 
 from fiat.method.flood import (
     fn_hazard,
+    fn_impact,
 )
-from fiat.struct import Table
 
 
 def test_fn_hazard():
@@ -59,8 +61,30 @@ def test_fn_hazard_high_ref_red():
 
 
 def test_fn_impact(
-    exposure_data_fn: dict,
-    vulnerability_data: Table,
+    vulnerability_fn1: Callable,
 ):
-    vulnerability_data.upscale(0.01, inplace=True)
-    pass
+    # Call the function
+    out = fn_impact(
+        hazard=5.5,
+        exposure=4000,
+        fact=1,
+        fn_curve=vulnerability_fn1,
+    )
+
+    # Assert the output
+    np.testing.assert_almost_equal(out, 2803.8, decimal=1)
+
+
+def test_fn_impact_fact(
+    vulnerability_fn1: Callable,
+):
+    # Call the function
+    out = fn_impact(
+        hazard=5.5,
+        exposure=4000,
+        fact=0.5,
+        fn_curve=vulnerability_fn1,
+    )
+
+    # Assert the output
+    np.testing.assert_almost_equal(out, 1401.9, decimal=1)

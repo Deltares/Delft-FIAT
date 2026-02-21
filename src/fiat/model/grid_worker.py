@@ -3,6 +3,7 @@
 import importlib
 from itertools import product
 from multiprocessing.queues import Queue
+from multiprocessing.shared_memory import SharedMemory
 from typing import Callable
 
 import numpy as np
@@ -10,9 +11,11 @@ import numpy as np
 from fiat.fio import (
     GridIO,
 )
+from fiat.model.grid_writer import GridItem
 from fiat.model.util import create_2d_windows
 from fiat.struct import GridBand
 from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
+from fiat.thread import Sender
 
 
 def initialize_pool(q: Queue):
@@ -37,6 +40,7 @@ def process_hazard(
 
 
 def array_worker(
+    out_array: np.ndarray[np.float32],
     hazard: GridIO,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
@@ -69,14 +73,6 @@ def array_worker(
     np.ndarray
         The calculated impact.
     """
-    out_array = (
-        np.zeros(
-            (exposure_meta.nb + hazard_meta.risk, *window[2:]),
-            dtype=np.float32,
-        )
-        * np.nan
-    )
-
     bn = 0
     # Loop through the combinations
     for exp, haz_indices in product(exposure.bands, hazard_meta.indices_run):
@@ -125,13 +121,14 @@ def array_worker(
 
 
 def worker(
-    shm_name: str,
+    mem_id: str,
     hazard: GridIO,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
     exposure: GridIO,
     exposure_meta: ExposureGridMeta,
     chunk: tuple,
+    window: tuple,
 ):
     """Run the grid model.
 
@@ -140,8 +137,8 @@ of the [GridIO](/api/GeomIO.qmd) object.
 
     Parameters
     ----------
-    shm_name : Path
-        The name of the shared memory.
+    mem_id : Path
+        The identifier/ name of the shared memory.
     hazard : GridIO
         The hazard data.
     hazard_meta : HazardMeta
@@ -159,23 +156,33 @@ of the [GridIO](/api/GeomIO.qmd) object.
     module = importlib.import_module(f"fiat.method.{hazard_meta.type}")
     fn_impact = getattr(module, "fn_impact_single")
 
+    # Setup the existing block of memory
+    exshm = SharedMemory(name=mem_id)
+    out_array = np.ndarray(shape=window, dtype=np.float32, buffer=exshm.buf)
+    sender = Sender(queue=pipeline)
+
     # Loop through the windows
-    for window in create_2d_windows(
+    for window_array in create_2d_windows(
         shape=chunk[2:],
         origin=chunk[0:2],
-        window=(2, 2),
+        window=window,
     ):
-        _ = array_worker(
+        # Do the calculations
+        array_worker(
+            out_array=out_array,
             hazard=hazard,
             hazard_meta=hazard_meta,
             vulnerability_meta=vulnerability_meta,
             exposure=exposure,
             exposure_meta=exposure_meta,
             fn_impact=fn_impact,
-            window=window,
+            window=window_array,
         )
 
-        # Write the chunk
-        for idx in range(exposure_meta.nb):
-            # out_src[idx].write(out_array[idx], window[0:2])
-            pass
+        # Report back that it's done for this window
+        record = GridItem(
+            mem_id=mem_id,
+            origin=window_array[:2],
+            shape=window_array[2:],
+        )
+        sender.emit(record=record)

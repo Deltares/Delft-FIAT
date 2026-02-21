@@ -1,7 +1,7 @@
 """Entry point for models."""
 
-from . import worker_geom, worker_grid
+from . import geom_worker, grid_worker
 from .geom import GeomModel
 from .grid import GridModel
 
-__all__ = ["GeomModel", "GridModel", "worker_geom", "worker_grid"]
+__all__ = ["GeomModel", "GridModel", "geom_worker", "grid_worker"]

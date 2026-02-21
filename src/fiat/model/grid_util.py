@@ -2,10 +2,9 @@
 
 from collections import deque
 from itertools import product
-from pathlib import Path
 
 from fiat.check import check_exp_grid_fn, check_grid_exact
-from fiat.fio import GridIO, open_grid
+from fiat.fio import GridIO
 from fiat.gis import grid
 from fiat.model.util import get_band_names
 from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
@@ -94,39 +93,3 @@ def equal_grid(
 
     # Return the output
     return gss
-
-
-def generic_grid_output_check(
-    path: Path,
-    exposure: GridIO,
-    exposure_meta: ExposureGridMeta,
-) -> None:
-    """_summary_.
-
-    Parameters
-    ----------
-    path : Path
-        _description_
-    exposure : GridIO
-        _description_
-    exposure_meta : ExposureGridMeta
-        _description_
-    """
-    # Ensure typing
-    path = Path(path)
-    # If exists, unlink
-    if path.exists():
-        path.unlink()
-
-    # Create a new data
-    out = open_grid(path, mode="w")
-    out.create(
-        shape=exposure.shape_xy,
-        nb=exposure_meta.nb,
-        dtype=exposure.dtype,
-        options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
-    )
-    out.set_source_srs(exposure.srs)
-    out.geotransform = exposure.geotransform
-    for band in out.bands:
-        band.nodata = -9999

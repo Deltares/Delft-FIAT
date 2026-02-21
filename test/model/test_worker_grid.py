@@ -4,7 +4,7 @@ import numpy as np
 
 from fiat.fio import GridIO, open_grid
 from fiat.method import flood
-from fiat.model.worker_grid import array_worker, process_hazard, worker
+from fiat.model.grid_worker import array_worker, process_hazard, worker
 from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
 
 

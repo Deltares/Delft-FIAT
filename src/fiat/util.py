@@ -64,6 +64,9 @@ VULNERABILITY_SETTINGS = f"{VULNERABILITY}.{SETTINGS}"
 ## Define other string variables
 OBJECT_ID = "object_id"
 
+## Define data values
+NODATA_VALUE = -9999
+
 ## Define function variables for FIAT
 BLACKLIST = type, ModuleType, FunctionType
 DD_NEED_IMPLEMENTED = "Dunder method needs to be implemented."

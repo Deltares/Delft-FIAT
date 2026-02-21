@@ -23,8 +23,8 @@ from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.geom_util import get_exposure_meta
+from fiat.model.geom_worker import initialize_pool, worker
 from fiat.model.util import create_1d_chunks, get_hazard_meta, get_vulnerability_meta
-from fiat.model.worker_geom import initialize_pool, worker
 from fiat.struct import Container, Table
 from fiat.util import (
     EXPOSURE_GEOM_FILE,
