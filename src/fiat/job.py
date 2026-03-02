@@ -56,8 +56,8 @@ def execute_pool(
     func: Callable,
     jobs: Generator | Iterator,
     threads: int,
-    initializer: Callable | None = None,
-    initargs: list | tuple | None = None,
+    initializer: Callable,
+    initargs: tuple,
 ):
     """Execute a python process pool.
 
@@ -75,6 +75,7 @@ def execute_pool(
     # If there is only one thread needed, execute in the main process
     res = []
     if threads == 1:
+        initializer(*initargs)
         for job in jobs:
             r = func(**job)
             res.append(r)

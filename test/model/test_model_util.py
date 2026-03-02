@@ -41,9 +41,9 @@ def test_create_2d_chunks_few():
     chunks = list(create_2d_chunks((500, 350), 2))
 
     # Assert the output
-    assert len(chunks) == 4
-    assert chunks[0] == (0, 0, 354, 248)
-    assert chunks[2] == (354, 0, 146, 248)
+    assert len(chunks) == 2
+    assert chunks[0] == (0, 0, 350, 250)
+    assert chunks[1] == (0, 250, 350, 250)
 
 
 def test_create_2d_chunks_many():
@@ -51,9 +51,9 @@ def test_create_2d_chunks_many():
     chunks = list(create_2d_chunks((500, 350), 10))
 
     # Assert the output
-    assert len(chunks) == 16
-    assert chunks[4] == (158, 0, 158, 111)
-    assert chunks[10] == (316, 222, 158, 111)
+    assert len(chunks) == 10
+    assert chunks[4] == (105, 167, 105, 167)
+    assert chunks[7] == (210, 125, 140, 125)
 
 
 def test_create_2d_windows_even():

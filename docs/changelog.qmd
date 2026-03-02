@@ -181,7 +181,7 @@ The second pre-release of Delft-FIAT.
 - Added entries for chunking size in the settings file (`settings.toml`) for `GeomModel`
 - Chunking for geometry calculations (`GeomModel`)
 - Chunking for resolving temporary `GeomModel` output
-- New method for writing geometries from a buffer: `BufferedGeomWriter`
+- New method for writing geometries from a buffer: `GeomWriter`
 - New function for merging vector layers: `merge_geom_layers`
 - Setting of amount of threads via cli
 

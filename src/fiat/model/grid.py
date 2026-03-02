@@ -16,7 +16,7 @@ from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.grid_util import equal_grid, get_exposure_meta
-from fiat.model.grid_worker import worker
+from fiat.model.grid_worker import initialize_pool, worker
 from fiat.model.grid_writer import GridWriter, create_grid_handle
 from fiat.model.util import (
     create_2d_chunks,
@@ -154,27 +154,40 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             first=self.cfg.get("model.grid.leading", True),
         )
 
+        # Get the output path
+        output_name = self.cfg.get("output.grid.name") or self.exposure.path.name
+        output_filepath = Path(self.cfg.output_dir, output_name)
+        # Setup the queue and the writer
+        self.queue = self.ctx.Queue(maxsize=1000)
+        handle = create_grid_handle(
+            path=output_filepath,
+            shape=self.exposure.shape_xy,
+            nb=exposure_meta.nb,
+            srs=self.exposure.srs,
+            gtf=self.exposure.geotransform,
+        )
+        writer = GridWriter(handle=handle, queue=self.queue, ctx=self.ctx)
+        # Get the chunks and the window(s)
+        chunks = list(create_2d_chunks(self.hazard.shape, parts=self.threads))
+        window = self.cfg.get("model.grid.chunk", fallback=[1000, 1000])
+        mem_ids = [f"grid_worker{idx}" for idx, _ in enumerate(chunks)]
+        for mem_id, chunk in zip(mem_ids, chunks):
+            writer.setup_block(mem_id=mem_id, shape=window)
+        writer.start()
+
         # Setup the jobs
-        chunks = create_2d_chunks(self.hazard.shape, parts=self.threads)
         jobs = generate_jobs(
             {
-                "mem_id": "foo",
+                "mem_id": mem_ids,
                 "hazard": self.hazard,
                 "hazard_meta": hazard_meta,
                 "vulnerability_meta": vulnerability_meta,
                 "exposure": self.exposure,
                 "exposure_meta": exposure_meta,
-                "chunk": list(chunks),
+                "chunk": chunks,
+                "window": [window],
             },
             tied=["mem_id", "chunk"],
-        )
-
-        # Setup the queue and the writer
-        self.queue = self.ctx.Queue(maxsize=1000)
-        handle = create_grid_handle()
-        writer = GridWriter(queue=self.queue, handle=handle)
-        writer.setup_components(
-            mem_ids=[f"grid_worker{idx}" for idx in range(self.threads)],
         )
 
         # Execute the jobs in a multiprocessing pool
@@ -187,6 +200,8 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
                 func=worker,
                 jobs=jobs,
                 threads=self.threads,
+                initializer=initialize_pool,
+                initargs=(self.queue, writer.piperecv),
             )
             _e = time.time() - _s
             logger.info(f"Elapsed time: {round(_e, 2)} seconds")
@@ -200,3 +215,6 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         else:
             logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
             logger.info("Model run is done!")
+
+        # Close the writer
+        writer.close()

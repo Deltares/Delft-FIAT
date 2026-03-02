@@ -5,7 +5,8 @@ from pathlib import Path
 
 from osgeo import ogr, osr
 
-from fiat.fio import BufferedGeomWriter, GeomIO, open_geom
+from fiat.fio import GeomIO, open_geom
+from fiat.model.geom_writer import GeomWriter
 
 
 def point_in_geom(
@@ -108,7 +109,7 @@ def reproject(
         new_gs.create_layer(out_srs, gs.layer.geom_type)
         new_gs.layer.set_from_defn(layer_defn)
 
-    mem_gs = BufferedGeomWriter(
+    mem_gs = GeomWriter(
         fname,
         buffer_size=chunk,
     )

@@ -6,16 +6,12 @@ from multiprocessing.synchronize import Lock
 from pathlib import Path
 from typing import Callable
 
-import numpy as np
 from osgeo import ogr
 
-from fiat.fio import (
-    BufferedGeomWriter,
-    GeomIO,
-    GridIO,
-)
+from fiat.fio import GeomIO, GridIO
 from fiat.gis import overlay
 from fiat.method.ead import fn_ead
+from fiat.model.geom_writer import GeomWriter
 from fiat.struct.container import ExposureGeomMeta, HazardMeta, VulnerabilityMeta
 from fiat.typing import MethodsProtocol
 
@@ -31,16 +27,6 @@ def initialize_pool(
     process_lock = lock
     global pipeline
     pipeline = queue
-
-
-def type_worker(
-    out_array: np.ndarray,
-    window: tuple,
-    mask: np.ndarray,
-    fn: dict,
-):
-    """Small worker for calculating impact per type."""
-    pass
 
 
 def feature_worker(
@@ -161,7 +147,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     fn_impact = method.fn_impact
 
     # Setup the dataset buffer writer
-    writer = BufferedGeomWriter(
+    writer = GeomWriter(
         Path(output_dir, f"{exposure.path.stem}.gpkg"),
         lock=process_lock,
     )

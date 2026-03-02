@@ -2,6 +2,7 @@
 
 import importlib
 from itertools import product
+from multiprocessing.connection import PipeConnection
 from multiprocessing.queues import Queue
 from multiprocessing.shared_memory import SharedMemory
 from typing import Callable
@@ -16,12 +17,15 @@ from fiat.model.util import create_2d_windows
 from fiat.struct import GridBand
 from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
 from fiat.thread import Sender
+from fiat.typing import MethodsProtocol
 
 
-def initialize_pool(q: Queue):
+def initialize_pool(q: Queue, p: dict[str, PipeConnection]):
     """Small initializer for the multiprocessing pool."""
-    global pipeline
-    pipeline = q
+    global signalqueue
+    signalqueue = q
+    global pipelines
+    pipelines = p
 
 
 def process_hazard(
@@ -74,23 +78,24 @@ def array_worker(
         The calculated impact.
     """
     bn = 0
+    w, h = window[2:]
     # Loop through the combinations
     for exp, haz_indices in product(exposure.bands, hazard_meta.indices_run):
         # Get and process the hazard data
-        h = [
+        hazard_data = [
             process_hazard(
                 hazard[idx], window=window, vulnerability_meta=vulnerability_meta
             )
             for idx in haz_indices
         ]
         # Get the exposure data
-        e = exp[*window]
-        e[e == exp.nodata] = np.nan
+        exposure_data = exp[*window]
+        exposure_data[exposure_data == exp.nodata] = np.nan
 
         # Call the impact function
-        out_array[bn] = fn_impact(
-            *h,
-            e,
+        out_array[bn, :h, :w] = fn_impact(
+            *hazard_data,
+            exposure_data,
             fact=1,
             fn_curve=vulnerability_meta.fn[exp.get_meta("fn")],
         )
@@ -98,23 +103,26 @@ def array_worker(
 
     # Set the total damages
     for part, total in zip(exposure_meta.indices_new, exposure_meta.indices_total):
-        mask = np.isnan([out_array[idx] for idx in part]).all(axis=0)
-        out_array[total] = np.nansum([out_array[idx] for idx in part], axis=0)
-        out_array[total][mask] = np.nan
+        mask = np.isnan([out_array[idx, :h, :w] for idx in part]).all(axis=0)
+        out_array[total, :h, :w] = np.nansum(
+            [out_array[idx, :h, :w] for idx in part],
+            axis=0,
+        )
+        out_array[total, :h, :w][mask] = np.nan
 
     # Risk
     if hazard_meta.risk:
-        mask = np.isnan(out_array[exposure_meta.indices_total]).all(axis=0)
-        out_array[-1] = np.nansum(
+        mask = np.isnan(out_array[exposure_meta.indices_total, :h, :w]).all(axis=0)
+        out_array[-1, :h, :w] = np.nansum(
             [
                 f * a
                 for f, a in zip(
-                    hazard_meta.density, out_array[exposure_meta.indices_total]
+                    hazard_meta.density, out_array[exposure_meta.indices_total, :h, :w]
                 )
             ],
             axis=0,
         )
-        out_array[-1][mask] = np.nan
+        out_array[-1, :h, :w][mask] = np.nan
 
     # Return the array
     return out_array
@@ -153,13 +161,17 @@ of the [GridIO](/api/GeomIO.qmd) object.
         The specific chunk to process.
     """
     # Setup the hazard type module
-    module = importlib.import_module(f"fiat.method.{hazard_meta.type}")
-    fn_impact = getattr(module, "fn_impact_single")
+    method: MethodsProtocol = importlib.import_module(f"fiat.method.{hazard_meta.type}")
+    fn_impact = method.fn_impact
 
     # Setup the existing block of memory
     exshm = SharedMemory(name=mem_id)
-    out_array = np.ndarray(shape=window, dtype=np.float32, buffer=exshm.buf)
-    sender = Sender(queue=pipeline)
+    out_array = np.ndarray(
+        shape=(exposure_meta.nb, *window),
+        dtype=np.float32,
+        buffer=exshm.buf,
+    )
+    sender = Sender(queue=signalqueue)
 
     # Loop through the windows
     for window_array in create_2d_windows(
@@ -186,3 +198,10 @@ of the [GridIO](/api/GeomIO.qmd) object.
             shape=window_array[2:],
         )
         sender.emit(record=record)
+
+        # Wait for the parent to get back
+        _ = pipelines[mem_id].recv()
+
+    # Close the memory block
+    out_array = None
+    exshm.close()

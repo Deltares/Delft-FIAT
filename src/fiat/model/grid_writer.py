@@ -1,6 +1,7 @@
 """Writer for grid model."""
 
 from dataclasses import dataclass
+from multiprocessing.connection import PipeConnection
 from multiprocessing.context import SpawnContext
 from multiprocessing.queues import Queue
 from multiprocessing.shared_memory import SharedMemory
@@ -22,16 +23,27 @@ def create_grid_handle(
     srs: osr.SpatialReference,
     gtf: tuple[float | int],
 ) -> GridIO:
-    """_summary_.
+    """Create a handle to a grid file (netcdf).
+
+    Data type is float32.
 
     Parameters
     ----------
     path : Path
-        _description_
-    exposure : GridIO
-        _description_
-    exposure_meta : ExposureGridMeta
-        _description_
+        The path to the file.
+    shape : tuple[int]
+        The shape of the grid.
+    nb : int
+        The number of variables (bands).
+    srs : osr.SpatialReference
+        The coordinate system.
+    gtf : tuple[float  |  int]
+        The geotransform of the grid.
+
+    Returns
+    -------
+    GridIO
+        A handle for writing data.
     """
     # Ensure typing
     path = Path(path)
@@ -73,21 +85,27 @@ class GridWriter(Receiver):
         The queue through which to signal the parent process.
     handle : GridIO
         A handle to file to be written.
+    ctx : SpawnContext
+        The multiprocessing context currenly in use.
     """
 
     def __init__(
         self,
-        queue: Queue,
         handle: GridIO,
+        queue: Queue,
+        ctx: SpawnContext,
     ):
         # Inherit and set the handle
         super().__init__(queue=queue)
         self.handle = handle
+        self.ctx = ctx
 
         # Components needed for the run
         self.locks: dict[str, Lock] = {}
         self.mem_locs: dict[str, SharedMemory] = {}
         self.mem_blocks: dict[str, np.ndarray] = {}
+        self.piperecv: dict[str, PipeConnection] = {}
+        self.pipesend: dict[str, PipeConnection] = {}
 
     ## I/O methods
     def _close(self):
@@ -101,6 +119,10 @@ class GridWriter(Receiver):
             mem_loc = self.mem_locs.pop(mem_id)
             mem_loc.close()
             mem_loc.unlink()
+            pipe = self.piperecv.pop(mem_id)
+            pipe.close()
+            pipe = self.pipesend.pop(mem_id)
+            pipe.close()
 
     def close(self):
         """Close the grid writer."""
@@ -108,39 +130,39 @@ class GridWriter(Receiver):
         self._close()
 
     ## Setup method
-    def setup_components(
+    def setup_block(
         self,
-        mem_ids: list[str],
-        ctx: SpawnContext,
+        mem_id: str,
         shape: tuple[int],
     ):
-        """Create the necessary components for working with shared memory.
+        """Create a block of shared memory.
+
+        This also creates other necessary components, which are:
+        lock, numpy.ndarray, pipeline.
 
         Parameters
         ----------
         mem_ids : list[str]
             Identifiers of the memory blocks.
-        ctx : SpawnContext
-            The multiprocessing context currenly in use.
         shape : tuple[int]
             The shape of the memory block.
         """
         # Calculate the size of the mem blocks based on the shape of the block
-        size = shape[0] * shape[1] * 4  # 4 bytes for Float32
+        size = self.handle.size * shape[0] * shape[1] * 4  # 4 bytes for Float32
         # Loop through the id's to create the components
-        for mem_id in mem_ids:
-            self.locks[mem_id] = ctx.Lock()
-            self.mem_locs[mem_id] = SharedMemory(
-                name=mem_id,
-                create=True,
-                size=size,
-            )
-            self.mem_blocks[mem_id] = np.ndarray(
-                shape=shape,
-                dtype=np.float32,
-                buffer=self.mem_locs[mem_id].buf,
-            )
-            self.mem_blocks[mem_id][:] = np.nan
+        self.locks[mem_id] = self.ctx.Lock()
+        self.mem_locs[mem_id] = SharedMemory(
+            name=mem_id,
+            create=True,
+            size=size,
+        )
+        self.mem_blocks[mem_id] = np.ndarray(
+            shape=(self.handle.size, *shape),
+            dtype=np.float32,
+            buffer=self.mem_locs[mem_id].buf,
+        )
+        self.mem_blocks[mem_id][:] = np.nan
+        self.piperecv[mem_id], self.pipesend[mem_id] = self.ctx.Pipe(duplex=False)
 
     ## Worker method
     def fn(
@@ -150,6 +172,7 @@ class GridWriter(Receiver):
         """Write data from a shared memory block."""
         # Get the id
         mem_id = record.mem_id
+        w, h = record.shape
 
         # Acquire the lock
         self.locks[mem_id].acquire()
@@ -159,11 +182,17 @@ class GridWriter(Receiver):
         # Write from the block
         for idx, band in enumerate(self.handle):
             band.write(
-                block[idx, :, :],
+                block[idx, :h, :w],
+                record.origin,
             )
+            band.flush()
         # Reset everything to nan
         block[:] = np.nan
         block = None
 
+        # Flush the handle
+        self.handle.flush()
+
         # Release the lock back for the worker to use
         self.locks[mem_id].release()
+        self.pipesend[mem_id].send(None)

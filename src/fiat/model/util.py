@@ -76,21 +76,27 @@ def create_2d_chunks(
         These tuple are defined as: (x_origin, y_origin, width, height).
     """
     # Set up the base numbers for determining the chunks
-    base = math.floor(math.sqrt(parts))
-    s1 = max(base, parts // base)  # Large side
     s1_idx = shape.index(max(shape))
-    s2 = min(base, parts // base)  # Short side
+    ratio = shape[s1_idx] / shape[1 - s1_idx]
+    base = math.sqrt(parts / ratio)
+    # Set initial values for the sides
+    s1 = min(parts, round(base * ratio), shape[s1_idx])  # Long side
+    s2 = max(min(round(base), shape[1 - s1_idx]), 1)  # Short side
+    # Append to the long side if it's still off per column/ row
     number = [s1] * s2
-    for idx in range(parts % s1):
-        number[idx] += 1
+    diff = parts - s1 * s2
+    if diff != 0:
+        sign = int(diff / abs(diff))
+        for idx in range(0, abs(diff), abs(sign)):
+            number[idx % s2] = min(number[idx % s2] + sign, shape[s1_idx])
 
     # Larger side division per short side element
-    large_side = []
+    long_side = []
     for item in number:
         elem = [shape[s1_idx] // item for _ in range(item)]
         for idx in range(shape[s1_idx] % item):
             elem[idx] += 1
-        large_side.append(elem)
+        long_side.append(elem)
 
     # Sorter side division
     short_div = [shape[1 - s1_idx] * item / sum(number) for item in number]
@@ -104,17 +110,17 @@ def create_2d_chunks(
 
     # Add the divisions to a list representing the shape indices
     setup = [None, None]
-    setup[s1_idx] = large_side
+    setup[s1_idx] = long_side
     setup[1 - s1_idx] = short_side
 
     # Yield the windows starting of course with an origin of 0,0
     cur = [0, 0]
     for row in zip(*setup):
-        for y, x in product(*row):
-            yield ((*cur, x, y))
-            cur[0] += x
-        cur[1] += y
-        cur[0] = 0
+        for coord in product(*row):
+            yield ((*cur, coord[1], coord[0]))
+            cur[1 - s1_idx] += coord[s1_idx]
+        cur[s1_idx] += coord[1 - s1_idx]
+        cur[1 - s1_idx] = 0
 
 
 def create_2d_windows(
@@ -142,13 +148,13 @@ def create_2d_windows(
     x, y = shape
     lu = tuple(
         product(
-            range(ox, x, window[0]),
-            range(oy, y, window[1]),
+            range(ox, ox + x, window[0]),
+            range(oy, oy + y, window[1]),
         ),
     )
     for l, u in lu:
-        w = min(window[0], x - l)
-        h = min(window[1], y - u)
+        w = min(window[0], ox + x - l)
+        h = min(window[1], oy + y - u)
         yield (
             l,
             u,

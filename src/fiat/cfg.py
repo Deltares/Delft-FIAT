@@ -54,19 +54,9 @@ class Configurations(dict):
         **settings: dict,
     ):
         # Set the root directory
-        root = settings.get("_root")
-        if root is None:
-            root = Path.cwd()
-        self.path = Path(root)
-        if not self.path.is_absolute():
-            self.path = Path(Path.cwd(), self.path)
-
-        # Set filepath is applicable
-        name = settings.get("_name")
-        if name is None:
-            self.filepath = Path("< Configurations-in-memory >")
-        else:
-            self.filepath = Path(self.path, name)
+        self._name = settings.get("_name")
+        self._path = settings.get("_root") or Path.cwd()
+        self._path = Path(Path.cwd(), self._path)
 
         # Load the config as a simple flat dictionary
         dict.__init__(self, settings)
@@ -82,6 +72,7 @@ class Configurations(dict):
         super().__setitem__(__key, __value)  # Honestly this does nothing
         # For the time being
 
+    ## Private methods
     def _ensure_output_path(self):
         """Make sure the output path is present and absolute."""
         output_dir = Path(self.get(OUTPUT_PATH, OUTPUT))
@@ -89,6 +80,27 @@ class Configurations(dict):
             output_dir = Path(self.path, output_dir)
         self.set(OUTPUT_PATH, output_dir)
 
+    # Properties
+    @property
+    def filepath(self) -> Path:
+        """Return the path of the config file itself."""
+        if self._name is None:
+            return Path("< Configurations-in-memory >")
+        else:
+            return Path(self.path, self._name)
+
+    @property
+    def output_dir(self):
+        """Return the path to the output directory."""
+        self._ensure_output_path()
+        return self.get(OUTPUT_PATH)
+
+    @property
+    def path(self) -> Path:
+        """Return the path of the directory in which the config file is located."""
+        return self._path
+
+    ## Class methods (read)
     @classmethod
     def from_file(
         cls,
@@ -111,6 +123,7 @@ class Configurations(dict):
         obj = cls(_root=path.parent, _name=path.name, **settings)
         return obj
 
+    ## Actions methods
     def generate_kwargs(
         self,
         base: str,

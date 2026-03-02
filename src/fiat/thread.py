@@ -107,7 +107,7 @@ class Receiver:
         """Wait for the next item/ record to be received."""
         while True:
             try:
-                record = self.get(True)
+                record = self.get(block=True)
                 if record is self._sentinel:
                     break
                 fn(record)
@@ -151,7 +151,7 @@ class Receiver:
     def start(
         self,
         fn: Callable | None = None,
-        name: str = "mp_receiver",
+        name: str = "receiver",
     ) -> None:
         """Start the receiver.
 

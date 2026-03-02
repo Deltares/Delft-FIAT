@@ -34,8 +34,11 @@ def test_array_worker(
     exposure_grid_data: GridIO,
     exposure_grid_meta_run: ExposureGridMeta,
 ):
+    # Create the out_array
+    out_array = np.zeros((3, 10, 10)) * np.nan
     # Call the function
-    out_array = array_worker(
+    array_worker(
+        out_array=out_array,
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_meta_run,
