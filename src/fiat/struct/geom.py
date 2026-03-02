@@ -54,7 +54,7 @@ class GeomLayer(BaseStruct):
         self._cur_index = 0
         return self
 
-    def __next__(self):
+    def __next__(self) -> ogr.Feature:
         if self._cur_index < self._count:
             r = self._obj.GetNextFeature()
             self._cur_index += 1

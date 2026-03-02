@@ -185,7 +185,6 @@ class GridWriter(Receiver):
                 block[idx, :h, :w],
                 record.origin,
             )
-            band.flush()
         # Reset everything to nan
         block[:] = np.nan
         block = None

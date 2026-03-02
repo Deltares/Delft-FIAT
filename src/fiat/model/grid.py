@@ -169,7 +169,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         writer = GridWriter(handle=handle, queue=self.queue, ctx=self.ctx)
         # Get the chunks and the window(s)
         chunks = list(create_2d_chunks(self.hazard.shape, parts=self.threads))
-        window = self.cfg.get("model.grid.chunk", fallback=[1000, 1000])
+        window = self.cfg.get("model.grid.chunk", fallback=self.exposure.shape)
         mem_ids = [f"grid_worker{idx}" for idx, _ in enumerate(chunks)]
         for mem_id, chunk in zip(mem_ids, chunks):
             writer.setup_block(mem_id=mem_id, shape=window)

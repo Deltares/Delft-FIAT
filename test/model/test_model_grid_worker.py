@@ -1,10 +1,15 @@
-from pathlib import Path
+from multiprocessing.shared_memory import SharedMemory
 
 import numpy as np
 
-from fiat.fio import GridIO, open_grid
+from fiat.fio import GridIO
 from fiat.method import flood
-from fiat.model.grid_worker import array_worker, process_hazard, worker
+from fiat.model.grid_worker import (
+    array_worker,
+    initialize_pool,
+    process_hazard,
+    worker,
+)
 from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
 
 
@@ -58,28 +63,48 @@ def test_array_worker(
     np.testing.assert_almost_equal(np.nanmax(out_array[2]), 4648, decimal=0)
 
 
+class DummyQueue:
+    def put_nowait(self, item): ...
+
+
+class DummyPipeline:
+    def recv(self): ...
+
+
 def test_worker(
-    tmp_path: Path,
     hazard_event_data: GridIO,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_grid_data: GridIO,
     exposure_grid_meta_run: ExposureGridMeta,
 ):
+    # Create a block of shared memory to work with
+    shm = SharedMemory(name="test-block", create=True, size=300 * 4)
+    arr = np.ndarray(shape=(3, 10, 10), dtype=np.float32, buffer=shm.buf)
+    arr[:] = np.nan
+    initialize_pool(q=DummyQueue(), p={"test-block": DummyPipeline()})
+
     # Call the function
     worker(
-        output_dir=tmp_path,
+        mem_id="test-block",
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_meta_run,
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_meta_run,
         chunk=(0, 0, 10, 10),
+        window=(10, 10),
     )
 
-    # Assert the output
-    p = Path(tmp_path, "spatial.nc")
-    assert p.is_file()
-    # Assert the content
-    g = open_grid(p, var_as_band=True)
-    assert g.size == 3
+    # Assert the output, same as the array worker
+    np.testing.assert_almost_equal(np.nanmean(arr[0]), 941, decimal=0)
+    np.testing.assert_almost_equal(np.nanmax(arr[0]), 1897, decimal=0)
+    np.testing.assert_almost_equal(np.nanmean(arr[1]), 2036, decimal=0)
+    np.testing.assert_almost_equal(np.nanmax(arr[1]), 4410, decimal=0)
+    np.testing.assert_almost_equal(np.nanmean(arr[2]), 2487, decimal=0)
+    np.testing.assert_almost_equal(np.nanmax(arr[2]), 4648, decimal=0)
+
+    # Close down
+    arr = None
+    shm.close()
+    shm.unlink()

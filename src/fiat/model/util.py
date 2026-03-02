@@ -148,13 +148,13 @@ def create_2d_windows(
     x, y = shape
     lu = tuple(
         product(
-            range(ox, ox + x, window[0]),
-            range(oy, oy + y, window[1]),
+            range(ox, ox + x, window[1]),
+            range(oy, oy + y, window[0]),
         ),
     )
     for l, u in lu:
-        w = min(window[0], ox + x - l)
-        h = min(window[1], oy + y - u)
+        w = min(window[1], ox + x - l)
+        h = min(window[0], oy + y - u)
         yield (
             l,
             u,
