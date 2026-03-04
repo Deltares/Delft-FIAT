@@ -129,7 +129,7 @@ class GeomWriter:
     def add_feature_with_map(
         self,
         ft: ogr.Feature,
-        fmap: dict,
+        fmap: zip,
     ) -> None:
         """Add a feature to the buffer with additional field info.
 
@@ -137,7 +137,7 @@ class GeomWriter:
         ----------
         ft : ogr.Feature
             The feature.
-        fmap : dict
+        fmap : zip
             Additional field information, the keys must align with \
 the fields in the buffer.
         """

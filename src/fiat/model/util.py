@@ -102,7 +102,7 @@ def create_2d_chunks(
     short_div = [shape[1 - s1_idx] * item / sum(number) for item in number]
     left_over = [item - math.floor(item) for item in short_div]
     short_side = [math.floor(item) for item in short_div]
-    while not sum(short_side) == shape[1 - s1_idx]:
+    while sum(short_side) != shape[1 - s1_idx]:
         idx = left_over.index(max(left_over))
         short_side[idx] += 1
         left_over[idx] = 0
@@ -117,7 +117,7 @@ def create_2d_chunks(
     cur = [0, 0]
     for row in zip(*setup):
         for coord in product(*row):
-            yield ((*cur, coord[1], coord[0]))
+            yield (*cur, coord[1], coord[0])
             cur[1 - s1_idx] += coord[s1_idx]
         cur[s1_idx] += coord[1 - s1_idx]
         cur[1 - s1_idx] = 0
