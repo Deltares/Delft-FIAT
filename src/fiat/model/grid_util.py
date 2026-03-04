@@ -40,10 +40,15 @@ def get_exposure_meta(
             hazard_meta.length * exposure.size + hazard_meta.length,
         )
     )
+    index_ead = None
+    if hazard_meta.risk:
+        index_ead = len(new)
+        new += ["ead"]
 
     # Set up the meta
     meta = ExposureGridMeta(
         fn_list=fn_list,
+        index_ead=index_ead,
         indices_new=indices_new,
         indices_total=indices_total,
         nb=len(new),

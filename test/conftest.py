@@ -59,6 +59,13 @@ def hazard_event_path(testdata_dir: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
+def hazard_event_highres_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "event_map_highres.nc")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
 def hazard_risk_path(testdata_dir: Path) -> Path:
     p = Path(testdata_dir, "risk_map.nc")
     assert p.is_file()
@@ -101,7 +108,7 @@ def exposure_geom_data(exposure_geom_path: Path) -> GeomIO:
     return ds
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def exposure_grid_data(exposure_grid_path: Path) -> GridIO:
     ds = open_grid(exposure_grid_path, var_as_band=True)  # Read only
     assert isinstance(ds, GridIO)
@@ -111,6 +118,13 @@ def exposure_grid_data(exposure_grid_path: Path) -> GridIO:
 @pytest.fixture(scope="session")
 def hazard_event_data(hazard_event_path: Path) -> GridIO:
     ds = open_grid(hazard_event_path)  # Read only
+    assert isinstance(ds, GridIO)
+    return ds
+
+
+@pytest.fixture
+def hazard_event_highres_data(hazard_event_highres_path: Path) -> GridIO:
+    ds = open_grid(hazard_event_highres_path)  # Read only
     assert isinstance(ds, GridIO)
     return ds
 

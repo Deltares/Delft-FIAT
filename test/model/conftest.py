@@ -2,9 +2,11 @@ from itertools import product
 from pathlib import Path
 
 import pytest
+from osgeo import osr
 from scipy.interpolate import make_interp_spline
 
 from fiat.cfg import Configurations
+from fiat.fio import GridIO
 from fiat.method.ead import fn_density
 from fiat.struct import Table
 from fiat.struct.container import (
@@ -15,6 +17,42 @@ from fiat.struct.container import (
 )
 
 
+## Structures
+class DummyQueue:
+    def put_nowait(self, item): ...
+
+
+class DummyPipeline:
+    def recv(self): ...
+
+
+@pytest.fixture
+def dummy_queue() -> DummyQueue:
+    return DummyQueue()
+
+
+@pytest.fixture
+def dummy_pipeline() -> DummyPipeline:
+    return DummyPipeline()
+
+
+@pytest.fixture
+def grid_handle(tmp_path: Path, srs_4326: osr.SpatialReference) -> GridIO:
+    ds = GridIO(
+        file=Path(tmp_path, "foo.nc"),
+        mode="w",
+    )
+    ds.create(
+        (10, 10),
+        nb=1,
+        dtype=6,
+    )
+    ds.geotransform = (0.0, 1.0, 0.0, 10.0, 0.0, -1.0)
+    ds.set_source_srs(srs_4326)
+    return ds
+
+
+## Data related
 @pytest.fixture
 def config_empty(tmp_path: Path) -> Configurations:
     c = Configurations(_root=tmp_path)
@@ -105,6 +143,22 @@ def exposure_grid_meta_run() -> ExposureGridMeta:
         indices_total=[2],
         nb=3,
         new=["band1_1", "band2_1", "total_1"],
+    )
+    return meta
+
+
+@pytest.fixture(scope="session")
+def exposure_grid_risk_meta_run() -> ExposureGridMeta:
+    rp = [2, 5, 10, 25]
+    meta = ExposureGridMeta(
+        fn_list=["struct_1", "struct_2"],
+        index_ead=12,
+        indices_new=[[0, 4], [1, 5], [2, 6], [3, 7]],
+        indices_total=[8, 9, 10, 11],
+        nb=13,
+        new=[f"band{e}_{h}" for e, h in product([1, 2], rp)]
+        + [f"total_{h}" for h in rp]
+        + ["ead"],
     )
     return meta
 

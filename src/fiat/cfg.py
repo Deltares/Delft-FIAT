@@ -20,7 +20,8 @@ def get_item(
         if i < num_parts - 1:
             current = current.get(part, {})
         else:
-            return current.get(part, fallback)
+            value = current.get(part, fallback)
+    return value
 
 
 def set_item(

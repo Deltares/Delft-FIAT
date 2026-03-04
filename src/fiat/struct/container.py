@@ -95,6 +95,7 @@ class ExposureGridMeta:
     indices_total: list[int]
     nb: int
     new: list[str]
+    index_ead: int | None = None
 
 
 @dataclass

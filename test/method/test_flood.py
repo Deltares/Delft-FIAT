@@ -21,6 +21,18 @@ def test_fn_hazard():
     np.testing.assert_almost_equal(red_f, 1.0)
 
 
+def test_fn_hazard_none():
+    # Call the function
+    dmg, red_f = fn_hazard(
+        [],
+        ref=1.0,
+        method="mean",
+    )
+
+    # Assert the output
+    assert np.isnan(dmg)
+
+
 def test_fn_hazard_red():
     # Call the function with a zero value added
     dmg, red_f = fn_hazard(
