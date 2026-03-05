@@ -59,7 +59,7 @@ def create_1d_chunks(
 def create_2d_chunks(
     shape: tuple[int],
     parts: int,
-) -> Generator[tuple]:
+) -> Generator[tuple, None, None]:
     """Create rectangular chunks roughly equal in number of cells.
 
     Parameters
@@ -127,7 +127,7 @@ def create_2d_windows(
     shape: tuple,
     origin: tuple,
     window: tuple,
-) -> Generator[tuple]:
+) -> Generator[tuple, None, None]:
     """Create chunk windows from a grid.
 
     Parameters
