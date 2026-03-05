@@ -24,15 +24,7 @@ def parse_content(
     parent: object = None,
     module: object = None,
 ):
-    """_summary_
-
-    Parameters
-    ----------
-    cont : Page
-        _description_
-    parent : object, optional
-        _description_, by default None
-    """
+    """Parse the contents of a page."""
     try:
         pages, _ = collect(
             cont.contents[0].members,
@@ -47,35 +39,34 @@ def parse_content(
                 members_paths=members_paths,
                 parent=cont,
             )
-
     except Exception:
         pass
 
-    finally:
-        if parent is not None:
-            cont.path = f"{parent.obj.name}/{cont.obj.name}"
-            if cont.obj.is_attribute:
-                cont = DocAttribute.from_griffe(cont.obj.name, cont.obj)
-            else:
-                builder.write_doc_pages([cont], filter="*")
-                members_paths.append(f"{rel_dir}/{parent.obj.name}/{cont.obj.name}.qmd")
-            members.append(cont)
+    content = None
+    if parent is not None:
+        cont.path = f"{parent.obj.name}/{cont.obj.name}"
+        if cont.obj.is_attribute:
+            cont = DocAttribute.from_griffe(cont.obj.name, cont.obj)
         else:
-            if members:
-                cont.contents[0].members = members
-                content = {
-                    "section": cont.path,
-                    "href": f"{rel_dir}/{cont.path}.qmd",
-                    "contents": members_paths,
-                }
-            else:
-                content = f"{rel_dir}/{cont.path}.qmd"
-                if module:
-                    cont.path = f"{module.name}/{cont.obj.name}"
-                    content = f"{rel_dir}/{cont.path}.qmd"
-
             builder.write_doc_pages([cont], filter="*")
-            return content
+            members_paths.append(f"{rel_dir}/{parent.obj.name}/{cont.obj.name}.qmd")
+        members.append(cont)
+    else:
+        if members:
+            cont.contents[0].members = members
+            content = {
+                "section": cont.path,
+                "href": f"{rel_dir}/{cont.path}.qmd",
+                "contents": members_paths,
+            }
+        else:
+            content = f"{rel_dir}/{cont.path}.qmd"
+            if module:
+                cont.path = f"{module.name}/{cont.obj.name}"
+                content = f"{rel_dir}/{cont.path}.qmd"
+
+        builder.write_doc_pages([cont], filter="*")
+    return content
 
 
 def parse_section(
@@ -83,13 +74,7 @@ def parse_section(
     builder: Builder,
     rel_dir: Path | str,
 ):
-    """_summary_
-
-    Parameters
-    ----------
-    sect : Section
-        _description_
-    """
+    """Parse section of a module."""
     sub = False
     title = sect.title
     module = None
@@ -122,19 +107,7 @@ def parse_tree_section(
     content: list,
     sub: bool = False,
 ):
-    """_summary_
-
-    Parameters
-    ----------
-    section_title : str
-        _description_
-    section_content : list
-        _description_
-    tree : dict
-        _description_
-    sub : bool, optional
-        _description_, by default False
-    """
+    """Parse the content tree."""
     if sub:
         section = {
             "section": section_title,
@@ -155,13 +128,7 @@ def create_tree(
     file: Path | str,
     filter: str = "*",
 ):
-    """_summary_
-
-    Parameters
-    ----------
-    file : Path | str
-        _description_
-    """
+    """Create the table of contents tree."""
     # set some meta info
     p = Path(file).parent
 
@@ -218,7 +185,7 @@ def create_tree(
 
 
 def run(args):
-    """Dummy run method."""
+    """Execute the api builder."""
     yml = file_path_check(args.config)
     p = create_tree(yml.as_posix())
     sys.stdout.write(f"Written api docs to {p.as_posix()}\n")

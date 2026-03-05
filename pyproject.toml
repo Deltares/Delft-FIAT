@@ -25,14 +25,15 @@ maintainers = [
     {name = "B.W. Dalmijn", email = "brendan.dalmijn@deltares.nl"},
 ]
 
-description = "Delft Fast Impact Assessment Tool"
-readme = "README.md"
+description = "Fast Impact Assessment Tool"
 license = "MIT"
+readme = "README.md"
 
 requires-python = ">=3.11"
 dependencies = [
     "gdal>=3.5",
     "numpy",
+    "scipy",
     "regex",
 ]
 
@@ -69,41 +70,49 @@ classifiers = [
 
 [project.optional-dependencies] # Optional
 all = [
-    "tomli-w",
+    "tomlkit",
 ]
 build = [
     "pyinstaller>=6.0.0",
 ]
 dev = [
+    "build",
     "cython",
+    "mypy",
     "pre-commit",
     "ruff",
     "setuptools>=61.0.0",
 ]
 docs = [
+    "griffe==1.15.0",
     "jupyter",
     "jupyter-cache",
     "matplotlib",
     "pandas",
-    "quartodoc>=0.7.6",
+    "quartodoc==0.11.1",
 ]
 test = [
-	"pytest>=2.7.3",
-	"pytest-cov",
+    "pytest>=2.7.3",
+    "pytest-cov",
     "pytest-mock",
-	"responses",
+    "responses",
 ]
 
 [project.urls]
 "Homepage" = "https://deltares.github.io/Delft-FIAT/stable/"
-"Bug Reports" = "https://github.com/Deltares/Delft-FIAT/issues"
 "Source" =  "https://github.com/Deltares/Delft-FIAT"
+"Bug Reports" = "https://github.com/Deltares/Delft-FIAT/issues"
 
 [project.scripts]
 fiat = "fiat.cli.main:main"
 
 ## Some stuff for pytest and coverage
 [tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+    "serial",
+    "system: marks tests as system tests (deselect with '-m \"not system\"')",
+]
 testpaths = [
     "test",
 ]
@@ -126,15 +135,13 @@ exclude_also = [
     # Don't complain if non-runnable code isn't run:
     "if 0:",
     "if __name__ == .__main__.:",
-
-    # Don't complain about abstract methods, they aren't run:
-    "@(abc\\.)?abstractmethod",
 ]
 ignore_errors = true
 
 [tool.coverage.html]
 directory = ".cov"
 
+## Linting and formatting
 [tool.ruff]
 line-length = 88
 exclude = ["docs/**"]
@@ -145,51 +152,37 @@ ignore = ["B904", "D105", "D211", "D213", "D301", "E712", "E741"]
 
 [tool.ruff.lint.per-file-ignores]
 "test/**" = ["D100", "D101", "D102", "D103", "D104"]
-"test/conftest.py" = ["E402"]
-"src/fiat/__init__.py" = ["E402", "F401", "F403"]
+"src/fiat/__init__.py" = ["F401", "F403"]
 "src/fiat/**/__init__.py" = ["F403"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
-## Pixi related stuff
+## In depth code checking
+[tool.mypy]
+# TODO: Re-enable the tests
+exclude = ["tests/.*", "tmp/.*"]
+plugins = ["pydantic.mypy", "numpy.typing.mypy_plugin"]
+python_version = "3.13"
+ignore_missing_imports = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+extra_checks = true
+disallow_subclassing_any = false
+disallow_untyped_decorators = false
+disallow_any_generics = true
+
+## Workspace related stuff
 [tool.pixi.workspace]
 channels = ["conda-forge"]
 platforms = ["linux-64", "win-64"]
 preview = ["pixi-build"]
 
+## The different tasks of this workspace
+# First general tasks
 [tool.pixi.tasks]
-# Installation
-install = { depends-on = ["install-pre-commit"] }
-install-pre-commit = "pre-commit install"
-
-# Building
-build = { cmd = ["pyinstaller", "$PIXI_PROJECT_ROOT/.build/build.spec", "--distpath", "$PIXI_PROJECT_ROOT/bin", "--workpath", "$PIXI_PROJECT_ROOT/bin/intermediates"] }
-
-# Repo related tasks
-generate-data = { cmd = ["python", ".testdata/create_test_data.py"] }
-lint = { cmd = ["pre-commit", "run", "--all"] }
-
-# Docker related stuff (expand in future)
-docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
-
-# Documentation generation
-docs = { depends-on = ["generate-api", "interlink-docs", "quarto-execute"] }
-docs-slim = { depends-on = ["interlink-docs", "quarto-render"] }
-docs-slim-execute = { depends-on = ["interlink-docs", "quarto-execute"] }
-docs-slim-rebuild = { depends-on = ["clean-docs", "docs-slim"] }
-generate-api = { cmd = ["python", "docs/_scripts/api.py", "docs/_quarto.yml"] }
-interlink-docs = { cmd = ["python", "docs/_scripts/inv.py", "interlinks", "docs/_quarto.yml"] }
-quarto-render = { cmd = ["quarto", "render", "docs"] }
-quarto-execute = { cmd = ["quarto", "render", "docs", "--execute"] }
-serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_site"] }
-
-# Testing
-test = { cmd = ["pytest"] }
-test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
-test-cov = { cmd = ["pytest", "--verbose", "--cov=fiat", "--cov-report", "xml"] }
-test-cov-html = { cmd = ["pytest", "--verbose", "--cov", "--cov-report", "html"] }
-
 # Clean up (some of) the temporary files
 clean = { depends-on = [
     "clean-bin",
@@ -200,14 +193,99 @@ clean = { depends-on = [
 clean-bin = { cmd = ["rm", "-rf", "bin"] }
 clean-build = { cmd = ["rm", "-rf", "build"] }
 clean-dist = { cmd = ["rm", "-rf", "dist"] }
-clean-docs = { depends-on = ["clean-docs-site", "clean-docs-freeze", "clean-docs-inv"] }
+clean-docs = { depends-on = [
+    "clean-docs-site",
+    "clean-docs-freeze",
+    "clean-docs-inv"
+] }
 clean-docs-freeze = { cmd = ["rm", "-rf", "docs/_freeze"] }
 clean-docs-inv = { cmd = ["rm", "-rf", "docs/_inv"] }
 clean-docs-site = { cmd = ["rm", "-rf", "docs/_site"] }
 
-# Pixi dependencies
+# Docker related stuff (expand in future)
+docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
+
+# Testdata
+testdata = { cmd = ["python", "data/create_test_data.py"] }
+
+# Build specific tasks
+[tool.pixi.feature.build.tasks]
+build = { cmd = [
+    "pyinstaller",
+    "$PIXI_PROJECT_ROOT/pyi/build.spec",
+    "--distpath",
+    "$PIXI_PROJECT_ROOT/bin",
+    "--workpath",
+    "$PIXI_PROJECT_ROOT/bin/intermediates",
+] }
+
+# Dev specific taskss
+[tool.pixi.feature.dev.tasks]
+# Installation
+install-pre-commit = "pre-commit install"
+install = { depends-on = ["install-pre-commit"] }
+
+# Linting and code checking
+lint = { cmd = ["pre-commit", "run", "--all"] }
+mypy = { cmd = ["mypy", ".", "--install-types", "--non-interactive"] }
+
+# Tasks for buildings documentation
+[tool.pixi.feature.docs.tasks]
+# Create the separate elements
+create-api = { cmd = ["python", "docs/_scripts/api.py", "docs/_quarto.yml"] }
+create-inv = { cmd = ["python", "docs/_scripts/inv.py", "interlinks", "docs/_quarto.yml"] }
+# Call the framework
+render = { cmd = ["quarto", "render", "docs"] }
+execute = { cmd = ["quarto", "render", "docs/**/*.ipynb", "--execute"] }
+# Build the docs
+docs = { depends-on = ["create-api", "create-inv", "render"] }
+docs-rebuild = { depends-on = ["clean-docs", "docs"] }
+docs-execute = { depends-on = ["docs", "execute"] }
+docs-slim = { depends-on = ["create-inv", "render"] }
+docs-slim-execute = { depends-on = ["docs-slim", "execute"] }
+docs-slim-rebuild = { depends-on = ["clean-docs", "docs-slim"] }
+# Host the docs locally
+serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "./docs/_site"] }
+
+# Testing tasks
+[tool.pixi.feature.test.tasks]
+test = { cmd = ["pytest", "--verbose"] }
+test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
+test-cov = { cmd = [
+    "pytest",
+    "-m",
+    "not (integration or system)",
+    "--verbose",
+    "--cov=fiat",
+    "--cov-report",
+    "xml"
+] }
+test-cov-html = { cmd = [
+    "pytest",
+    "-m",
+    "not (integration or system)",
+    "--verbose",
+    "--cov",
+    "--cov-report",
+    "html"
+] }
+test-integration = { cmd = [
+    "pytest",
+    "-m",
+    "integration",
+    "--verbose",
+] }
+test-system = { cmd = [
+    "pytest",
+    "-m",
+    "system",
+    "--verbose",
+] }
+
+## Dependencies
 [tool.pixi.dependencies]
 libgdal-core = ">=3.5"
+libgdal-arrow-parquet = "*"
 libgdal-netcdf = "*"
 pip = "*"
 uv = "*"
@@ -220,20 +298,30 @@ delft_fiat = { path = ".", editable = true }
 [tool.pixi.feature.build]
 dependencies = { python = "3.14.*" }
 
+# All that can simple use conda-forge's GDAL
 [tool.pixi.feature.gdal]
 dependencies = { gdal = ">=3.5" }
 
+# Docs builder framework
 [tool.pixi.feature.docs]
-dependencies = { quarto = "==1.8.25" }
+dependencies = { quarto = "==1.8.27" }
+
+# Wheel building env
+[tool.pixi.feature.wheel.dependencies]
+pip = "*"
+uv = "*"
 
 # Extra information when activating
 [tool.pixi.feature.build.activation]
-scripts = [".build/activate.sh"]
+scripts = ["pyi/activate.sh"]
 
 [tool.pixi.feature.build.target.win-64.activation]
-scripts = [".build/activate.bat"]
+scripts = ["pyi/activate.bat"]
 
-# Extra python environments
+## Python environments
+[tool.pixi.feature.py314]
+dependencies = { python = "3.14.*" }
+
 [tool.pixi.feature.py313]
 dependencies = { python = "3.13.*" }
 
@@ -243,12 +331,14 @@ dependencies = { python = "3.12.*" }
 [tool.pixi.feature.py311]
 dependencies = { python = "3.11.*" }
 
-# Environments
+## Workspace environments
 [tool.pixi.environments]
 build = { features = ["all", "build"] }
 default = { features = ["all", "dev", "docs", "gdal", "test"] }
 docs = { features = ["all", "docs", "gdal"] }
-slim = { features = [] }
+slim = { features = ["all", "gdal"] }
+test-py314 = { features = ["py314", "all", "gdal", "test"] }
 test-py313 = { features = ["py313", "all", "gdal", "test"] }
 test-py312 = { features = ["py312", "all", "gdal", "test"] }
 test-py311 = { features = ["py311", "all", "gdal", "test"] }
+wheel = { features = ["py313", "gdal", "test", "wheel"], no-default-feature=true }

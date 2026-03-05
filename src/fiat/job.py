@@ -3,11 +3,11 @@
 from concurrent.futures import ProcessPoolExecutor, wait
 from itertools import product
 from multiprocessing.context import SpawnContext
-from typing import Callable, Generator
+from typing import Callable, Generator, Iterator
 
 from fiat.log import spawn_logger
 
-logger = spawn_logger("fiat.job")
+logger = spawn_logger(__name__)
 
 
 def generate_jobs(
@@ -54,8 +54,10 @@ def generate_jobs(
 def execute_pool(
     ctx: SpawnContext,
     func: Callable,
-    jobs: Generator,
+    jobs: Generator | Iterator,
     threads: int,
+    initializer: Callable,
+    initargs: tuple,
 ):
     """Execute a python process pool.
 
@@ -65,7 +67,7 @@ def execute_pool(
         Context of the current process.
     func : Callable
         To be executed function.
-    jobs : Generator
+    jobs : Generator | Iterator
         A job generator. Returns single dictionaries.
     threads : int
         Number of threads.
@@ -73,6 +75,7 @@ def execute_pool(
     # If there is only one thread needed, execute in the main process
     res = []
     if threads == 1:
+        initializer(*initargs)
         for job in jobs:
             r = func(**job)
             res.append(r)
@@ -84,6 +87,8 @@ def execute_pool(
     pool = ProcessPoolExecutor(
         max_workers=threads,
         mp_context=ctx,
+        initializer=initializer,
+        initargs=initargs,
     )
 
     # Go through all the jobs
