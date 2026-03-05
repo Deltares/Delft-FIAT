@@ -51,4 +51,4 @@ if src_proj is None:
         logger.warning("Proj data was not found.")
 
 if src_proj is not None:
-    datas.append((src_proj, "./share"))
+    datas.append((src_proj, "./share/proj"))
