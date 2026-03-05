@@ -1,37 +1,45 @@
 ---
-name: Code Analysis
+name: SonarQube scan and coverage
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - src/fiat/*
-      - test/*
-  pull_request:
-    paths:
-      - src/fiat/*
-      - test/*
-    types:
-      - opened
-      - synchronize
-      - reopened
+  repository_dispatch:
+      types:
+        - sonarqube-trigger
+  workflow_dispatch:
 
 jobs:
-  sonarcloud:
-    env:
-      PYVERSION: "3.13"
-
-    name: SonarCloud
+  sonarqube:
+    name: SonarQube
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ github.event.client_payload.branch }}
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+      - name: Download coverage
+        run: |
+          gh run download ${{ github.event.client_payload.run_id }} --name code-coverage
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: SonarQube Scan
+        if: ${{ github.event.client_payload.pr_flag == 'false' }}
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN_2025 }}
+        with:
+          args: >
+            -Dsonar.branch.name=${{ github.event.client_payload.branch }}
+
+      - name: SonarQube Scan (PR)
+        if: ${{ github.event.client_payload.pr_flag == 'true' }}
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN_2025 }}
+        with:
+          args: >
+            -Dsonar.pullrequest.branch=${{ github.event.client_payload.branch }}
+            -Dsonar.pullrequest.base=${{ github.event.client_payload.pr_base }}
+            -Dsonar.pullrequest.key=${{ github.event.client_payload.pr_number }}
