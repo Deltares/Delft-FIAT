@@ -143,8 +143,7 @@ def check_input_data(
         if isinstance(data, Container):
             if len(data) == 0:
                 raise ValueError(f"{name} is empty")
-            check = [isinstance(e, dtype) for e in data]
-            if not all(check):
+            if not all(isinstance(e, dtype) for e in data):
                 raise TypeError(f"Wrong type encountered in {name}")
             continue
         if data is None or not isinstance(data, dtype):
