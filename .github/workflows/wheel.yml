@@ -1,0 +1,130 @@
+---
+name: Test wheel
+
+on:
+  workflow_call:
+    inputs:
+      python-version: { type: string, required: true }
+      os: { type: string, required: true }
+      artifact-name: { type: string, required: true }
+
+jobs:
+  unit:
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download source distribution
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: dist
+
+      - name: Download cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .cache
+          key: test-data
+          enableCrossOsArchive: true
+
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
+        with:
+          pixi-version: "v0.65.0"
+          environments: wheel
+          locked: false
+          cache: true
+          cache-write: false
+
+      - name: Install wheel
+        shell: bash -l {0}
+        run: |
+          rm -rf src
+          WHEEL=$(ls dist/*.whl)
+          pixi run -e wheel uv pip install "${WHEEL}"
+
+      - name: Test
+        run: pixi run --no-install -e wheel test-cov
+
+  integration:
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download source distribution
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: dist
+
+      - name: Download cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .cache
+          key: test-data
+          enableCrossOsArchive: true
+
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
+        with:
+          pixi-version: "v0.65.0"
+          environments: wheel
+          locked: false
+          cache: true
+          cache-write: false
+
+      - name: Install wheel
+        shell: bash -l {0}
+        run: |
+          rm -rf src
+          WHEEL=$(ls dist/*.whl)
+          pixi run -e wheel uv pip install "${WHEEL}"
+
+      - name: Test
+        run: pixi run --no-install -e wheel test-integration
+
+  system:
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download source distribution
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: dist
+
+      - name: Download cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .cache
+          key: test-data
+          enableCrossOsArchive: true
+
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
+        with:
+          pixi-version: "v0.65.0"
+          environments: wheel
+          locked: false
+          cache: true
+          cache-write: false
+
+      - name: Install wheel
+        shell: bash -l {0}
+        run: |
+          rm -rf src
+          WHEEL=$(ls dist/*.whl)
+          pixi run -e wheel uv pip install "${WHEEL}"
+
+      - name: Test
+        run: pixi run --no-install -e wheel test-system

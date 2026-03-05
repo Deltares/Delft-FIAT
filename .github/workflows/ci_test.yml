@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - master
+      - release/**
     paths:
       - src/fiat/**/*
       - test/**/*
@@ -15,6 +16,7 @@ on:
   pull_request:
     branches:
       - master
+      - release/**
     paths:
       - src/fiat/**/*
       - test/**/*
@@ -22,6 +24,9 @@ on:
       - pyproject.toml
       - .github/workflows/ci_test.yml
       - .github/workflows/test.yml
+permissions:
+  actions: write
+  contents: write
 
 jobs:
   test:

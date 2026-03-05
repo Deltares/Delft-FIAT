@@ -19,6 +19,9 @@ on:
       - data/*
       - pyproject.toml
       - .github/workflows/ci_docs.yml
+permissions:
+  actions: write
+  contents: write
 
 jobs:
   docs:
@@ -38,7 +41,7 @@ jobs:
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.63.2"
+          pixi-version: "v0.65.0"
           environments: docs
           locked: false
           cache: true

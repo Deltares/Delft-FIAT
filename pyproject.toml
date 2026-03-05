@@ -305,6 +305,11 @@ dependencies = { gdal = ">=3.5" }
 [tool.pixi.feature.docs]
 dependencies = { quarto = "==1.8.27" }
 
+# Wheel building env
+[tool.pixi.feature.wheel.dependencies]
+pip = "*"
+uv = "*"
+
 # Extra information when activating
 [tool.pixi.feature.build.activation]
 scripts = ["pyi/activate.sh"]
@@ -335,3 +340,4 @@ test-py314 = { features = ["py314", "all", "gdal", "test"] }
 test-py313 = { features = ["py313", "all", "gdal", "test"] }
 test-py312 = { features = ["py312", "all", "gdal", "test"] }
 test-py311 = { features = ["py311", "all", "gdal", "test"] }
+wheel = { features = ["py313", "gdal", "test", "wheel"], no-default-feature=true }
