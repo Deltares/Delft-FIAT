@@ -2,6 +2,7 @@ project:
   type: website
   output-dir: "_site"
   render:
+    - "*.md"
     - "*.qmd"
     - "*.ipynb"
     - "!PDF_Documentation.qmd"
@@ -50,6 +51,7 @@ website:
           style="height: 40px;"
         />
       </a>
+
   navbar:
     logo: _static/fiat.svg
     search: true

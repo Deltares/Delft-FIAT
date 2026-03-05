@@ -15,7 +15,7 @@ sys.setrecursionlimit(5000)
 # Some general information
 _file = Path(inspect.getfile(lambda: None))
 project_root = _file.parents[1]
-build_dir = Path(project_root, ".build")
+build_dir = Path(project_root, "pyi")
 
 generic_directory_check("bin", project_root)
 
