@@ -140,6 +140,6 @@ class MessageFormatter:
         if self._style.uses_time():
             record.asctime = self.format_time(record)
         s = self.format_message(record)
-        if s[-1:] != "\n":
+        if not s.endswith("\n"):
             s = s + "\n"
         return s

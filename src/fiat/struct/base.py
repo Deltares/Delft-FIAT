@@ -101,8 +101,8 @@ class TableBase(BaseStruct, metaclass=ABCMeta):
         nrow: int,
         ncol: int,
         dtypes: list | tuple,
-        index: tuple = None,
-        columns: tuple = None,
+        index: tuple | None = None,
+        columns: tuple | None = None,
         **kwargs,
     ) -> object:
         # Supercharge
@@ -112,7 +112,7 @@ class TableBase(BaseStruct, metaclass=ABCMeta):
         self._ncol: int = ncol
         self._nrow: int = nrow
         self.dtypes: list = dtypes
-        self.duplicate_columns: dict = None
+        self.duplicate_columns: dict | None = None
 
         # Set the columns and index
         self._set_columns(columns)
@@ -127,8 +127,7 @@ class TableBase(BaseStruct, metaclass=ABCMeta):
                 setattr(self, key, item)
         self.update_kwargs(**kwargs)
 
-    def __del__(self):
-        pass
+    def __del__(self): ...
 
     def __len__(self):
         return self._nrow

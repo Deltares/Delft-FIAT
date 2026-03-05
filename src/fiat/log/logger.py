@@ -187,9 +187,6 @@ class Logger(BaseLogger, metaclass=Logmeta):
 
         _loggers[self.name] = self
 
-    def __del__(self):
-        pass
-
     def __repr__(self):
         _mem_loc = f"{id(self):#018x}".upper()
         _lvl_str = LogLevels(self.level).name

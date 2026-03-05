@@ -303,7 +303,7 @@ class TableLazy(TableBase):
     def __getitem__(
         self,
         oid: Any,
-    ) -> bytes:
+    ) -> bytes | None:
         try:
             idx = self._index[oid]
         except Exception:

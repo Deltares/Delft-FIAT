@@ -47,7 +47,7 @@ class BufferHandler:
         r_count = raw.count(b"\r")
         n_count = raw.count(b"\n")
         if n_count > 9 * r_count:
-            pass
+            self.nchar = b"\n"
         elif n_count < 1.1 * r_count:
             self.nchar = b"\r\n"
         else:

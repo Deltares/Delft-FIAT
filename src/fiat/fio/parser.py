@@ -34,12 +34,12 @@ class CSVParser:
         index: str | None = None,
     ):
         # The internal variables
-        self.columns: list = None
+        self.columns: list | None = None
         self.delimiter: str = delimiter
         self.data: FileBufferHandler = handler
-        self.dtypes: list = None
-        self.duplicates: list = None
-        self.index: list = None
+        self.dtypes: list | None = None
+        self.duplicates: list | None = None
+        self.index: list | None = None
         self.index_col: int = -1
         self.meta: dict = {}
         self.ncol: int = 0

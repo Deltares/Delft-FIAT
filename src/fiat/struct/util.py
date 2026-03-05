@@ -43,7 +43,7 @@ def infer_column_types(arr: ndarray) -> list[str]:
     column_types = []
     for i in range(arr.shape[1]):
         col = arr[:, i]
-        types = set(type(x) for x in col)
+        types = {type(x) for x in col}
         if len(types) == 1:
             column_types.append(types.pop())
         else:

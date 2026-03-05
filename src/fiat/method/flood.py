@@ -15,7 +15,7 @@ def fn_hazard(
     hazard: list,
     ref: float,
     method: str = "mean",
-) -> float:
+) -> tuple[float]:
     """Calculate the hazard value for flood hazard.
 
     Parameters

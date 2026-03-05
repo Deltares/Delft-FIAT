@@ -99,7 +99,7 @@ class BaseHandler:
         self._closed = True
         self.stream = None
 
-    def emit(self):
+    def emit(self, record: LogItem):
         """Emit a message."""
         raise NotImplementedError(NOT_IMPLEMENTED)
 
