@@ -1,17 +1,19 @@
 ---
 name: Purge Cache
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: "30 7 * * 1"
   workflow_call:
+  workflow_dispatch:
 
 jobs:
-  cleanup:
+  purge:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - name: Cleanup caches
+      - name: Clear cache
         run: |
           if gh cache list | grep -vq "No cache"; then
             gh cache delete -a

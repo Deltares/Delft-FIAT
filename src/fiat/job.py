@@ -7,7 +7,7 @@ from typing import Callable, Generator, Iterator
 
 from fiat.log import spawn_logger
 
-logger = spawn_logger("fiat.job")
+logger = spawn_logger(__name__)
 
 
 def generate_jobs(
@@ -56,6 +56,8 @@ def execute_pool(
     func: Callable,
     jobs: Generator | Iterator,
     threads: int,
+    initializer: Callable,
+    initargs: tuple,
 ):
     """Execute a python process pool.
 
@@ -73,6 +75,7 @@ def execute_pool(
     # If there is only one thread needed, execute in the main process
     res = []
     if threads == 1:
+        initializer(*initargs)
         for job in jobs:
             r = func(**job)
             res.append(r)
@@ -84,6 +87,8 @@ def execute_pool(
     pool = ProcessPoolExecutor(
         max_workers=threads,
         mp_context=ctx,
+        initializer=initializer,
+        initargs=initargs,
     )
 
     # Go through all the jobs

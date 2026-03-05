@@ -22,7 +22,7 @@ def exposure_geom_write(srs_4326: osr.SpatialReference) -> GeomIO:
 def hazard_write(srs_4326: osr.SpatialReference) -> GridIO:
     ds = open_grid("tmp", mode="w")  # Write only
     assert isinstance(ds, GridIO)
-    ds.create(shape=(2, 3), nb=1, type=6)  # 6 = float32
+    ds.create(shape=(2, 3), nb=1, dtype=6)  # 6 = float32
     ds.set_source_srs(srs_4326)
     return ds
 

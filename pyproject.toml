@@ -33,6 +33,7 @@ requires-python = ">=3.11"
 dependencies = [
     "gdal>=3.5",
     "numpy",
+    "scipy",
     "regex",
 ]
 
@@ -204,13 +205,13 @@ clean-docs-site = { cmd = ["rm", "-rf", "docs/_site"] }
 docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 
 # Testdata
-testdata = { cmd = ["python", ".testdata/create_test_data.py"] }
+testdata = { cmd = ["python", "data/create_test_data.py"] }
 
 # Build specific tasks
 [tool.pixi.feature.build.tasks]
 build = { cmd = [
     "pyinstaller",
-    "$PIXI_PROJECT_ROOT/.build/build.spec",
+    "$PIXI_PROJECT_ROOT/pyi/build.spec",
     "--distpath",
     "$PIXI_PROJECT_ROOT/bin",
     "--workpath",
@@ -302,14 +303,14 @@ dependencies = { gdal = ">=3.5" }
 
 # Docs builder framework
 [tool.pixi.feature.docs]
-dependencies = { quarto = "==1.8.25" }
+dependencies = { quarto = "==1.8.27" }
 
 # Extra information when activating
 [tool.pixi.feature.build.activation]
-scripts = [".build/activate.sh"]
+scripts = ["pyi/activate.sh"]
 
 [tool.pixi.feature.build.target.win-64.activation]
-scripts = [".build/activate.bat"]
+scripts = ["pyi/activate.bat"]
 
 ## Python environments
 [tool.pixi.feature.py314]

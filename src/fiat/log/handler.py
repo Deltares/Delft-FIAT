@@ -12,9 +12,8 @@ from fiat.log.util import (
     DEFAULT_TIME_FMT,
     LogItem,
     check_loglevel,
-    global_acquire,
-    global_release,
 )
+from fiat.thread import global_acquire, global_release
 from fiat.util import NOT_IMPLEMENTED
 
 __all__ = ["StreamHandler", "FileHandler"]

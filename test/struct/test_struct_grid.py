@@ -31,12 +31,12 @@ def test_gridband_general_properties(hazard_event_data: GridIO):
 
     # Assert important properties/ attributes
     assert gb.description == ""
-    assert gb.dtype == 6
-    assert gb.dtype_name == "Float32"
+    assert gb.dtype == 6  # Float32
     assert gb.index == ()
     assert gb.kwargs == {}
     assert gb.meta["NETCDF_VARNAME"] == "Band1"
-    assert gb.nodata == 9.969209968386869e36  # Awful number
+    assert gb.name is None
+    assert gb.nodata == -9999
 
 
 def test_gridband_spatial_properties(hazard_event_data: GridIO):
@@ -95,16 +95,28 @@ def test_gridband_iter(hazard_event_data: GridIO):
     assert window == (8, 8, 2, 2)
 
 
-def test_gridband_get_metadata_item(hazard_event_data: GridIO):
+def test_gridband_get_meta(hazard_event_data: GridIO):
     # Retrieve the grid band from the I/O
     gb = hazard_event_data[0]
 
     # Call the method
-    assert gb.get_metadata_item("NETCDF_VARNAME") == "Band1"
-    assert gb.get_metadata_item("foo") == "None"  # Gdal stuff...
+    assert gb.get_meta("NETCDF_VARNAME") == "Band1"
+    assert gb.get_meta("foo") is None  # Gdal stuff...
 
 
-def test_gridband_write_chunk(hazard_write: GridIO):
+def test_gridband_nodata(hazard_write: GridIO):
+    # Retrieve the grid band from the I/O
+    gb = hazard_write[0]
+    # Assert the current nodata value
+    assert gb.nodata is None
+
+    # Set the nodata via the setter
+    gb.nodata = -9999
+    # Assert the nodata
+    assert gb.nodata == -9999
+
+
+def test_gridband_write(hazard_write: GridIO):
     # Retrieve the grid band from the I/O
     gb = hazard_write[0]
     # Assert the current state of the data
@@ -114,7 +126,7 @@ def test_gridband_write_chunk(hazard_write: GridIO):
     )
 
     # Write a chunk to the band
-    gb.write_chunk(np.array([[2, 2], [2, 2]]), (0, 0))
+    gb.write(np.array([[2, 2], [2, 2]]), (0, 0))
 
     # Assert the output
     np.testing.assert_array_equal(

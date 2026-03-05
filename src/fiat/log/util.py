@@ -1,6 +1,5 @@
 """Logging utility."""
 
-import threading
 import time
 from enum import Enum
 
@@ -8,8 +7,6 @@ __all__ = ["LogItem"]
 
 DEFAULT_FMT = "{asctime:20s}{levelname:8s}{message}"
 DEFAULT_TIME_FMT = "%Y-%m-%d %H:%M:%S"
-
-_Global_and_Destruct_Lock = threading.RLock()
 
 
 class LogLevels(Enum):
@@ -20,18 +17,6 @@ class LogLevels(Enum):
     WARNING = 3
     ERROR = 4
     DEAD = 5
-
-
-def global_acquire():
-    """Global method for acquiring global lock."""
-    if _Global_and_Destruct_Lock:
-        _Global_and_Destruct_Lock.acquire()
-
-
-def global_release():
-    """Global method for releasing global lock."""
-    if _Global_and_Destruct_Lock:
-        _Global_and_Destruct_Lock.release()
 
 
 def check_loglevel(level):

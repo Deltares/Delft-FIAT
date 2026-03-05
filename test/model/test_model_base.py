@@ -200,7 +200,7 @@ def test_basemodel_read_vulnerability(
     assert m.vulnerability is not None
     assert isinstance(m.vulnerability, Table)
     # Had been upscaled so a long index
-    assert len(m.vulnerability.index) == 501
+    assert len(m.vulnerability.index) == 21
 
 
 def test_basemodel_read_vulnerability_argument(
@@ -218,21 +218,3 @@ def test_basemodel_read_vulnerability_argument(
     # Assert the state
     assert m.vulnerability is not None
     assert isinstance(m.vulnerability, Table)
-
-
-def test_basemodel_read_vulnerability_step_size(
-    vulnerability_path: Path,
-    config_empty: Configurations,
-):
-    # Adjust the config for a vulnerability file to be read
-    config_empty.set("vulnerability.file", vulnerability_path)
-    config_empty.set("vulnerability.step_size", 0.1)
-
-    # Create the object
-    m = BaseModel(config_empty)
-
-    # Assert the state
-    assert m.vulnerability is not None
-    assert isinstance(m.vulnerability, Table)
-    # Had been upscaled so a long index
-    assert len(m.vulnerability.index) == 61

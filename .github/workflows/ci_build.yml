@@ -1,12 +1,11 @@
 ---
 name: Build
-
 on:
   push:
     branches:
       - master
     paths:
-      - .build/*
+      - pyi/*
       - src/fiat/**/*
       - pyproject.toml
       - pixi.lock
@@ -15,7 +14,7 @@ on:
     branches:
       - master
     paths:
-      - .build/*
+      - pyi/*
       - src/fiat/**/*
       - pyproject.toml
       - pixi.lock
@@ -61,4 +60,4 @@ jobs:
           pixi run -e build testdata
 
       - name: Test Binary
-        run: ./bin/release/fiat run .testdata/geom_event.toml
+        run: ./bin/release/fiat run data/geom_event.toml

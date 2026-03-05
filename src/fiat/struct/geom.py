@@ -54,7 +54,7 @@ class GeomLayer(BaseStruct):
         self._cur_index = 0
         return self
 
-    def __next__(self):
+    def __next__(self) -> ogr.Feature:
         if self._cur_index < self._count:
             r = self._obj.GetNextFeature()
             self._cur_index += 1
@@ -212,7 +212,7 @@ class GeomLayer(BaseStruct):
             The feature to be added.
         fmap : zip
             Extra fields data, i.e. a zip object of fields id's
-            and the correspondingv alues
+            and the corresponding values.
         """
         ft = ogr.Feature(self.defn)
         ft.SetFrom(in_ft)

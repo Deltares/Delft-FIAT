@@ -3,7 +3,7 @@
 import sys
 import time
 from itertools import chain
-from multiprocessing import Manager
+from multiprocessing.synchronize import Lock
 from pathlib import Path
 
 from fiat.cfg import Configurations
@@ -23,19 +23,18 @@ from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.geom_util import get_exposure_meta
-from fiat.model.util import get_hazard_meta, get_vulnerability_meta
-from fiat.model.worker_geom import worker
+from fiat.model.geom_worker import initialize_pool, worker
+from fiat.model.util import create_1d_chunks, get_hazard_meta, get_vulnerability_meta
 from fiat.struct import Container, Table
 from fiat.util import (
     EXPOSURE_GEOM_FILE,
     EXPOSURE_GEOM_SETTINGS,
-    create_1d_chunks,
     distribute_threads,
     generic_path_check,
     get_srs_repr,
 )
 
-logger = spawn_logger("fiat.model.geom")
+logger = spawn_logger(__name__)
 
 
 class GeomModel(BaseModel):
@@ -170,8 +169,7 @@ class GeomModel(BaseModel):
         )
 
         # Setup the basic metadata
-        hazard_meta = get_hazard_meta(self.hazard, risk=self.risk)
-        hazard_meta.type = self.type
+        hazard_meta = get_hazard_meta(self.hazard, risk=self.risk, method=self.method)
         vulnerability_meta = get_vulnerability_meta(self.vulnerability)
 
         # Create the output directory and files
@@ -184,10 +182,8 @@ class GeomModel(BaseModel):
             threads=self.threads,
         )
 
-        # Setup the manager
-        if self._mp_manager is None:
-            self._mp_manager = Manager()
-        self._queue = self._mp_manager.Queue(maxsize=10000)
+        # Setup the lock
+        lock = Lock(ctx=self.ctx)
 
         # Setup the jobs
         jobs_list = []
@@ -199,31 +195,23 @@ class GeomModel(BaseModel):
             )
             # Get the exposure field meta
             exposure_meta = get_exposure_meta(
-                exposure.layer._columns,
-                module=self.module,
+                exposure=exposure,
+                hazard_meta=hazard_meta,
+                method=self.method,
                 types=self.exposure_types,
-                bands=hazard_meta.names,
-                risk=self.risk,
             )
             # Get the chunks based on the load distribution
             chunks = create_1d_chunks(exposure.layer.size, count)
-            # Second setup the lock
-            lock = None
-            if self.threads != 1:
-                lock = self._mp_manager.Lock()
             # Generate the jobs
             jobs = generate_jobs(
                 {
                     "output_dir": self.cfg.get("output.path"),
                     "hazard": self.hazard,
                     "hazard_meta": hazard_meta,
-                    "vulnerability": self.vulnerability,
                     "vulnerability_meta": vulnerability_meta,
                     "exposure": exposure,
                     "exposure_meta": exposure_meta,
                     "chunk": chunks,
-                    "queue": self._queue,
-                    "lock": lock,
                 },
             )
             jobs_list.append(jobs)
@@ -234,10 +222,12 @@ class GeomModel(BaseModel):
             _s = time.time()
             logger.info("Busy...")
             execute_pool(
-                ctx=self._mp_ctx,
+                ctx=self.ctx,
                 func=worker,
                 jobs=chain(*jobs_list),
                 threads=self.threads,
+                initializer=initialize_pool,
+                initargs=(lock, self.queue),
             )
             _e = time.time() - _s
             logger.info(f"Elapsed time: {round(_e, 2)} seconds")
@@ -251,6 +241,3 @@ class GeomModel(BaseModel):
         else:
             logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
             logger.info("Model run is done!")
-
-        # Shutdown the manager
-        self._mp_manager.shutdown()

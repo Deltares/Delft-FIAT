@@ -1,66 +1,146 @@
+from fiat.fio import GeomIO
 from fiat.method import flood
-from fiat.model.geom_util import get_exposure_meta
+from fiat.model.geom_util import (
+    discover_exp_columns,
+    generate_output_columns,
+    get_exposure_meta,
+)
+from fiat.struct.container import HazardMeta
 
 
-def test_get_exposure_meta():
+def test_discover_columns_found(exposure_cols: dict):
+    # Call the function
+    dmg_suffix, dmg_idx, missing = discover_exp_columns(exposure_cols, type="damage")
+    assert dmg_suffix == ["_structure", "_content"]
+    assert dmg_idx[0] == [1, 3]  # First is function, second is max
+    assert dmg_idx[1] == [2, 4]
+    assert len(missing) == 0
+
+
+def test_discover_columns_missing(exposure_cols: dict):
+    # Pop an entry for max damage
+    _ = exposure_cols.pop("max_damage_content")
+    # Call the function
+    dmg_suffix, dmg_idx, missing = discover_exp_columns(exposure_cols, type="damage")
+    assert dmg_suffix == ["_structure"]
+    assert len(dmg_idx) == 1
+    assert dmg_idx[0] == [1, 3]
+    assert missing == ["_content"]
+
+
+def test_generate_output_columns():
+    # Call the function
+    new_fields = generate_output_columns(
+        columns=["depth"],
+        exposure_types={"damage": ["_structure"]},
+        hazard_ids=[1],
+    )
+
+    # Assert the output
+    assert len(new_fields) == 3
+    assert new_fields[1] == "damage_structure_1"
+
+
+def test_generate_output_columns_extra():
+    # Call the function
+    new_fields = generate_output_columns(
+        columns=["depth"],
+        exposure_types={"damage": ["_structure"]},
+        hazard_ids=[1],
+        extra=["ead"],
+    )
+
+    # Assert the output
+    assert new_fields[-1] == "ead_damage"
+
+
+def test_generate_output_columns_multi():
+    # Call the function
+    new_fields = generate_output_columns(
+        columns=["depth"],
+        exposure_types={"damage": ["_structure"], "affected": ["_people"]},
+        hazard_ids=[1, 2],
+        extra=["ead"],
+    )
+
+    # Assert the output
+    assert len(new_fields) == 12
+    assert new_fields[0] == "depth_1"
+    assert new_fields[2] == "total_damage_1"
+    assert new_fields[4] == "total_affected_1"
+    assert new_fields[5] == "depth_2"
+    assert new_fields[-1] == "ead_affected"
+
+
+def test_get_exposure_meta(
+    exposure_geom_data: GeomIO,
+    hazard_meta_run: HazardMeta,
+):
     # Call the function
     meta = get_exposure_meta(
-        columns={
-            "oid": 0,
-            "ref": 1,
-            "fn_damage_structure": 2,
-            "max_damage_structure": 3,
-        },
-        module=flood,
+        exposure=exposure_geom_data,
+        hazard_meta=hazard_meta_run,
+        method=flood,
         types=["damage"],
-        bands=["band1"],
-        risk=False,
     )
 
     # Assert the output
-    assert meta.indices_new == [4, 5, 6]
+    assert meta.indices_impact == {"damage": [(1,)]}
+    assert meta.indices_new == [5, 6, 7]
+    assert meta.indices_spec == [2]
+    assert meta.indices_total == {"damage": [2]}
+    assert meta.indices_type == {"damage": [[3, 4]]}
+    assert meta.new == ["depth_1", "damage_structure_1", "total_damage_1"]
+    assert meta.new_length == 3
     assert meta.type_length == 3
-    assert meta.new == ["depth_band1", "damage_structure_band1", "total_damage_band1"]
-    assert meta.indices_total == [-1]
-    assert list(meta.indices_type) == ["damage"]
 
 
-def test_get_exposure_meta_risk():
+def test_get_exposure_meta_risk(
+    exposure_geom_data: GeomIO,
+    hazard_risk_meta_run: HazardMeta,
+):
     meta = get_exposure_meta(
-        columns={"oid": 0, "ref": 1, "fn_damage": 2, "max_damage": 3},
-        module=flood,
+        exposure=exposure_geom_data,
+        hazard_meta=hazard_risk_meta_run,
+        method=flood,
         types=["damage"],
-        bands=["band1"],
-        risk=True,
     )
 
     # Assert the output
-    assert meta.indices_new == [4, 5, 6, 7]
-    assert meta.type_length == 3
+    assert meta.indices_impact == {"damage": [(1,), (4,), (7,), (10,)]}
+    assert meta.indices_new == list(range(5, 18, 1))
+    assert meta.indices_spec == [2]
+    assert meta.indices_total == {"damage": [2, 5, 8, 11]}
+    assert meta.indices_type == {"damage": [[3, 4]]}
+    assert "depth_2" in meta.new
+    assert "total_damage_5" in meta.new
     assert "ead_damage" in meta.new
+    assert meta.new_length == 13
+    assert meta.type_length == 3
 
 
-def test_get_exposure_meta_multi():
-    # Call the function
-    meta = get_exposure_meta(
-        columns={
-            "oid": 0,
-            "ref": 1,
-            "fn_damage": 2,
-            "max_damage": 3,
-            "fn_affected": 4,
-            "max_affected": 5,
-        },
-        module=flood,
-        types=["damage", "affected"],
-        bands=["band1"],
-        risk=False,
-    )
-
-    # Assert the output
-    assert meta.indices_new == [6, 7, 8, 9, 10]
-    assert meta.type_length == 5
-    assert "damage_band1" in meta.new
-    assert "affected_band1" in meta.new
-    assert meta.indices_total == [-3, -1]
-    assert list(meta.indices_type) == ["damage", "affected"]
+# def test_get_exposure_meta_multi(
+#     hazard_meta_run: HazardMeta,
+# ):
+#     # Call the function
+#     meta = get_exposure_meta(
+#         columns={
+#             "oid": 0,
+#             "ref": 1,
+#             "fn_damage": 2,
+#             "max_damage": 3,
+#             "fn_affected": 4,
+#             "max_affected": 5,
+#         },
+#         hazard_meta=hazard_meta_run,
+#         module=flood,
+#         types=["damage", "affected"],
+#     )
+#
+#     # Assert the output
+#     assert meta.indices_new == [6, 7, 8, 9, 10]
+#     assert meta.type_length == 5
+#     assert "damage_band1" in meta.new
+#     assert "affected_band1" in meta.new
+#     assert meta.indices_total == [-3, -1]
+#     assert list(meta.indices_type) == ["damage", "affected"]

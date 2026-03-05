@@ -10,14 +10,14 @@ from fiat.fio.handler import BufferHandler, FileBufferHandler
 
 ## Paths to data and temporary data
 @pytest.fixture
-def exposure_geom_empty_tmp_path(tmp_path: Path, exposure_geom_dataset: Path) -> Path:
+def exposure_geom_empty_tmp_path(tmp_path: Path, exposure_geom_data: Path) -> Path:
     p = Path(tmp_path, "tmp.geojson")
     with open_geom(p, mode="w") as writer:
         writer.create_layer(
-            exposure_geom_dataset.layer.srs,
-            exposure_geom_dataset.layer.geom_type,
+            exposure_geom_data.layer.srs,
+            exposure_geom_data.layer.geom_type,
         )
-        writer.layer.set_from_defn(exposure_geom_dataset.layer.defn)
+        writer.layer.set_from_defn(exposure_geom_data.layer.defn)
     assert p.is_file()
     return p
 

@@ -34,8 +34,8 @@ def reproject(
     dst_gtf: list | tuple = None,
     dst_width: int = None,
     dst_height: int = None,
-    out_dir: Path | str = None,
     resample: int = 0,
+    output_dir: Path | str = None,
 ) -> object:
     """Reproject (warp) a grid.
 
@@ -53,12 +53,12 @@ def reproject(
         The width of the warped dataset in pixels.
     dst_height : int, optional
         The height of the warped dataset in pixels.
-    out_dir : Path | str, optional
-        Output directory. If not defined, if will be inferred from the input object.
     resample : int, optional
         Resampling method during warping. Interger corresponds with a resampling
         method defined by GDAL. For more information: click \
 [here](https://gdal.org/api/gdalwarp_cpp.html#_CPPv415GDALResampleAlg).
+    output_dir : Path | str, optional
+        Output directory. If not defined, if will be inferred from the input object.
 
     Returns
     -------
@@ -66,14 +66,14 @@ def reproject(
         Output object. A lazy reading of the just creating raster file.
     """
     # Set some kwargs before moving on
-    _gs_kwargs = {
+    gs_kwargs = {
         "chunk": gs.chunk,
     }
 
-    if not Path(str(out_dir)).is_dir():
-        out_dir = gs.path.parent
+    if not Path(str(output_dir)).is_dir():
+        output_dir = gs.path.parent
 
-    fname = Path(out_dir, f"{gs.path.stem}_repr.tif")
+    fname = Path(output_dir, f"{gs.path.stem}_repr.tif")
 
     out_srs = osr.SpatialReference()
     out_srs.SetFromUserInput(dst_srs)
@@ -108,4 +108,4 @@ def reproject(
     out_srs = None
 
     gs.close()
-    return open_grid(fname, **_gs_kwargs)
+    return open_grid(fname, **gs_kwargs)

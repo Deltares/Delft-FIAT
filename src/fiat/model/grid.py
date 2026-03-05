@@ -1,11 +1,12 @@
 """The FIAT grid model."""
 
+import sys
 import time
 from pathlib import Path
 
+from fiat.cfg import Configurations
 from fiat.check import (
-    check_exp_grid_dmfs,
-    check_grid_exact,
+    check_input_data,
     check_internal_srs,
     check_vs_srs,
 )
@@ -13,14 +14,23 @@ from fiat.fio import GridIO, open_grid
 from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
-from fiat.model import worker_grid
 from fiat.model.base import BaseModel
+from fiat.model.grid_util import equal_grid, get_exposure_meta
+from fiat.model.grid_worker import initialize_pool, worker
+from fiat.model.grid_writer import GridWriter, create_grid_handle
 from fiat.model.util import (
-    GRID_PREFER,
+    create_2d_chunks,
+    get_hazard_meta,
+    get_vulnerability_meta,
 )
-from fiat.util import EXPOSURE_GRID_FILE, generic_path_check, get_srs_repr
+from fiat.struct import Table
+from fiat.util import (
+    EXPOSURE_GRID_FILE,
+    generic_path_check,
+    get_srs_repr,
+)
 
-logger = spawn_logger("fiat.model.grid")
+logger = spawn_logger(__name__)
 
 
 class GridModel(BaseModel):
@@ -38,60 +48,18 @@ class GridModel(BaseModel):
 
     def __init__(
         self,
-        cfg: object,
+        cfg: Configurations,
     ):
         super().__init__(cfg)
 
         # Declare
         self.exposure: GridIO | None = None
-        self.equal = True
 
         # Setup the model
         self.read_exposure()
 
     def __del__(self):
         BaseModel.__del__(self)
-
-    def create_equal_grids(self):
-        """Make the hazard and exposure grid equal spatially if necessary."""
-        if self.equal:
-            return
-
-        # Get which way is preferred to reproject
-        prefer = self.cfg.get("model.grid.prefer", "exposure")
-        if prefer not in ["hazard", "exposure"]:
-            raise ValueError(
-                f"Preference value {prefer} not known. Chose from \
-'hazard' or 'exposure'."
-            )
-        prefer_bool = prefer == "exposure"
-
-        # Setup the data sets
-        data = self.exposure_grid
-        data_warp = self.hazard
-        if not prefer_bool:
-            data = self.hazard
-            data_warp = self.exposure_grid
-
-        # Reproject the data
-        logger.info(
-            f"Reprojecting {GRID_PREFER[not prefer_bool]} \
-data to {prefer} data"
-        )
-        data_warped = grid.reproject(
-            data_warp,
-            get_srs_repr(data.srs),
-            data.geotransform,
-            *data.shape_xy,
-        )
-
-        # Set the output
-        if prefer_bool:
-            self.hazard = data_warped
-            self.cfg.set("hazard.file", data_warped.path)
-        else:
-            self.exposure_grid = data_warped
-            self.cfg.set("exposure.grid.file", data_warped.path)
 
     def read_exposure(
         self,
@@ -132,12 +100,6 @@ data to {prefer} data"
         ## checks
         logger.info("Executing exposure data checks...")
 
-        # Check if all damage functions are correct
-        check_exp_grid_dmfs(
-            [item.get_metadata_item("fn_damage") for item in data],
-            self.vulnerability.columns,
-        )
-
         # Check if there is a srs present
         check_internal_srs(
             data.srs,
@@ -157,62 +119,102 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         # Reset to ensure the entry is present
         self.cfg.set(EXPOSURE_GRID_FILE, path)
         ## When all is done, add it
-        self.exposure_grid = data
-
-    def resolve(self):
-        """Create EAD output from the outputs of different return periods.
-
-        This is done but reading, loading and iterating over the those files.
-        In contrary to the geometry model, this does not concern temporary data.
-
-        - This method might become private.
-        """
-        if self.risk:
-            logger.info("Setting up risk calculations..")
-
-            # Time the function
-            _s = time.time()
-            worker_grid.worker_ead(
-                self.cfg,
-                self.exposure_grid.chunk,
-            )
-            _e = time.time() - _s
-            logger.info(f"Risk calculation time: {round(_e, 2)} seconds")
+        self.exposure = data
 
     def run(self):
         """Run the grid model with provided settings.
 
         Generates output in the specified `output.path` directory.
         """
+        logger.info("Running the model")
+        # Quick check if all cdata is set
+        check_input_data(
+            ["hazard", self.hazard, GridIO],
+            ["vulnerability", self.vulnerability, Table],
+            ["exposure", self.exposure, GridIO],
+        )
+
+        # Setup the basic metadata
+        hazard_meta = get_hazard_meta(self.hazard, risk=self.risk, method=self.method)
+        vulnerability_meta = get_vulnerability_meta(self.vulnerability)
+        # Get the exposure meta
+        exposure_meta = get_exposure_meta(
+            self.exposure,
+            hazard_meta=hazard_meta,
+            vulnerability_meta=vulnerability_meta,
+        )
+
+        # Create the output directory and files
+        self.cfg.setup_output_dir()
+
         # Check for equal hazard and exposure grids
-        self.equal = check_grid_exact(self.hazard, self.exposure_grid)
-        self.create_equal_grids()
+        self.hazard, self.exposure = equal_grid(
+            self.hazard,
+            self.exposure,
+            first=self.cfg.get("model.grid.leading", True),
+        )
+
+        # Get the output path
+        output_name = self.cfg.get("output.grid.name") or self.exposure.path.name
+        output_filepath = Path(self.cfg.output_dir, output_name)
+        # Setup the queue and the writer
+        self.queue = self.ctx.Queue(maxsize=1000)
+        handle = create_grid_handle(
+            path=output_filepath,
+            shape=self.exposure.shape_xy,
+            nb=exposure_meta.nb,
+            srs=self.exposure.srs,
+            gtf=self.exposure.geotransform,
+        )
+        writer = GridWriter(handle=handle, queue=self.queue, ctx=self.ctx)
+        # Get the chunks and the window(s)
+        chunks = list(create_2d_chunks(self.hazard.shape, parts=self.threads))
+        window = self.cfg.get("model.grid.chunk", fallback=self.exposure.shape)
+        mem_ids = [f"grid_worker{idx}" for idx, _ in enumerate(chunks)]
+        for mem_id, chunk in zip(mem_ids, chunks):
+            writer.setup_block(mem_id=mem_id, shape=window)
+        writer.start()
 
         # Setup the jobs
         jobs = generate_jobs(
             {
-                "cfg": self.cfg,
-                "haz": self.hazard,
-                "idx": range(1, self.hazard.size + 1),
-                "vul": self.vulnerability,
-                "exp": self.exposure_grid,
-            }
+                "mem_id": mem_ids,
+                "hazard": self.hazard,
+                "hazard_meta": hazard_meta,
+                "vulnerability_meta": vulnerability_meta,
+                "exposure": self.exposure,
+                "exposure_meta": exposure_meta,
+                "chunk": chunks,
+                "window": [window],
+            },
+            tied=["mem_id", "chunk"],
         )
 
-        # Execute the jobs
-        _s = time.time()
-        logger.info("Busy...")
-        pcount = min(self.threads, self.hazard.size)
-        execute_pool(
-            ctx=self._mp_ctx,
-            func=worker_grid.worker,
-            jobs=jobs,
-            threads=pcount,
-        )
+        # Execute the jobs in a multiprocessing pool
+        # Wrap to prevent weird error propagation with the pipes
+        try:
+            _s = time.time()
+            logger.info("Busy...")
+            execute_pool(
+                ctx=self.ctx,
+                func=worker,
+                jobs=jobs,
+                threads=self.threads,
+                initializer=initialize_pool,
+                initargs=(self.queue, writer.piperecv),
+            )
+            _e = time.time() - _s
+            logger.info(f"Elapsed time: {round(_e, 2)} seconds")
 
-        # Last logging messages
-        _e = time.time() - _s
-        logger.info(f"Calculations time: {round(_e, 2)} seconds")
-        self.resolve()
-        logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
-        logger.info("Grid calculation are done!")
+        except BaseException:
+            exc_info = sys.exc_info()
+            msg = ",".join([str(item) for item in exc_info[1].args])
+            logger.error(msg)
+            exc_info = None
+
+        else:
+            logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
+            logger.info("Model run is done!")
+
+        # Close the writer
+        writer.close()

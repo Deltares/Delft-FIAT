@@ -58,7 +58,7 @@ def test_gridio_properties(hazard_event_path: Path):
     gio = GridIO(hazard_event_path)
 
     # Assert that the properties return info and assert that the info is correct
-    assert gio.band_names == ["Band1"]
+    assert gio.band_names == [None]
     np.testing.assert_array_almost_equal(
         gio.bounds,
         [0.0, 0.0, 10.0, 10.0],
@@ -169,7 +169,7 @@ def test_gridio_write(tmp_path: Path, srs_4326: osr.SpatialReference):
     gio.create(
         shape=(7, 5),  # Not square
         nb=2,  # Two bands
-        type=6,  # Float 32 bit
+        dtype=6,  # Float 32 bit
     )
 
     # Assert the information

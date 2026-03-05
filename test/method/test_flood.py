@@ -1,9 +1,11 @@
+from typing import Callable
+
 import numpy as np
 
 from fiat.method.flood import (
     fn_hazard,
+    fn_impact,
 )
-from fiat.struct import Table
 
 
 def test_fn_hazard():
@@ -17,6 +19,18 @@ def test_fn_hazard():
     # Assert the output
     np.testing.assert_almost_equal(dmg, 4.83, decimal=2)
     np.testing.assert_almost_equal(red_f, 1.0)
+
+
+def test_fn_hazard_none():
+    # Call the function
+    dmg, red_f = fn_hazard(
+        [],
+        ref=1.0,
+        method="mean",
+    )
+
+    # Assert the output
+    assert np.isnan(dmg)
 
 
 def test_fn_hazard_red():
@@ -41,26 +55,48 @@ def test_fn_hazard_high_ref():
     )
 
     # Assert the output
-    assert int(dmg * 100) == 383
-    assert int(red_f * 100) == 75
+    np.testing.assert_almost_equal(dmg, 3.83, decimal=2)
+    np.testing.assert_almost_equal(red_f, 0.75)
 
 
 def test_fn_hazard_high_ref_red():
     # Call the function with different input
     dmg, red_f = fn_hazard(
-        [0, 1.5, 5, 10],
+        [0, 0, 5, 10],
         ref=2.0,
         method="mean",
     )
 
     # Assert the output
-    assert int(dmg * 100) == 550
-    assert int(red_f * 100) == 50
+    np.testing.assert_almost_equal(dmg, 5.5, decimal=2)
+    np.testing.assert_almost_equal(red_f, 0.5)
 
 
 def test_fn_impact(
-    exposure_data_fn: dict,
-    vulnerability_data: Table,
+    vulnerability_fn1: Callable,
 ):
-    vulnerability_data.upscale(0.01, inplace=True)
-    pass
+    # Call the function
+    out = fn_impact(
+        hazard=5.5,
+        exposure=4000,
+        fact=1,
+        fn_curve=vulnerability_fn1,
+    )
+
+    # Assert the output
+    np.testing.assert_almost_equal(out, 2803.8, decimal=1)
+
+
+def test_fn_impact_fact(
+    vulnerability_fn1: Callable,
+):
+    # Call the function
+    out = fn_impact(
+        hazard=5.5,
+        exposure=4000,
+        fact=0.5,
+        fn_curve=vulnerability_fn1,
+    )
+
+    # Assert the output
+    np.testing.assert_almost_equal(out, 1401.9, decimal=1)

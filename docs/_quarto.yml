@@ -167,87 +167,84 @@ quartodoc:
 
   # Basics of FIAT
   sections:
-    - title: Basics
-    - subtitle: Main
-      desc: Main components of working with FIAT.
+    - title: Models
+      desc: FIAT models.
       package: fiat
       contents:
-        - name: Configurations
-          children: separate
         - name: GeomModel
           children: separate
         - name: GridModel
           children: separate
-    - subtitle: Methods
-      desc: The hazard functions
-      package: fiat.method
-      contents:
-        - ead.fn_density
-        - ead.fn_ead
-        - flood.fn_hazard
-        - flood.fn_impact
+    # - subtitle: Methods
+    #   desc: The hazard functions
+    #   package: fiat.method
+    #   contents:
+    #     - ead.fn_density
+    #     - ead.fn_ead
+    #     - flood.fn_hazard
+    #     - flood.fn_impact
 
-    # Logging
-    - title: Logging
-      desc: Logging module of FIAT
-      package: fiat.log
-      contents:
-        - spawn_logger
-        - setup_default_log
-        - setup_mp_log
-        - name: Logger
-          children: separate
-        - name: Receiver
-          children: separate
+    # # Logging
+    # - title: Logging
+    #   desc: Logging module of FIAT
+    #   package: fiat.log
+    #   contents:
+    #     - spawn_logger
+    #     - setup_default_log
+    #     - setup_mp_log
+    #     - name: Logger
+    #       children: separate
+    #     - name: Receiver
+    #       children: separate
 
-    # Geospatial methods
-    - title: GIS
-    - subtitle: Geometry (vector)
-      desc: Geometry specific methods
-      package: fiat.gis.geom
-      contents:
-        - point_in_geom
-        - reproject
-    - subtitle: Grid (raster)
-      desc: Grid specific methods
-      package: fiat.gis.grid
-      contents:
-        - reproject
-    - subtitle: Overlay
-      desc: For combined vector and raster methods
-      package: fiat.gis.overlay
-      contents:
-        - clip
-        - clip_weighted
-        - pin
-    - subtitle: Utility
-      desc: Some utility for the GIS module (basic)
-      package: fiat.gis.util
-      contents:
-        - world2pixel
-        - pixel2world
+    # # Geospatial methods
+    # - title: GIS
+    # - subtitle: Geometry (vector)
+    #   desc: Geometry specific methods
+    #   package: fiat.gis.geom
+    #   contents:
+    #     - point_in_geom
+    #     - reproject
+    # - subtitle: Grid (raster)
+    #   desc: Grid specific methods
+    #   package: fiat.gis.grid
+    #   contents:
+    #     - reproject
+    # - subtitle: Overlay
+    #   desc: For combined vector and raster methods
+    #   package: fiat.gis.overlay
+    #   contents:
+    #     - clip
+    #     - clip_weighted
+    #     - pin
+    # - subtitle: Utility
+    #   desc: Some utility for the GIS module (basic)
+    #   package: fiat.gis.util
+    #   contents:
+    #     - world2pixel
+    #     - pixel2world
 
-    # I/O module
-    - title: I/O
-    - subtitle: Methods
-      desc: Input/ output bound operations
-      package: fiat.fio
-      contents:
-        - merge_geom_layers
-        - open_csv
-        - open_geom
-        - open_grid
-    - subtitle: Objects
-      desc: Objects constructed from data
-      package: fiat.fio
-      contents:
-        - name: GeomIO
-          children: separate
-        - name: GridIO
-          children: separate
-        - name: Grid
-          children: separate
-        - name: Table
-          children: separate
-        - name: TableLazy
-          children: separate
+    # # I/O module
+    # - title: I/O
+    # - subtitle: Methods
+    #   desc: Input/ output bound operations
+    #   package: fiat.fio
+    #   contents:
+    #     - merge_geom_layers
+    #     - open_csv
+    #     - open_geom
+    #     - open_grid
+    # - subtitle: Objects
+    #   desc: Objects constructed from data
+    #   package: fiat.fio
+    #   contents:
+    #     - name: GeomIO
+    #       children: separate
+    #     - name: GridIO
+    #       children: separate
+    #     - name: Grid
+    #       children: separate
+    #     - name: Table
+    #       children: separate
+    #     - name: TableLazy
+    #       children: separate

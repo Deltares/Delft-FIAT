@@ -5,7 +5,8 @@ from pathlib import Path
 
 from osgeo import ogr, osr
 
-from fiat.fio import BufferedGeomWriter, GeomIO, open_geom
+from fiat.fio import GeomIO, open_geom
+from fiat.model.geom_writer import GeomWriter
 
 
 def point_in_geom(
@@ -69,7 +70,7 @@ def reproject(
     gs: GeomIO,
     srs: str,
     chunk: int = 200000,
-    out_dir: Path | str = None,
+    output_dir: Path | str = None,
 ):
     """Reproject a geometry layer.
 
@@ -81,7 +82,7 @@ def reproject(
         Spatial reference system (projection). An accepted format is: `EPSG:3857`.
     chunk : int, optional
         The size of the chunks used during reprojecting.
-    out_dir : Path | str, optional
+    output_dir : Path | str, optional
         Output directory. If not defined, if will be inferred from the input object.
 
     Returns
@@ -89,10 +90,10 @@ def reproject(
     GeomIO
         Output object. A lazy reading of the just creating geometry file.
     """
-    if not Path(str(out_dir)).is_dir():
-        out_dir = gs.path.parent
+    if not Path(str(output_dir)).is_dir():
+        output_dir = gs.path.parent
 
-    fname = Path(out_dir, f"{gs.path.stem}_repr{gs.path.suffix}")
+    fname = Path(output_dir, f"{gs.path.stem}_repr{gs.path.suffix}")
 
     out_srs = osr.SpatialReference()
     out_srs.SetFromUserInput(srs)
@@ -108,7 +109,7 @@ def reproject(
         new_gs.create_layer(out_srs, gs.layer.geom_type)
         new_gs.layer.set_from_defn(layer_defn)
 
-    mem_gs = BufferedGeomWriter(
+    mem_gs = GeomWriter(
         fname,
         buffer_size=chunk,
     )

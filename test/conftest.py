@@ -1,5 +1,7 @@
 import io
 import platform
+from multiprocessing import get_context
+from multiprocessing.queues import Queue
 from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
@@ -29,7 +31,7 @@ def os_type() -> int:
 
 @pytest.fixture(scope="session")
 def testdata_dir() -> Path:
-    p = Path(TEST_MODULE, "..", ".testdata").resolve()
+    p = Path(TEST_MODULE, "..", "data").resolve()
     assert Path(p, "geom_event.toml").is_file()
     return p
 
@@ -43,8 +45,22 @@ def exposure_geom_path(testdata_dir: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
+def exposure_grid_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "exposure", "spatial.nc")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
 def hazard_event_path(testdata_dir: Path) -> Path:
     p = Path(testdata_dir, "event_map.nc")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
+def hazard_event_highres_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "event_map_highres.nc")
     assert p.is_file()
     return p
 
@@ -85,29 +101,30 @@ def exposure_cols() -> dict:
     return c
 
 
-@pytest.fixture
-def exposure_data_fn() -> dict:
-    data = {
-        "fn": {
-            "_structure": 1,
-        },
-        "max": {
-            "_structure": 3,
-        },
-    }
-    return data
-
-
 @pytest.fixture(scope="session")
-def exposure_geom_dataset(exposure_geom_path: Path) -> GeomIO:
+def exposure_geom_data(exposure_geom_path: Path) -> GeomIO:
     ds = open_geom(exposure_geom_path)  # Read only
     assert isinstance(ds, GeomIO)
+    return ds
+
+
+@pytest.fixture
+def exposure_grid_data(exposure_grid_path: Path) -> GridIO:
+    ds = open_grid(exposure_grid_path, var_as_band=True)  # Read only
+    assert isinstance(ds, GridIO)
     return ds
 
 
 @pytest.fixture(scope="session")
 def hazard_event_data(hazard_event_path: Path) -> GridIO:
     ds = open_grid(hazard_event_path)  # Read only
+    assert isinstance(ds, GridIO)
+    return ds
+
+
+@pytest.fixture
+def hazard_event_highres_data(hazard_event_highres_path: Path) -> GridIO:
+    ds = open_grid(hazard_event_highres_path)  # Read only
     assert isinstance(ds, GridIO)
     return ds
 
@@ -154,6 +171,13 @@ def mocked_hazard_grid(
     type(grid).srs = PropertyMock(side_effect=lambda: srs_4326)
     type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
     return grid
+
+
+@pytest.fixture
+def mp_queue() -> Queue:
+    ctx = get_context()
+    q = Queue(ctx=ctx, maxsize=2)
+    return q
 
 
 @pytest.fixture(scope="session")

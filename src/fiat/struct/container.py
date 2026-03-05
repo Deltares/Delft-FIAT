@@ -2,9 +2,9 @@
 
 import copy
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
-__all__ = ["Container", "ExposureMeta", "VulnerabilityMeta"]
+__all__ = ["Container", "ExposureGeomMeta", "VulnerabilityMeta"]
 
 
 class Container:
@@ -73,32 +73,51 @@ class Container:
 
 
 @dataclass
-class ExposureMeta:
-    """Small container for exposure metadata."""
+class ExposureGeomMeta:
+    """Small container for exposure geometry metadata."""
 
-    indices_new: list
-    indices_spec: list
-    indices_total: list
-    indices_type: dict
-    new: list
+    indices_impact: dict[str, list]
+    indices_new: list[str]
+    indices_spec: list[str]
+    indices_total: dict[str, list]
+    indices_type: dict[str, Any]
+    new: list[str]
+    new_length: int
     type_length: int
+
+
+@dataclass
+class ExposureGridMeta:
+    """Small container for exposure grid metadata."""
+
+    fn_list: list[str]
+    indices_new: list[list[int]]
+    indices_total: list[int]
+    nb: int
+    new: list[str]
+    index_ead: int | None = None
 
 
 @dataclass
 class HazardMeta:
     """Small container for exposure metadata."""
 
-    density: list
-    names: list
-    rp: list
+    density: list[float | int]
+    ids: list[str]
+    indices_run: list[list[int]]
+    indices_type: list[list[str]]
+    length: int
+    rp: list[float]
     risk: bool
-    type: str = "flood"
+    type: str
+    type_length: int
 
 
 @dataclass
 class VulnerabilityMeta:
     """Small container for some vulnerability metadata."""
 
+    fn: dict[str, Callable]
+    fn_list: list[str] | tuple[str]
     min: float | int
     max: float | int
-    sigdec: int

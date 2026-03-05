@@ -7,14 +7,14 @@ from fiat.struct.geom import GeomLayer
 from fiat.util import get_srs_repr
 
 
-def test_geomlayer(exposure_geom_dataset: GeomIO):
+def test_geomlayer(exposure_geom_data: GeomIO):
     # Retrieve the geom layer from the I/O
-    gl = exposure_geom_dataset.layer
+    gl = exposure_geom_data.layer
 
     # Assert some simple stuff
     assert isinstance(gl._obj, ogr.Layer)
-    assert id(gl.ref) == id(exposure_geom_dataset.src)
-    assert gl.mode == exposure_geom_dataset.mode
+    assert id(gl.ref) == id(exposure_geom_data.src)
+    assert gl.mode == exposure_geom_data.mode
 
 
 def test_geomlayer_init_error():
@@ -26,9 +26,9 @@ def test_geomlayer_init_error():
         _ = GeomLayer()
 
 
-def test_geomlayer_general_properties(exposure_geom_dataset: GeomIO):
+def test_geomlayer_general_properties(exposure_geom_data: GeomIO):
     # Retrieve the geom layer from the I/O
-    gl = exposure_geom_dataset.layer
+    gl = exposure_geom_data.layer
 
     # Assert the important attributes and properties
     assert gl.index == ()
@@ -38,9 +38,9 @@ def test_geomlayer_general_properties(exposure_geom_dataset: GeomIO):
     assert gl.size == 4
 
 
-def test_geomlayer_field_properties(exposure_geom_dataset: GeomIO):
+def test_geomlayer_field_properties(exposure_geom_data: GeomIO):
     # Retrieve the geom layer from the I/O
-    gl = exposure_geom_dataset.layer
+    gl = exposure_geom_data.layer
 
     # Assert the important attributes and properties
     assert gl.columns[:2] == ("object_id", "object_name")  # Field headers
@@ -50,9 +50,9 @@ def test_geomlayer_field_properties(exposure_geom_dataset: GeomIO):
     assert isinstance(gl.defn, ogr.FeatureDefn)
 
 
-def test_geomlayer_spatial_properties(exposure_geom_dataset: GeomIO):
+def test_geomlayer_spatial_properties(exposure_geom_data: GeomIO):
     # Retrieve the geom layer from the I/O
-    gl = exposure_geom_dataset.layer
+    gl = exposure_geom_data.layer
 
     # Assert the important attributes and properties
     np.testing.assert_array_almost_equal(
@@ -63,9 +63,9 @@ def test_geomlayer_spatial_properties(exposure_geom_dataset: GeomIO):
     assert get_srs_repr(gl.srs) == "EPSG:4326"
 
 
-def test_geomlayer_iter(exposure_geom_dataset: GeomIO):
+def test_geomlayer_iter(exposure_geom_data: GeomIO):
     # Retrieve the geom layer from the I/O
-    gl = exposure_geom_dataset.layer
+    gl = exposure_geom_data.layer
 
     # Iterate over the layer
     idx = 0
@@ -77,9 +77,9 @@ def test_geomlayer_iter(exposure_geom_dataset: GeomIO):
     assert idx == gl.size
 
 
-def test_geomlayer_reduced_iter(exposure_geom_dataset: GeomIO):
+def test_geomlayer_reduced_iter(exposure_geom_data: GeomIO):
     # Retrieve the geom layer from the I/O
-    gl = exposure_geom_dataset.layer
+    gl = exposure_geom_data.layer
 
     # Iterate over the layer
     idx = 0

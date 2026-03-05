@@ -1,6 +1,7 @@
 """A python wrapper structure for gdal Band."""
 
 import weakref
+from typing import Any
 
 from numpy import ndarray
 from osgeo import gdal
@@ -18,15 +19,12 @@ class GridBand(BaseStruct):
         # For typing
         self._obj_ref: weakref.ReferenceType | None = None
         self._obj: gdal.Band | None = None
+        self._chunk: tuple = (0, 0)
         self._x: int = 0
         self._y: int = 0
         self._l: int = 0
         self._u: int = 0
         self.mode: int = 0
-        self.nodata: float | int = 0
-        self.dtype: int = 0
-        self.dtype_name: str = "int"
-        self.dtype_size: int = 4
         raise AttributeError("No constructer defined")
 
     def __iter__(self):
@@ -34,7 +32,7 @@ class GridBand(BaseStruct):
         self._reset_chunking()
         return self
 
-    def __next__(self):
+    def __next__(self) -> tuple:
         if self._u > self._y:
             self.flush()
             raise StopIteration
@@ -84,12 +82,9 @@ class GridBand(BaseStruct):
         obj._l = 0
         obj._u = 0
         obj.mode = mode
-        obj.nodata = band.GetNoDataValue()
-        obj.dtype = band.DataType
-        obj.dtype_name = gdal.GetDataTypeName(obj.dtype)
-        obj.dtype_size = gdal.GetDataTypeSize(obj.dtype)
 
-        obj._chunk = obj.shape
+        # Set the chunking
+        obj.chunk = obj.shape
         if chunk is not None:
             obj.chunk = chunk
 
@@ -130,6 +125,11 @@ class GridBand(BaseStruct):
         self._chunk = value
 
     @property
+    def dtype(self) -> int:
+        """Return the data type."""
+        return self._obj.DataType
+
+    @property
     def description(self) -> str:
         """Return the band description."""
         return self._obj.GetDescription()
@@ -138,6 +138,22 @@ class GridBand(BaseStruct):
     def meta(self) -> dict:
         """Return the band meta data."""
         return self._obj.GetMetadata()
+
+    @property
+    def name(self) -> str | None:
+        """Return the name of the band."""
+        n = self.description or self.get_meta("name")
+        return n
+
+    @property
+    def nodata(self) -> float | int:
+        """Return the nodata value."""
+        return self._obj.GetNoDataValue()
+
+    @nodata.setter
+    def nodata(self, value: float | int):
+        """Set the nodata value."""
+        self._obj.SetNoDataValue(value)
 
     @property
     def shape(self) -> tuple:
@@ -165,27 +181,8 @@ class GridBand(BaseStruct):
         """
         return self._x, self._y
 
-    ## get/ set methods
-    def get_metadata_item(
-        self,
-        entry: str,
-    ) -> object:
-        """Get specific metadata item.
-
-        Parameters
-        ----------
-        entry : str
-            Identifier of item.
-
-        Returns
-        -------
-        object
-            Information is present.
-        """
-        res = str(self._obj.GetMetadataItem(entry))
-        return res
-
-    def write_chunk(
+    ## I/O
+    def write(
         self,
         chunk: ndarray,
         upper_left: tuple | list,
@@ -203,3 +200,41 @@ class GridBand(BaseStruct):
             N.b. these are not coordinates, but indices.
         """
         self._obj.WriteArray(chunk, *upper_left)
+
+    ## Mutating methods
+    def get_meta(
+        self,
+        entry: str,
+    ) -> object:
+        """Get specific metadata item.
+
+        Parameters
+        ----------
+        entry : str
+            Identifier of item.
+
+        Returns
+        -------
+        object
+            Information is present.
+        """
+        return self._obj.GetMetadataItem(entry)
+
+    def set_meta(
+        self,
+        entry: str,
+        value: Any,
+    ) -> object:
+        """Get specific metadata item.
+
+        Parameters
+        ----------
+        entry : str
+            Identifier of item.
+
+        Returns
+        -------
+        object
+            Information is present.
+        """
+        return self._obj.SetMetadataItem(entry, value)

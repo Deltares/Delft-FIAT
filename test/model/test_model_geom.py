@@ -105,7 +105,7 @@ def test_geommodel_run(
     config_empty: Configurations,
     vulnerability_data_run: Table,
     hazard_event_data: GridIO,
-    exposure_geom_dataset: GeomIO,
+    exposure_geom_data: GeomIO,
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.geom.worker", mockworker)
@@ -116,7 +116,7 @@ def test_geommodel_run(
     # Set data like a dummy
     m.vulnerability = vulnerability_data_run
     m.hazard = hazard_event_data
-    m.exposure.set(exposure_geom_dataset)
+    m.exposure.set(exposure_geom_data)
 
     # Run the model
     m.run()
@@ -133,7 +133,7 @@ def test_geommodel_run_fail(
     config_empty: Configurations,
     vulnerability_data_run: Table,
     hazard_event_data: GridIO,
-    exposure_geom_dataset: GeomIO,
+    exposure_geom_data: GeomIO,
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.geom.worker", mockworker_error)
@@ -143,7 +143,7 @@ def test_geommodel_run_fail(
     # Set data like a dummy
     m.vulnerability = vulnerability_data_run
     m.hazard = hazard_event_data
-    m.exposure.set(exposure_geom_dataset)
+    m.exposure.set(exposure_geom_data)
 
     # Run the model
     m.run()

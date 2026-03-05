@@ -3,6 +3,7 @@
 import importlib
 from abc import ABCMeta, abstractmethod
 from multiprocessing import get_context
+from multiprocessing.queues import Queue
 from os import cpu_count
 from pathlib import Path
 
@@ -30,7 +31,7 @@ from fiat.util import (
     get_srs_repr,
 )
 
-logger = spawn_logger("fiat.model")
+logger = spawn_logger(__name__)
 
 
 class BaseModel(metaclass=ABCMeta):
@@ -56,16 +57,16 @@ class BaseModel(metaclass=ABCMeta):
         self.vulnerability: Table | None = None
 
         # Type of calculations
-        self._type = self.cfg.get(HAZARD_TYPE, "flood")
-        self.module = importlib.import_module(f"fiat.method.{self.type}")
+        self._type: str = self.cfg.get(HAZARD_TYPE, "flood")
+        self.method = importlib.import_module(f"fiat.method.{self.type}")
         # Risk or event based
-        self._risk = self.cfg.get(MODEL_RISK, False)
+        self._risk: bool = self.cfg.get(MODEL_RISK, False)
 
         # Threading stuff
-        self._mp_ctx = get_context("spawn")
-        self._mp_manager = None
-        self._queue = None
-        self._threads = 1
+        self.ctx = get_context("spawn")
+        self.queue = Queue(maxsize=1000, ctx=self.ctx)
+        self.shm = None
+        self._threads: int = 1
 
         ## Call the necessary methods at init
         self.srs = self.cfg.get(MODEL_SRS_VALUE, "EPSG:4326")
@@ -150,7 +151,7 @@ exceeds machine thread count ('{max_threads}')"
     def type(self, value: str):
         """Set the hazard type."""
         self._type = value
-        self.module = importlib.import_module(f"fiat.method.{value}")
+        self.method = importlib.import_module(f"fiat.method.{value}")
 
     ## Read data methods
     def read_hazard_grid(
@@ -266,15 +267,6 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
 
         # Column check
         check_duplicate_columns(data.duplicate_columns)
-
-        # upscale the data (can be done after the checks)
-        step_size = self.cfg.get("vulnerability.step_size", 0.01)
-        self.cfg.set("vulnerability.step_size", step_size)
-        logger.info(
-            f"Upscaling vulnerability curves, \
-using a step size of: {step_size}"
-        )
-        data.upscale(step_size, inplace=True)
 
         # Reset to ensure the entry is present
         self.cfg.set(VULNERABILITY_FILE, path)

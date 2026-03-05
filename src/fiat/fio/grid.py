@@ -51,12 +51,6 @@ multiple variables.
     ```
     """
 
-    _type_map = {
-        "float": gdal.GFT_Real,
-        "int": gdal.GDT_Int16,
-        "str": gdal.GFT_String,
-    }
-
     def __new__(
         cls,
         file: str,
@@ -112,6 +106,9 @@ multiple variables.
         self._count: int = 0
         self._chunk: tuple | None = None
         self._dtype: int | None = None
+        self._gtf: tuple[float] | None = None
+        self._x: int | None = None
+        self._y: int | None = None
         self._srs: osr.SpatialReference | None = None
 
         # If write mode, consider initialized
@@ -126,13 +123,14 @@ multiple variables.
         )
         self._count = self.src.RasterCount
 
+        # Set the bands and spatial info
+        self._retrieve_bands()
+        self._retrieve_spatial_info()
+
         # Set the chunking
         self._chunk = self.shape
         if chunk is not None:
             self._chunk = chunk
-
-        # Set the bands
-        self._retrieve_bands()
 
         # Set the 'external' srs
         if srs is not None:
@@ -143,7 +141,7 @@ multiple variables.
         self._cur_index = 0
         return self
 
-    def __next__(self):
+    def __next__(self) -> GridBand:
         if self._cur_index < self._count:
             r = self[self._cur_index]
             self._cur_index += 1
@@ -171,7 +169,7 @@ multiple variables.
         )
 
     # Internals
-    def _retrieve_bands(self):
+    def _retrieve_bands(self) -> None:
         """Get the bands at any stage."""
         for idx in range(self._count):
             self._bands.append(
@@ -183,24 +181,31 @@ multiple variables.
                 )
             )
 
+    def _retrieve_spatial_info(self) -> None:
+        if self.src is None:
+            return
+        self._x = self.src.RasterXSize
+        self._y = self.src.RasterYSize
+        self._gtf = self.src.GetGeoTransform()
+
     ## Properties
     @property
-    def band_names(self) -> list:
+    def band_names(self) -> list[str]:
         """Get the names of all bands."""
-        _names = []
+        names = []
         for n in range(self.size):
-            _names.append(self.get_band_name(n))
+            names.append(self[n].name)
 
-        return _names
+        return names
 
     @property
-    def bands(self) -> list:
+    def bands(self) -> list[GridBand]:
         """Return the bands of the dataset."""
         return self._bands
 
     @property
     @BaseIO.check_state
-    def bounds(self) -> tuple:
+    def bounds(self) -> tuple[float]:
         """Return the bounds of the GridIO.
 
         Returns
@@ -218,7 +223,7 @@ multiple variables.
         )
 
     @property
-    def chunk(self) -> tuple:
+    def chunk(self) -> tuple[int]:
         """Return the chunking size.
 
         Returns
@@ -260,7 +265,7 @@ multiple variables.
     @BaseIO.check_state
     def geotransform(self) -> tuple:
         """Return the geo transform of the grid."""
-        return self.src.GetGeoTransform()
+        return self._gtf
 
     @geotransform.setter
     @BaseIO.check_mode
@@ -273,6 +278,7 @@ multiple variables.
             An affine matrix.
         """
         self.src.SetGeoTransform(affine)
+        self._retrieve_spatial_info()
 
     @property
     @BaseIO.check_state
@@ -287,8 +293,8 @@ multiple variables.
             Contains size in y direction and x direction.
         """
         return (
-            self.src.RasterYSize,
-            self.src.RasterXSize,
+            self._y,
+            self._x,
         )
 
     @property
@@ -304,8 +310,8 @@ multiple variables.
             Contains size in x direction and y direction.
         """
         return (
-            self.src.RasterXSize,
-            self.src.RasterYSize,
+            self._x,
+            self._y,
         )
 
     @property
@@ -336,7 +342,7 @@ multiple variables.
         return read_gridsource_layers(self.src)
 
     # Basic I/O methods
-    def close(self):
+    def close(self) -> None:
         """Close the GridIO."""
         BaseIO.close(self)
 
@@ -347,7 +353,7 @@ multiple variables.
 
         gc.collect()
 
-    def flush(self):
+    def flush(self) -> None:
         """Flush the data.
 
         This only serves a purpose in write mode (`mode = 'w'`).
@@ -357,7 +363,7 @@ multiple variables.
             for item in self._bands:
                 item.flush()
 
-    def reopen(self):
+    def reopen(self) -> None:
         """Reopen a closed GridIO."""
         if not self._closed:
             return self
@@ -383,9 +389,9 @@ multiple variables.
         self,
         shape: tuple,
         nb: int,
-        type: int,
+        dtype: int,
         options: list = [],
-    ):
+    ) -> None:
         """Create a new data source.
 
         Only in write (`'w'`) mode.
@@ -396,7 +402,7 @@ multiple variables.
             Shape of the grid. Takes the form of [<x-length>, <y-length>].
         nb : int
             The number of bands in the new data source.
-        type : int
+        dtype : int
             Data type. The values is an integer which is linked to a data type
             recognized by GDAL. See [this page]
             (https://gdal.org/java/org/gdal/gdalconst/
@@ -408,46 +414,20 @@ multiple variables.
             self.path.as_posix(),
             *shape,
             nb,
-            type,
+            dtype,
             options=options,
         )
 
         self._count = nb
         self._retrieve_bands()
-
-    @BaseIO.check_state
-    def get_band_name(self, n: int) -> str:
-        """Get the name of a specific band.
-
-        Parameters
-        ----------
-        n : int
-            Band number.
-
-        Returns
-        -------
-        str
-            Name of the band.
-        """
-        _desc = self[n].description
-        _meta = self[n].meta
-
-        if _desc:
-            return _desc
-
-        _var_meta = [item for item in _meta if "VARNAME" in item]
-
-        if _var_meta:
-            return _meta[_var_meta[0]]
-
-        return ""
+        self._retrieve_spatial_info()
 
     @BaseIO.check_mode
     @BaseIO.check_state
     def set_source_srs(
         self,
         srs: osr.SpatialReference,
-    ):
+    ) -> None:
         """Set the srs of the gird.
 
         Only in write (`'w'`) mode.

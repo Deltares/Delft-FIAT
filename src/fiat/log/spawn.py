@@ -3,7 +3,7 @@
 from fiat.log.formatter import MessageFormatter
 from fiat.log.handler import FileHandler
 from fiat.log.logger import Logger
-from fiat.log.thread import Receiver
+from fiat.log.thread import LogReceiver
 
 __all__ = ["setup_default_log", "setup_mp_log", "spawn_logger"]
 
@@ -94,7 +94,7 @@ will not suffice.
     Receiver
         A receiver object. This is the receiver of the pipeline.
     """
-    obj = Receiver(queue)
+    obj = LogReceiver(queue)
     h = FileHandler(level=level, dst=dst, name=name)
     h.set_formatter(MessageFormatter("{asctime:20s}{message}"))
     obj.add_handler(h)

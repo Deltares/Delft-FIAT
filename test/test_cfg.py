@@ -1,6 +1,79 @@
 from pathlib import Path
 
-from fiat.cfg import Configurations
+from fiat.cfg import Configurations, get_item, set_item
+
+
+def test_get_item():
+    # Call the function
+    out = get_item(
+        parts=["foo", "bar"],
+        current={"foo": {"bar": 2}},
+    )
+
+    # Assert output
+    assert out == 2
+
+
+def test_get_item_iter():
+    # Call the function
+    out = get_item(
+        parts=["foo", "bar", "value"],
+        current={"foo": {"bar": [{"value": 1}, {"value": 2}]}},
+    )
+
+    # Assert output
+    assert out == [1, 2]
+
+
+def test_get_item_out():
+    # Call the function
+    out = get_item(
+        parts=["foo", "baz"],
+        current={"foo": {"bar": 2}},
+    )
+
+    # Assert output
+    assert out is None
+
+
+def test_get_item_fallback():
+    # Call the function
+    out = get_item(
+        parts=["foo", "baz"],
+        current={"foo": {"bar": 2}},
+        fallback=3,
+    )
+
+    # Assert output
+    assert out == 3
+
+
+def test_set_item():
+    # Call the function
+    c = {}
+    set_item(
+        parts=["foo", "bar"],
+        current=c,
+        value=2,
+    )
+
+    # Assert the state
+    assert "foo" in c
+    assert c["foo"]["bar"] == 2
+
+
+def test_set_item_overwrite():
+    # Call the function
+    c = {"foo": 3}
+    set_item(
+        parts=["foo", "bar"],
+        current=c,
+        value=2,
+    )
+
+    # Assert the state
+    assert "bar" in c["foo"]
+    assert c["foo"]["bar"] == 2
 
 
 def test_configuration_empty():
@@ -63,6 +136,18 @@ def test_configuration_generate_kwargs():
 
     # Assert the output
     assert kw == {"baz": "oof", "spooky": "ghost"}
+
+
+def test_configuration_generate_kwargs_empty():
+    # Create the object
+    c = Configurations(foo=2)
+
+    # Call the method
+    kw = c.generate_kwargs("foo")
+
+    # Assert the output
+    assert kw == {}
+    assert len(kw) == 0
 
 
 def test_configuration_set():

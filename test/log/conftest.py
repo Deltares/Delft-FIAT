@@ -1,6 +1,4 @@
 import io
-from multiprocessing import get_context
-from multiprocessing.queues import Queue
 
 import pytest
 
@@ -20,13 +18,6 @@ def log_item() -> LogItem:
 def formatter() -> MessageFormatter:
     mf = MessageFormatter(fmt="{levelname:8s}{message}")
     return mf
-
-
-@pytest.fixture
-def mp_queue() -> Queue:
-    ctx = get_context()
-    q = Queue(ctx=ctx, maxsize=2)
-    return q
 
 
 @pytest.fixture
