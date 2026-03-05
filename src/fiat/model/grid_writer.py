@@ -1,7 +1,7 @@
 """Writer for grid model."""
 
 from dataclasses import dataclass
-from multiprocessing.connection import PipeConnection
+from multiprocessing.connection import Connection
 from multiprocessing.context import SpawnContext
 from multiprocessing.queues import Queue
 from multiprocessing.shared_memory import SharedMemory
@@ -104,8 +104,8 @@ class GridWriter(Receiver):
         self.locks: dict[str, Lock] = {}
         self.mem_locs: dict[str, SharedMemory] = {}
         self.mem_blocks: dict[str, np.ndarray] = {}
-        self.piperecv: dict[str, PipeConnection] = {}
-        self.pipesend: dict[str, PipeConnection] = {}
+        self.piperecv: dict[str, Connection] = {}
+        self.pipesend: dict[str, Connection] = {}
 
     ## I/O methods
     def _close(self):

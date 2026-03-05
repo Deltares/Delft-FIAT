@@ -2,7 +2,7 @@
 
 import importlib
 from itertools import product
-from multiprocessing.connection import PipeConnection
+from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 from multiprocessing.shared_memory import SharedMemory
 from typing import Callable
@@ -20,7 +20,7 @@ from fiat.thread import Sender
 from fiat.typing import MethodsProtocol
 
 
-def initialize_pool(q: Queue, p: dict[str, PipeConnection]):
+def initialize_pool(q: Queue, p: dict[str, Connection]):
     """Small initializer for the multiprocessing pool."""
     global signalqueue
     signalqueue = q
