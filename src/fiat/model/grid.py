@@ -17,7 +17,7 @@ from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.grid_util import equal_grid, get_exposure_meta
 from fiat.model.grid_worker import initialize_pool, worker
-from fiat.model.grid_writer import GridWriter, create_grid_handle
+from fiat.model.netcdf_writer import NetcdfWriter, create_netcdf_handle
 from fiat.model.util import (
     create_2d_chunks,
     get_hazard_meta,
@@ -159,14 +159,12 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         output_filepath = Path(self.cfg.output_dir, output_name)
         # Setup the queue and the writer
         self.queue = self.ctx.Queue(maxsize=1000)
-        handle = create_grid_handle(
+        handle = create_netcdf_handle(
             path=output_filepath,
-            shape=self.exposure.shape_xy,
-            nb=exposure_meta.nb,
-            srs=self.exposure.srs,
-            gtf=self.exposure.geotransform,
+            variables=exposure_meta.new,
+            ds_like=self.exposure,
         )
-        writer = GridWriter(handle=handle, queue=self.queue, ctx=self.ctx)
+        writer = NetcdfWriter(handle=handle, queue=self.queue, ctx=self.ctx)
         # Get the chunks and the window(s)
         chunks = list(create_2d_chunks(self.hazard.shape, parts=self.threads))
         window = self.cfg.get("model.grid.chunk", fallback=self.exposure.shape)

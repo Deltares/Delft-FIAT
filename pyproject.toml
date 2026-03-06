@@ -32,6 +32,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "gdal>=3.5",
+    "netcdf4",
     "numpy",
     "scipy",
     "regex",
