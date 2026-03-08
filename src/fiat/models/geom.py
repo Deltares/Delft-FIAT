@@ -279,7 +279,7 @@ class GeomModel(BaseModel):
             files = [item for item in files if re.match(r"^(.*)file(\d+)", item)]
             paths = [self.cfg.get(item) for item in files]
         else:
-            files = [f"exposure.geom.file{idx+1}" for idx in range(len(paths))]
+            files = [f"exposure.geom.file{idx + 1}" for idx in range(len(paths))]
 
         # First check for the index_col
         index_col = self.cfg.get("exposure.geom.settings.index", "object_id")

@@ -41,5 +41,7 @@ class KeyValueAction(argparse.Action):
             key_value_dict[key] = parse_cli_value(value)
             setattr(namespace, self.dest, key_value_dict)
         except BaseException:
-            parser.error(f"-d, key/ value pair in the wrong format: -> '{values}'. \
-Should be KEY=VALUE")
+            parser.error(
+                f"-d, key/ value pair in the wrong format: -> '{values}'. \
+Should be KEY=VALUE"
+            )
