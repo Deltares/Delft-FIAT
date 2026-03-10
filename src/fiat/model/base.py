@@ -207,7 +207,7 @@ exceeds machine thread count ('{max_threads}')"
 
         if not self.cfg.get("model.srs.global", False):
             logger.warning("Setting the model srs from the hazard data.")
-            self.srs = get_srs_repr(data.srs)
+            self.srs = data.srs.ExportToWkt()
 
         # check if file srs is the same as the model srs
         if not check_vs_srs(self.srs, data.srs):
