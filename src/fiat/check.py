@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from osgeo import osr
+from pyproj.crs import CRS
 
 from fiat.cfg import Configurations
 from fiat.error import FIATDataError
@@ -124,13 +125,9 @@ def check_vs_srs(
     source_srs: osr.SpatialReference,
 ):
     """Check if the spatial reference systems match."""
-    if not (
-        global_srs.IsSame(source_srs)
-        or global_srs.ExportToProj4() == source_srs.ExportToProj4()
-    ):
-        return False
-
-    return True
+    return CRS.from_user_input(global_srs.ExportToWkt()) == CRS.from_user_input(
+        source_srs.ExportToWkt()
+    )
 
 
 ## Input Data

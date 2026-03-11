@@ -33,6 +33,7 @@ requires-python = ">=3.11"
 dependencies = [
     "gdal>=3.5",
     "numpy",
+    "pyproj",
     "scipy",
     "regex",
 ]
