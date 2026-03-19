@@ -111,7 +111,7 @@ def feature_worker(
 
 
 def worker(
-    output_dir: Path,
+    output_path: Path,
     hazard: GridIO,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
@@ -126,8 +126,8 @@ of the [GeomModel](/api/GeomModel.qmd) object.
 
     Parameters
     ----------
-    output_dir : Path
-        The directory to which to write the output to.
+    output_path : Path
+        The path to file to be written.
     hazard : GridIO
         The hazard data.
     hazard_meta : HazardMeta
@@ -148,7 +148,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
 
     # Setup the dataset buffer writer
     writer = GeomWriter(
-        Path(output_dir, f"{exposure.path.stem}.gpkg"),
+        output_path,
         lock=process_lock,
     )
     writer.setup(

@@ -69,7 +69,7 @@ def test_worker(
 ):
     # Call the function
     worker(
-        output_dir=tmp_path,
+        output_path=Path(tmp_path, "spatial.gpkg"),
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_meta_run,

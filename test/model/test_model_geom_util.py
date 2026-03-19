@@ -1,8 +1,11 @@
+from pathlib import Path
+
 from fiat.fio import GeomIO
 from fiat.method import flood
 from fiat.model.geom_util import (
     discover_exp_columns,
     generate_output_columns,
+    generate_output_filepaths,
     get_exposure_meta,
 )
 from fiat.struct.container import HazardMeta
@@ -72,6 +75,52 @@ def test_generate_output_columns_multi():
     assert new_fields[-1] == "ead_affected"
 
 
+def test_generate_output_filepaths(
+    tmp_path: Path,
+):
+    # Call the function
+    out = generate_output_filepaths(
+        outfiles=["foo.gpkg", "bar.gpkg"],
+        infiles=[],
+        output_dir=tmp_path,
+    )
+
+    # Assert the output
+    assert len(out) == 2
+    assert out[0] == Path(tmp_path, "foo.gpkg")
+
+
+def test_generate_output_filepaths_none(
+    tmp_path: Path,
+):
+    # Call the function
+    out = generate_output_filepaths(
+        outfiles=None,
+        infiles=["foo.gpkg"],
+        output_dir=tmp_path,
+    )
+
+    # Assert the output
+    assert len(out) == 1
+    assert out[0] == Path(tmp_path, "foo.gpkg")
+
+
+def test_generate_output_filepaths_add(
+    tmp_path: Path,
+):
+    # Call the function
+    out = generate_output_filepaths(
+        outfiles=["foo.gpkg"],
+        infiles=["baz.gpkg", "bar.gpkg"],
+        output_dir=tmp_path,
+    )
+
+    # Assert the output
+    assert len(out) == 2
+    assert out[0] == Path(tmp_path, "foo.gpkg")
+    assert out[1] == Path(tmp_path, "bar.gpkg")
+
+
 def test_get_exposure_meta(
     exposure_geom_data: GeomIO,
     hazard_meta_run: HazardMeta,
@@ -117,30 +166,3 @@ def test_get_exposure_meta_risk(
     assert "ead_damage" in meta.new
     assert meta.new_length == 13
     assert meta.type_length == 3
-
-
-# def test_get_exposure_meta_multi(
-#     hazard_meta_run: HazardMeta,
-# ):
-#     # Call the function
-#     meta = get_exposure_meta(
-#         columns={
-#             "oid": 0,
-#             "ref": 1,
-#             "fn_damage": 2,
-#             "max_damage": 3,
-#             "fn_affected": 4,
-#             "max_affected": 5,
-#         },
-#         hazard_meta=hazard_meta_run,
-#         module=flood,
-#         types=["damage", "affected"],
-#     )
-#
-#     # Assert the output
-#     assert meta.indices_new == [6, 7, 8, 9, 10]
-#     assert meta.type_length == 5
-#     assert "damage_band1" in meta.new
-#     assert "affected_band1" in meta.new
-#     assert meta.indices_total == [-3, -1]
-#     assert list(meta.indices_type) == ["damage", "affected"]

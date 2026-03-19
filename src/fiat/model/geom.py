@@ -22,13 +22,14 @@ from fiat.gis import geom
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
-from fiat.model.geom_util import get_exposure_meta
+from fiat.model.geom_util import generate_output_filepaths, get_exposure_meta
 from fiat.model.geom_worker import initialize_pool, worker
 from fiat.model.util import create_1d_chunks, get_hazard_meta, get_vulnerability_meta
 from fiat.struct import Container, Table
 from fiat.util import (
     EXPOSURE_GEOM_FILE,
     EXPOSURE_GEOM_SETTINGS,
+    OUTPUT_GEOM_NAME,
     distribute_threads,
     generic_path_check,
     get_srs_repr,
@@ -175,6 +176,13 @@ class GeomModel(BaseModel):
         # Create the output directory and files
         self.cfg.setup_output_dir()
 
+        # Get the output filepaths
+        output_paths = generate_output_filepaths(
+            outfiles=self.cfg.get(OUTPUT_GEOM_NAME),
+            infiles=[item.path for item in self.exposure],
+            output_dir=self.cfg.output_dir,
+        )
+
         # Get the thread loads
         logger.info("Distributing work load")
         threads = distribute_threads(
@@ -187,7 +195,7 @@ class GeomModel(BaseModel):
 
         # Setup the jobs
         jobs_list = []
-        for exposure, count in zip(self.exposure, threads):
+        for exposure, count, output_path in zip(self.exposure, threads, output_paths):
             # Check the extent
             check_geom_extent(
                 exposure.layer.bounds,
@@ -200,12 +208,15 @@ class GeomModel(BaseModel):
                 method=self.method,
                 types=self.exposure_types,
             )
+            # Check the output file path
+            if output_path.exists():
+                output_path.unlink()
             # Get the chunks based on the load distribution
             chunks = create_1d_chunks(exposure.layer.size, count)
             # Generate the jobs
             jobs = generate_jobs(
                 {
-                    "output_dir": self.cfg.get("output.path"),
+                    "output_path": output_path,
                     "hazard": self.hazard,
                     "hazard_meta": hazard_meta,
                     "vulnerability_meta": vulnerability_meta,
