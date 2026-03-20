@@ -11,7 +11,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 | [risk](#model)                         | boolean | false         |
 | **[model.srs]**                        |         |               |
 | [value](#model.srs)                    | string  | EPSG:4326     |
-| [prefer_global](#model.srs)            | bool    | false         |
+| [global](#model.srs)            | bool    | false         |
 | **[model.grid]**                       |         |               |
 | [prefer](#model.grid)                  | string  | exposure      |
 | **[hazard]**                           |         |               |
@@ -50,7 +50,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 
 - `value`: Global projection for the model and the output. If not defined, the default projection is set to WGS84.
 
-- `prefer_global`: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e. prefer the hazard projection.
+- `global`: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e. prefer the hazard projection.
 
 #### [model.grid]
 
@@ -62,7 +62,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 
 - `return_periods`: Return periods for hazard calculation when they cannot be inferred from the data itself.
 
-- `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.methods.flood`)
+- `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.method.flood`)
 
 ####  [hazard.settings]
 

@@ -1,0 +1,63 @@
+---
+name: Build
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - pyi/*
+      - src/fiat/**/*
+      - pyproject.toml
+      - pixi.lock
+      - .github/workflows/build.yml
+  pull_request:
+    branches:
+      - master
+    paths:
+      - pyi/*
+      - src/fiat/**/*
+      - pyproject.toml
+      - pixi.lock
+      - .github/workflows/build.yml
+
+jobs:
+  build:
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "ubuntu-latest"
+        include:
+          - os: ubuntu-latest
+            label: linux-64
+
+    name: ${{ matrix.os }} - build
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
+        with:
+          pixi-version: "v0.62.0"
+          environments: build
+          locked: false
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+
+      - name: Build FIAT
+        run: |
+          pixi run -e build build
+
+      - name: Create testdata
+        run: |
+          pixi run -e build testdata
+
+      - name: Test Binary
+        run: ./bin/release/fiat run data/geom_event.toml
