@@ -24,6 +24,7 @@ from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.geom_util import generate_output_filepaths, get_exposure_meta
 from fiat.model.geom_worker import initialize_pool, worker
+from fiat.model.geom_writer import ensure_writable_filepath
 from fiat.model.util import create_1d_chunks, get_hazard_meta, get_vulnerability_meta
 from fiat.struct import Container, Table
 from fiat.util import (
@@ -209,8 +210,7 @@ class GeomModel(BaseModel):
                 types=self.exposure_types,
             )
             # Check the output file path
-            if output_path.exists():
-                output_path.unlink()
+            ensure_writable_filepath(output_path)
             # Get the chunks based on the load distribution
             chunks = create_1d_chunks(exposure.layer.size, count)
             # Generate the jobs
