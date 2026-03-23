@@ -6,7 +6,7 @@ from osgeo import gdal, osr
 
 from fiat.fio import GridIO, open_grid
 from fiat.struct import GridBand
-from fiat.util import NOT_IMPLEMENTED
+from fiat.util import CHUNK, NOT_IMPLEMENTED
 
 
 def clip(
@@ -36,7 +36,7 @@ def reproject(
     dst_height: int = None,
     resample: int = 0,
     output_dir: Path | str = None,
-) -> object:
+) -> GridIO:
     """Reproject (warp) a grid.
 
     Parameters
@@ -67,7 +67,7 @@ def reproject(
     """
     # Set some kwargs before moving on
     gs_kwargs = {
-        "chunk": gs.chunk,
+        CHUNK: gs.chunk,
     }
 
     if not Path(str(output_dir)).is_dir():

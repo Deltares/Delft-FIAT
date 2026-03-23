@@ -25,7 +25,7 @@ from fiat.check import (
 )
 from fiat.error import FIATDataError
 from fiat.log import Logger
-from fiat.method.flood import COLUMNS
+from fiat.method.flood.depth import COLUMNS
 from fiat.struct import Container
 from fiat.util import MANDATORY_MODEL_ENTRIES
 

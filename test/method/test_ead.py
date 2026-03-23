@@ -39,7 +39,7 @@ def test_fn_ead():
     # Call the function
     ead = fn_ead(
         rp_coef=[0.28, 0.39, 0.23, 0.07, 0.01, 0.01],
-        dms=[5, 10, 50, 300, 1200, 3000],
+        impact=[5, 10, 50, 300, 1200, 3000],
     )
 
     # Assert the output
@@ -50,7 +50,7 @@ def test_fn_ead_order():
     # Call the function
     ead = fn_ead(
         rp_coef=[0.01, 0.39, 0.01, 0.07, 0.28, 0.23],
-        dms=[1200, 10, 3000, 300, 5, 50],
+        impact=[1200, 10, 3000, 300, 5, 50],
     )
 
     # Assert the output

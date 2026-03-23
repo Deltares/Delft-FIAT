@@ -30,7 +30,7 @@ class GeomLayer(BaseStruct):
         ref: gdal.Dataset,
         layer: ogr.Layer,
         mode: int,
-    ):
+    ) -> "GeomLayer":
         # This is effectively the init methods of this class
         obj = GeomLayer.__new__(cls)
         BaseStruct.__init__(obj)
@@ -66,10 +66,10 @@ class GeomLayer(BaseStruct):
         return self._obj.GetFeature(fid)
 
     ## Some private methods
-    def _cleanup(self, weak_ref):
+    def _cleanup(self, weak_ref) -> None:
         self._obj = None
 
-    def _retrieve_columns(self):
+    def _retrieve_columns(self) -> None:
         """Get the column headers from the swig object."""
         # Reset the columns to an empty dict
         self._columns = {}
@@ -107,7 +107,7 @@ class GeomLayer(BaseStruct):
 
     ## Properties
     @property
-    def ref(self):
+    def ref(self) -> weakref.ReferenceType:
         """Return the source reference."""
         return self._obj_ref()
 

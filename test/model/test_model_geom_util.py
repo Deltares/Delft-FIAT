@@ -129,7 +129,7 @@ def test_get_exposure_meta(
     meta = get_exposure_meta(
         exposure=exposure_geom_data,
         hazard_meta=hazard_meta_run,
-        method=flood,
+        method=flood.depth,
         types=["damage"],
     )
 
@@ -151,7 +151,7 @@ def test_get_exposure_meta_risk(
     meta = get_exposure_meta(
         exposure=exposure_geom_data,
         hazard_meta=hazard_risk_meta_run,
-        method=flood,
+        method=flood.depth,
         types=["damage"],
     )
 

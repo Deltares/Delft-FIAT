@@ -2,7 +2,7 @@ from typing import Callable
 
 import numpy as np
 
-from fiat.method.flood import (
+from fiat.method.flood.depth import (
     fn_hazard,
     fn_impact,
 )

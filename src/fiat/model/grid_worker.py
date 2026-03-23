@@ -17,7 +17,8 @@ from fiat.model.util import create_2d_windows
 from fiat.struct import GridBand
 from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
 from fiat.thread import Sender
-from fiat.typing import MethodsProtocol
+from fiat.typing import MethodType
+from fiat.util import FIAT_METHOD, FN
 
 
 def initialize_pool(q: Queue, p: dict[str, Connection]):
@@ -97,7 +98,7 @@ def array_worker(
             *hazard_data,
             exposure_data,
             fact=1,
-            fn_curve=vulnerability_meta.fn[exp.get_meta("fn")],
+            fn_curve=vulnerability_meta.fn[exp.get_meta(FN)],
         )
         bn += 1
 
@@ -161,7 +162,7 @@ of the [GridIO](/api/GeomIO.qmd) object.
         The specific chunk to process.
     """
     # Setup the hazard type module
-    method: MethodsProtocol = importlib.import_module(f"fiat.method.{hazard_meta.type}")
+    method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{hazard_meta.type}")
     fn_impact = method.fn_impact
 
     # Setup the existing block of memory

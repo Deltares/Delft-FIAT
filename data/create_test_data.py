@@ -586,7 +586,7 @@ def create_vulnerability():
     with open(Path(p, "vulnerability", "curves.csv"), mode="wb") as f:
         f.write(b"#UNIT=meter\n")
         f.write(b"#method=mean,max\n")
-        f.write(b"water depth,struct_1,struct_2\n")
+        f.write(b"depth,struct_1,struct_2\n")
         for idx, item in enumerate(wd):
             f.write(f"{item},{dc1[idx]},{dc2[idx]}\n".encode())
 
@@ -609,7 +609,7 @@ def create_vulnerability_win():
     with open(Path(p, "vulnerability", "curves_win.csv"), mode="wb") as f:
         f.write(b"#UNIT=meter\r\n")
         f.write(b"#method=mean,max\r\n")
-        f.write(b"water depth,struct_1,struct_2\r\n")
+        f.write(b"depth,struct_1,struct_2\r\n")
         for idx, item in enumerate(wd):
             f.write(f"{item},{dc1[idx]},{dc2[idx]}\r\n".encode())
 

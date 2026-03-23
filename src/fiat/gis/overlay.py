@@ -49,7 +49,7 @@ def mask(
     gtf: tuple,
     shape: tuple,
 ) -> tuple[tuple[int], np.ndarray[int]]:
-    """Mask a grid based on a feature (vector).
+    """Mask a grid based on a geometry (vector).
 
     Parameters
     ----------
@@ -96,27 +96,28 @@ def mask(
     return mask, window
 
 
-def clip(band: GridBand, mask: np.ndarray[int], window: tuple[int]):
-    """Clip a grid based on a feature (vector).
+def clip(
+    band: GridBand,
+    mask: np.ndarray[int],
+    window: tuple[int],
+) -> np.ndarray:
+    """Clip a grid based on a mask.
+
+    The mask is the geometry's footprint on the raster.
 
     Parameters
     ----------
-    ft : ogr.Feature
-        A Feature according to the \
-[ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
-        Can be optained by indexing a \
-[GeomIO](/api/GeomIO.qmd).
-    gtf : tuple
-        The geotransform of a grid dataset.
-        Has the following shape: (left, xres, xrot, upper, yrot, yres).
-    shape : tuple
-        The shape of the grid dataset set (width, height).
+    band : GridBand
+        The raster band.
+    mask : np.ndarray[int]
+        The mask of the geometry within the window of the geometry.
+    window : tuple[int]
+        The window that the geometry covers of the raster (band).
 
     Returns
     -------
-    tuple
-        An array containing the polygon mask and a tuple containing the location of the
-        polygon window in the grid.
+    np.ndarray
+        The resulting values.
 
     See Also
     --------

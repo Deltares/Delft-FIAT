@@ -8,8 +8,8 @@ from pathlib import Path
 from fiat.check import check_exp_columns, check_exp_derived_types
 from fiat.fio import GeomIO
 from fiat.struct.container import ExposureGeomMeta, HazardMeta
-from fiat.typing import MethodsProtocol
-from fiat.util import re_filter
+from fiat.typing import MethodType
+from fiat.util import EAD, FN, MAX, TOTAL, re_filter
 
 
 def discover_exp_columns(
@@ -37,8 +37,8 @@ missing values.
     column_vals = list(columns.keys())
 
     # Patterns
-    fn_pat = rf"^fn_{type}(_\w+)?$"
-    max_pat = rf"^max_{type}(_\w+)?$"
+    fn_pat = rf"^{FN}_{type}(_\w+)?$"
+    max_pat = rf"^{MAX}_{type}(_\w+)?$"
 
     # Filter the current columns
     dmg = re_filter(column_vals, fn_pat)
@@ -55,7 +55,7 @@ missing values.
         dmg_suffix.remove(item)
 
     for val in dmg_suffix:
-        dmg_idx.append([columns[f"fn_{type}{val}"], columns[f"max_{type}{val}"]])
+        dmg_idx.append([columns[f"{FN}_{type}{val}"], columns[f"{MAX}_{type}{val}"]])
 
     return dmg_suffix, dmg_idx, missing
 
@@ -72,7 +72,7 @@ def generate_output_columns(
     # Loop over the exposure types
     for key, value in exposure_types.items():
         columns += [f"{key}{item}" for item in value]
-        columns += [f"total_{key}"]
+        columns += [f"{TOTAL}_{key}"]
 
     # Generate all the output columns
     out = []
@@ -108,7 +108,7 @@ def generate_output_filepaths(
 def get_exposure_meta(
     exposure: GeomIO,
     hazard_meta: HazardMeta,
-    method: MethodsProtocol,
+    method: MethodType,
     types: list | tuple,
 ):
     """Simple method for sorting out the exposure meta."""  # noqa: D401
@@ -143,7 +143,7 @@ def get_exposure_meta(
     ## Names of the new columns
     extra = []
     if hazard_meta.risk:
-        extra = ["ead"]
+        extra = [EAD]
     new = generate_output_columns(
         method.NEW_COLUMNS,
         type_dict,

@@ -21,12 +21,22 @@ from fiat.gis import grid
 from fiat.log import spawn_logger
 from fiat.struct import Table
 from fiat.util import (
+    DEPTH,
+    FIAT_METHOD,
+    FLOOD_DEPTH,
     HAZARD_FILE,
-    HAZARD_TYPE,
+    HAZARD_RESALG,
+    HAZARD_SETTINGS,
+    INDEX,
+    MODEL_CALC,
+    MODEL_GRID_CHUNK,
     MODEL_RISK,
+    MODEL_SRS_FORCE,
     MODEL_SRS_VALUE,
+    MODEL_THREADS,
     NEED_IMPLEMENTED,
     VULNERABILITY_FILE,
+    VULNERABILITY_SETTINGS,
     generic_path_check,
     get_srs_repr,
 )
@@ -57,8 +67,8 @@ class BaseModel(metaclass=ABCMeta):
         self.vulnerability: Table | None = None
 
         # Type of calculations
-        self._type: str = self.cfg.get(HAZARD_TYPE, "flood")
-        self.method = importlib.import_module(f"fiat.method.{self.type}")
+        self._type: str = self.cfg.get(MODEL_CALC, FLOOD_DEPTH)
+        self.method = importlib.import_module(f"{FIAT_METHOD}.{self.type}")
         # Risk or event based
         self._risk: bool = self.cfg.get(MODEL_RISK, False)
 
@@ -70,7 +80,7 @@ class BaseModel(metaclass=ABCMeta):
 
         ## Call the necessary methods at init
         self.srs = self.cfg.get(MODEL_SRS_VALUE, "EPSG:4326")
-        self.threads = self.cfg.get("model.threads")
+        self.threads = self.cfg.get(MODEL_THREADS)
         self.read_hazard_grid()
         self.read_vulnerability_data()
 
@@ -112,7 +122,7 @@ class BaseModel(metaclass=ABCMeta):
         self._srs.SetFromUserInput(value)
 
         # Set crs for later use
-        self.cfg.set("model.srs.value", get_srs_repr(self._srs))
+        self.cfg.set(MODEL_SRS_VALUE, get_srs_repr(self._srs))
         logger.info(f"Model srs set to: '{get_srs_repr(self._srs)}'")
 
     @property
@@ -151,7 +161,7 @@ exceeds machine thread count ('{max_threads}')"
     def type(self, value: str):
         """Set the hazard type."""
         self._type = value
-        self.method = importlib.import_module(f"fiat.method.{value}")
+        self.method = importlib.import_module(f"{FIAT_METHOD}.{value}")
 
     ## Read data methods
     def read_hazard_grid(
@@ -183,10 +193,10 @@ exceeds machine thread count ('{max_threads}')"
         # Set the extra arguments from the settings file
         kw = {}
         kw.update(
-            self.cfg.generate_kwargs("hazard.settings"),
+            self.cfg.generate_kwargs(HAZARD_SETTINGS),
         )
         kw.update(
-            self.cfg.generate_kwargs("model.grid.chunk"),
+            self.cfg.generate_kwargs(MODEL_GRID_CHUNK),
         )
         kw.update(**kwargs)
         data = open_grid(path, **kw)
@@ -205,7 +215,7 @@ exceeds machine thread count ('{max_threads}')"
             path.name,
         )
 
-        if not self.cfg.get("model.srs.global", False):
+        if not self.cfg.get(MODEL_SRS_FORCE, False):
             logger.warning("Setting the model srs from the hazard data.")
             self.srs = data.srs.ExportToWkt()
 
@@ -217,7 +227,7 @@ exceeds machine thread count ('{max_threads}')"
 model spatial reference ('{get_srs_repr(self.srs)}')"
             )
             logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
-            _resalg = self.cfg.get("hazard.resalg", 0)
+            _resalg = self.cfg.get(HAZARD_RESALG, 0)
             data = grid.reproject(
                 data,
                 dst_srs=self.srs.ExportToWkt(),
@@ -256,9 +266,9 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         logger.info(f"Reading vulnerability curves ('{path.name}')")
 
         # Setting the keyword arguments from settings file
-        kw = {"index": "water depth"}
+        kw = {INDEX: DEPTH}
         kw.update(
-            self.cfg.generate_kwargs("vulnerability.settings"),
+            self.cfg.generate_kwargs(VULNERABILITY_SETTINGS),
         )
         kw.update(kwargs)  # Update with user defined method input
         data = open_csv(str(path), **kw)

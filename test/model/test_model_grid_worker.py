@@ -49,7 +49,7 @@ def test_array_worker(
         vulnerability_meta=vulnerability_meta_run,
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_meta_run,
-        fn_impact=flood.fn_impact,
+        fn_impact=flood.depth.fn_impact,
         window=(0, 0, 10, 10),
     )
 
@@ -80,7 +80,7 @@ def test_array_worker_risk(
         vulnerability_meta=vulnerability_meta_run,
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_risk_meta_run,
-        fn_impact=flood.fn_impact,
+        fn_impact=flood.depth.fn_impact,
         window=(0, 0, 10, 10),
     )
 

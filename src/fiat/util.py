@@ -19,48 +19,82 @@ from osgeo import gdal, ogr, osr
 
 ## Config entries
 # Building blocks
+CALC = "calc"
 CHUNK = "chunk"
+DEPTH = "depth"
+EAD = "ead"
 EXPOSURE = "exposure"
 FIAT = "fiat"
 FILE = "file"
+FLOOD = "flood"
+FN = "fn"
+FORCE = "force"
 GEOM = "geom"
 GRID = "grid"
 HAZARD = "hazard"
 INDEX = "index"
-METHODS = "methods"
+INPUT = "input"
+LEADING = "leading"
+LEVEL = "level"
+LOG = "log"
+MAX = "max"
+META = "meta"
+METHOD = "method"
 MODEL = "model"
 NAME = "name"
 OUTPUT = "output"
 PATH = "path"
+RESALG = "resalg"
 RISK = "risk"
+RP = "rp"
 SETTINGS = "settings"
 SRS = "srs"
-STEP_SIZE = "step_size"
 THREADS = "threads"
+TOTAL = "total"
 TYPE = "type"
+TYPES = f"{TYPE}s"
 VALUE = "value"
 VULNERABILITY = "vulnerability"
+WINDOW = "window"
 # Model settings
+MODEL_CALC = f"{MODEL}.{CALC}"
+MODEL_GEOM_CHUNK = f"{MODEL}.{GEOM}.{CHUNK}"
+MODEL_GRID_CHUNK = f"{MODEL}.{GRID}.{CHUNK}"
+MODEL_GRID_LEADING = f"{MODEL}.{GRID}.{LEADING}"
+MODEL_LOGLEVEL = f"{MODEL}.{LOG}{LEVEL}"
 MODEL_RISK = f"{MODEL}.{RISK}"
 MODEL_SRS = f"{MODEL}.{SRS}"
+MODEL_SRS_FORCE = f"{MODEL}.{SRS}.{FORCE}"
 MODEL_SRS_VALUE = f"{MODEL}.{SRS}.{VALUE}"
 MODEL_THREADS = f"{MODEL}.{THREADS}"
 MODEL_TYPE = f"{MODEL}.{TYPE}"
 # Output
 OUTPUT_PATH = f"{OUTPUT}.{PATH}"
 OUTPUT_GEOM_NAME = f"{OUTPUT}.{GEOM}.{NAME}"
+OUTPUT_GRID_NAME = f"{OUTPUT}.{GRID}.{NAME}"
 # Input
 EXPOSURE_GEOM = f"{EXPOSURE}.{GEOM}"
 EXPOSURE_GEOM_FILE = f"{EXPOSURE_GEOM}.{FILE}"
 EXPOSURE_GEOM_SETTINGS = f"{EXPOSURE_GEOM}.{SETTINGS}"
 EXPOSURE_GRID = f"{EXPOSURE}.{GRID}"
 EXPOSURE_GRID_FILE = f"{EXPOSURE_GRID}.{FILE}"
+EXPOSURE_GRID_RESALG = f"{EXPOSURE_GRID}.{RESALG}"
 EXPOSURE_GRID_SETTINGS = f"{EXPOSURE_GRID}.{SETTINGS}"
+EXPOSURE_TYPES = f"{EXPOSURE}.{TYPES}"
 HAZARD_FILE = f"{HAZARD}.{FILE}"
+HAZARD_RESALG = f"{HAZARD}.{RESALG}"
 HAZARD_SETTINGS = f"{HAZARD}.{SETTINGS}"
 HAZARD_TYPE = f"{HAZARD}.{TYPE}"
 VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
 VULNERABILITY_SETTINGS = f"{VULNERABILITY}.{SETTINGS}"
+# Internal
+EXPOSURE__META = f"{EXPOSURE}_{META}"
+FIAT_METHOD = f"{FIAT}.{METHOD}"
+FLOOD_DEPTH = f"{FLOOD}.{DEPTH}"
+FLOOD_LEVEL = f"{FLOOD}.{LEVEL}"
+HAZARD__META = f"{HAZARD}_{META}"
+OUTPUT__PATH = f"{OUTPUT}_{PATH}"
+VULNERABILITY__META = f"{VULNERABILITY}_{META}"
 
 ## Define other string variables
 OBJECT_ID = "object_id"
@@ -370,7 +404,7 @@ def read_gridsource_layers(
     return out
 
 
-def _check_geom_driver_capabilities(
+def _check_driver_capabilities(
     idx: int,
     type: str,
 ) -> tuple[gdal.Driver, list] | tuple[None]:
@@ -417,7 +451,7 @@ def _create_driver_map(
     count = gdal.GetDriverCount()
 
     for idx in range(count):
-        driver, ext = _check_geom_driver_capabilities(idx, type=type)
+        driver, ext = _check_driver_capabilities(idx, type=type)
         if driver is None:
             continue
         if len(ext) > 0:
@@ -513,7 +547,7 @@ def get_module_attr(module: str, attr: str) -> Any:
     return out
 
 
-def object_size(obj):
+def object_size(obj) -> int:
     """Calculate the actual size of an object (bit overestimated).
 
     Thanks to this post on stackoverflow:
@@ -540,7 +574,7 @@ def object_size(obj):
     return size
 
 
-def timeit(n: int = 200000):
+def timeit(n: int = 200000) -> float:
     """Small timing decorater."""
 
     def timeit(fn):

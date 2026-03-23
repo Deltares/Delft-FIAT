@@ -13,7 +13,8 @@ from fiat.gis import overlay
 from fiat.method.ead import fn_ead
 from fiat.model.geom_writer import GeomWriter
 from fiat.struct.container import ExposureGeomMeta, HazardMeta, VulnerabilityMeta
-from fiat.typing import MethodsProtocol
+from fiat.typing import MethodType
+from fiat.util import FIAT_METHOD
 
 process_lock = None
 
@@ -88,8 +89,8 @@ def feature_worker(
                     out = fn_impact(
                         hazard=haz,
                         exposure=ft.GetField(m),
-                        fact=fact,
                         fn_curve=vulnerability_meta.fn[curve_id],
+                        fact=fact,
                     )
                 out_array[exposure_meta.indices_impact[key][n][i]] = out
                 tot += out
@@ -142,7 +143,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The chunk to run through.
     """
     # Setup the hazard type method
-    method: MethodsProtocol = importlib.import_module(f"fiat.method.{hazard_meta.type}")
+    method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{hazard_meta.type}")
     fn_hazard = method.fn_hazard
     fn_impact = method.fn_impact
 

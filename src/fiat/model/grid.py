@@ -25,7 +25,20 @@ from fiat.model.util import (
 )
 from fiat.struct import Table
 from fiat.util import (
+    CHUNK,
+    EXPOSURE,
+    EXPOSURE__META,
     EXPOSURE_GRID_FILE,
+    EXPOSURE_GRID_RESALG,
+    EXPOSURE_GRID_SETTINGS,
+    HAZARD,
+    HAZARD__META,
+    MODEL_GRID_CHUNK,
+    MODEL_GRID_LEADING,
+    OUTPUT_GRID_NAME,
+    VULNERABILITY,
+    VULNERABILITY__META,
+    WINDOW,
     generic_path_check,
     get_srs_repr,
 )
@@ -90,10 +103,10 @@ class GridModel(BaseModel):
         # Set the extra arguments from the settings file
         kw = {}
         kw.update(
-            self.cfg.generate_kwargs("exposure.grid.settings"),
+            self.cfg.generate_kwargs(EXPOSURE_GRID_SETTINGS),
         )
         kw.update(
-            self.cfg.generate_kwargs("model.grid.chunk"),
+            self.cfg.generate_kwargs(MODEL_GRID_CHUNK),
         )
         kw.update(kwargs)
         data = open_grid(path, **kw)
@@ -113,7 +126,7 @@ class GridModel(BaseModel):
 model spatial reference ('{get_srs_repr(self.srs)}')"
             )
             logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
-            _resalg = self.cfg.get("exposure.grid.resampling_method", 0)
+            _resalg = self.cfg.get(EXPOSURE_GRID_RESALG, 0)
             data = grid.reproject(data, self.srs.ExportToWkt(), _resalg)
 
         # Reset to ensure the entry is present
@@ -129,9 +142,9 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         logger.info("Running the model")
         # Quick check if all cdata is set
         check_input_data(
-            ["hazard", self.hazard, GridIO],
-            ["vulnerability", self.vulnerability, Table],
-            ["exposure", self.exposure, GridIO],
+            [HAZARD, self.hazard, GridIO],
+            [VULNERABILITY, self.vulnerability, Table],
+            [EXPOSURE, self.exposure, GridIO],
         )
 
         # Setup the basic metadata
@@ -151,11 +164,11 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         self.hazard, self.exposure = equal_grid(
             self.hazard,
             self.exposure,
-            first=self.cfg.get("model.grid.leading", True),
+            first=self.cfg.get(MODEL_GRID_LEADING, True),
         )
 
         # Get the output path
-        output_name = self.cfg.get("output.grid.name") or self.exposure.path.name
+        output_name = self.cfg.get(OUTPUT_GRID_NAME) or self.exposure.path.name
         output_filepath = Path(self.cfg.output_dir, output_name)
         # Setup the queue and the writer
         self.queue = self.ctx.Queue(maxsize=1000)
@@ -169,7 +182,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         writer = GridWriter(handle=handle, queue=self.queue, ctx=self.ctx)
         # Get the chunks and the window(s)
         chunks = list(create_2d_chunks(self.hazard.shape, parts=self.threads))
-        window = self.cfg.get("model.grid.chunk", fallback=self.exposure.shape)
+        window = self.cfg.get(MODEL_GRID_CHUNK, fallback=self.exposure.shape)
         mem_ids = [f"grid_worker{idx}" for idx, _ in enumerate(chunks)]
         for mem_id, chunk in zip(mem_ids, chunks):
             writer.setup_block(mem_id=mem_id, shape=window)
@@ -179,15 +192,15 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         jobs = generate_jobs(
             {
                 "mem_id": mem_ids,
-                "hazard": self.hazard,
-                "hazard_meta": hazard_meta,
-                "vulnerability_meta": vulnerability_meta,
-                "exposure": self.exposure,
-                "exposure_meta": exposure_meta,
-                "chunk": chunks,
-                "window": [window],
+                HAZARD: self.hazard,
+                HAZARD__META: hazard_meta,
+                VULNERABILITY__META: vulnerability_meta,
+                EXPOSURE: self.exposure,
+                EXPOSURE__META: exposure_meta,
+                CHUNK: chunks,
+                WINDOW: [window],
             },
-            tied=["mem_id", "chunk"],
+            tied=["mem_id", CHUNK],
         )
 
         # Execute the jobs in a multiprocessing pool

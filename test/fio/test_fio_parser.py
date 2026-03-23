@@ -21,7 +21,7 @@ def test_csvparser_default(file_buffer_handler: FileBufferHandler):
     assert pa.index_col == -1
     assert pa.ncol == 3
     assert pa.nrow == 21
-    assert "water depth" in pa.columns  # As the headers are parsed
+    assert "depth" in pa.columns  # As the headers are parsed
     assert pa.dtypes == [float, float, float]
 
 
@@ -40,7 +40,7 @@ def test_csvparser_delimiter(file_buffer_handler: FileBufferHandler):
     assert pa.ncol == 1
     assert pa.nrow == 21
     assert len(pa.columns) == 1  # Of course the same as `ncol`, but good to verify
-    assert "water depth,struct_1" in pa.columns[0]  # One big header
+    assert "depth,struct_1" in pa.columns[0]  # One big header
 
 
 def test_csvparser_dtypes(buffer_handler: BufferHandler):
@@ -64,7 +64,7 @@ def test_csvparser_meta(file_buffer_handler: FileBufferHandler):
         file_buffer_handler,
         delimiter=",",
         header=True,
-        index="water depth",
+        index="depth",
     )
 
     # Assert the dtypes
@@ -78,7 +78,7 @@ def test_csvparser_no_index(file_buffer_handler: FileBufferHandler):
         file_buffer_handler,
         delimiter=",",
         header=True,
-        index="water depth",
+        index="depth",
     )
 
     # Assert the attributes

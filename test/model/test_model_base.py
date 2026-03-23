@@ -32,7 +32,7 @@ def test_basemodel_general_properties(config_empty: Configurations):
     assert not m.risk
     assert get_srs_repr(m.srs) == "EPSG:4326"
     assert m.threads == 1
-    assert m.type == "flood"
+    assert m.type == "flood.depth"
 
 
 def test_basemodel_risk(config_empty: Configurations):
@@ -92,7 +92,7 @@ def test_basemodel_type(config_empty: Configurations):
     # Create the object
     m = BaseModel(config_empty)
     # Assert the current state
-    assert m.type == "flood"
+    assert m.type == "flood.depth"
 
     # This will error as there are no other modules
     with pytest.raises(
@@ -168,7 +168,7 @@ def test_basemodel_read_hazard_warnings(
 
     # Prefer global SRS over hazard SRS
     m.srs = "EPSG:3857"
-    m.cfg.set("model.srs.global", True)
+    m.cfg.set("model.srs.force", True)
 
     # Re-read the hazard data
     m.read_hazard_grid()

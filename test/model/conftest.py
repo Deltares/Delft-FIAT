@@ -173,7 +173,7 @@ def hazard_meta_run():
         length=1,
         rp=None,
         risk=False,
-        type="flood",
+        type="flood.depth",
         type_length=1,
     )
     return meta
@@ -189,7 +189,7 @@ def hazard_risk_meta_run(density: list):
         length=4,
         rp=[2, 5, 10, 25],
         risk=True,
-        type="flood",
+        type="flood.depth",
         type_length=1,
     )
     return meta

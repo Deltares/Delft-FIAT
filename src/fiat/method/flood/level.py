@@ -1,14 +1,17 @@
-"""Functions specifically for flood risk calculation."""
+"""Flood level impact functions."""
 
 import math
-from typing import Callable
 
+from fiat.method.flood.depth import fn_impact
 from fiat.method.util import AREA_METHODS
+from fiat.util import FLOOD_LEVEL, LEVEL
 
-COLUMNS = ["ref"]
-NAME = "flood"
-NEW_COLUMNS = ["depth"]
-TYPES = ["water_depth"]
+__all__ = ["fn_impact"]
+
+COLUMNS = ["ref_floor", "ref_ground"]
+NAME = FLOOD_LEVEL
+NEW_COLUMNS = [LEVEL]
+TYPES = [f"water_{LEVEL}"]
 
 
 def fn_hazard(
@@ -41,32 +44,3 @@ def fn_hazard(
     redf = len(hazard) / raw_l
     hazard = AREA_METHODS[method](hazard) - ref
     return hazard, redf
-
-
-def fn_impact(
-    hazard: float | int,
-    exposure: float | int,
-    fact: float | int,
-    fn_curve: Callable,
-) -> float:
-    """_summary_.
-
-    Parameters
-    ----------
-    hazard : float | int
-        _description_
-    exposure : float | int
-        _description_
-    fact : float | int
-        _description_
-    fn_curve : Callable
-        _description_
-
-    Returns
-    -------
-    float
-        _description_
-    """
-    f = fn_curve(hazard)
-    val = f * exposure * fact
-    return val

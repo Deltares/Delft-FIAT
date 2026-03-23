@@ -12,12 +12,13 @@ from fiat.fio import GridIO
 from fiat.method.ead import fn_density
 from fiat.struct import Table
 from fiat.struct.container import HazardMeta, VulnerabilityMeta
-from fiat.typing import MethodsProtocol
+from fiat.typing import MethodType
+from fiat.util import EXPOSURE, HAZARD, RP, TYPE
 
 GEOM_DEFAULT_CHUNK = 50000
 GRID_PREFER = {
-    False: "hazard",
-    True: "exposure",
+    False: HAZARD,
+    True: EXPOSURE,
 }
 
 
@@ -182,11 +183,11 @@ def get_band_names(
 def get_hazard_meta(
     hazard: GridIO,
     risk: bool,
-    method: MethodsProtocol,
+    method: MethodType,
 ) -> HazardMeta:
     """Obtain some metadata from the hazard data."""
     # Get the types from the metadata
-    types = [band.get_meta("type") for band in hazard]
+    types = [band.get_meta(TYPE) for band in hazard]
     # Check the typing
     indices_type = check_hazard_types(
         types,
@@ -194,7 +195,7 @@ def get_hazard_meta(
     )
 
     # Get the identifiers:
-    identifier = None if not risk else "rp"
+    identifier = None if not risk else RP
     ids = [str(idx + 1) for idx, _ in enumerate(indices_type[0])]
     ids_list = [ids] * len(indices_type)
 

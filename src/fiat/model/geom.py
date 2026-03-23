@@ -28,9 +28,21 @@ from fiat.model.geom_writer import ensure_writable_filepath
 from fiat.model.util import create_1d_chunks, get_hazard_meta, get_vulnerability_meta
 from fiat.struct import Container, Table
 from fiat.util import (
+    CHUNK,
+    EXPOSURE,
+    EXPOSURE__META,
+    EXPOSURE_GEOM,
     EXPOSURE_GEOM_FILE,
     EXPOSURE_GEOM_SETTINGS,
+    EXPOSURE_TYPES,
+    FILE,
+    HAZARD,
+    HAZARD__META,
+    OUTPUT__PATH,
     OUTPUT_GEOM_NAME,
+    SETTINGS,
+    VULNERABILITY,
+    VULNERABILITY__META,
     distribute_threads,
     generic_path_check,
     get_srs_repr,
@@ -59,7 +71,7 @@ class GeomModel(BaseModel):
 
         # Set/ declare some variables
         self.exposure: Container[GeomIO] = Container()
-        self.exposure_types: list[str] = self.cfg.get("exposure.types", ["damage"])
+        self.exposure_types: list[str] = self.cfg.get(EXPOSURE_TYPES, ["damage"])
 
         # Setup the geometry model
         self.read_exposure()
@@ -147,12 +159,12 @@ class GeomModel(BaseModel):
             # Set the data
             self.exposure.set(data)
             # Set config entry
-            entry["file"] = path
-            entry["settings"] = kw
+            entry[FILE] = path
+            entry[SETTINGS] = kw
             cfg.append(entry)
 
         # Set the config back
-        self.cfg.set("exposure.geom", cfg)
+        self.cfg.set(EXPOSURE_GEOM, cfg)
 
     ## Run model method
     def run(
@@ -165,9 +177,9 @@ class GeomModel(BaseModel):
         logger.info("Running the model")
         # Quick check if all data is set
         check_input_data(
-            ["hazard", self.hazard, GridIO],
-            ["vulnerability", self.vulnerability, Table],
-            ["exposure", self.exposure, GeomIO],
+            [HAZARD, self.hazard, GridIO],
+            [VULNERABILITY, self.vulnerability, Table],
+            [EXPOSURE, self.exposure, GeomIO],
         )
 
         # Setup the basic metadata
@@ -216,13 +228,13 @@ class GeomModel(BaseModel):
             # Generate the jobs
             jobs = generate_jobs(
                 {
-                    "output_path": output_path,
-                    "hazard": self.hazard,
-                    "hazard_meta": hazard_meta,
-                    "vulnerability_meta": vulnerability_meta,
-                    "exposure": exposure,
-                    "exposure_meta": exposure_meta,
-                    "chunk": chunks,
+                    OUTPUT__PATH: output_path,
+                    HAZARD: self.hazard,
+                    HAZARD__META: hazard_meta,
+                    VULNERABILITY__META: vulnerability_meta,
+                    EXPOSURE: exposure,
+                    EXPOSURE__META: exposure_meta,
+                    CHUNK: chunks,
                 },
             )
             jobs_list.append(jobs)

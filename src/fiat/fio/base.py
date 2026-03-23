@@ -53,7 +53,7 @@ class BaseIO(metaclass=ABCMeta):
         _mem_loc = f"{id(self):#018x}".upper()
         return f"<{self.__class__.__name__} object at {_mem_loc}>"
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.path)
 
     def __del__(self):
@@ -87,7 +87,7 @@ class BaseIO(metaclass=ABCMeta):
 
         return _inner
 
-    def close(self):
+    def close(self) -> None:
         """Close the dataset/ stream."""
         self.flush()
         self._closed = True
@@ -99,6 +99,6 @@ class BaseIO(metaclass=ABCMeta):
         return self._closed
 
     @abstractmethod
-    def flush(self):
+    def flush(self) -> None:
         """Flush the buffer."""
         raise NotImplementedError(NEED_IMPLEMENTED)

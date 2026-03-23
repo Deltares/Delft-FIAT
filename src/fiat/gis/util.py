@@ -4,10 +4,10 @@ from math import floor
 
 
 def world2pixel(
-    gtf: tuple,
+    gtf: tuple[float, ...],
     x: float | int,
     y: float | int,
-):
+) -> tuple[int, int]:
     """Calculate the pixel location based on coordinates.
 
     (Thanks to the [ogr cookbook]\
@@ -25,7 +25,7 @@ def world2pixel(
 
     Returns
     -------
-    tuple
+    tuple[int]
         Row and column indices.
 
     Examples
@@ -49,10 +49,10 @@ def world2pixel(
 
 
 def pixel2world(
-    gtf: tuple,
+    gtf: tuple[float, ...],
     x: int,
     y: int,
-):
+) -> tuple[float, float]:
     """Calculate coordinates based on pixel location.
 
     (Thanks to the [ogr cookbook]\
@@ -70,7 +70,7 @@ def pixel2world(
 
     Returns
     -------
-    tuple
+    tuple[float]
         Return the x, y coordinates of the upper left corner of the cell.
 
     Examples

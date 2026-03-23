@@ -99,7 +99,7 @@ def test_get_band_names_empty(tmp_path: Path):
 
 def test_get_hazard_meta(hazard_event_data: GridIO):
     # Call the function
-    meta = get_hazard_meta(hazard_event_data, risk=False, method=flood)
+    meta = get_hazard_meta(hazard_event_data, risk=False, method=flood.depth)
 
     # Assert the output
     assert meta.density is None
@@ -108,12 +108,12 @@ def test_get_hazard_meta(hazard_event_data: GridIO):
     assert meta.indices_type == [[0]]
     assert meta.risk == False
     assert meta.rp is None
-    assert meta.type == "flood"
+    assert meta.type == "flood.depth"
 
 
 def test_get_hazard_meta_risk(hazard_risk_data: GridIO):
     # Call the function
-    meta = get_hazard_meta(hazard_risk_data, risk=True, method=flood)
+    meta = get_hazard_meta(hazard_risk_data, risk=True, method=flood.depth)
 
     # Assert the output
     np.testing.assert_array_almost_equal(
@@ -126,7 +126,7 @@ def test_get_hazard_meta_risk(hazard_risk_data: GridIO):
     assert meta.indices_type == [[0, 1, 2, 3]]
     assert meta.risk == True
     assert meta.rp == [2, 5, 10, 25]
-    assert meta.type == "flood"
+    assert meta.type == "flood.depth"
 
 
 def test_get_vulnerability_meta(vulnerability_data_run: Table):

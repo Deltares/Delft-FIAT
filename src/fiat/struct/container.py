@@ -15,13 +15,10 @@ class Container:
 
     _base = "ds"
 
-    def __new__(cls):
-        """Creation."""
-        obj = object.__new__(cls)
-        obj._i = 0
-        obj._db = []
-        obj._h = []
-        return obj
+    def __init__(self):
+        self._i: int = 0
+        self._db: list[str] = []
+        self._h: list[int] = []
 
     def __len__(self) -> int:
         return len(self._h)
@@ -76,10 +73,10 @@ class Container:
 class ExposureGeomMeta:
     """Small container for exposure geometry metadata."""
 
-    indices_impact: dict[str, list]
-    indices_new: list[str]
-    indices_spec: list[str]
-    indices_total: dict[str, list]
+    indices_impact: dict[str, Any]
+    indices_new: list[int]
+    indices_spec: list[int]
+    indices_total: dict[str, list[int]]
     indices_type: dict[str, Any]
     new: list[str]
     new_length: int
@@ -117,7 +114,7 @@ class HazardMeta:
 class VulnerabilityMeta:
     """Small container for some vulnerability metadata."""
 
-    fn: dict[str, Callable]
+    fn: dict[str, Callable[[float], float]]
     fn_list: list[str] | tuple[str]
     min: float | int
     max: float | int
