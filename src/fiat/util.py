@@ -1,17 +1,17 @@
 """Base FIAT utility."""
 
 import importlib
+import io
 import math
 import os
 import re
 import sys
 import time
-from collections.abc import MutableMapping
 from gc import get_referents
 from itertools import product
 from pathlib import Path
 from types import FunctionType, ModuleType
-from typing import Any, Generator
+from typing import Any, Callable, Generator
 
 import numpy as np
 import regex
@@ -166,25 +166,25 @@ def regex_pattern(
     regex.Pattern
         Compiled regex pattern.
     """
-    nchar = nchar.decode()
+    nchar_str = nchar.decode()
     if not multi:
         return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}'.encode())
-    return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}|{nchar}'.encode())
+    return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}|{nchar_str}'.encode())
 
 
 # Calculation
-def mean(values: list) -> float:
+def mean(values: list[float]) -> float:
     """Very simple python mean."""
     return sum(values) / len(values)
 
 
 # Chunking helper functions
 def text_chunk_gen(
-    h: object,
-    pattern: re.Pattern,
+    h: io.IOBase,
+    pattern: re.Pattern[bytes],
     chunk_size: int = 100000,
     nchar: bytes = b"\n",
-) -> Generator:
+) -> Generator[tuple[Any, list[bytes | Any]], None, None]:
     """Read and split text in chunks.
 
     Parameters
@@ -241,15 +241,15 @@ def _load_diff(
     if cur == max_threads and new >= max_threads:
         return 0
     # The difference in load
-    diff = (size / cur) - (size / new)
-    return abs(diff)
+    diff_load = (size / cur) - (size / new)
+    return abs(diff_load)
 
 
 def _diff_table(
     sizes: list[int],
     threads_diss: list[int],
     max_threads: int,
-) -> tuple[np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Create a conditional table of load improvements."""
     # Setup the variables
     n = len(sizes)
@@ -321,23 +321,23 @@ def distribute_threads(
 
 # Config related stuff
 def _flatten_dict_gen(
-    d: dict,
+    d: dict[str, Any],
     parent_key: str,
     sep: str,
-) -> Generator:
+) -> Generator[tuple[str, Any], None, None]:
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, MutableMapping):
+        if isinstance(v, dict):
             yield from flatten_dict(v, new_key, sep=sep).items()
         else:
             yield new_key, v
 
 
 def flatten_dict(
-    d: MutableMapping,
+    d: dict[str, Any],
     parent_key: str = "",
     sep: str = ".",
-) -> dict:
+) -> dict[str, Any]:
     """Flatten a dictionary.
 
     Thanks to this post:
@@ -376,7 +376,7 @@ def get_srs_repr(
 def read_gridsource_info(
     gr: gdal.Dataset,
     format: str = "json",
-) -> dict:
+) -> dict[str, Any]:
     """Read grid source information.
 
     Thanks to:
@@ -388,7 +388,7 @@ def read_gridsource_info(
 
 def read_gridsource_layers(
     gr: gdal.Dataset,
-) -> dict | None:
+) -> dict[str, Any] | None:
     """Read the layers of a gridsource."""
     sd = gr.GetSubDatasets()
 
@@ -407,7 +407,7 @@ def read_gridsource_layers(
 def _check_driver_capabilities(
     idx: int,
     type: str,
-) -> tuple[gdal.Driver, list] | tuple[None]:
+) -> tuple[gdal.Driver, str] | tuple[None, None]:
     """Return driver when it has the necessary capabilities."""
     driver = gdal.GetDriver(idx)
     # Check the create capability
@@ -445,7 +445,7 @@ def _check_driver_capabilities(
 
 def _create_driver_map(
     type: str,
-) -> dict:
+) -> dict[str, str]:
     """Create a map of geometry drivers."""
     drivers = {}
     count = gdal.GetDriverCount()
@@ -454,7 +454,7 @@ def _create_driver_map(
         driver, ext = _check_driver_capabilities(idx, type=type)
         if driver is None:
             continue
-        if len(ext) > 0:
+        if len(ext) > 0 and ext is not None:
             ext = "." + ext
             drivers[ext] = driver.ShortName
 
@@ -518,7 +518,7 @@ def generic_path_check(
 
 
 # Misc.
-def find_duplicates(elements: tuple | list) -> list | None:
+def find_duplicates(elements: tuple[Any] | list[Any]) -> list[Any] | None:
     """Find duplicate elements in an iterable object."""
     uni = list(set(elements))
     counts = [elements.count(elem) for elem in uni]
@@ -528,7 +528,7 @@ def find_duplicates(elements: tuple | list) -> list | None:
     return dup
 
 
-def re_filter(values, pat) -> list:
+def re_filter(values: list[str], pat: str) -> list[str]:
     """Quickly filter values based on a pattern match."""
     result = []
     pat = os.path.normcase(pat)
@@ -539,9 +539,9 @@ def re_filter(values, pat) -> list:
     return result
 
 
-def get_module_attr(module: str, attr: str) -> Any:
+def get_module_attr(module_name: str, attr: str) -> Any:
     """Quickly get attribute from a module dynamically."""
-    module = importlib.import_module(module)
+    module = importlib.import_module(module_name)
     out = getattr(module, attr)
     module = None
     return out
@@ -574,7 +574,7 @@ def object_size(obj) -> int:
     return size
 
 
-def timeit(n: int = 200000) -> float:
+def timeit(n: int = 200000) -> Callable[[int], float]:
     """Small timing decorater."""
 
     def timeit(fn):
@@ -648,11 +648,11 @@ def deter_type(
     i_p = rf"((^(-)?\d+(E(\+|\-)?\d+)?)$)(\n((^(-)?\d+(E(\+|\-)?\d+)?)$)){{{l}}}"
     i_c = re.compile(bytes(i_p, "utf-8"), re.MULTILINE | re.IGNORECASE)
 
-    l = (
+    v = (
         bool(f_c.match(e)),
         bool(i_c.match(e)),
     )
-    return _dtypes[sum(l)]
+    return _dtypes[sum(v)]
 
 
 def deter_dec(

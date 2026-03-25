@@ -4,10 +4,16 @@ import pytest
 
 from fiat.log.formatter import MessageFormatter
 from fiat.log.handler import StreamHandler
-from fiat.log.util import LogItem
+from fiat.log.util import FormatItem, LogItem
 
 
 ## Object for logging testing
+@pytest.fixture
+def format_item() -> FormatItem:
+    f = FormatItem(levelname="INFO", message="A logging message")
+    return f
+
+
 @pytest.fixture
 def log_item() -> LogItem:
     l = LogItem(2, "A logging message")

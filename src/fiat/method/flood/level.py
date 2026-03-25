@@ -8,7 +8,7 @@ from fiat.util import FLOOD_LEVEL, LEVEL
 
 __all__ = ["fn_impact"]
 
-COLUMNS = ["ref_floor", "ref_ground"]
+COLUMNS = ["ref", "elevation"]
 NAME = FLOOD_LEVEL
 NEW_COLUMNS = [LEVEL]
 TYPES = [f"water_{LEVEL}"]
@@ -17,6 +17,7 @@ TYPES = [f"water_{LEVEL}"]
 def fn_hazard(
     hazard: list,
     ref: float,
+    elevation: float,
     method: str = "mean",
 ) -> tuple[float]:
     """Calculate the hazard value for flood hazard.

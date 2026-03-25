@@ -5,7 +5,7 @@ import time
 from string import Formatter as StrFormatter
 from typing import Any
 
-from fiat.log.util import DEFAULT_TIME_FMT, LogItem
+from fiat.log.util import DEFAULT_TIME_FMT, FormatItem, LogItem
 
 __all__ = ["FormatStyler", "MessageFormatter"]
 
@@ -33,7 +33,7 @@ class FormatStyler:
     )
     field_spec = re.compile(r"^(\d+|\w+)(\.\w+|\[[^]]+\])*$")
 
-    def __init__(self, fmt: str, *, defaults: dict[str, Any] | None = None):
+    def __init__(self, fmt: str | None, *, defaults: dict[str, Any] | None = None):
         self._fmt = fmt or self.default_format
         self._defaults = defaults
 
@@ -57,14 +57,14 @@ class FormatStyler:
         if not fields:
             raise ValueError("Invalid format: no fields")
 
-    def _format(self, record: LogItem) -> str:
+    def _format(self, record: FormatItem) -> str:
         if defaults := self._defaults:
             values = defaults | record.__dict__
         else:
             values = record.__dict__
         return self._fmt.format(**values)
 
-    def format(self, record: LogItem) -> str:
+    def format(self, record: FormatItem) -> str:
         """Format the record."""
         try:
             return self._format(record)
@@ -95,18 +95,17 @@ class MessageFormatter:
         *,
         defaults: dict[str, Any] | None = None,
     ):
-        self._style = FormatStyler(fmt, defaults=defaults)
+        self.style = FormatStyler(fmt, defaults=defaults)
         if validate:
-            self._style.validate()
+            self.style.validate()
 
-        self._fmt = self._style._fmt
         self.datefmt = datefmt
 
     ## Properties
     @property
     def fmt(self) -> str:
         """Return the string format."""
-        return self._style._fmt
+        return self.style._fmt
 
     ## Executing methods
     def format_time(self, record: LogItem) -> str:
@@ -117,10 +116,6 @@ class MessageFormatter:
         else:
             s = time.strftime(DEFAULT_TIME_FMT, ct)
         return s
-
-    def format_message(self, record: LogItem) -> str:
-        """Format the message."""
-        return self._style.format(record)
 
     def format(self, record: LogItem) -> str:
         """Format a record.
@@ -135,10 +130,13 @@ class MessageFormatter:
         str
             Formatted record/ message.
         """
-        record.message = record.get_message()
-        if self._style.uses_time():
-            record.asctime = self.format_time(record)
-        s = self.format_message(record)
+        item = FormatItem(
+            levelname=record.get_levelname(),
+            message=record.get_message(),
+        )
+        if self.style.uses_time():
+            item.asctime = self.format_time(record)
+        s = self.style.format(item)
         if not s.endswith("\n"):
             s = s + "\n"
         return s
