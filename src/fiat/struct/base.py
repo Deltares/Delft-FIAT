@@ -2,7 +2,7 @@
 
 from abc import ABCMeta, abstractmethod
 
-from fiat.util import DD_NEED_IMPLEMENTED, OBJECT_ID
+from fiat.util import DD_NEED_IMPLEMENTED
 
 
 class NamedIndex(dict):
@@ -196,7 +196,7 @@ as the data ({self.ncol})")
         """Set the index to a new column."""
         # Check whether the index column index is valid
         if isinstance(index_col, str):
-            index_col = self._columns.get(OBJECT_ID, -1)
+            index_col = self._columns.get(index_col, -1)
         if index_col >= 0 and index_col not in range(len(self.columns)):
             raise ValueError(f"Index column index out of range: ({index_col})")
         return index_col
