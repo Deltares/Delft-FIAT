@@ -28,16 +28,16 @@ python make_env.py build
 mamba env create -f environment.yml
 ```
 
-- Go to the .build/ directory and execute the win64.bat script:
+- Go to the build/ directory and execute the win64.bat script:
 
 ```bash
-cd ./.build
+cd ./build
 
 win64.bat
 ```
 
 That's it.
-A FIAT application will be located in the `{root}/bin/Release` folder.
+A FIAT application will be located in the `{root}/bin/Release` directory.
 
 ## Linux
 
@@ -56,12 +56,12 @@ mamba env create -f environment.yml
 - Set the rights of the shell script and exexute it:
 
 ```bash
-chmod u+x .build/linux64.sh
+chmod u+x build/linux64.sh
 
-.build/linux64.sh
+build/linux64.sh
 ```
 
 That's it.
-A FIAT application will be located in the `{root}/bin/Release` folder
+A FIAT application will be located in the `{root}/bin/Release` directory
 
 :::

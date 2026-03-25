@@ -4,10 +4,10 @@ from math import floor
 
 
 def world2pixel(
-    gtf: tuple,
+    gtf: tuple[float, ...],
     x: float | int,
     y: float | int,
-):
+) -> tuple[int, int]:
     """Calculate the pixel location based on coordinates.
 
     (Thanks to the [ogr cookbook]\
@@ -25,14 +25,14 @@ def world2pixel(
 
     Returns
     -------
-    tuple
+    tuple[int]
         Row and column indices.
 
     Examples
     --------
     ```Python
     # Load a dataset
-    gs = fiat.fio.GridSource(<some raster file>)
+    gs = fiat.fio.GridIO(<some raster file>)
     # Get the geotransform
     gtf = gs.geotransform
     # Calculate the indices
@@ -49,10 +49,10 @@ def world2pixel(
 
 
 def pixel2world(
-    gtf: tuple,
+    gtf: tuple[float, ...],
     x: int,
     y: int,
-):
+) -> tuple[float, float]:
     """Calculate coordinates based on pixel location.
 
     (Thanks to the [ogr cookbook]\
@@ -70,14 +70,14 @@ def pixel2world(
 
     Returns
     -------
-    tuple
+    tuple[float]
         Return the x, y coordinates of the upper left corner of the cell.
 
     Examples
     --------
     ```Python
     # Load a dataset
-    gs = fiat.fio.GridSource(<some raster file>)
+    gs = fiat.fio.GridIO(<some raster file>)
     # Get the geotransform
     gtf = gs.geotransform
     # Calculate the coordinates

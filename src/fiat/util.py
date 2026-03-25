@@ -1,37 +1,133 @@
 """Base FIAT utility."""
 
 import importlib
+import io
 import math
 import os
 import re
 import sys
-from collections.abc import MutableMapping
+import time
 from gc import get_referents
 from itertools import product
 from pathlib import Path
 from types import FunctionType, ModuleType
+from typing import Any, Callable, Generator
 
+import numpy as np
 import regex
 from osgeo import gdal, ogr, osr
 
-# Define the variables for FIAT
+## Config entries
+# Building blocks
+AREA = "area"
+CALC = "calc"
+CENTROID = "centroid"
+CHUNK = "chunk"
+CONFIG = "config"
+DEPTH = "depth"
+EAD = "ead"
+EXPOSURE = "exposure"
+FIAT = "fiat"
+FILE = "file"
+FLOOD = "flood"
+FN = "fn"
+FORCE = "force"
+GEOM = "geom"
+GRID = "grid"
+HAZARD = "hazard"
+INDEX = "index"
+INPUT = "input"
+LEADING = "leading"
+LEVEL = "level"
+LOG = "log"
+MAX = "max"
+MEAN = "mean"
+META = "meta"
+METHOD = "method"
+MIN = "min"
+MODEL = "model"
+NAME = "name"
+OUTPUT = "output"
+PATH = "path"
+RESALG = "resalg"
+RISK = "risk"
+RP = "rp"
+RUN = "run"
+SETTINGS = "settings"
+SRS = "srs"
+THREADS = "threads"
+TOTAL = "total"
+TYPE = "type"
+TYPES = f"{TYPE}s"
+VALUE = "value"
+VULNERABILITY = "vulnerability"
+WINDOW = "window"
+ZONAL = "zonal"
+# Model settings
+MODEL_CALC = f"{MODEL}.{CALC}"
+MODEL_GEOM_CHUNK = f"{MODEL}.{GEOM}.{CHUNK}"
+MODEL_GRID_CHUNK = f"{MODEL}.{GRID}.{CHUNK}"
+MODEL_GRID_LEADING = f"{MODEL}.{GRID}.{LEADING}"
+MODEL_LOGLEVEL = f"{MODEL}.{LOG}{LEVEL}"
+MODEL_RISK = f"{MODEL}.{RISK}"
+MODEL_SRS = f"{MODEL}.{SRS}"
+MODEL_SRS_FORCE = f"{MODEL}.{SRS}.{FORCE}"
+MODEL_SRS_VALUE = f"{MODEL}.{SRS}.{VALUE}"
+MODEL_THREADS = f"{MODEL}.{THREADS}"
+MODEL_TYPE = f"{MODEL}.{TYPE}"
+# Output
+OUTPUT_PATH = f"{OUTPUT}.{PATH}"
+OUTPUT_GEOM_NAME = f"{OUTPUT}.{GEOM}.{NAME}"
+OUTPUT_GRID_NAME = f"{OUTPUT}.{GRID}.{NAME}"
+# Input
+EXPOSURE_AREA__METHOD = f"{EXPOSURE}.{AREA}_{METHOD}"  # TODO exposure specific
+EXPOSURE_GEOM = f"{EXPOSURE}.{GEOM}"
+EXPOSURE_GEOM_FILE = f"{EXPOSURE_GEOM}.{FILE}"
+EXPOSURE_GEOM_SETTINGS = f"{EXPOSURE_GEOM}.{SETTINGS}"
+EXPOSURE_GRID = f"{EXPOSURE}.{GRID}"
+EXPOSURE_GRID_FILE = f"{EXPOSURE_GRID}.{FILE}"
+EXPOSURE_GRID_RESALG = f"{EXPOSURE_GRID}.{RESALG}"
+EXPOSURE_GRID_SETTINGS = f"{EXPOSURE_GRID}.{SETTINGS}"
+EXPOSURE_TYPES = f"{EXPOSURE}.{TYPES}"
+EXPOSURE_ZONAL__METHOD = f"{EXPOSURE}.{ZONAL}_{METHOD}"
+HAZARD_FILE = f"{HAZARD}.{FILE}"
+HAZARD_RESALG = f"{HAZARD}.{RESALG}"
+HAZARD_SETTINGS = f"{HAZARD}.{SETTINGS}"
+HAZARD_TYPE = f"{HAZARD}.{TYPE}"
+VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
+VULNERABILITY_SETTINGS = f"{VULNERABILITY}.{SETTINGS}"
+# Internal
+EXPOSURE__META = f"{EXPOSURE}_{META}"
+FIAT_METHOD = f"{FIAT}.{METHOD}"
+FLOOD_DEPTH = f"{FLOOD}.{DEPTH}"
+FLOOD_LEVEL = f"{FLOOD}.{LEVEL}"
+HAZARD__META = f"{HAZARD}_{META}"
+OUTPUT__PATH = f"{OUTPUT}_{PATH}"
+RUN__META = f"{RUN}_{META}"
+VULNERABILITY__META = f"{VULNERABILITY}_{META}"
+
+## Define other string variables
+OBJECT_ID = "object_id"
+
+## Define data values
+NODATA_VALUE = -9999
+
+## Define function variables for FIAT
 BLACKLIST = type, ModuleType, FunctionType
 DD_NEED_IMPLEMENTED = "Dunder method needs to be implemented."
 DD_NOT_IMPLEMENTED = "Dunder method not yet implemented."
 FILE_ATTRIBUTE_HIDDEN = 0x02
 MANDATORY_MODEL_ENTRIES = [
-    "hazard.file",
-    "vulnerability.file",
+    HAZARD_FILE,
+    VULNERABILITY_FILE,
 ]
-MANDATORY_GEOM_ENTRIES = [
-    r"exposure.geom.file\d+",
-]
-MANDATORY_GRID_ENTRIES = ["exposure.grid.file"]
+MANDATORY_GEOM_ENTRIES = [EXPOSURE_GEOM_FILE]
+MANDATORY_GRID_ENTRIES = [EXPOSURE_GRID_FILE]
 NEWLINE_CHAR = os.linesep
 NEED_IMPLEMENTED = "Method needs to be implemented."
 NOT_IMPLEMENTED = "Method not yet implemented."
 
-# Some widely used dictionaries
+## Some widely used dictionaries
 _dtypes = {
     0: 3,
     1: 2,
@@ -58,7 +154,12 @@ _fields_type_map = {
 }
 
 
-def regex_pattern(delimiter: str, multi: bool = False, nchar: bytes = b"\n"):
+## Patterns
+def regex_pattern(
+    delimiter: str,
+    multi: bool = False,
+    nchar: bytes = b"\n",
+) -> regex.Pattern:
     """Create a regex pattern.
 
     Parameters
@@ -72,28 +173,28 @@ def regex_pattern(delimiter: str, multi: bool = False, nchar: bytes = b"\n"):
 
     Returns
     -------
-    _type_
-        _description_
+    regex.Pattern
+        Compiled regex pattern.
     """
-    nchar = nchar.decode()
+    nchar_str = nchar.decode()
     if not multi:
         return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}'.encode())
-    return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}|{nchar}'.encode())
+    return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}|{nchar_str}'.encode())
 
 
 # Calculation
-def mean(values: list):
+def mean(values: list[float]) -> float:
     """Very simple python mean."""
     return sum(values) / len(values)
 
 
 # Chunking helper functions
 def text_chunk_gen(
-    h: object,
-    pattern: re.Pattern,
+    h: io.IOBase,
+    pattern: re.Pattern[bytes],
     chunk_size: int = 100000,
     nchar: bytes = b"\n",
-):
+) -> Generator[tuple[Any, list[bytes | Any]], None, None]:
     """Read and split text in chunks.
 
     Parameters
@@ -116,6 +217,9 @@ def text_chunk_gen(
     while True:
         t = h.read(chunk_size)
         if not t:
+            if _res:
+                _nlines = _res.count(nchar)
+                yield _nlines, pattern.split(_res)
             break
         t = _res + t
         try:
@@ -131,165 +235,125 @@ def text_chunk_gen(
         yield _nlines, sd
 
 
-def create_windows(
-    shape: tuple,
-    chunk: tuple,
-):
-    """Create chunk windows from a grid.
+def _load_diff(
+    size: int,
+    threads: int,
+    diff: int,
+    max_threads: int,
+) -> float:
+    """Difference in load by adding or removed threads."""
+    cur = max(threads, 1)
+    new = max(threads + diff, 1)
+    # Cant take that single thread away, so infinite
+    if cur == 1 and cur == new:
+        return np.inf
+    # Cant exceed system max
+    if cur == max_threads and new >= max_threads:
+        return 0
+    # The difference in load
+    diff_load = (size / cur) - (size / new)
+    return abs(diff_load)
 
-    Parameters
-    ----------
-    shape : tuple
-        Shape of the grid.
-    chunk : tuple
-        The chunk size.
 
-    Returns
-    -------
-    tuple
-        Tuple containing the upperleft x and y corner and the width and height
-    """
-    _x, _y = shape
-    _lu = tuple(
-        product(
-            range(0, _x, chunk[0]),
-            range(0, _y, chunk[1]),
-        ),
-    )
-    for _l, _u in _lu:
-        w = min(chunk[0], _x - _l)
-        h = min(chunk[1], _y - _u)
-        yield (
-            _l,
-            _u,
-            w,
-            h,
+def _diff_table(
+    sizes: list[int],
+    threads_diss: list[int],
+    max_threads: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Create a conditional table of load improvements."""
+    # Setup the variables
+    n = len(sizes)
+    flags = np.zeros((n, n))
+    diff = np.ones((n, n)) * np.inf
+    multi = [item > 1 for item in threads_diss]
+    # Loop through the coordinates
+    for i, j in product(range(n), range(n)):
+        if i == j:  # Diagonal (Cant take from self)
+            continue
+        if not multi[j]:  # No threads to take
+            continue
+        val = _load_diff(sizes[i], threads_diss[i], 1, max_threads) - _load_diff(
+            sizes[j], threads_diss[j], -1, max_threads
         )
+        if val > 0:  # We have a winner
+            flags[i, j] = 1
+            diff[i, j] = val
+    return flags, diff
 
 
-def create_1d_chunk(
-    length: int,
-    parts: int,
-):
-    """Create chunks for 1d vector data."""
-    part = math.ceil(
-        length / parts,
-    )
-    series = list(
-        range(0, length, part),
-    ) + [length]
-    _series = series.copy()
-    _series.remove(_series[0])
-    series = [_i + 1 for _i in series]
+def distribute_threads(
+    size: list[int],
+    threads: int,
+) -> list[int]:
+    """Sort out the weight of the data on all the threads."""
+    n = len(size)
+    # First estimate of the thread weight
+    thread_diss = [round((item / sum(size)) * threads) for item in size]
 
-    chunks = tuple(
-        zip(series[:-1], _series),
-    )
+    # Check for sizes with no threads assigned
+    while 0 in thread_diss:
+        # Take the first
+        idx = thread_diss.index(0)
+        thread_diss[idx] = 1
+        # Check if there are others with multiple threads
+        multi = [i for i, item in enumerate(thread_diss) if item > 1]
+        if len(multi) == 0:
+            continue
+        # See it there is benefit to taking on of those threads
+        # For the one with zero threads
+        extra = [_load_diff(size[i], thread_diss[i], -1, threads) for i in multi]
+        benefit = [size[idx] > item for item in extra]
+        if not any(benefit):
+            continue
+        # Extract one from the one with more than one, dawai
+        idx = extra.index(min([item for i, item in enumerate(extra) if benefit[i]]))
+        thread_diss[multi[idx]] -= 1
 
-    return chunks
+    # Check for at least all the available threads
+    while sum(thread_diss) < threads:
+        red = [
+            _load_diff(item, thread_diss[i], 1, threads) for i, item in enumerate(size)
+        ]
+        idx = red.index(max(red))
+        thread_diss[idx] += 1
+
+    # Redistribute according to size
+    while True:
+        flags, diff = _diff_table(size, thread_diss, threads)
+        if not np.any(flags):
+            break
+        idxmin = np.argmin(diff)
+        thread_diss[idxmin // n] += 1
+        thread_diss[idxmin % n] -= 1
+
+    return thread_diss
 
 
 # Config related stuff
-def _flatten_dict_gen(d, parent_key, sep):
+def _flatten_dict_gen(
+    d: dict[str, Any],
+    parent_key: str,
+    sep: str,
+) -> Generator[tuple[str, Any], None, None]:
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, MutableMapping):
+        if isinstance(v, dict):
             yield from flatten_dict(v, new_key, sep=sep).items()
         else:
             yield new_key, v
 
 
-def flatten_dict(d: MutableMapping, parent_key: str = "", sep: str = "."):
+def flatten_dict(
+    d: dict[str, Any],
+    parent_key: str = "",
+    sep: str = ".",
+) -> dict[str, Any]:
     """Flatten a dictionary.
 
     Thanks to this post:
     (https://www.freecodecamp.org/news/how-to-flatten-a-dictionary-in-python-in-4-different-ways/).
     """
     return dict(_flatten_dict_gen(d, parent_key, sep))
-
-
-# Exposure specific utility
-def discover_exp_columns(
-    columns: dict,
-    type: str,
-):
-    """Figure out the which are the exposure related columns.
-
-    Parameters
-    ----------
-    columns : dict
-        The columns.
-    type : str
-        Type of exposure, e.g. damage or affected
-
-    Returns
-    -------
-    Tuple
-        Exposure suffix (e.g. structure for damage), index of the columns, \
-missing values.
-    """
-    dmg_idx = {}
-
-    # Get column values
-    column_vals = list(columns.keys())
-
-    # Patterns
-    fn_pat = rf"^fn_{type}(_\w+)?$"
-    max_pat = rf"^max_{type}(_\w+)?$"
-
-    # Filter the current columns
-    dmg = re_filter(column_vals, fn_pat)
-    dmg_suffix = [re.findall(fn_pat, item)[0] for item in dmg]
-    mpd = re_filter(column_vals, max_pat)
-    mpd_suffix = [re.findall(max_pat, item)[0] for item in mpd]
-
-    # Check the overlap
-    _check = [item in mpd_suffix for item in dmg_suffix]
-
-    # Determine the missing values
-    missing = [item for item, b in zip(dmg_suffix, _check) if not b]
-    for item in missing:
-        dmg_suffix.remove(item)
-
-    fn = {}
-    maxv = {}
-    for val in dmg_suffix:
-        fn.update({val: columns[f"fn_{type}{val}"]})
-        maxv.update({val: columns[f"max_{type}{val}"]})
-    dmg_idx.update({"fn": fn, "max": maxv})
-
-    return dmg_suffix, dmg_idx, missing
-
-
-def generate_output_columns(
-    specific_columns: tuple | list,
-    exposure_types: dict,
-    extra: tuple | list = [],
-    suffix: tuple | list = [""],
-):
-    """Generate the output columns."""
-    default = specific_columns + ["red_fact"]
-    total_idx = []
-
-    # Loop over the exposure types
-    for key, value in exposure_types.items():
-        default += [f"{key}{item}" for item in value["fn"].keys()]
-        total_idx.append(len(default))
-        default += [f"total_{key}"]
-
-    total_idx = [item - len(default) for item in total_idx]
-
-    out = []
-    if len(suffix) == 1 and not suffix[0]:
-        out = default
-    else:
-        for name in suffix:
-            add = [f"{item}_{name}" for item in default]
-            out += add
-
-    out += [f"{x}_{y}" for x, y in product(extra, exposure_types.keys())]
-
-    return out, len(default), total_idx
 
 
 # GIS related utility
@@ -309,7 +373,7 @@ def get_srs_repr(
         Representing string.
     """
     if srs is None:
-        raise ValueError("'srs' can not be 'None'.")
+        raise ValueError("'srs' can not be None.")
     _auth_c = srs.GetAuthorityCode(None)
     _auth_n = srs.GetAuthorityName(None)
 
@@ -322,7 +386,7 @@ def get_srs_repr(
 def read_gridsource_info(
     gr: gdal.Dataset,
     format: str = "json",
-):
+) -> dict[str, Any]:
     """Read grid source information.
 
     Thanks to:
@@ -334,7 +398,7 @@ def read_gridsource_info(
 
 def read_gridsource_layers(
     gr: gdal.Dataset,
-):
+) -> dict[str, Any] | None:
     """Read the layers of a gridsource."""
     sd = gr.GetSubDatasets()
 
@@ -345,112 +409,100 @@ def read_gridsource_layers(
         ds = path.split(":")[-1].strip()
         out[ds] = path
 
+    if len(out) == 0:
+        return None
     return out
 
 
-def _create_geom_driver_map(
-    write: bool = False,
-):
+def _check_driver_capabilities(
+    idx: int,
+    type: str,
+) -> tuple[gdal.Driver, str] | tuple[None, None]:
+    """Return driver when it has the necessary capabilities."""
+    driver = gdal.GetDriver(idx)
+    # Check the create capability
+    if not driver.GetMetadataItem(gdal.DCAP_CREATE):
+        return None, None
+    # Check on vector driver
+    if type == gdal.DCAP_VECTOR and (
+        not driver.GetMetadataItem(gdal.DCAP_VECTOR)
+        or not driver.GetMetadataItem(gdal.DCAP_CREATE_LAYER)
+        # or not driver.GetMetadataItem(gdal.DCAP_UPDATE)
+    ):
+        return None, None
+    # Check on Raster driver
+    if type == gdal.DCAP_RASTER and (
+        not driver.GetMetadataItem(gdal.DCAP_RASTER)
+        or not driver.GetMetadataItem(gdal.DCAP_CREATECOPY)
+    ):
+        return None, None
+    # Get the extension
+    ext = driver.GetMetadataItem(gdal.DMD_EXTENSION) or driver.GetMetadataItem(
+        gdal.DMD_EXTENSIONS
+    )
+    # If None, cant do anything
+    if ext is None:
+        return None, None
+    # Get the extension from the returned str or list
+    if len(ext.split(" ")) > 1:
+        exts = ext.split(" ")
+        if driver.ShortName.lower() in exts:
+            ext = driver.ShortName.lower()
+        else:
+            ext = ext.split(" ")[-1]
+    return driver, ext
+
+
+def _create_driver_map(
+    type: str,
+) -> dict[str, str]:
     """Create a map of geometry drivers."""
-    geom_drivers = {}
-    _c = gdal.GetDriverCount()
+    drivers = {}
+    count = gdal.GetDriverCount()
 
-    for idx in range(_c):
-        dr = gdal.GetDriver(idx)
-        if dr.GetMetadataItem(gdal.DCAP_VECTOR):
-            edit = dr.GetMetadataItem(gdal.DCAP_DELETE_FIELD)
-            if write and edit is None:
-                continue
-            if dr.GetMetadataItem(gdal.DCAP_CREATE) or dr.GetMetadataItem(
-                gdal.DCAP_CREATE_LAYER
-            ):
-                ext = dr.GetMetadataItem(gdal.DMD_EXTENSION) or dr.GetMetadataItem(
-                    gdal.DMD_EXTENSIONS
-                )
-                if ext is None:
-                    continue
-                if len(ext.split(" ")) > 1:
-                    exts = ext.split(" ")
-                    if dr.ShortName.lower() in exts:
-                        ext = dr.ShortName.lower()
-                    else:
-                        ext = ext.split(" ")[-1]
-                if len(ext) > 0:
-                    ext = "." + ext
-                    geom_drivers[ext] = dr.ShortName
+    for idx in range(count):
+        driver, ext = _check_driver_capabilities(idx, type=type)
+        if driver is None:
+            continue
+        if ext is not None and len(ext) > 0:
+            ext = "." + ext
+            drivers[ext] = driver.ShortName
 
-    return geom_drivers
+    return drivers
 
 
-GEOM_READ_DRIVER_MAP = _create_geom_driver_map()
-GEOM_WRITE_DRIVER_MAP = _create_geom_driver_map(write=True)
-GEOM_WRITE_DRIVER_MAP[""] = "Memory"
-
-
-def _create_grid_driver_map():
-    """Create a map of grid drivers."""
-    grid_drivers = {}
-    _c = gdal.GetDriverCount()
-
-    for idx in range(_c):
-        dr = gdal.GetDriver(idx)
-        if dr.GetMetadataItem(gdal.DCAP_RASTER):
-            if dr.GetMetadataItem(gdal.DCAP_CREATE) or dr.GetMetadataItem(
-                gdal.DCAP_CREATECOPY
-            ):
-                ext = dr.GetMetadataItem(gdal.DMD_EXTENSION) or dr.GetMetadataItem(
-                    gdal.DMD_EXTENSIONS
-                )
-                if ext is None:
-                    continue
-                if len(ext.split(" ")) > 1:
-                    exts = ext.split(" ")
-                    if dr.ShortName.lower() in exts:
-                        ext = dr.ShortName.lower()
-                    else:
-                        ext = ext.split(" ")[-1]
-                if len(ext) > 0:
-                    ext = "." + ext
-                    grid_drivers[ext] = dr.ShortName
-
-    return grid_drivers
-
-
-GRID_DRIVER_MAP = _create_grid_driver_map()
+GEOM_DRIVER_MAP = _create_driver_map(type=gdal.DCAP_VECTOR)
+GEOM_DRIVER_MAP[""] = "MEM"
+GRID_DRIVER_MAP = _create_driver_map(type=gdal.DCAP_RASTER)
 GRID_DRIVER_MAP[""] = "MEM"
 
 
 # I/O stuff
-def create_dir(
-    root: Path | str,
+def generic_directory_check(
     path: Path | str,
-):
-    """Create directory when it does not yet exist."""
-    _p = Path(path)
-    if not _p.is_absolute():
-        _p = Path(root, _p)
-    generic_folder_check(_p)
-    return _p
-
-
-def generic_folder_check(
-    path: Path | str,
-):
-    """Check if a directory exists.
+    root: Path | str | None = None,
+) -> Path:
+    """Check if a directory exists, create when it does not yet exist.
 
     Parameters
     ----------
     path : Path | str
         Path to the directory.
+    root : str
+        Current root/ working directory.
     """
+    root = root or Path.cwd()
     path = Path(path)
+    if not path.is_absolute():
+        path = Path(root, path)
     if not path.exists():
         path.mkdir(parents=True)
+    return path
 
 
 def generic_path_check(
-    path: str,
-    root: str,
+    path: Path | str,
+    root: Path | str | None = None,
 ) -> Path:
     """Check whether a file exists.
 
@@ -459,54 +511,24 @@ def generic_path_check(
     path : str
         Path to the file.
     root : str
-        Current root directory.
+        Current root/ working directory.
 
     Returns
     -------
     Path
         Absolute path to the file.
     """
+    root = root or Path.cwd()
     path = Path(path)
     if not path.is_absolute():
         path = Path(root, path)
     if not (path.is_file() | path.is_dir()):
-        raise FileNotFoundError(f"{str(path)} is not a valid path")
+        raise FileNotFoundError(f"{path.as_posix()} is not a valid path")
     return path
 
 
-# Logging utility
-def progressbar(
-    iteration: int,
-    total: int,
-    prefix: str = "",
-    suffix: str = "",
-    decimals: int = 1,
-    bar_length: int = 50,
-):
-    """Call in a loop to create terminal progress bar.
-
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        bar_length  - Optional  : character length of bar (Int)
-    """
-    str_format = "{0:." + str(decimals) + "f}"
-    percents = str_format.format(100 * (iteration / float(total)))
-    filled_length = int(round(bar_length * iteration / float(total)))
-    bar = "█" * filled_length + "-" * (bar_length - filled_length)
-
-    (sys.stdout.write("\r%s |%s| %s%s %s" % (prefix, bar, percents, "%", suffix)),)
-
-    if iteration == total:
-        sys.stdout.write("\n")
-    sys.stdout.flush()
-
-
 # Misc.
-def find_duplicates(elements: tuple | list):
+def find_duplicates(elements: tuple[Any] | list[Any]) -> list[Any] | None:
     """Find duplicate elements in an iterable object."""
     uni = list(set(elements))
     counts = [elements.count(elem) for elem in uni]
@@ -516,7 +538,7 @@ def find_duplicates(elements: tuple | list):
     return dup
 
 
-def re_filter(values, pat):
+def re_filter(values: list[str], pat: str) -> list[str]:
     """Quickly filter values based on a pattern match."""
     result = []
     pat = os.path.normcase(pat)
@@ -527,15 +549,14 @@ def re_filter(values, pat):
     return result
 
 
-def get_module_attr(module: str, attr: str):
+def get_module_attr(module_name: str, attr: str) -> Any:
     """Quickly get attribute from a module dynamically."""
-    module = importlib.import_module(module)
+    module = importlib.import_module(module_name)
     out = getattr(module, attr)
-    module = None
     return out
 
 
-def object_size(obj):
+def object_size(obj) -> int:
     """Calculate the actual size of an object (bit overestimated).
 
     Thanks to this post on stackoverflow:
@@ -562,43 +583,60 @@ def object_size(obj):
     return size
 
 
+def timeit(n: int = 200000) -> Callable[[int], float]:
+    """Small timing decorater."""
+
+    def timeit(fn):
+        def inner(*args, **kwargs):
+            time_array = []
+            for _ in range(n):
+                s = time.time()
+                fn(*args, **kwargs)
+                e = time.time() - s
+                time_array.append(e)
+            return sum(time_array)
+
+        return inner
+
+    return timeit
+
+
 # Objects for dummy usage
 class DummyLock:
     """Mimic Lock functionality while doing nothing."""
 
     def acquire(self):
         """Call dummy acquire."""
-        pass
+        ...
 
     def release(self):
         """Call dummy release."""
-        pass
+        ...
 
 
 class DummyWriter:
     """Mimic the behaviour of an object that is capable of writing."""
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, *args, **kwargs): ...
 
     def close(self):
         """Call dummy close."""
-        pass
+        ...
 
-    def write(self, *args):
+    def add(self, *args):
         """Call dummy write."""
-        pass
+        ...
 
-    def write_iterable(self, *args):
+    def add_iterable(self, *args):
         """Call dummy write iterable."""
-        pass
+        ...
 
 
 # Typing related stuff
 def deter_type(
     e: bytes,
     l: int,
-):
+) -> int:
     """Detemine the type of a column of text.
 
     Parameters
@@ -619,22 +657,22 @@ def deter_type(
     i_p = rf"((^(-)?\d+(E(\+|\-)?\d+)?)$)(\n((^(-)?\d+(E(\+|\-)?\d+)?)$)){{{l}}}"
     i_c = re.compile(bytes(i_p, "utf-8"), re.MULTILINE | re.IGNORECASE)
 
-    l = (
+    v = (
         bool(f_c.match(e)),
         bool(i_c.match(e)),
     )
-    return _dtypes[sum(l)]
+    return _dtypes[sum(v)]
 
 
 def deter_dec(
     e: float,
     base: float = 10.0,
-):
+) -> int:
     """Detemine the number of decimals."""
     ndec = math.floor(math.log(e) / math.log(base))
     return abs(ndec)
 
 
-def replace_empty(l: list):
+def replace_empty(l: list[bytes]) -> list[str]:
     """Replace empty values by None in a string (i.e. between delimiters)."""
     return ["nan" if not e else e.decode() for e in l]
