@@ -10,7 +10,12 @@ from fiat.model.grid_worker import (
     process_hazard,
     worker,
 )
-from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
+from fiat.struct.container import (
+    ExposureGridMeta,
+    HazardMeta,
+    RunMeta,
+    VulnerabilityMeta,
+)
 
 
 def test_process_hazard(
@@ -33,6 +38,7 @@ def test_process_hazard(
 
 
 def test_array_worker(
+    run_meta: RunMeta,
     hazard_event_data: GridIO,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -44,6 +50,7 @@ def test_array_worker(
     # Call the function
     array_worker(
         out_array=out_array,
+        run_meta=run_meta,
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_meta_run,
@@ -64,6 +71,7 @@ def test_array_worker(
 
 
 def test_array_worker_risk(
+    run_risk_meta: RunMeta,
     hazard_risk_data: GridIO,
     hazard_risk_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -75,6 +83,7 @@ def test_array_worker_risk(
     # Call the function
     array_worker(
         out_array=out_array,
+        run_meta=run_risk_meta,
         hazard=hazard_risk_data,
         hazard_meta=hazard_risk_meta_run,
         vulnerability_meta=vulnerability_meta_run,
@@ -105,6 +114,7 @@ def test_array_worker_risk(
 def test_worker(
     dummy_queue: type,
     dummy_pipeline: type,
+    run_meta: RunMeta,
     hazard_event_data: GridIO,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -120,6 +130,7 @@ def test_worker(
     # Call the function
     worker(
         mem_id="test-block",
+        run_meta=run_meta,
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_meta_run,

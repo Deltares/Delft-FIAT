@@ -12,7 +12,12 @@ from fiat.fio import GeomIO, GridIO
 from fiat.gis import overlay
 from fiat.method.ead import fn_ead
 from fiat.model.geom_writer import GeomWriter
-from fiat.struct.container import ExposureGeomMeta, HazardMeta, VulnerabilityMeta
+from fiat.struct.container import (
+    ExposureGeomMeta,
+    HazardMeta,
+    RunMeta,
+    VulnerabilityMeta,
+)
 from fiat.typing import MethodType
 from fiat.util import FIAT_METHOD
 
@@ -32,6 +37,7 @@ def initialize_pool(
 
 def feature_worker(
     ft: ogr.Feature,
+    run_meta: RunMeta,
     hazard: GridIO,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
@@ -45,6 +51,8 @@ def feature_worker(
     ----------
     ft : ogr.Feature
         The feature.
+    run_meta : RunMeta
+        Configurations runtime metadata.
     hazard : GridIO
         The hazard data.
     hazard_meta : HazardMeta
@@ -78,7 +86,11 @@ def feature_worker(
     n = 0
     for idxs in hazard_meta.indices_run:
         haz = [hazard[idx][*window][mask == 1].tolist() for idx in idxs]
-        haz, fact = fn_hazard(*haz, *haz_args)
+        haz, fact = fn_hazard(
+            *haz,
+            *haz_args,
+            run_meta.zonal_method,
+        )
         out_array[0 + n * exposure_meta.type_length] = haz
         for key, value in exposure_meta.indices_type.items():
             tot = 0.0
@@ -98,7 +110,7 @@ def feature_worker(
         n += 1
 
     # Process the results to ead when risk mode
-    if hazard_meta.risk:
+    if run_meta.risk:
         i = 0
         for ti, indices in exposure_meta.indices_total.items():
             ead = fn_ead(
@@ -113,6 +125,7 @@ def feature_worker(
 
 def worker(
     output_path: Path,
+    run_meta: RunMeta,
     hazard: GridIO,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
@@ -129,6 +142,8 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     ----------
     output_path : Path
         The path to file to be written.
+    run_meta : RunMeta
+        The configurations runtime meta.
     hazard : GridIO
         The hazard data.
     hazard_meta : HazardMeta
@@ -143,7 +158,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The chunk to run through.
     """
     # Setup the hazard type method
-    method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{hazard_meta.type}")
+    method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{run_meta.type}")
     fn_hazard = method.fn_hazard
     fn_impact = method.fn_impact
 
@@ -162,6 +177,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     for ft in exposure.layer.reduced_iter(*chunk):
         out_array = feature_worker(
             ft=ft,
+            run_meta=run_meta,
             hazard=hazard,
             hazard_meta=hazard_meta,
             vulnerability_meta=vulnerability_meta,

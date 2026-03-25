@@ -13,6 +13,7 @@ from fiat.struct.container import (
     ExposureGeomMeta,
     ExposureGridMeta,
     HazardMeta,
+    RunMeta,
     VulnerabilityMeta,
 )
 
@@ -164,7 +165,7 @@ def exposure_grid_risk_meta_run() -> ExposureGridMeta:
 
 
 @pytest.fixture(scope="session")
-def hazard_meta_run():
+def hazard_meta_run() -> HazardMeta:
     meta = HazardMeta(
         density=None,
         ids=["1"],
@@ -172,15 +173,12 @@ def hazard_meta_run():
         indices_type=[[0]],
         length=1,
         rp=None,
-        risk=False,
-        type="flood.depth",
-        type_length=1,
     )
     return meta
 
 
 @pytest.fixture(scope="session")
-def hazard_risk_meta_run(density: list):
+def hazard_risk_meta_run(density: list) -> HazardMeta:
     meta = HazardMeta(
         density=density,
         ids=["2", "5", "10", "25"],
@@ -188,9 +186,30 @@ def hazard_risk_meta_run(density: list):
         indices_type=[[0, 1, 2, 3]],
         length=4,
         rp=[2, 5, 10, 25],
+    )
+    return meta
+
+
+@pytest.fixture(scope="session")
+def run_meta() -> RunMeta:
+    meta = RunMeta(
+        area_method="area",
+        risk=False,
+        type="flood.depth",
+        type_length=1,
+        zonal_method="mean",
+    )
+    return meta
+
+
+@pytest.fixture(scope="session")
+def run_risk_meta() -> RunMeta:
+    meta = RunMeta(
+        area_method="area",
         risk=True,
         type="flood.depth",
         type_length=1,
+        zonal_method="mean",
     )
     return meta
 
@@ -202,7 +221,7 @@ def vulnerability_data_run(vulnerability_data: Table) -> Table:
 
 
 @pytest.fixture(scope="session")
-def vulnerability_meta_run(vulnerability_data: Table) -> ExposureGeomMeta:
+def vulnerability_meta_run(vulnerability_data: Table) -> VulnerabilityMeta:
     fn_list = ["struct_1", "struct_2"]
     fn = {
         item: make_interp_spline(

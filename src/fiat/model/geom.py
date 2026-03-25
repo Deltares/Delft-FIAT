@@ -25,7 +25,12 @@ from fiat.model.base import BaseModel
 from fiat.model.geom_util import generate_output_filepaths, get_exposure_meta
 from fiat.model.geom_worker import initialize_pool, worker
 from fiat.model.geom_writer import ensure_writable_filepath
-from fiat.model.util import create_1d_chunks, get_hazard_meta, get_vulnerability_meta
+from fiat.model.util import (
+    create_1d_chunks,
+    get_hazard_meta,
+    get_run_meta,
+    get_vulnerability_meta,
+)
 from fiat.struct import Container, Table
 from fiat.util import (
     CHUNK,
@@ -40,6 +45,7 @@ from fiat.util import (
     HAZARD__META,
     OUTPUT__PATH,
     OUTPUT_GEOM_NAME,
+    RUN__META,
     SETTINGS,
     VULNERABILITY,
     VULNERABILITY__META,
@@ -183,7 +189,16 @@ class GeomModel(BaseModel):
         )
 
         # Setup the basic metadata
-        hazard_meta = get_hazard_meta(self.hazard, risk=self.risk, method=self.method)
+        run_meta = get_run_meta(
+            self.cfg,
+            risk=self.risk,
+            method=self.method,
+        )
+        hazard_meta = get_hazard_meta(
+            self.hazard,
+            risk=self.risk,
+            method_types=self.method.TYPES,
+        )
         vulnerability_meta = get_vulnerability_meta(self.vulnerability)
 
         # Create the output directory and files
@@ -217,6 +232,7 @@ class GeomModel(BaseModel):
             # Get the exposure field meta
             exposure_meta = get_exposure_meta(
                 exposure=exposure,
+                run_meta=run_meta,
                 hazard_meta=hazard_meta,
                 method=self.method,
                 types=self.exposure_types,
@@ -229,6 +245,7 @@ class GeomModel(BaseModel):
             jobs = generate_jobs(
                 {
                     OUTPUT__PATH: output_path,
+                    RUN__META: run_meta,
                     HAZARD: self.hazard,
                     HAZARD__META: hazard_meta,
                     VULNERABILITY__META: vulnerability_meta,

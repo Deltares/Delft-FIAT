@@ -12,7 +12,7 @@ def test_fn_hazard():
     # Call the function
     dmg, red_f = fn_hazard(
         [2.5, 5, 10],
-        ref=1.0,
+        elevation=1.0,
         method="mean",
     )
 
@@ -23,9 +23,9 @@ def test_fn_hazard():
 
 def test_fn_hazard_none():
     # Call the function
-    dmg, red_f = fn_hazard(
+    dmg, _ = fn_hazard(
         [],
-        ref=1.0,
+        elevation=1.0,
         method="mean",
     )
 
@@ -37,7 +37,7 @@ def test_fn_hazard_red():
     # Call the function with a zero value added
     dmg, red_f = fn_hazard(
         [0, 2.5, 5, 10],
-        ref=1.0,
+        elevation=1.0,
         method="mean",
     )
 
@@ -50,7 +50,7 @@ def test_fn_hazard_high_ref():
     # Call the function with higher ref
     dmg, red_f = fn_hazard(
         [0, 2.5, 5, 10],
-        ref=2.0,
+        elevation=2.0,
         method="mean",
     )
 
@@ -63,7 +63,7 @@ def test_fn_hazard_high_ref_red():
     # Call the function with different input
     dmg, red_f = fn_hazard(
         [0, 0, 5, 10],
-        ref=2.0,
+        elevation=2.0,
         method="mean",
     )
 

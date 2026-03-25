@@ -3,31 +3,33 @@
 import math
 
 from fiat.method.flood.depth import fn_impact
-from fiat.method.util import AREA_METHODS
+from fiat.method.util import ZONAL_METHODS
 from fiat.util import FLOOD_LEVEL, LEVEL
 
 __all__ = ["fn_impact"]
 
-COLUMNS = ["ref", "elevation"]
+COLUMNS = ["reference", "elevation"]
 NAME = FLOOD_LEVEL
 NEW_COLUMNS = [LEVEL]
 TYPES = [f"water_{LEVEL}"]
 
 
 def fn_hazard(
-    hazard: list,
-    ref: float,
+    hazard: list[float],
+    reference: float,
     elevation: float,
     method: str = "mean",
 ) -> tuple[float]:
-    """Calculate the hazard value for flood hazard.
+    """Calculate the hazard value for flood level hazard.
 
     Parameters
     ----------
     hazard : list
         Raw hazard values.
-    ref : float
-        Reference to the hazard values.
+    reference : float
+        Surface elevation reference to the hazard values.
+    elevation : float
+        The elevation of the object relative to the surface.
     method : str, optional
         Chose 'max' or 'mean' for either the maximum value or the average,
         by default 'mean'.
@@ -39,9 +41,9 @@ def fn_hazard(
     """
     # Remove the negative hazard values to 0.
     raw_l = len(hazard)
-    hazard = [n for n in hazard if n > 0]
+    hazard = [n for n in hazard if n - reference > 0]
     if not hazard:
         return math.nan, math.nan
     redf = len(hazard) / raw_l
-    hazard = AREA_METHODS[method](hazard) - ref
+    hazard = ZONAL_METHODS[method](hazard) - elevation
     return hazard, redf

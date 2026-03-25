@@ -21,6 +21,7 @@ from fiat.model.grid_writer import GridWriter, create_grid_handle
 from fiat.model.util import (
     create_2d_chunks,
     get_hazard_meta,
+    get_run_meta,
     get_vulnerability_meta,
 )
 from fiat.struct import Table
@@ -36,6 +37,7 @@ from fiat.util import (
     MODEL_GRID_CHUNK,
     MODEL_GRID_LEADING,
     OUTPUT_GRID_NAME,
+    RUN__META,
     VULNERABILITY,
     VULNERABILITY__META,
     WINDOW,
@@ -148,11 +150,18 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         )
 
         # Setup the basic metadata
-        hazard_meta = get_hazard_meta(self.hazard, risk=self.risk, method=self.method)
+        run_meta = get_run_meta(self.cfg, risk=self.risk, method=self.method)
+        hazard_meta = get_hazard_meta(
+            self.hazard,
+            risk=run_meta.risk,
+            method_types=self.method.TYPES,
+        )
         vulnerability_meta = get_vulnerability_meta(self.vulnerability)
+
         # Get the exposure meta
         exposure_meta = get_exposure_meta(
             self.exposure,
+            run_meta=run_meta,
             hazard_meta=hazard_meta,
             vulnerability_meta=vulnerability_meta,
         )
@@ -170,6 +179,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         # Get the output path
         output_name = self.cfg.get(OUTPUT_GRID_NAME) or self.exposure.path.name
         output_filepath = Path(self.cfg.output_dir, output_name)
+
         # Setup the queue and the writer
         self.queue = self.ctx.Queue(maxsize=1000)
         handle = create_grid_handle(
@@ -180,6 +190,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
             gtf=self.exposure.geotransform,
         )
         writer = GridWriter(handle=handle, queue=self.queue, ctx=self.ctx)
+
         # Get the chunks and the window(s)
         chunks = list(create_2d_chunks(self.hazard.shape, parts=self.threads))
         window = self.cfg.get(MODEL_GRID_CHUNK, fallback=self.exposure.shape)
@@ -192,6 +203,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         jobs = generate_jobs(
             {
                 "mem_id": mem_ids,
+                RUN__META: run_meta,
                 HAZARD: self.hazard,
                 HAZARD__META: hazard_meta,
                 VULNERABILITY__META: vulnerability_meta,

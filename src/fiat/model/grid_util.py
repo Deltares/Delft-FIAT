@@ -7,12 +7,18 @@ from fiat.check import check_exp_grid_fn, check_grid_exact
 from fiat.fio import GridIO
 from fiat.gis import grid
 from fiat.model.util import get_band_names
-from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
+from fiat.struct.container import (
+    ExposureGridMeta,
+    HazardMeta,
+    RunMeta,
+    VulnerabilityMeta,
+)
 from fiat.util import EAD, FN, TOTAL, get_srs_repr
 
 
 def get_exposure_meta(
     exposure: GridIO,
+    run_meta: RunMeta,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
 ) -> ExposureGridMeta:
@@ -41,7 +47,7 @@ def get_exposure_meta(
         )
     )
     index_ead = None
-    if hazard_meta.risk:
+    if run_meta.risk:
         index_ead = len(new)
         new += [EAD]
 

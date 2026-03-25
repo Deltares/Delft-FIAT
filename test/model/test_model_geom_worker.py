@@ -5,10 +5,16 @@ import numpy as np
 from fiat.fio import GeomIO, GridIO, open_geom
 from fiat.method.flood.depth import fn_hazard, fn_impact
 from fiat.model.geom_worker import feature_worker, worker
-from fiat.struct.container import ExposureGeomMeta, HazardMeta, VulnerabilityMeta
+from fiat.struct.container import (
+    ExposureGeomMeta,
+    HazardMeta,
+    RunMeta,
+    VulnerabilityMeta,
+)
 
 
 def test_feature_worker(
+    run_meta: RunMeta,
     hazard_event_data: GridIO,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -18,6 +24,7 @@ def test_feature_worker(
     # Call the function
     out_array = feature_worker(
         ft=exposure_geom_data.layer[0],
+        run_meta=run_meta,
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_meta_run,
@@ -31,6 +38,7 @@ def test_feature_worker(
 
 
 def test_feature_worker_risk(
+    run_risk_meta: RunMeta,
     hazard_risk_data: GridIO,
     hazard_risk_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -40,6 +48,7 @@ def test_feature_worker_risk(
     # Call the function
     out_array = feature_worker(
         ft=exposure_geom_data.layer[2],
+        run_meta=run_risk_meta,
         hazard=hazard_risk_data,
         hazard_meta=hazard_risk_meta_run,
         vulnerability_meta=vulnerability_meta_run,
@@ -61,6 +70,7 @@ def test_feature_worker_risk(
 
 def test_worker(
     tmp_path: Path,
+    run_meta: RunMeta,
     hazard_event_data: GridIO,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -70,6 +80,7 @@ def test_worker(
     # Call the function
     worker(
         output_path=Path(tmp_path, "spatial.gpkg"),
+        run_meta=run_meta,
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_meta_run,

@@ -15,7 +15,12 @@ from fiat.fio import (
 from fiat.model.grid_writer import GridItem
 from fiat.model.util import create_2d_windows
 from fiat.struct import GridBand
-from fiat.struct.container import ExposureGridMeta, HazardMeta, VulnerabilityMeta
+from fiat.struct.container import (
+    ExposureGridMeta,
+    HazardMeta,
+    RunMeta,
+    VulnerabilityMeta,
+)
 from fiat.thread import Sender
 from fiat.typing import MethodType
 from fiat.util import FIAT_METHOD, FN
@@ -46,6 +51,7 @@ def process_hazard(
 
 def array_worker(
     out_array: np.ndarray[np.float32],
+    run_meta: RunMeta,
     hazard: GridIO,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
@@ -58,6 +64,10 @@ def array_worker(
 
     Parameters
     ----------
+    out_array : np.ndarray
+        The array to which to put the output data in.
+    run_meta : RunMeta
+        Configurations runtime metadata.
     hazard : GridIO
         The hazard data.
     hazard_meta : HazardMeta
@@ -112,7 +122,7 @@ def array_worker(
         out_array[total, :h, :w][mask] = np.nan
 
     # Risk
-    if hazard_meta.risk:
+    if run_meta.risk:
         mask = np.isnan(out_array[exposure_meta.indices_total, :h, :w]).all(axis=0)
         out_array[-1, :h, :w] = np.nansum(
             [
@@ -131,6 +141,7 @@ def array_worker(
 
 def worker(
     mem_id: str,
+    run_meta: RunMeta,
     hazard: GridIO,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
@@ -148,6 +159,8 @@ of the [GridIO](/api/GeomIO.qmd) object.
     ----------
     mem_id : Path
         The identifier/ name of the shared memory.
+    run_meta : RunMeta
+        The configurations runtime meta.
     hazard : GridIO
         The hazard data.
     hazard_meta : HazardMeta
@@ -162,7 +175,7 @@ of the [GridIO](/api/GeomIO.qmd) object.
         The specific chunk to process.
     """
     # Setup the hazard type module
-    method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{hazard_meta.type}")
+    method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{run_meta.type}")
     fn_impact = method.fn_impact
 
     # Setup the existing block of memory
@@ -183,6 +196,7 @@ of the [GridIO](/api/GeomIO.qmd) object.
         # Do the calculations
         array_worker(
             out_array=out_array,
+            run_meta=run_meta,
             hazard=hazard,
             hazard_meta=hazard_meta,
             vulnerability_meta=vulnerability_meta,

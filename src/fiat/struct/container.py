@@ -70,6 +70,17 @@ class Container:
 
 
 @dataclass
+class RunMeta:
+    """Small container for geometry configuration metadata."""
+
+    area_method: str
+    risk: bool
+    type: str
+    type_length: int
+    zonal_method: str
+
+
+@dataclass
 class ExposureGeomMeta:
     """Small container for exposure geometry metadata."""
 
@@ -105,9 +116,6 @@ class HazardMeta:
     indices_type: list[list[str]]
     length: int
     rp: list[float]
-    risk: bool
-    type: str
-    type_length: int
 
 
 @dataclass

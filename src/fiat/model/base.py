@@ -20,6 +20,7 @@ from fiat.fio import GridIO, open_csv, open_grid
 from fiat.gis import grid
 from fiat.log import spawn_logger
 from fiat.struct import Table
+from fiat.typing import MethodType
 from fiat.util import (
     DEPTH,
     FIAT_METHOD,
@@ -68,7 +69,7 @@ class BaseModel(metaclass=ABCMeta):
 
         # Type of calculations
         self._type: str = self.cfg.get(MODEL_CALC, FLOOD_DEPTH)
-        self.method = importlib.import_module(f"{FIAT_METHOD}.{self.type}")
+        self.method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{self.type}")
         # Risk or event based
         self._risk: bool = self.cfg.get(MODEL_RISK, False)
 

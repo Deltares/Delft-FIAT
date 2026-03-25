@@ -1,7 +1,11 @@
+import re
 from pathlib import Path
 
 import numpy as np
+import pytest
 
+from fiat.cfg import Configurations
+from fiat.error import FIATDataError
 from fiat.fio import GridIO
 from fiat.method import flood
 from fiat.model.util import (
@@ -10,6 +14,7 @@ from fiat.model.util import (
     create_2d_windows,
     get_band_names,
     get_hazard_meta,
+    get_run_meta,
     get_vulnerability_meta,
     vectorize_function,
 )
@@ -97,23 +102,72 @@ def test_get_band_names_empty(tmp_path: Path):
     assert names == ["band1"]  # Notice that the first letter is not capitalized
 
 
+def test_get_run_meta():
+    # Call the function
+    meta = get_run_meta(
+        cfg={},
+        risk=False,
+        method=flood.depth,
+    )
+
+    # Assert the output
+    assert meta.area_method == "centroid"
+    assert not meta.risk
+    assert meta.type == "flood.depth"
+    assert meta.type_length == 1
+    assert meta.zonal_method == "mean"
+
+
+def test_get_run_meta_alt():
+    # Call the function
+    meta = get_run_meta(
+        cfg=Configurations(
+            **{"exposure": {"area_method": "area"}},
+        ),
+        risk=False,
+        method=flood.depth,
+    )
+
+    # Assert the output
+    assert meta.area_method == "area"
+    assert not meta.risk
+    assert meta.type == "flood.depth"
+    assert meta.type_length == 1
+    assert meta.zonal_method == "mean"
+
+
+def test_get_run_meta_errors():
+    # Call the function with an invalid value for area
+    with pytest.raises(
+        FIATDataError,
+        match=re.escape(
+            "Exposure area method value: 'foo' invalid",
+        ),
+    ):
+        _ = get_run_meta(
+            cfg=Configurations(
+                **{"exposure": {"area_method": "foo"}},
+            ),
+            risk=False,
+            method=flood.depth,
+        )
+
+
 def test_get_hazard_meta(hazard_event_data: GridIO):
     # Call the function
-    meta = get_hazard_meta(hazard_event_data, risk=False, method=flood.depth)
+    meta = get_hazard_meta(hazard_event_data, risk=False, method_types=["water_depth"])
 
     # Assert the output
     assert meta.density is None
     assert meta.ids == ["1"]
     assert meta.indices_run == [[0]]
     assert meta.indices_type == [[0]]
-    assert meta.risk == False
     assert meta.rp is None
-    assert meta.type == "flood.depth"
 
 
 def test_get_hazard_meta_risk(hazard_risk_data: GridIO):
     # Call the function
-    meta = get_hazard_meta(hazard_risk_data, risk=True, method=flood.depth)
+    meta = get_hazard_meta(hazard_risk_data, risk=True, method_types=["water_depth"])
 
     # Assert the output
     np.testing.assert_array_almost_equal(
@@ -124,9 +178,7 @@ def test_get_hazard_meta_risk(hazard_risk_data: GridIO):
     assert meta.ids == ["2", "5", "10", "25"]
     assert meta.indices_run == [[0], [1], [2], [3]]
     assert meta.indices_type == [[0, 1, 2, 3]]
-    assert meta.risk == True
     assert meta.rp == [2, 5, 10, 25]
-    assert meta.type == "flood.depth"
 
 
 def test_get_vulnerability_meta(vulnerability_data_run: Table):

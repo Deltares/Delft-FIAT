@@ -192,7 +192,7 @@ as the data ({self.ncol})")
     def set_index(
         self,
         index_col: int | str,
-    ) -> None:
+    ) -> int:
         """Set the index to a new column."""
         # Check whether the index column index is valid
         if isinstance(index_col, str):

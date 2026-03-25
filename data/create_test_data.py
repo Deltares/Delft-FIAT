@@ -20,7 +20,7 @@ directories = (
 fields = {
     "object_id": {"type": ogr.OFTInteger},
     "object_name": {"type": ogr.OFTString},
-    "ref": {"type": ogr.OFTReal},
+    "elevation": {"type": ogr.OFTReal},
     "fn_damage_structure": {"type": ogr.OFTString},
     "max_damage_structure": {"type": ogr.OFTReal},
 }

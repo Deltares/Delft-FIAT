@@ -7,7 +7,7 @@ from pathlib import Path
 
 from fiat.check import check_exp_columns, check_exp_derived_types
 from fiat.fio import GeomIO
-from fiat.struct.container import ExposureGeomMeta, HazardMeta
+from fiat.struct.container import ExposureGeomMeta, HazardMeta, RunMeta
 from fiat.typing import MethodType
 from fiat.util import EAD, FN, MAX, TOTAL, re_filter
 
@@ -107,6 +107,7 @@ def generate_output_filepaths(
 
 def get_exposure_meta(
     exposure: GeomIO,
+    run_meta: RunMeta,
     hazard_meta: HazardMeta,
     method: MethodType,
     types: list | tuple,
@@ -135,14 +136,14 @@ def get_exposure_meta(
 
     # The length of columns per hazard
     type_length = (
-        hazard_meta.type_length
+        run_meta.type_length
         + sum([len(item) for item in type_dict.values()])
         + len(type_dict)
     )
 
     ## Names of the new columns
     extra = []
-    if hazard_meta.risk:
+    if run_meta.risk:
         extra = [EAD]
     new = generate_output_columns(
         method.NEW_COLUMNS,
@@ -152,7 +153,7 @@ def get_exposure_meta(
     )
 
     # Indices of colums during calculation
-    offset = hazard_meta.type_length
+    offset = run_meta.type_length
     indices_impact = {}
     indices_total = {}
     for key, value in length_type.items():

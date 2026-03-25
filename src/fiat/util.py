@@ -19,8 +19,11 @@ from osgeo import gdal, ogr, osr
 
 ## Config entries
 # Building blocks
+AREA = "area"
 CALC = "calc"
+CENTROID = "centroid"
 CHUNK = "chunk"
+CONFIG = "config"
 DEPTH = "depth"
 EAD = "ead"
 EXPOSURE = "exposure"
@@ -38,8 +41,10 @@ LEADING = "leading"
 LEVEL = "level"
 LOG = "log"
 MAX = "max"
+MEAN = "mean"
 META = "meta"
 METHOD = "method"
+MIN = "min"
 MODEL = "model"
 NAME = "name"
 OUTPUT = "output"
@@ -47,6 +52,7 @@ PATH = "path"
 RESALG = "resalg"
 RISK = "risk"
 RP = "rp"
+RUN = "run"
 SETTINGS = "settings"
 SRS = "srs"
 THREADS = "threads"
@@ -56,6 +62,7 @@ TYPES = f"{TYPE}s"
 VALUE = "value"
 VULNERABILITY = "vulnerability"
 WINDOW = "window"
+ZONAL = "zonal"
 # Model settings
 MODEL_CALC = f"{MODEL}.{CALC}"
 MODEL_GEOM_CHUNK = f"{MODEL}.{GEOM}.{CHUNK}"
@@ -73,6 +80,7 @@ OUTPUT_PATH = f"{OUTPUT}.{PATH}"
 OUTPUT_GEOM_NAME = f"{OUTPUT}.{GEOM}.{NAME}"
 OUTPUT_GRID_NAME = f"{OUTPUT}.{GRID}.{NAME}"
 # Input
+EXPOSURE_AREA__METHOD = f"{EXPOSURE}.{AREA}_{METHOD}"  # TODO exposure specific
 EXPOSURE_GEOM = f"{EXPOSURE}.{GEOM}"
 EXPOSURE_GEOM_FILE = f"{EXPOSURE_GEOM}.{FILE}"
 EXPOSURE_GEOM_SETTINGS = f"{EXPOSURE_GEOM}.{SETTINGS}"
@@ -81,6 +89,7 @@ EXPOSURE_GRID_FILE = f"{EXPOSURE_GRID}.{FILE}"
 EXPOSURE_GRID_RESALG = f"{EXPOSURE_GRID}.{RESALG}"
 EXPOSURE_GRID_SETTINGS = f"{EXPOSURE_GRID}.{SETTINGS}"
 EXPOSURE_TYPES = f"{EXPOSURE}.{TYPES}"
+EXPOSURE_ZONAL__METHOD = f"{EXPOSURE}.{ZONAL}_{METHOD}"
 HAZARD_FILE = f"{HAZARD}.{FILE}"
 HAZARD_RESALG = f"{HAZARD}.{RESALG}"
 HAZARD_SETTINGS = f"{HAZARD}.{SETTINGS}"
@@ -94,6 +103,7 @@ FLOOD_DEPTH = f"{FLOOD}.{DEPTH}"
 FLOOD_LEVEL = f"{FLOOD}.{LEVEL}"
 HAZARD__META = f"{HAZARD}_{META}"
 OUTPUT__PATH = f"{OUTPUT}_{PATH}"
+RUN__META = f"{RUN}_{META}"
 VULNERABILITY__META = f"{VULNERABILITY}_{META}"
 
 ## Define other string variables
@@ -454,7 +464,7 @@ def _create_driver_map(
         driver, ext = _check_driver_capabilities(idx, type=type)
         if driver is None:
             continue
-        if len(ext) > 0 and ext is not None:
+        if ext is not None and len(ext) > 0:
             ext = "." + ext
             drivers[ext] = driver.ShortName
 
@@ -543,7 +553,6 @@ def get_module_attr(module_name: str, attr: str) -> Any:
     """Quickly get attribute from a module dynamically."""
     module = importlib.import_module(module_name)
     out = getattr(module, attr)
-    module = None
     return out
 
 
@@ -664,6 +673,6 @@ def deter_dec(
     return abs(ndec)
 
 
-def replace_empty(l: list) -> list:
+def replace_empty(l: list[bytes]) -> list[str]:
     """Replace empty values by None in a string (i.e. between delimiters)."""
     return ["nan" if not e else e.decode() for e in l]

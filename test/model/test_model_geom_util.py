@@ -8,7 +8,7 @@ from fiat.model.geom_util import (
     generate_output_filepaths,
     get_exposure_meta,
 )
-from fiat.struct.container import HazardMeta
+from fiat.struct.container import HazardMeta, RunMeta
 
 
 def test_discover_columns_found(exposure_cols: dict):
@@ -123,11 +123,13 @@ def test_generate_output_filepaths_add(
 
 def test_get_exposure_meta(
     exposure_geom_data: GeomIO,
+    run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
 ):
     # Call the function
     meta = get_exposure_meta(
         exposure=exposure_geom_data,
+        run_meta=run_meta,
         hazard_meta=hazard_meta_run,
         method=flood.depth,
         types=["damage"],
@@ -146,10 +148,12 @@ def test_get_exposure_meta(
 
 def test_get_exposure_meta_risk(
     exposure_geom_data: GeomIO,
+    run_risk_meta: RunMeta,
     hazard_risk_meta_run: HazardMeta,
 ):
     meta = get_exposure_meta(
         exposure=exposure_geom_data,
+        run_meta=run_risk_meta,
         hazard_meta=hazard_risk_meta_run,
         method=flood.depth,
         types=["damage"],

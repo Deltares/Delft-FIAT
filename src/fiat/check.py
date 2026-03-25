@@ -17,6 +17,18 @@ logger = spawn_logger(__name__)
 
 
 ## Config
+def check_available_values(
+    value: Any,
+    available: list[Any],
+    msg: str,
+) -> None:
+    """Check whether this settings is available."""
+    if value not in available:
+        raise FIATDataError(
+            f"{msg} value: '{value}' invalid, chose from {available}",
+        )
+
+
 def check_config_entries(
     cfg: Configurations,
     mandatory_entries: list | tuple,

@@ -7,13 +7,30 @@ from typing import Callable, Generator
 import numpy as np
 from scipy.interpolate import make_interp_spline
 
-from fiat.check import check_hazard_identifier, check_hazard_rp, check_hazard_types
+from fiat.cfg import Configurations
+from fiat.check import (
+    check_available_values,
+    check_hazard_identifier,
+    check_hazard_rp,
+    check_hazard_types,
+)
 from fiat.fio import GridIO
 from fiat.method.ead import fn_density
+from fiat.method.util import ZONAL_METHODS
 from fiat.struct import Table
-from fiat.struct.container import HazardMeta, VulnerabilityMeta
+from fiat.struct.container import HazardMeta, RunMeta, VulnerabilityMeta
 from fiat.typing import MethodType
-from fiat.util import EXPOSURE, HAZARD, RP, TYPE
+from fiat.util import (
+    AREA,
+    CENTROID,
+    EXPOSURE,
+    EXPOSURE_AREA__METHOD,
+    EXPOSURE_ZONAL__METHOD,
+    HAZARD,
+    MEAN,
+    RP,
+    TYPE,
+)
 
 GEOM_DEFAULT_CHUNK = 50000
 GRID_PREFER = {
@@ -180,10 +197,45 @@ def get_band_names(
     return names
 
 
+def get_run_meta(
+    cfg: Configurations,
+    risk: bool,
+    method: MethodType,
+) -> RunMeta:
+    """Derive the meta data from the config file for the geom calculations."""
+    # Get the area method
+    area_method = cfg.get(EXPOSURE_AREA__METHOD, CENTROID)
+    # Check the area method
+    check_available_values(
+        area_method,
+        available=[AREA, CENTROID],
+        msg="Exposure area method",
+    )
+
+    # Get the area method
+    zonal_method = cfg.get(EXPOSURE_ZONAL__METHOD, MEAN)
+    # Check the area method
+    check_available_values(
+        zonal_method,
+        available=list(ZONAL_METHODS),
+        msg="Exposure zonal method",
+    )
+
+    # Setup the meta
+    meta = RunMeta(
+        area_method=area_method,
+        risk=risk,
+        type=method.NAME,
+        type_length=len(method.TYPES),
+        zonal_method=zonal_method,
+    )
+    return meta
+
+
 def get_hazard_meta(
     hazard: GridIO,
     risk: bool,
-    method: MethodType,
+    method_types: list[str],
 ) -> HazardMeta:
     """Obtain some metadata from the hazard data."""
     # Get the types from the metadata
@@ -191,7 +243,7 @@ def get_hazard_meta(
     # Check the typing
     indices_type = check_hazard_types(
         types,
-        method.TYPES,
+        method_types,
     )
 
     # Get the identifiers:
@@ -227,9 +279,6 @@ def get_hazard_meta(
         indices_type=indices_type,
         length=len(ids),
         rp=rp,
-        risk=risk,
-        type=method.NAME,
-        type_length=len(method.TYPES),
     )
     return meta
 
