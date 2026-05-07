@@ -215,12 +215,9 @@ multiple variables.
 [left, bottom, right, top]
         """
         gtf = self.src.GetGeoTransform()
-        return (
-            gtf[0],
-            gtf[3] + gtf[5] * self.src.RasterYSize,
-            gtf[0] + gtf[1] * self.src.RasterXSize,
-            gtf[3],
-        )
+        xmin, xmax = sorted([gtf[0], gtf[0] + gtf[1] * self.src.RasterXSize])
+        ymin, ymax = sorted([gtf[3] + gtf[5] * self.src.RasterYSize, gtf[3]])
+        return (xmin, ymin, xmax, ymax)
 
     @property
     def chunk(self) -> tuple[int]:

@@ -97,7 +97,7 @@ def feature_worker(
             for i, (f, m) in enumerate(value):
                 curve_id = ft.GetField(f)
                 out = 0
-                if curve_id is not None:
+                if curve_id:
                     out = fn_impact(
                         hazard=haz,
                         exposure=ft.GetField(m),

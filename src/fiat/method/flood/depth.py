@@ -3,6 +3,8 @@
 import math
 from typing import Callable
 
+import numpy as np
+
 from fiat.method.util import ZONAL_METHODS
 from fiat.util import DEPTH, FLOOD_DEPTH
 
@@ -70,5 +72,5 @@ def fn_impact(
         Impact.
     """
     f = fn_curve(hazard)
-    val = f * exposure * fact
+    val = f * (exposure or np.nan) * fact
     return val
