@@ -41,7 +41,7 @@ def fn_hazard(
     """
     # Remove the negative hazard values to 0.
     raw_l = len(hazard)
-    hazard = [n for n in hazard if n - reference > 0]
+    hazard = [n - reference for n in hazard if n - reference > 0]
     if not hazard:
         return math.nan, math.nan
     redf = len(hazard) / raw_l

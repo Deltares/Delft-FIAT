@@ -5,6 +5,7 @@ from itertools import product
 import numpy as np
 from osgeo import ogr
 
+from fiat.gis.geom import point_in_geom
 from fiat.gis.util import pixel2world, world2pixel
 from fiat.struct import GridBand
 
@@ -44,16 +45,16 @@ def intersect_cell(
     return geom.Intersects(cell)
 
 
-def mask(
+def area_mask(
     geom: ogr.Geometry,
-    gtf: tuple,
-    shape: tuple,
-) -> tuple[tuple[int], np.ndarray[int]]:
+    gtf: tuple[float, ...],
+    shape: tuple[int, int],
+) -> tuple[np.ndarray[int], tuple[int, ...]]:
     """Mask a grid based on a geometry (vector).
 
     Parameters
     ----------
-    ft : ogr.Geometry
+    geom : ogr.Geometry
         The Geometry according to the \
 [ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
     gtf : tuple
@@ -96,10 +97,77 @@ def mask(
     return mask, window
 
 
+def point_mask(
+    point: tuple,
+    gtf: tuple[float, ...],
+    shape: tuple[int, int],
+) -> tuple[tuple[int], np.ndarray[int]]:
+    """Create a mask of a point on a grid.
+
+    Parameters
+    ----------
+    point : tuple
+        x and y coordinate.
+    gtf : tuple
+        The geotransform of a grid dataset.
+        Has the following shape: (left, xres, xrot, upper, yrot, yres).
+    shape : tuple
+        The shape of the grid dataset set (width, height).
+
+    Returns
+    -------
+    tuple
+        An array containing the polygon mask and a tuple containing the location of the
+        polygon window in the grid.
+    """
+    # Get metadata
+    ow, oh = shape
+
+    # Get the coordinates
+    x, y = world2pixel(gtf, *point)
+    xn = int(0 <= x < ow)
+    yn = int(0 <= y < oh)
+
+    # Setup the mask and window
+    window = (x, y, xn, yn)
+    mask = np.ones((yn, xn))  # This really is a dummy mask, but makes my life easy
+
+    return mask, window
+
+
+def centroid_mask(
+    geom: ogr.Geometry,
+    gtf: tuple[float, ...],
+    shape: tuple[int, int],
+) -> tuple[tuple[int], np.ndarray[int]]:
+    """Get point mask based on centroid of e.g. a polygon geometry.
+
+    Parameters
+    ----------
+    geom : ogr.Geometry
+        The Geometry according to the \
+[ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
+    gtf : tuple
+        The geotransform of a grid dataset.
+        Has the following shape: (left, xres, xrot, upper, yrot, yres).
+    shape : tuple
+        The shape of the grid dataset set (width, height).
+
+    Returns
+    -------
+    tuple
+        An array containing the polygon mask and a tuple containing the location of the
+        polygon window in the grid.
+    """
+    # Get the x,y coordinates
+    point = point_in_geom(geometry=geom)
+    return point_mask(point=point, gtf=gtf, shape=shape)
+
+
 def clip(
     band: GridBand,
     mask: np.ndarray[int],
-    window: tuple[int],
+    window: tuple[int, ...],
 ) -> np.ndarray:
     """Clip a grid based on a mask.
 
@@ -197,39 +265,3 @@ cells that are touched by the feature.
     clip = clip[mask != 0]
 
     return clip, mask
-
-
-def pin(
-    point: tuple,
-    band: GridBand,
-    gtf: tuple,
-) -> np.ndarray:
-    """Pin a the value of a cell based on a coordinate.
-
-    Parameters
-    ----------
-    point : tuple
-        x and y coordinate.
-    band : GridBand
-        Input object. This holds a connection to the specified band.
-    gtf : tuple
-        The geotransform of a grid dataset.
-        Has the following shape: (left, xres, xrot, upper, yrot, yres).
-
-    Returns
-    -------
-    ndarray
-        A NumPy array containing one value.
-    """
-    # Get metadata
-    ow, oh = band.shape_xy
-
-    # Get the coordinates
-    x, y = world2pixel(gtf, *point)
-    xn = int(0 <= x < ow)
-    yn = int(0 <= y < oh)
-
-    value = band[x, y, xn, yn]
-    mask = np.ones(value.shape)  # This really is a dummy mask, but makes my life easy
-
-    return value[mask == 1]

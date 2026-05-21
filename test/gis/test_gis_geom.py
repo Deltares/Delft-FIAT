@@ -10,7 +10,7 @@ from fiat.util import get_srs_repr
 
 def test_point_in_geom_linestring(feature_linestring: ogr.Feature):
     # Call the function
-    p = point_in_geom(feature_linestring)
+    p = point_in_geom(feature_linestring.GetGeometryRef())
 
     # Assert the output
     assert p == (3.5, 2.5)
@@ -18,7 +18,7 @@ def test_point_in_geom_linestring(feature_linestring: ogr.Feature):
 
 def test_point_in_geom_point(feature_point: ogr.Feature):
     # Call the function
-    p = point_in_geom(feature_point)
+    p = point_in_geom(feature_point.GetGeometryRef())
 
     # Assert the output
     assert p == (1.5, 1.5)
@@ -26,7 +26,7 @@ def test_point_in_geom_point(feature_point: ogr.Feature):
 
 def test_point_in_geom_polygon(feature_polygon: ogr.Feature):
     # Call the function
-    p = point_in_geom(feature_polygon)
+    p = point_in_geom(feature_polygon.GetGeometryRef())
 
     # Assert the output
     assert p == (2.0, 2.0)

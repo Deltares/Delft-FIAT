@@ -2,6 +2,7 @@
 
 import copy
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Callable
 
 __all__ = ["Container", "ExposureGeomMeta", "VulnerabilityMeta"]
@@ -73,17 +74,29 @@ class Container:
 class RunMeta:
     """Small container for geometry configuration metadata."""
 
-    area_method: str
     risk: bool
     type: str
     type_length: int
+
+
+@dataclass
+class ExposureGeomData:
+    """Small container for exposure geometry data and settings."""
+
+    area_method: str
+    data: Any
+    path: Path
     zonal_method: str
+
+    def __hash__(self):
+        return hash(self.data)
 
 
 @dataclass
 class ExposureGeomMeta:
     """Small container for exposure geometry metadata."""
 
+    area_method: str
     indices_impact: dict[str, Any]
     indices_new: list[int]
     indices_spec: list[int]
@@ -92,6 +105,7 @@ class ExposureGeomMeta:
     new: list[str]
     new_length: int
     type_length: int
+    zonal_method: str
 
 
 @dataclass

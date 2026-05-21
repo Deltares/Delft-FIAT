@@ -5,6 +5,7 @@ import time
 from itertools import chain
 from multiprocessing.synchronize import Lock
 from pathlib import Path
+from typing import Any
 
 from fiat.cfg import Configurations
 from fiat.check import (
@@ -14,7 +15,6 @@ from fiat.check import (
     check_vs_srs,
 )
 from fiat.fio import (
-    GeomIO,
     GridIO,
     open_geom,
 )
@@ -32,23 +32,26 @@ from fiat.model.util import (
     get_vulnerability_meta,
 )
 from fiat.struct import Container, Table
+from fiat.struct.container import ExposureGeomData
 from fiat.util import (
+    AREA__METHOD,
+    CENTROID,
     CHUNK,
     EXPOSURE,
     EXPOSURE__META,
     EXPOSURE_GEOM,
-    EXPOSURE_GEOM_FILE,
-    EXPOSURE_GEOM_SETTINGS,
     EXPOSURE_TYPES,
     FILE,
     HAZARD,
     HAZARD__META,
+    MEAN,
     OUTPUT__PATH,
     OUTPUT_GEOM_NAME,
     RUN__META,
     SETTINGS,
     VULNERABILITY,
     VULNERABILITY__META,
+    ZONAL__METHOD,
     distribute_threads,
     generic_path_check,
     get_srs_repr,
@@ -76,7 +79,7 @@ class GeomModel(BaseModel):
         super().__init__(cfg)
 
         # Set/ declare some variables
-        self.exposure: Container[GeomIO] = Container()
+        self.exposure: Container[ExposureGeomData] = Container()
         self.exposure_types: list[str] = self.cfg.get(EXPOSURE_TYPES, ["damage"])
 
         # Setup the geometry model
@@ -106,29 +109,24 @@ class GeomModel(BaseModel):
             Keyword arguments for reading. These are passed into [open_geom]\
 (/api/fio/open_geom.qmd) after which into [GeomIO](/api/GeomIO.qmd)/
         """
-        # Sort the pathing
+        # Sort the settings
         # Hierarchy: 1) signature, 2) configurations
-        paths = None
+        settings: list[dict[str, Any]] | dict[str, Any] | None = None
         if path is not None:
             path = Path(self.cfg.path, path)
-            paths = list(path.parent.glob(path.name))
-        paths = paths or self.cfg.get(EXPOSURE_GEOM_FILE)
-        h = paths == self.cfg.get(EXPOSURE_GEOM_FILE)
-        if not isinstance(paths, list):
-            paths = [paths]  # Legacy purpose
+            settings = [{FILE: item} for item in path.parent.glob(path.name)]
+        settings = settings or self.cfg.get(EXPOSURE_GEOM)
+        if settings is None:
+            return
+        if not isinstance(settings, list):
+            settings = [settings]  # Legacy
 
         # To set the config afterwards
         cfg = []
 
-        # Get the settings
-        settings = self.cfg.get(EXPOSURE_GEOM_SETTINGS, {})
-        if not isinstance(settings, list):
-            settings = [settings]  # Legacy purpose
-        if not h:
-            settings = [kwargs] * len(paths)
-
         # Move though the found paths
-        for idx, path in enumerate(paths):
+        for element in settings:
+            path = element.get(FILE)
             if path is None:  # Can be as a result from the config
                 continue
 
@@ -138,7 +136,7 @@ class GeomModel(BaseModel):
             # New config entry
             entry = {}
             # Get the settings
-            kw = settings[idx]
+            kw = element.get(SETTINGS, {})
             kw.update(kwargs)  # For good measure
 
             logger.info(f"Reading exposure geometry ('{path.name}')")
@@ -163,7 +161,14 @@ class GeomModel(BaseModel):
                 data = geom.reproject(data, self.srs.ExportToWkt())
 
             # Set the data
-            self.exposure.set(data)
+            self.exposure.set(
+                ExposureGeomData(
+                    area_method=element.get(AREA__METHOD, CENTROID),
+                    data=data,
+                    path=path,
+                    zonal_method=element.get(ZONAL__METHOD, MEAN),
+                )
+            )
             # Set config entry
             entry[FILE] = path
             entry[SETTINGS] = kw
@@ -185,12 +190,11 @@ class GeomModel(BaseModel):
         check_input_data(
             [HAZARD, self.hazard, GridIO],
             [VULNERABILITY, self.vulnerability, Table],
-            [EXPOSURE, self.exposure, GeomIO],
+            [EXPOSURE, self.exposure, ExposureGeomData],
         )
 
         # Setup the basic metadata
         run_meta = get_run_meta(
-            self.cfg,
             risk=self.risk,
             method=self.method,
         )
@@ -214,7 +218,7 @@ class GeomModel(BaseModel):
         # Get the thread loads
         logger.info("Distributing work load")
         threads = distribute_threads(
-            size=[item.layer.size for item in self.exposure],
+            size=[item.data.layer.size for item in self.exposure],
             threads=self.threads,
         )
 
@@ -226,7 +230,7 @@ class GeomModel(BaseModel):
         for exposure, count, output_path in zip(self.exposure, threads, output_paths):
             # Check the extent
             check_geom_extent(
-                exposure.layer.bounds,
+                exposure.data.layer.bounds,
                 self.hazard.bounds,
             )
             # Get the exposure field meta
@@ -240,7 +244,7 @@ class GeomModel(BaseModel):
             # Check the output file path
             ensure_writable_filepath(output_path)
             # Get the chunks based on the load distribution
-            chunks = create_1d_chunks(exposure.layer.size, count)
+            chunks = create_1d_chunks(exposure.data.layer.size, count)
             # Generate the jobs
             jobs = generate_jobs(
                 {
@@ -249,7 +253,7 @@ class GeomModel(BaseModel):
                     HAZARD: self.hazard,
                     HAZARD__META: hazard_meta,
                     VULNERABILITY__META: vulnerability_meta,
-                    EXPOSURE: exposure,
+                    EXPOSURE: exposure.data,
                     EXPOSURE__META: exposure_meta,
                     CHUNK: chunks,
                 },
@@ -279,5 +283,5 @@ class GeomModel(BaseModel):
             exc_info = None
 
         else:
-            logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
+            logger.info(f"Output generated in: '{self.cfg.get(OUTPUT__PATH)}'")
             logger.info("Model run is done!")

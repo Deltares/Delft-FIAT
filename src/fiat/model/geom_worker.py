@@ -9,8 +9,8 @@ from typing import Callable
 from osgeo import ogr
 
 from fiat.fio import GeomIO, GridIO
-from fiat.gis import overlay
 from fiat.method.ead import fn_ead
+from fiat.model.geom_util import AREA_METHODS
 from fiat.model.geom_writer import GeomWriter
 from fiat.struct.container import (
     ExposureGeomMeta,
@@ -76,7 +76,7 @@ def feature_worker(
     haz_args = [ft.GetField(idx) for idx in exposure_meta.indices_spec]
 
     # Mask and window for this feature
-    mask, window = overlay.mask(
+    mask, window = AREA_METHODS[exposure_meta.area_method](
         geom=ft.GetGeometryRef(),
         gtf=hazard.geotransform,
         shape=hazard.shape_xy,
@@ -89,20 +89,24 @@ def feature_worker(
         haz, fact = fn_hazard(
             *haz,
             *haz_args,
-            run_meta.zonal_method,
+            exposure_meta.zonal_method,
         )
         out_array[0 + n * exposure_meta.type_length] = haz
         for key, value in exposure_meta.indices_type.items():
             tot = 0.0
             for i, (f, m) in enumerate(value):
                 curve_id = ft.GetField(f)
+                exposure = ft.GetField(m)
                 out = 0
-                if curve_id:
-                    out = fn_impact(
-                        hazard=haz,
-                        exposure=ft.GetField(m),
-                        fn_curve=vulnerability_meta.fn[curve_id],
-                        fact=fact,
+                if curve_id and exposure:
+                    out = (
+                        fn_impact(
+                            hazard=haz,
+                            exposure=exposure,
+                            fn_curve=vulnerability_meta.fn[curve_id],
+                            fact=fact,
+                        )
+                        or 0
                     )
                 out_array[exposure_meta.indices_impact[key][n][i]] = out
                 tot += out

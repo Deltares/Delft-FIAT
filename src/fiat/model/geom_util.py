@@ -5,11 +5,26 @@ import re
 from itertools import product
 from pathlib import Path
 
-from fiat.check import check_exp_columns, check_exp_derived_types
-from fiat.fio import GeomIO
-from fiat.struct.container import ExposureGeomMeta, HazardMeta, RunMeta
+from fiat.check import (
+    check_available_values,
+    check_exp_columns,
+    check_exp_derived_types,
+)
+from fiat.gis import overlay
+from fiat.method.util import ZONAL_METHODS
+from fiat.struct.container import (
+    ExposureGeomData,
+    ExposureGeomMeta,
+    HazardMeta,
+    RunMeta,
+)
 from fiat.typing import MethodType
-from fiat.util import EAD, FN, MAX, TOTAL, re_filter
+from fiat.util import AREA, CENTROID, EAD, FN, MAX, TOTAL, re_filter
+
+AREA_METHODS = {
+    AREA: overlay.area_mask,
+    CENTROID: overlay.centroid_mask,
+}
 
 
 def discover_exp_columns(
@@ -106,14 +121,28 @@ def generate_output_filepaths(
 
 
 def get_exposure_meta(
-    exposure: GeomIO,
+    exposure: ExposureGeomData,
     run_meta: RunMeta,
     hazard_meta: HazardMeta,
     method: MethodType,
     types: list | tuple,
 ):
     """Simple method for sorting out the exposure meta."""  # noqa: D401
-    columns = exposure.layer._columns
+    # Check the area method
+    check_available_values(
+        exposure.area_method,
+        available=[AREA, CENTROID],
+        msg="Exposure area method",
+    )
+    # Check the zonal method
+    check_available_values(
+        exposure.zonal_method,
+        available=list(ZONAL_METHODS),
+        msg="Exposure zonal method",
+    )
+
+    # Check the columns validity
+    columns = exposure.data.layer._columns
     mandatory_columns = method.COLUMNS
     # Check the exposure column headers
     check_exp_columns(
@@ -175,6 +204,7 @@ def get_exposure_meta(
 
     # Create the exposure meta struct
     meta = ExposureGeomMeta(
+        area_method=exposure.area_method,
         indices_impact=indices_impact,
         indices_new=indices_new,
         indices_spec=indices_spec,
@@ -183,5 +213,6 @@ def get_exposure_meta(
         new=new,
         new_length=len(new),
         type_length=type_length,
+        zonal_method=exposure.zonal_method,
     )
     return meta

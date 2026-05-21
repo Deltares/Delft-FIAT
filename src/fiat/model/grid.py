@@ -150,7 +150,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         )
 
         # Setup the basic metadata
-        run_meta = get_run_meta(self.cfg, risk=self.risk, method=self.method)
+        run_meta = get_run_meta(risk=self.risk, method=self.method)
         hazard_meta = get_hazard_meta(
             self.hazard,
             risk=run_meta.risk,

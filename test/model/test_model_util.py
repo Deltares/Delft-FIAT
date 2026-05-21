@@ -1,11 +1,7 @@
-import re
 from pathlib import Path
 
 import numpy as np
-import pytest
 
-from fiat.cfg import Configurations
-from fiat.error import FIATDataError
 from fiat.fio import GridIO
 from fiat.method import flood
 from fiat.model.util import (
@@ -105,52 +101,14 @@ def test_get_band_names_empty(tmp_path: Path):
 def test_get_run_meta():
     # Call the function
     meta = get_run_meta(
-        cfg={},
         risk=False,
         method=flood.depth,
     )
 
     # Assert the output
-    assert meta.area_method == "centroid"
     assert not meta.risk
     assert meta.type == "flood.depth"
     assert meta.type_length == 1
-    assert meta.zonal_method == "mean"
-
-
-def test_get_run_meta_alt():
-    # Call the function
-    meta = get_run_meta(
-        cfg=Configurations(
-            **{"exposure": {"area_method": "area"}},
-        ),
-        risk=False,
-        method=flood.depth,
-    )
-
-    # Assert the output
-    assert meta.area_method == "area"
-    assert not meta.risk
-    assert meta.type == "flood.depth"
-    assert meta.type_length == 1
-    assert meta.zonal_method == "mean"
-
-
-def test_get_run_meta_errors():
-    # Call the function with an invalid value for area
-    with pytest.raises(
-        FIATDataError,
-        match=re.escape(
-            "Exposure area method value: 'foo' invalid",
-        ),
-    ):
-        _ = get_run_meta(
-            cfg=Configurations(
-                **{"exposure": {"area_method": "foo"}},
-            ),
-            risk=False,
-            method=flood.depth,
-        )
 
 
 def test_get_hazard_meta(hazard_event_data: GridIO):

@@ -6,10 +6,11 @@ from osgeo import osr
 from scipy.interpolate import make_interp_spline
 
 from fiat.cfg import Configurations
-from fiat.fio import GridIO
+from fiat.fio import GeomIO, GridIO
 from fiat.method.ead import fn_density
 from fiat.struct import Table
 from fiat.struct.container import (
+    ExposureGeomData,
     ExposureGeomMeta,
     ExposureGridMeta,
     HazardMeta,
@@ -101,8 +102,22 @@ def density():
 
 
 @pytest.fixture(scope="session")
+def exposure_geom_data_run(
+    exposure_geom_data: GeomIO,
+) -> ExposureGeomData:
+    data = ExposureGeomData(
+        area_method="area",
+        data=exposure_geom_data,
+        path=exposure_geom_data.path,
+        zonal_method="mean",
+    )
+    return data
+
+
+@pytest.fixture(scope="session")
 def exposure_geom_meta_run() -> ExposureGeomMeta:
     meta = ExposureGeomMeta(
+        area_method="area",
         indices_impact={"damage": [(1,)]},
         indices_new=[5, 6, 7],
         indices_spec=[2],
@@ -111,6 +126,7 @@ def exposure_geom_meta_run() -> ExposureGeomMeta:
         new=["depth_1", "damage_structure_1", "total_damage_1"],
         new_length=3,
         type_length=3,
+        zonal_method="mean",
     )
     return meta
 
@@ -118,6 +134,7 @@ def exposure_geom_meta_run() -> ExposureGeomMeta:
 @pytest.fixture(scope="session")
 def exposure_geom_risk_meta_run() -> ExposureGeomMeta:
     meta = ExposureGeomMeta(
+        area_method="area",
         indices_impact={"damage": [(1,), (4,), (7,), (10,)]},
         indices_new=list(range(5, 18, 1)),
         indices_spec=[2],
@@ -132,6 +149,7 @@ def exposure_geom_risk_meta_run() -> ExposureGeomMeta:
         + ["ead_damage"],
         new_length=13,
         type_length=3,
+        zonal_method="mean",
     )
     return meta
 
@@ -193,11 +211,9 @@ def hazard_risk_meta_run(density: list) -> HazardMeta:
 @pytest.fixture(scope="session")
 def run_meta() -> RunMeta:
     meta = RunMeta(
-        area_method="area",
         risk=False,
         type="flood.depth",
         type_length=1,
-        zonal_method="mean",
     )
     return meta
 
@@ -205,11 +221,9 @@ def run_meta() -> RunMeta:
 @pytest.fixture(scope="session")
 def run_risk_meta() -> RunMeta:
     meta = RunMeta(
-        area_method="area",
         risk=True,
         type="flood.depth",
         type_length=1,
-        zonal_method="mean",
     )
     return meta
 

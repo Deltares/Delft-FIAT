@@ -40,7 +40,7 @@ def test_fn_hazard_red():
     )
 
     # Assert the output
-    np.testing.assert_almost_equal(dmg, 4.83, decimal=2)
+    np.testing.assert_almost_equal(dmg, 2.83, decimal=2)
     np.testing.assert_almost_equal(red_f, 0.75)
 
 
@@ -68,7 +68,7 @@ def test_fn_hazard_high_ref():
     )
 
     # Assert the output
-    np.testing.assert_almost_equal(dmg, 5.5, decimal=2)
+    np.testing.assert_almost_equal(dmg, 1.5, decimal=2)
     np.testing.assert_almost_equal(red_f, 0.5)
 
 
@@ -82,5 +82,5 @@ def test_fn_hazard_high_elev_red():
     )
 
     # Assert the output
-    np.testing.assert_almost_equal(dmg, 5.5, decimal=2)
+    np.testing.assert_almost_equal(dmg, 4.5, decimal=2)
     np.testing.assert_almost_equal(red_f, 0.5)
