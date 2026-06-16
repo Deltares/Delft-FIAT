@@ -70,6 +70,8 @@ fp2,3,4
 @pytest.fixture
 def buffer_handler(buffer: BytesIO) -> BufferHandler:
     h = BufferHandler(buffer)
+    h.nchar = b"\n"
+    h.size = h.stream.read().count(h.nchar)
     return h
 
 

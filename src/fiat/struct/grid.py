@@ -69,7 +69,7 @@ class GridBand(BaseStruct):
         band: gdal.Band,
         chunk: tuple,
         mode: int,
-    ):
+    ) -> "GridBand":
         # This is effectively the init methods of this class
         obj = GridBand.__new__(cls)
         BaseStruct.__init__(obj)
@@ -94,21 +94,21 @@ class GridBand(BaseStruct):
         self._obj = None
 
     ## Some private methods
-    def _cleanup(self, weak_ref):
+    def _cleanup(self, weak_ref) -> None:
         self._obj = None
 
-    def _reset_chunking(self):
+    def _reset_chunking(self) -> None:
         self._l = 0
         self._u = 0
 
-    def flush(self):
+    def flush(self) -> None:
         """Flush the grid object."""
         if self._obj is not None:
             self._obj.FlushCache()
 
     ## Properties
     @property
-    def ref(self):
+    def ref(self) -> weakref.ReferenceType:
         """Return the source reference."""
         return self._obj_ref()
 

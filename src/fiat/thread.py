@@ -8,6 +8,8 @@ import weakref
 from multiprocessing.queues import Queue
 from typing import Any, Callable
 
+from fiat.util import FN
+
 __all__ = ["Receiver", "Sender"]
 
 RECEIVER_COUNT = 1
@@ -158,8 +160,8 @@ class Receiver:
         This will spawn a thread that manages the receiver.
         """
         fn_method = None
-        if hasattr(self, "fn"):
-            fn_method = getattr(self, "fn")
+        if hasattr(self, FN):
+            fn_method = getattr(self, FN)
         fn = fn or fn_method
         if fn is None:
             raise ValueError("fn not provided and object fn method not defined.")

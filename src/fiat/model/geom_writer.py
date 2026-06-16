@@ -13,6 +13,14 @@ from fiat.util import DummyLock
 __all__ = ["GeomWriter"]
 
 
+def ensure_writable_filepath(
+    filepath: Path,
+) -> None:
+    """Ensure no file is present where one is to be written."""
+    if filepath.exists():  # Yh it's almost stupid
+        filepath.unlink()
+
+
 class GeomWriter:
     """Write geometries from a buffer.
 

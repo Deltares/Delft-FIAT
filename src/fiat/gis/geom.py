@@ -10,7 +10,7 @@ from fiat.model.geom_writer import GeomWriter
 
 
 def point_in_geom(
-    ft: ogr.Feature,
+    geometry: ogr.Geometry,
 ) -> tuple:
     """Create a point within a polygon.
 
@@ -19,17 +19,15 @@ def point_in_geom(
 
     Parameters
     ----------
-    ft : ogr.Feature
-        The feature (polygon or linestring) in which to create the point.
+    ft : ogr.Geometry
+        The feature geometry (polygon or linestring) in which to create the point.
 
     Returns
     -------
     tuple
         The x and y coordinate of the created point.
     """
-    geom = ft.GetGeometryRef()
-    p = geom.PointOnSurface()
-    geom = None
+    p = geometry.PointOnSurface()
     return p.GetX(), p.GetY()
 
 

@@ -9,7 +9,7 @@ def test_logitem():
 
     # Assert it's properties
     assert l.level == 3
-    assert l.levelname == "WARNING"
+    assert l.get_levelname() == "WARNING"
 
     # Assert the message
     assert l.get_message() == "A logging message"

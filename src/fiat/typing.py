@@ -1,14 +1,16 @@
 """Typing for custom stuff."""
 
-from typing import Callable, Protocol
+from types import ModuleType
+from typing import Callable
 
 
-class MethodsProtocol(Protocol):
+class MethodType(ModuleType):
     """Typing for methods module."""
 
     COLUMNS: list[str]
+    INDEX: str
     NAME: str
     NEW_COLUMNS: list[str]
     TYPES: list[str]
-    fn_hazard: Callable
-    fn_impact: Callable
+    fn_hazard: Callable[[list[float], str], tuple[float]]
+    fn_impact: Callable[[float, float, Callable[[float], float], float], float]

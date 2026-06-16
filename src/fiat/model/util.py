@@ -7,17 +7,27 @@ from typing import Callable, Generator
 import numpy as np
 from scipy.interpolate import make_interp_spline
 
-from fiat.check import check_hazard_identifier, check_hazard_rp, check_hazard_types
+from fiat.check import (
+    check_hazard_identifier,
+    check_hazard_rp,
+    check_hazard_types,
+)
 from fiat.fio import GridIO
 from fiat.method.ead import fn_density
 from fiat.struct import Table
-from fiat.struct.container import HazardMeta, VulnerabilityMeta
-from fiat.typing import MethodsProtocol
+from fiat.struct.container import HazardMeta, RunMeta, VulnerabilityMeta
+from fiat.typing import MethodType
+from fiat.util import (
+    EXPOSURE,
+    HAZARD,
+    RP,
+    TYPE,
+)
 
 GEOM_DEFAULT_CHUNK = 50000
 GRID_PREFER = {
-    False: "hazard",
-    True: "exposure",
+    False: HAZARD,
+    True: EXPOSURE,
 }
 
 
@@ -179,22 +189,36 @@ def get_band_names(
     return names
 
 
+def get_run_meta(
+    risk: bool,
+    method: MethodType,
+) -> RunMeta:
+    """Derive the meta data from the config file for the geom calculations."""
+    # Setup the meta
+    meta = RunMeta(
+        risk=risk,
+        type=method.NAME,
+        type_length=len(method.TYPES),
+    )
+    return meta
+
+
 def get_hazard_meta(
     hazard: GridIO,
     risk: bool,
-    method: MethodsProtocol,
+    method_types: list[str],
 ) -> HazardMeta:
     """Obtain some metadata from the hazard data."""
     # Get the types from the metadata
-    types = [band.get_meta("type") for band in hazard]
+    types = [band.get_meta(TYPE) for band in hazard]
     # Check the typing
     indices_type = check_hazard_types(
         types,
-        method.TYPES,
+        method_types,
     )
 
     # Get the identifiers:
-    identifier = None if not risk else "rp"
+    identifier = None if not risk else RP
     ids = [str(idx + 1) for idx, _ in enumerate(indices_type[0])]
     ids_list = [ids] * len(indices_type)
 
@@ -226,9 +250,6 @@ def get_hazard_meta(
         indices_type=indices_type,
         length=len(ids),
         rp=rp,
-        risk=risk,
-        type=method.NAME,
-        type_length=len(method.TYPES),
     )
     return meta
 

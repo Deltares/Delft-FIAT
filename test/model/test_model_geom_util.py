@@ -1,11 +1,18 @@
-from fiat.fio import GeomIO
+import copy
+import re
+from pathlib import Path
+
+import pytest
+
+from fiat.error import FIATDataError
 from fiat.method import flood
 from fiat.model.geom_util import (
     discover_exp_columns,
     generate_output_columns,
+    generate_output_filepaths,
     get_exposure_meta,
 )
-from fiat.struct.container import HazardMeta
+from fiat.struct.container import ExposureGeomData, HazardMeta, RunMeta
 
 
 def test_discover_columns_found(exposure_cols: dict):
@@ -72,19 +79,68 @@ def test_generate_output_columns_multi():
     assert new_fields[-1] == "ead_affected"
 
 
+def test_generate_output_filepaths(
+    tmp_path: Path,
+):
+    # Call the function
+    out = generate_output_filepaths(
+        outfiles=["foo.gpkg", "bar.gpkg"],
+        infiles=[],
+        output_dir=tmp_path,
+    )
+
+    # Assert the output
+    assert len(out) == 2
+    assert out[0] == Path(tmp_path, "foo.gpkg")
+
+
+def test_generate_output_filepaths_none(
+    tmp_path: Path,
+):
+    # Call the function
+    out = generate_output_filepaths(
+        outfiles=None,
+        infiles=["foo.gpkg"],
+        output_dir=tmp_path,
+    )
+
+    # Assert the output
+    assert len(out) == 1
+    assert out[0] == Path(tmp_path, "foo.gpkg")
+
+
+def test_generate_output_filepaths_add(
+    tmp_path: Path,
+):
+    # Call the function
+    out = generate_output_filepaths(
+        outfiles=["foo.gpkg"],
+        infiles=["baz.gpkg", "bar.gpkg"],
+        output_dir=tmp_path,
+    )
+
+    # Assert the output
+    assert len(out) == 2
+    assert out[0] == Path(tmp_path, "foo.gpkg")
+    assert out[1] == Path(tmp_path, "bar.gpkg")
+
+
 def test_get_exposure_meta(
-    exposure_geom_data: GeomIO,
+    exposure_geom_data_run: ExposureGeomData,
+    run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
 ):
     # Call the function
     meta = get_exposure_meta(
-        exposure=exposure_geom_data,
+        exposure=exposure_geom_data_run,
+        run_meta=run_meta,
         hazard_meta=hazard_meta_run,
-        method=flood,
+        method=flood.depth,
         types=["damage"],
     )
 
     # Assert the output
+    assert meta.area_method == "area"
     assert meta.indices_impact == {"damage": [(1,)]}
     assert meta.indices_new == [5, 6, 7]
     assert meta.indices_spec == [2]
@@ -93,16 +149,19 @@ def test_get_exposure_meta(
     assert meta.new == ["depth_1", "damage_structure_1", "total_damage_1"]
     assert meta.new_length == 3
     assert meta.type_length == 3
+    assert meta.zonal_method == "mean"
 
 
 def test_get_exposure_meta_risk(
-    exposure_geom_data: GeomIO,
+    exposure_geom_data_run: ExposureGeomData,
+    run_risk_meta: RunMeta,
     hazard_risk_meta_run: HazardMeta,
 ):
     meta = get_exposure_meta(
-        exposure=exposure_geom_data,
+        exposure=exposure_geom_data_run,
+        run_meta=run_risk_meta,
         hazard_meta=hazard_risk_meta_run,
-        method=flood,
+        method=flood.depth,
         types=["damage"],
     )
 
@@ -119,28 +178,23 @@ def test_get_exposure_meta_risk(
     assert meta.type_length == 3
 
 
-# def test_get_exposure_meta_multi(
-#     hazard_meta_run: HazardMeta,
-# ):
-#     # Call the function
-#     meta = get_exposure_meta(
-#         columns={
-#             "oid": 0,
-#             "ref": 1,
-#             "fn_damage": 2,
-#             "max_damage": 3,
-#             "fn_affected": 4,
-#             "max_affected": 5,
-#         },
-#         hazard_meta=hazard_meta_run,
-#         module=flood,
-#         types=["damage", "affected"],
-#     )
-#
-#     # Assert the output
-#     assert meta.indices_new == [6, 7, 8, 9, 10]
-#     assert meta.type_length == 5
-#     assert "damage_band1" in meta.new
-#     assert "affected_band1" in meta.new
-#     assert meta.indices_total == [-3, -1]
-#     assert list(meta.indices_type) == ["damage", "affected"]
+def test_get_exposure_meta_errors(
+    exposure_geom_data_run: ExposureGeomData,
+):
+    # Alter the area method
+    data = copy.deepcopy(exposure_geom_data_run)
+    data.area_method = "foo"
+    # Call the function with an invalid value for area
+    with pytest.raises(
+        FIATDataError,
+        match=re.escape(
+            "Exposure area method value: 'foo' invalid",
+        ),
+    ):
+        _ = get_exposure_meta(
+            exposure=data,
+            run_meta=None,  # Can all be nonsense
+            hazard_meta=None,
+            method=None,
+            types=None,
+        )

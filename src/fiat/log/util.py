@@ -1,6 +1,7 @@
 """Logging utility."""
 
 import time
+from dataclasses import dataclass
 from enum import Enum
 
 __all__ = ["LogItem"]
@@ -41,7 +42,7 @@ class LogItem:
 
     Parameters
     ----------
-    level : str
+    level : int
         Logging level.
     msg : str
         The message.
@@ -49,16 +50,30 @@ class LogItem:
 
     def __init__(
         self,
-        level: str,
+        level: int,
         msg: str,
     ):
         self.ct = time.time()
-        self.level = level
-        self.levelname = LogLevels(level).name
-        self.msg = msg
+        self.level: int = level
+        self.msg: str = msg
 
     def get_message(
         self,
-    ):
+    ) -> str:
         """Return the message."""
         return str(self.msg)
+
+    def get_levelname(
+        self,
+    ) -> str:
+        """Return the name of the log level."""
+        return LogLevels(self.level).name
+
+
+@dataclass
+class FormatItem:
+    """Simple container for the formatter."""
+
+    levelname: str
+    message: str
+    asctime: str | None = None

@@ -4,8 +4,8 @@ import math
 
 
 def fn_ead(
-    rp_coef: list,
-    dms: list,
+    rp_coef: list[float],
+    impact: list[float],
 ) -> float:
     """Calculate the EAD (risk).
 
@@ -15,8 +15,8 @@ def fn_ead(
     ----------
     rp_coef : list
         List of return period coefficients.
-    dms : list
-        List of corresponding damages
+    impact : list
+        List of corresponding impacts
         (in the same order of the return periods coefficients).
 
     Returns
@@ -26,13 +26,13 @@ def fn_ead(
         return periods.
     """
     # Calculate the EAD
-    ead = sum([x * y for x, y in zip(rp_coef, dms)])
+    ead = sum([x * y for x, y in zip(rp_coef, impact)])
     return ead
 
 
 def fn_density(
-    rp: list | tuple,
-) -> list:
+    rp: list[float] | tuple[float],
+) -> list[float]:
     """Calculate the risk density factors from return periods values.
 
     Parameters

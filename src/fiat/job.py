@@ -58,7 +58,7 @@ def execute_pool(
     threads: int,
     initializer: Callable,
     initargs: tuple,
-):
+) -> list:
     """Execute a python process pool.
 
     Parameters

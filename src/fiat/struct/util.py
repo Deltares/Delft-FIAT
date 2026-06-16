@@ -5,7 +5,7 @@ from numpy import ndarray
 
 
 def convert_to_numpy_dtype(
-    dtypes: list,
+    dtypes: list[type],
 ) -> object:
     """Convert a list of dtypes to a single numpy dtype.
 
@@ -27,7 +27,7 @@ def convert_to_numpy_dtype(
     return dtype
 
 
-def infer_column_types(arr: ndarray) -> list[str]:
+def infer_column_types(arr: ndarray) -> list[type]:
     """Infer dtypes per column from a 2D numpy array.
 
     Parameters

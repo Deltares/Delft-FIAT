@@ -3,7 +3,7 @@ import datetime
 import pytest
 
 from fiat.log.formatter import FormatStyler, MessageFormatter
-from fiat.log.util import LogItem
+from fiat.log.util import FormatItem, LogItem
 
 
 def test_formatstyler():
@@ -38,36 +38,36 @@ def test_formatstyler_validate_errors():
         fs.validate()
 
 
-def test_formatstyle_format(log_item: LogItem):
+def test_formatstyle_format(format_item: FormatItem):
     # Create the object
     fs = FormatStyler("{levelname:8s}")
 
     # Call the format method
-    msg = fs.format(log_item)
+    msg = fs.format(format_item)
 
     # Assert the output
     assert msg == "INFO    "  # Note 4 spaces due to the '8s' spec
 
 
-def test_formatstyle_format_defaults(log_item: LogItem):
+def test_formatstyle_format_defaults(format_item: FormatItem):
     # Create the object
     fs = FormatStyler("{levelname:8s}{foo}", defaults={"foo": "bar"})
 
     # Call the format method
-    msg = fs.format(log_item)
+    msg = fs.format(format_item)
 
     # Assert the output
     assert msg == "INFO    bar"  # Note that foo is taken from the default
     # It's not in the record
 
 
-def test_formatstyle_format_errors(log_item: LogItem):
+def test_formatstyle_format_errors(format_item: FormatItem):
     # Create the object
     fs = FormatStyler("{levelname:8s}{foo}")
 
     # Call the format method, which should result in an error
     with pytest.raises(ValueError, match="Formatting field not found in record: 'foo'"):
-        _ = fs.format(log_item)
+        _ = fs.format(format_item)
 
 
 def test_messageformatter():

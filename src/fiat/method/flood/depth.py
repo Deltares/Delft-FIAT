@@ -1,29 +1,31 @@
-"""Functions specifically for flood risk calculation."""
+"""Flood depth impact functions."""
 
 import math
 from typing import Callable
 
-from fiat.method.util import AREA_METHODS
+from fiat.method.util import ZONAL_METHODS
+from fiat.util import DEPTH, FLOOD_DEPTH
 
-COLUMNS = ["ref"]
-NAME = "flood"
-NEW_COLUMNS = ["depth"]
-TYPES = ["water_depth"]
+COLUMNS = ["elevation"]
+INDEX = DEPTH
+NAME = FLOOD_DEPTH
+NEW_COLUMNS = [DEPTH]
+TYPES = [f"water_{DEPTH}"]
 
 
 def fn_hazard(
-    hazard: list,
-    ref: float,
+    hazard: list[float],
+    elevation: float,
     method: str = "mean",
 ) -> tuple[float]:
-    """Calculate the hazard value for flood hazard.
+    """Calculate the hazard value for flood depth hazard.
 
     Parameters
     ----------
     hazard : list
         Raw hazard values.
-    ref : float
-        Reference to the hazard values.
+    elevation : float
+        Elevation of the object relative to the surface.
     method : str, optional
         Chose 'max' or 'mean' for either the maximum value or the average,
         by default 'mean'.
@@ -39,33 +41,33 @@ def fn_hazard(
     if not hazard:
         return math.nan, math.nan
     redf = len(hazard) / raw_l
-    hazard = AREA_METHODS[method](hazard) - ref
+    hazard = ZONAL_METHODS[method](hazard) - elevation
     return hazard, redf
 
 
 def fn_impact(
     hazard: float | int,
     exposure: float | int,
-    fact: float | int,
     fn_curve: Callable,
+    fact: float | int,
 ) -> float:
-    """_summary_.
+    """Calculate the impact from flood depths.
 
     Parameters
     ----------
     hazard : float | int
-        _description_
+        The flood depth hazard values.
     exposure : float | int
-        _description_
-    fact : float | int
-        _description_
+        The maximum exposure impact (damage) value.
     fn_curve : Callable
-        _description_
+        The vulnerability curve.
+    fact : float | int
+        The reduction factor (area method).
 
     Returns
     -------
     float
-        _description_
+        Impact.
     """
     f = fn_curve(hazard)
     val = f * exposure * fact

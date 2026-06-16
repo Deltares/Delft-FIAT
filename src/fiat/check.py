@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from osgeo import osr
+from pyproj.crs import CRS
 
 from fiat.cfg import Configurations
 from fiat.error import FIATDataError
@@ -16,10 +17,22 @@ logger = spawn_logger(__name__)
 
 
 ## Config
+def check_available_values(
+    value: Any,
+    available: list[Any],
+    msg: str,
+) -> None:
+    """Check whether this settings is available."""
+    if value not in available:
+        raise FIATDataError(
+            f"{msg} value: '{value}' invalid, chose from {available}",
+        )
+
+
 def check_config_entries(
     cfg: Configurations,
     mandatory_entries: list | tuple,
-):
+) -> None:
     """Check the mandatory config entries."""
     _check = [cfg.get(item) for item in mandatory_entries]
     if not all(_check):
@@ -31,7 +44,7 @@ following missing entries: {_missing}"
 
 def check_config_grid(
     cfg: Configurations,
-):
+) -> bool:
     """Check the grid config entries."""
     entry = cfg.get(EXPOSURE_GRID_FILE)
     if entry is None:
@@ -47,7 +60,7 @@ def check_config_grid(
 ## Text files
 def check_duplicate_columns(
     cols: tuple | list,
-):
+) -> None:
     """Check for duplicate column headers."""
     if cols is not None:
         msg = f"Duplicate columns were encountered. Wrong column could \
@@ -59,7 +72,7 @@ be used. Check input for these columns: {cols}"
 def check_grid_exact(
     haz,
     exp,
-):
+) -> bool:
     """Check whether the hazard and exposure grid align."""
     if not check_vs_srs(
         haz.srs,
@@ -91,7 +104,7 @@ exposure data ({exp.shape})"
 def check_internal_srs(
     source_srs: osr.SpatialReference,
     fname: str,
-):
+) -> None:
     """Check the internal spatial reference system.
 
     This also should exist.
@@ -105,7 +118,7 @@ cannot safely continue"
 def check_geom_extent(
     gm_bounds: tuple | list,
     gr_bounds: tuple | list,
-):
+) -> None:
     """Check whether the geometries lie within the bounds of the hazard data."""
     _checks = (
         gm_bounds[0] >= gr_bounds[0],
@@ -124,19 +137,15 @@ def check_vs_srs(
     source_srs: osr.SpatialReference,
 ):
     """Check if the spatial reference systems match."""
-    if not (
-        global_srs.IsSame(source_srs)
-        or global_srs.ExportToProj4() == source_srs.ExportToProj4()
-    ):
-        return False
-
-    return True
+    return CRS.from_user_input(global_srs.ExportToWkt()) == CRS.from_user_input(
+        source_srs.ExportToWkt()
+    )
 
 
 ## Input Data
 def check_input_data(
     *input: list[str, Any, type],
-):
+) -> None:
     """Check if all input data is present."""
     for item in input:
         name, data, dtype = item
@@ -157,7 +166,7 @@ currently of type {data.__class__.__name__}"
 def check_hazard_identifier(
     ids: list[str],
     indices_type: list[list[int]],
-):
+) -> tuple[list[int]]:
     """Check the identifiers in the hazard data."""
     # Length per
     l = len(indices_type[0])
@@ -194,7 +203,7 @@ def check_hazard_rp(
 def check_hazard_subsets(
     sub: dict,
     path: Path,
-):
+) -> None:
     """Check whether there are subsets available."""
     if sub is not None:
         keys = ", ".join(list(sub.keys()))
@@ -206,7 +215,7 @@ multiple datasets (subsets). Chose one of the following subsets: {keys}"
 def check_hazard_types(
     types: list,
     mandatory_types: list,
-) -> list:
+) -> list[int]:
     """Check the hazard types in the dataset."""
     check = [item in types for item in mandatory_types]
     if not all(check):
@@ -233,7 +242,7 @@ def check_hazard_types(
 def check_exp_columns(
     columns: tuple | list,
     mandatory_columns: tuple | list = [],
-):
+) -> None:
     """Check the columns of the exposure data."""
     check = [item in columns for item in mandatory_columns]
     if not all(check):
@@ -246,7 +255,7 @@ def check_exp_derived_types(
     type: str,
     found: tuple | list,
     missing: tuple | list,
-):
+) -> None:
     """Check whether columns are available for a certain exposure type."""
     # Error when no columns are found for vulnerability type
     if not found:
@@ -265,7 +274,7 @@ maximum potential damage: {missing}"
 def check_exp_grid_fn(
     fn_list: tuple | list,
     fn_available: tuple | list,
-):
+) -> None:
     """Check the impact functions mentioned in the exposure bands."""
     _check = [item in fn_available for item in fn_list]
     if not all(_check):

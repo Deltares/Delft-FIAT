@@ -1,4 +1,4 @@
-"""Logic submule of FIAT."""
+"""Method submule of FIAT."""
 
 from . import ead, flood
 

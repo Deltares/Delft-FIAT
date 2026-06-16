@@ -5,8 +5,33 @@ from pathlib import Path
 from osgeo import ogr
 
 from fiat.fio.geom import GeomIO
-from fiat.model.geom_writer import GeomWriter
+from fiat.model.geom_writer import GeomWriter, ensure_writable_filepath
 from fiat.util import DummyLock
+
+
+def test_ensure_writable_filepath(tmp_path: Path):
+    # Ensure a file
+    p = Path(tmp_path, "foo.txt")
+    p.touch()
+    # Assert its there
+    assert p.exists()
+
+    # Call the function
+    ensure_writable_filepath(p)
+    # Assert its gone
+    assert not p.exists()
+
+
+def test_ensure_writable_filepath_nothing(tmp_path: Path):
+    # Ensure a file
+    p = Path(tmp_path, "foo.txt")
+    # Assert its not there
+    assert not p.exists()
+
+    # Call the function
+    ensure_writable_filepath(p)
+    # Assert its still not there
+    assert not p.exists()
 
 
 def test_geom_writer_init(tmp_path: Path):

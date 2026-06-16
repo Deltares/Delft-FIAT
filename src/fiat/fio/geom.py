@@ -104,7 +104,7 @@ class GeomIO(BaseIO):
     ## Properties
     @property
     @BaseIO.check_state
-    def driver_meta(self):
+    def driver_meta(self) -> dict:
         """Return the driver meta data."""
         return self.driver.GetMetadata()
 
@@ -133,7 +133,7 @@ class GeomIO(BaseIO):
         self._srs = srs
 
     ## Basic I/O methods
-    def close(self):
+    def close(self) -> None:
         """Close the dataset."""
         BaseIO.close(self)
         if self.src is not None:
@@ -146,7 +146,7 @@ class GeomIO(BaseIO):
 
         gc.collect()
 
-    def flush(self):
+    def flush(self) -> None:
         """Flush the buffer.
 
         This only serves a purpose in write mode (`mode = 'w'`).
@@ -157,7 +157,7 @@ class GeomIO(BaseIO):
     def reopen(
         self,
         mode: str = "r",
-    ):
+    ) -> "GeomIO":
         """Reopen a closed GeomIO."""
         if not self.closed:
             return self
@@ -171,7 +171,7 @@ class GeomIO(BaseIO):
     def create(
         self,
         path: Path | str,
-    ):
+    ) -> None:
         """Create a data source.
 
         Parameters
@@ -190,7 +190,7 @@ class GeomIO(BaseIO):
         self,
         srs: osr.SpatialReference,
         geom_type: int,
-    ):
+    ) -> None:
         """Create a new vector layer.
 
         Only in write (`'w'`) mode.
@@ -211,7 +211,7 @@ class GeomIO(BaseIO):
     def delete(
         self,
         all=False,
-    ):
+    ) -> None:
         """Delete the vector layer.
 
         Parameters

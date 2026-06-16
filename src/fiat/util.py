@@ -1,17 +1,17 @@
 """Base FIAT utility."""
 
 import importlib
+import io
 import math
 import os
 import re
 import sys
 import time
-from collections.abc import MutableMapping
 from gc import get_referents
 from itertools import product
 from pathlib import Path
 from types import FunctionType, ModuleType
-from typing import Any, Generator
+from typing import Any, Callable, Generator
 
 import numpy as np
 import regex
@@ -19,47 +19,94 @@ from osgeo import gdal, ogr, osr
 
 ## Config entries
 # Building blocks
+AREA = "area"
+CALC = "calc"
+CENTROID = "centroid"
 CHUNK = "chunk"
+CONFIG = "config"
+DEPTH = "depth"
+EAD = "ead"
 EXPOSURE = "exposure"
 FIAT = "fiat"
 FILE = "file"
+FLOOD = "flood"
+FN = "fn"
+FORCE = "force"
 GEOM = "geom"
 GRID = "grid"
 HAZARD = "hazard"
 INDEX = "index"
-METHODS = "methods"
+INPUT = "input"
+LEADING = "leading"
+LEVEL = "level"
+LOG = "log"
+MAX = "max"
+MEAN = "mean"
+META = "meta"
+METHOD = "method"
+MIN = "min"
 MODEL = "model"
 NAME = "name"
 OUTPUT = "output"
 PATH = "path"
+RESALG = "resalg"
 RISK = "risk"
+RP = "rp"
+RUN = "run"
 SETTINGS = "settings"
 SRS = "srs"
-STEP_SIZE = "step_size"
 THREADS = "threads"
+TOTAL = "total"
 TYPE = "type"
+TYPES = f"{TYPE}s"
 VALUE = "value"
 VULNERABILITY = "vulnerability"
+WINDOW = "window"
+ZONAL = "zonal"
 # Model settings
+MODEL_CALC = f"{MODEL}.{CALC}"
+MODEL_GEOM_CHUNK = f"{MODEL}.{GEOM}.{CHUNK}"
+MODEL_GRID_CHUNK = f"{MODEL}.{GRID}.{CHUNK}"
+MODEL_GRID_LEADING = f"{MODEL}.{GRID}.{LEADING}"
+MODEL_LOGLEVEL = f"{MODEL}.{LOG}{LEVEL}"
 MODEL_RISK = f"{MODEL}.{RISK}"
 MODEL_SRS = f"{MODEL}.{SRS}"
+MODEL_SRS_FORCE = f"{MODEL}.{SRS}.{FORCE}"
 MODEL_SRS_VALUE = f"{MODEL}.{SRS}.{VALUE}"
 MODEL_THREADS = f"{MODEL}.{THREADS}"
 MODEL_TYPE = f"{MODEL}.{TYPE}"
 # Output
 OUTPUT_PATH = f"{OUTPUT}.{PATH}"
+OUTPUT_GEOM_NAME = f"{OUTPUT}.{GEOM}.{NAME}"
+OUTPUT_GRID_NAME = f"{OUTPUT}.{GRID}.{NAME}"
 # Input
+AREA__METHOD = f"{AREA}_{METHOD}"
+EXPOSURE_AREA__METHOD = f"{EXPOSURE}.{AREA}_{METHOD}"  # TODO exposure specific
 EXPOSURE_GEOM = f"{EXPOSURE}.{GEOM}"
 EXPOSURE_GEOM_FILE = f"{EXPOSURE_GEOM}.{FILE}"
 EXPOSURE_GEOM_SETTINGS = f"{EXPOSURE_GEOM}.{SETTINGS}"
 EXPOSURE_GRID = f"{EXPOSURE}.{GRID}"
 EXPOSURE_GRID_FILE = f"{EXPOSURE_GRID}.{FILE}"
+EXPOSURE_GRID_RESALG = f"{EXPOSURE_GRID}.{RESALG}"
 EXPOSURE_GRID_SETTINGS = f"{EXPOSURE_GRID}.{SETTINGS}"
+EXPOSURE_TYPES = f"{EXPOSURE}.{TYPES}"
+EXPOSURE_ZONAL__METHOD = f"{EXPOSURE}.{ZONAL}_{METHOD}"
 HAZARD_FILE = f"{HAZARD}.{FILE}"
+HAZARD_RESALG = f"{HAZARD}.{RESALG}"
 HAZARD_SETTINGS = f"{HAZARD}.{SETTINGS}"
 HAZARD_TYPE = f"{HAZARD}.{TYPE}"
 VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
 VULNERABILITY_SETTINGS = f"{VULNERABILITY}.{SETTINGS}"
+ZONAL__METHOD = f"{ZONAL}_{METHOD}"
+# Internal
+EXPOSURE__META = f"{EXPOSURE}_{META}"
+FIAT_METHOD = f"{FIAT}.{METHOD}"
+FLOOD_DEPTH = f"{FLOOD}.{DEPTH}"
+FLOOD_LEVEL = f"{FLOOD}.{LEVEL}"
+HAZARD__META = f"{HAZARD}_{META}"
+OUTPUT__PATH = f"{OUTPUT}_{PATH}"
+RUN__META = f"{RUN}_{META}"
+VULNERABILITY__META = f"{VULNERABILITY}_{META}"
 
 ## Define other string variables
 OBJECT_ID = "object_id"
@@ -131,25 +178,25 @@ def regex_pattern(
     regex.Pattern
         Compiled regex pattern.
     """
-    nchar = nchar.decode()
+    nchar_str = nchar.decode()
     if not multi:
         return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}'.encode())
-    return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}|{nchar}'.encode())
+    return regex.compile(rf'"[^"]*"(*SKIP)(*FAIL)|{delimiter}|{nchar_str}'.encode())
 
 
 # Calculation
-def mean(values: list) -> float:
+def mean(values: list[float]) -> float:
     """Very simple python mean."""
     return sum(values) / len(values)
 
 
 # Chunking helper functions
 def text_chunk_gen(
-    h: object,
-    pattern: re.Pattern,
+    h: io.IOBase,
+    pattern: re.Pattern[bytes],
     chunk_size: int = 100000,
     nchar: bytes = b"\n",
-) -> Generator:
+) -> Generator[tuple[Any, list[bytes | Any]], None, None]:
     """Read and split text in chunks.
 
     Parameters
@@ -206,15 +253,15 @@ def _load_diff(
     if cur == max_threads and new >= max_threads:
         return 0
     # The difference in load
-    diff = (size / cur) - (size / new)
-    return abs(diff)
+    diff_load = (size / cur) - (size / new)
+    return abs(diff_load)
 
 
 def _diff_table(
     sizes: list[int],
     threads_diss: list[int],
     max_threads: int,
-) -> tuple[np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Create a conditional table of load improvements."""
     # Setup the variables
     n = len(sizes)
@@ -286,23 +333,23 @@ def distribute_threads(
 
 # Config related stuff
 def _flatten_dict_gen(
-    d: dict,
+    d: dict[str, Any],
     parent_key: str,
     sep: str,
-) -> Generator:
+) -> Generator[tuple[str, Any], None, None]:
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, MutableMapping):
+        if isinstance(v, dict):
             yield from flatten_dict(v, new_key, sep=sep).items()
         else:
             yield new_key, v
 
 
 def flatten_dict(
-    d: MutableMapping,
+    d: dict[str, Any],
     parent_key: str = "",
     sep: str = ".",
-) -> dict:
+) -> dict[str, Any]:
     """Flatten a dictionary.
 
     Thanks to this post:
@@ -341,7 +388,7 @@ def get_srs_repr(
 def read_gridsource_info(
     gr: gdal.Dataset,
     format: str = "json",
-) -> dict:
+) -> dict[str, Any]:
     """Read grid source information.
 
     Thanks to:
@@ -353,7 +400,7 @@ def read_gridsource_info(
 
 def read_gridsource_layers(
     gr: gdal.Dataset,
-) -> dict | None:
+) -> dict[str, Any] | None:
     """Read the layers of a gridsource."""
     sd = gr.GetSubDatasets()
 
@@ -369,10 +416,10 @@ def read_gridsource_layers(
     return out
 
 
-def _check_geom_driver_capabilities(
+def _check_driver_capabilities(
     idx: int,
     type: str,
-) -> tuple[gdal.Driver, list] | tuple[None]:
+) -> tuple[gdal.Driver, str] | tuple[None, None]:
     """Return driver when it has the necessary capabilities."""
     driver = gdal.GetDriver(idx)
     # Check the create capability
@@ -410,16 +457,16 @@ def _check_geom_driver_capabilities(
 
 def _create_driver_map(
     type: str,
-) -> dict:
+) -> dict[str, str]:
     """Create a map of geometry drivers."""
     drivers = {}
     count = gdal.GetDriverCount()
 
     for idx in range(count):
-        driver, ext = _check_geom_driver_capabilities(idx, type=type)
+        driver, ext = _check_driver_capabilities(idx, type=type)
         if driver is None:
             continue
-        if len(ext) > 0:
+        if ext is not None and len(ext) > 0:
             ext = "." + ext
             drivers[ext] = driver.ShortName
 
@@ -483,7 +530,7 @@ def generic_path_check(
 
 
 # Misc.
-def find_duplicates(elements: tuple | list) -> list | None:
+def find_duplicates(elements: tuple[Any] | list[Any]) -> list[Any] | None:
     """Find duplicate elements in an iterable object."""
     uni = list(set(elements))
     counts = [elements.count(elem) for elem in uni]
@@ -493,7 +540,7 @@ def find_duplicates(elements: tuple | list) -> list | None:
     return dup
 
 
-def re_filter(values, pat) -> list:
+def re_filter(values: list[str], pat: str) -> list[str]:
     """Quickly filter values based on a pattern match."""
     result = []
     pat = os.path.normcase(pat)
@@ -504,15 +551,14 @@ def re_filter(values, pat) -> list:
     return result
 
 
-def get_module_attr(module: str, attr: str) -> Any:
+def get_module_attr(module_name: str, attr: str) -> Any:
     """Quickly get attribute from a module dynamically."""
-    module = importlib.import_module(module)
+    module = importlib.import_module(module_name)
     out = getattr(module, attr)
-    module = None
     return out
 
 
-def object_size(obj):
+def object_size(obj) -> int:
     """Calculate the actual size of an object (bit overestimated).
 
     Thanks to this post on stackoverflow:
@@ -539,7 +585,7 @@ def object_size(obj):
     return size
 
 
-def timeit(n: int = 200000):
+def timeit(n: int = 200000) -> Callable[[int], float]:
     """Small timing decorater."""
 
     def timeit(fn):
@@ -613,11 +659,11 @@ def deter_type(
     i_p = rf"((^(-)?\d+(E(\+|\-)?\d+)?)$)(\n((^(-)?\d+(E(\+|\-)?\d+)?)$)){{{l}}}"
     i_c = re.compile(bytes(i_p, "utf-8"), re.MULTILINE | re.IGNORECASE)
 
-    l = (
+    v = (
         bool(f_c.match(e)),
         bool(i_c.match(e)),
     )
-    return _dtypes[sum(l)]
+    return _dtypes[sum(v)]
 
 
 def deter_dec(
@@ -629,6 +675,6 @@ def deter_dec(
     return abs(ndec)
 
 
-def replace_empty(l: list) -> list:
+def replace_empty(l: list[bytes]) -> list[str]:
     """Replace empty values by None in a string (i.e. between delimiters)."""
     return ["nan" if not e else e.decode() for e in l]

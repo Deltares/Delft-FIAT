@@ -196,7 +196,7 @@ def srs_3857() -> osr.SpatialReference:
 
 @pytest.fixture(scope="session")
 def vulnerability_data(vulnerability_path: Path) -> Table:
-    ds = open_csv(vulnerability_path, index="water depth")
+    ds = open_csv(vulnerability_path, index="depth")
     assert isinstance(ds, Table)
     return ds
 

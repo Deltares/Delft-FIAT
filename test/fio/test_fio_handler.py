@@ -24,7 +24,7 @@ def test_buffer_handler_basic(vulnerability_path: Path):
 
     # Close the handler
     h.close()
-    assert h.stream is None
+    assert h.stream.closed
 
 
 def test_buffer_handler_newline(vulnerability_win_path: Path):

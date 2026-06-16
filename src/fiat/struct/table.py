@@ -140,7 +140,7 @@ class Table(TableBase):
     def set_index(
         self,
         index_col: int | str,
-    ):
+    ) -> None:
         """Set the index of the Table to a specific column.
 
         Parameters
@@ -332,7 +332,7 @@ class TableLazy(TableBase):
     def set_index(
         self,
         index_col: int | str,
-    ):
+    ) -> None:
         """Set the index of the table.
 
         Parameters

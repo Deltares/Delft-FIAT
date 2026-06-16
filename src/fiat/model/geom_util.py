@@ -3,12 +3,28 @@
 import copy
 import re
 from itertools import product
+from pathlib import Path
 
-from fiat.check import check_exp_columns, check_exp_derived_types
-from fiat.fio import GeomIO
-from fiat.struct.container import ExposureGeomMeta, HazardMeta
-from fiat.typing import MethodsProtocol
-from fiat.util import re_filter
+from fiat.check import (
+    check_available_values,
+    check_exp_columns,
+    check_exp_derived_types,
+)
+from fiat.gis import overlay
+from fiat.method.util import ZONAL_METHODS
+from fiat.struct.container import (
+    ExposureGeomData,
+    ExposureGeomMeta,
+    HazardMeta,
+    RunMeta,
+)
+from fiat.typing import MethodType
+from fiat.util import AREA, CENTROID, EAD, FN, MAX, TOTAL, re_filter
+
+AREA_METHODS = {
+    AREA: overlay.area_mask,
+    CENTROID: overlay.centroid_mask,
+}
 
 
 def discover_exp_columns(
@@ -36,8 +52,8 @@ missing values.
     column_vals = list(columns.keys())
 
     # Patterns
-    fn_pat = rf"^fn_{type}(_\w+)?$"
-    max_pat = rf"^max_{type}(_\w+)?$"
+    fn_pat = rf"^{FN}_{type}(_\w+)?$"
+    max_pat = rf"^{MAX}_{type}(_\w+)?$"
 
     # Filter the current columns
     dmg = re_filter(column_vals, fn_pat)
@@ -54,7 +70,7 @@ missing values.
         dmg_suffix.remove(item)
 
     for val in dmg_suffix:
-        dmg_idx.append([columns[f"fn_{type}{val}"], columns[f"max_{type}{val}"]])
+        dmg_idx.append([columns[f"{FN}_{type}{val}"], columns[f"{MAX}_{type}{val}"]])
 
     return dmg_suffix, dmg_idx, missing
 
@@ -71,7 +87,7 @@ def generate_output_columns(
     # Loop over the exposure types
     for key, value in exposure_types.items():
         columns += [f"{key}{item}" for item in value]
-        columns += [f"total_{key}"]
+        columns += [f"{TOTAL}_{key}"]
 
     # Generate all the output columns
     out = []
@@ -84,14 +100,49 @@ def generate_output_columns(
     return out
 
 
+def generate_output_filepaths(
+    outfiles: list[Path] | None,
+    infiles: list[Path],
+    output_dir: Path,
+) -> list[Path]:
+    """Simple method for determining the output file paths."""  # noqa: D401
+    outfiles = outfiles or []
+    # Ensure typing
+    outfiles = [Path(item) for item in outfiles]
+    infiles = [Path(item) for item in infiles]
+    # Complete set from infiles if outfiles are None
+    if not outfiles:
+        outfiles = infiles
+    # Supplement if missing
+    outfiles += infiles[len(outfiles) :]
+    # Yes
+    outfiles = [Path(output_dir, item.name).with_suffix(".gpkg") for item in outfiles]
+    return outfiles
+
+
 def get_exposure_meta(
-    exposure: GeomIO,
+    exposure: ExposureGeomData,
+    run_meta: RunMeta,
     hazard_meta: HazardMeta,
-    method: MethodsProtocol,
+    method: MethodType,
     types: list | tuple,
 ):
     """Simple method for sorting out the exposure meta."""  # noqa: D401
-    columns = exposure.layer._columns
+    # Check the area method
+    check_available_values(
+        exposure.area_method,
+        available=[AREA, CENTROID],
+        msg="Exposure area method",
+    )
+    # Check the zonal method
+    check_available_values(
+        exposure.zonal_method,
+        available=list(ZONAL_METHODS),
+        msg="Exposure zonal method",
+    )
+
+    # Check the columns validity
+    columns = exposure.data.layer._columns
     mandatory_columns = method.COLUMNS
     # Check the exposure column headers
     check_exp_columns(
@@ -114,15 +165,15 @@ def get_exposure_meta(
 
     # The length of columns per hazard
     type_length = (
-        hazard_meta.type_length
+        run_meta.type_length
         + sum([len(item) for item in type_dict.values()])
         + len(type_dict)
     )
 
     ## Names of the new columns
     extra = []
-    if hazard_meta.risk:
-        extra = ["ead"]
+    if run_meta.risk:
+        extra = [EAD]
     new = generate_output_columns(
         method.NEW_COLUMNS,
         type_dict,
@@ -131,7 +182,7 @@ def get_exposure_meta(
     )
 
     # Indices of colums during calculation
-    offset = hazard_meta.type_length
+    offset = run_meta.type_length
     indices_impact = {}
     indices_total = {}
     for key, value in length_type.items():
@@ -153,6 +204,7 @@ def get_exposure_meta(
 
     # Create the exposure meta struct
     meta = ExposureGeomMeta(
+        area_method=exposure.area_method,
         indices_impact=indices_impact,
         indices_new=indices_new,
         indices_spec=indices_spec,
@@ -161,5 +213,6 @@ def get_exposure_meta(
         new=new,
         new_length=len(new),
         type_length=type_length,
+        zonal_method=exposure.zonal_method,
     )
     return meta

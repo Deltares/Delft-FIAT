@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from fiat.fio.handler import FileBufferHandler
 from fiat.fio.parser import CSVParser
@@ -35,7 +36,7 @@ def test_table_from_parser(vulnerability_parsed: CSVParser):
     t = Table.from_parser(vulnerability_parsed)
 
     # Assert the data
-    assert "water depth" in t.columns
+    assert "depth" in t.columns
     assert t.dtypes == [float, float, float]
     assert t.index[:5] == (0, 1, 2, 3, 4)
     assert t.kwargs == {"duplicate_columns": None}
@@ -104,7 +105,7 @@ def test_tablelazy(vulnerability_parsed: CSVParser):
     t = TableLazy(vulnerability_parsed)
 
     # Assert some simple stuff
-    assert "water depth" in t.columns
+    assert "depth" in t.columns
     assert isinstance(t.data, FileBufferHandler)
     assert t.dtypes == [float, float, float]
     assert t.index[:5] == (0, 1, 2, 3, 4)
@@ -153,8 +154,35 @@ def test_tablelazy_set_index(vulnerability_parsed: CSVParser):
 
     # Assert the state
     assert t.index[:5] == (0.0, 0.25, 0.5, 0.75, 1.0)
-    assert t.index_name == "water depth"
+    assert t.index_name == "depth"
 
     # If not found, do nothing
     t.set_index(-1)
-    assert t.index_name == "water depth"  # still
+    assert t.index_name == "depth"  # still
+
+
+def test_tablelazy_set_index_str(vulnerability_parsed: CSVParser):
+    # Set the object
+    t = TableLazy(vulnerability_parsed)
+    # Assert the current state
+    assert t.index[:5] == (0, 1, 2, 3, 4)
+    assert t.index_name == "index"
+
+    # Set the index to a column
+    t.set_index("depth")
+
+    # Assert the state
+    assert t.index[:5] == (0.0, 0.25, 0.5, 0.75, 1.0)
+    assert t.index_name == "depth"
+
+
+def test_tablelazy_set_index_errors(vulnerability_parsed: CSVParser):
+    # Set the object
+    t = TableLazy(vulnerability_parsed)
+
+    # Set the index to a column that does not exist
+    with pytest.raises(
+        ValueError,
+        match="Index column index out of range: \(10\)",
+    ):
+        t.set_index(10)

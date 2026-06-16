@@ -2,7 +2,7 @@
 
 from fiat.util import mean
 
-AREA_METHODS = {
+ZONAL_METHODS = {
     "max": max,
     "mean": mean,
     "min": min,

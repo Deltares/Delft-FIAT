@@ -6,12 +6,12 @@ from fiat.util import DD_NEED_IMPLEMENTED
 
 
 class NamedIndex(dict):
-    """_summary_.
+    """Simple named indexing for tables..
 
     Parameters
     ----------
     settings : dict, optional
-        _description_, by default {}
+        The settings, by default {}.
     """
 
     def __init__(self, settings={}, **kwargs):
@@ -75,7 +75,7 @@ class BaseStruct(metaclass=ABCMeta):
     def update_kwargs(
         self,
         **kwargs,
-    ):
+    ) -> None:
         """Update the keyword arguments.
 
         Only for internal use.
@@ -91,9 +91,9 @@ class TableBase(BaseStruct, metaclass=ABCMeta):
     Parameters
     ----------
     index : tuple, optional
-        Indices of the table object, by default None
+        Indices of the table object, by default None.
     columns : tuple, optional
-        Columns of the table object, by default None
+        Columns of the table object, by default None.
     """
 
     def __init__(
@@ -129,7 +129,7 @@ class TableBase(BaseStruct, metaclass=ABCMeta):
 
     def __del__(self): ...
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self._nrow
 
     @abstractmethod
@@ -140,7 +140,7 @@ class TableBase(BaseStruct, metaclass=ABCMeta):
     def _set_columns(
         self,
         columns: list | tuple,
-    ):
+    ) -> None:
         """Set the columns at a base level."""
         if columns is None:
             columns = [f"col_{num}" for num in range(self.ncol)]
@@ -156,7 +156,7 @@ as the data ({self.ncol})")
         index: list | tuple | None,
         name: str | None = None,
         internal_index: list | tuple | None = None,
-    ):
+    ) -> None:
         """Set the index at a base level."""
         index_int = list(range(self.nrow))
         if internal_index is not None:
@@ -192,11 +192,11 @@ as the data ({self.ncol})")
     def set_index(
         self,
         index_col: int | str,
-    ):
+    ) -> int:
         """Set the index to a new column."""
         # Check whether the index column index is valid
         if isinstance(index_col, str):
-            index_col = self._columns.get("object_id", -1)
+            index_col = self._columns.get(index_col, -1)
         if index_col >= 0 and index_col not in range(len(self.columns)):
             raise ValueError(f"Index column index out of range: ({index_col})")
         return index_col

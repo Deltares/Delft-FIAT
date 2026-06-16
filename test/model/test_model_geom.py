@@ -5,10 +5,11 @@ import pytest
 from osgeo import osr
 
 from fiat.cfg import Configurations
-from fiat.fio import GeomIO, GridIO
+from fiat.fio import GridIO
 from fiat.log import Logger
 from fiat.model import GeomModel
 from fiat.struct import Container, Table
+from fiat.struct.container import ExposureGeomData
 from fiat.util import get_srs_repr
 
 
@@ -51,8 +52,8 @@ def test_geommodel_read_exposure_config(
 
     # Assert the presense of a dataset
     assert len(m.exposure) == 2
-    assert m.exposure.ds1.layer.size == 4
-    assert m.exposure.ds2.layer.size == 1
+    assert m.exposure.ds1.data.layer.size == 4
+    assert m.exposure.ds2.data.layer.size == 1
 
 
 def test_geommodel_read_exposure_sig(
@@ -67,7 +68,7 @@ def test_geommodel_read_exposure_sig(
 
     # Assert the presense of a dataset
     assert len(m.exposure) == 1
-    assert m.exposure.ds1.layer.size == 4
+    assert m.exposure.ds1.data.layer.size == 4
 
 
 def test_geommodel_read_exposure_reproj(
@@ -87,8 +88,8 @@ def test_geommodel_read_exposure_reproj(
     assert "Reprojecting 'spatial.geojson' to 'EPSG:3857'" in caplog.text
     # Assert the dataset
     assert len(m.exposure) == 1
-    assert m.exposure.ds1.layer.size == 4
-    assert get_srs_repr(m.exposure.ds1.srs) == "EPSG:3857"
+    assert m.exposure.ds1.data.layer.size == 4
+    assert get_srs_repr(m.exposure.ds1.data.srs) == "EPSG:3857"
 
 
 def mockworker(*args, **kwargs):
@@ -105,7 +106,7 @@ def test_geommodel_run(
     config_empty: Configurations,
     vulnerability_data_run: Table,
     hazard_event_data: GridIO,
-    exposure_geom_data: GeomIO,
+    exposure_geom_data_run: ExposureGeomData,
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.geom.worker", mockworker)
@@ -116,7 +117,7 @@ def test_geommodel_run(
     # Set data like a dummy
     m.vulnerability = vulnerability_data_run
     m.hazard = hazard_event_data
-    m.exposure.set(exposure_geom_data)
+    m.exposure.set(exposure_geom_data_run)
 
     # Run the model
     m.run()
@@ -133,7 +134,7 @@ def test_geommodel_run_fail(
     config_empty: Configurations,
     vulnerability_data_run: Table,
     hazard_event_data: GridIO,
-    exposure_geom_data: GeomIO,
+    exposure_geom_data_run: ExposureGeomData,
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.geom.worker", mockworker_error)
@@ -143,7 +144,7 @@ def test_geommodel_run_fail(
     # Set data like a dummy
     m.vulnerability = vulnerability_data_run
     m.hazard = hazard_event_data
-    m.exposure.set(exposure_geom_data)
+    m.exposure.set(exposure_geom_data_run)
 
     # Run the model
     m.run()

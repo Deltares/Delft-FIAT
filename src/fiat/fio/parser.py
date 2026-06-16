@@ -52,7 +52,7 @@ class CSVParser:
     def parse_meta(
         self,
         header: bool,
-    ):
+    ) -> None:
         """Parse the meta data of the csv file.
 
         Parameters
@@ -106,7 +106,7 @@ class CSVParser:
     def parse_structure(
         self,
         index: str | None = None,
-    ):
+    ) -> None:
         """Parse the csv file to create the structure.
 
         Parameters
@@ -166,7 +166,7 @@ match the amount of columns in the dataset ({len(self.columns)})")
                     func = self.dtypes[idcol]
                     self.index = [func(item.decode()) for item in index_list]
 
-    def resolve_column_headers(self):
+    def resolve_column_headers(self) -> None:
         """Resolve the column headers."""
         cols = self.columns
         dup = self.duplicates

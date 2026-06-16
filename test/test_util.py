@@ -1,3 +1,4 @@
+import time
 from io import BytesIO
 from pathlib import Path
 
@@ -30,6 +31,7 @@ from fiat.util import (
     regex_pattern,
     replace_empty,
     text_chunk_gen,
+    timeit,
 )
 
 
@@ -266,7 +268,7 @@ def test_generic_directory_check_exist(tmp_path: Path):
 
 def test_get_module_attr():
     # Call the function
-    attr = get_module_attr("fiat.method.flood", "NEW_COLUMNS")
+    attr = get_module_attr("fiat.method.flood.depth", "NEW_COLUMNS")
     # Assert the output
     assert attr == ["depth"]
 
@@ -492,3 +494,22 @@ def test_text_chunk_gen_single():
     # Assert the output
     assert len(cg) == 1
     assert cg[0][0] == 0
+
+
+@timeit(n=20)
+def func_dummy1():
+    time.sleep(0.001)
+
+
+@timeit(n=100)
+def func_dummy2():
+    time.sleep(0.001)
+
+
+def test_timeit():
+    # Call the functions
+    t1 = func_dummy1()
+    t2 = func_dummy2()
+
+    # t2 should take longer
+    assert t2 > 2 * t1

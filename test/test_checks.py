@@ -7,6 +7,7 @@ from osgeo import osr
 
 from fiat import Configurations
 from fiat.check import (
+    check_available_values,
     check_config_entries,
     check_config_grid,
     check_duplicate_columns,
@@ -25,9 +26,33 @@ from fiat.check import (
 )
 from fiat.error import FIATDataError
 from fiat.log import Logger
-from fiat.method.flood import COLUMNS
+from fiat.method.flood.depth import COLUMNS
 from fiat.struct import Container
 from fiat.util import MANDATORY_MODEL_ENTRIES
+
+
+def test_check_available_values_fail():
+    # Call the function with a non available value
+    with pytest.raises(
+        FIATDataError,
+        match=re.escape(
+            "Dummy value: 'foo' invalid, chose from ['bar', 'baz']",
+        ),
+    ):
+        check_available_values(
+            value="foo",
+            available=["bar", "baz"],
+            msg="Dummy",
+        )
+
+
+def test_check_available_values_pass():
+    # Call the function with the value available
+    check_available_values(
+        value="foo",
+        available=["foo", "bar", "baz"],
+        msg="Dummy",
+    )
 
 
 def test_check_config_entries_fail():
@@ -96,7 +121,7 @@ def test_check_exp_columns_fail():
     # Call the function with missing Mandatory column
     with pytest.raises(
         FIATDataError,
-        match=re.escape("Missing mandatory exposure columns: ['ref']"),
+        match=re.escape("Missing mandatory exposure columns: ['elevation']"),
     ):
         check_exp_columns(
             ["object_id"],
@@ -107,7 +132,7 @@ def test_check_exp_columns_fail():
 def test_check_exp_columns_pass():
     # Call the function with all columns there
     check_exp_columns(
-        ["object_id", "ref"],
+        ["object_id", "elevation"],
         mandatory_columns=COLUMNS,
     )
 

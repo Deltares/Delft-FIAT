@@ -34,6 +34,7 @@ dependencies = [
     "gdal>=3.5",
     "netcdf4",
     "numpy",
+    "pyproj",
     "scipy",
     "regex",
 ]
@@ -162,8 +163,8 @@ convention = "numpy"
 ## In depth code checking
 [tool.mypy]
 # TODO: Re-enable the tests
-exclude = ["tests/.*", "tmp/.*"]
-plugins = ["pydantic.mypy", "numpy.typing.mypy_plugin"]
+exclude = ["test/.*", "tmp/.*"]
+plugins = ["pydantic.mypy"]
 python_version = "3.13"
 ignore_missing_imports = true
 warn_unused_configs = true

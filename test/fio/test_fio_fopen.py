@@ -43,7 +43,7 @@ def test_open_csv_header(vulnerability_path: Path):
 
     # Assert the columns
     assert ds.columns == (
-        "water depth",
+        "depth",
         "struct_1",
         "struct_2",
     )  # Very specific, but this should be True for this dataset
@@ -64,10 +64,10 @@ def test_open_csv_index(vulnerability_path: Path):
     assert ds.index[:5] == (0, 1, 2, 3, 4)  # Default
 
     # Open with selected header
-    ds = open_csv(vulnerability_path, index="water depth")
+    ds = open_csv(vulnerability_path, index="depth")
 
     # Assert the new index
-    assert ds.index_name == "water depth"
+    assert ds.index_name == "depth"
     assert ds.index[:5] == (0.0, 0.25, 0.5, 0.75, 1.0)
 
 

@@ -2,6 +2,7 @@
 
 import copy
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Callable
 
 __all__ = ["Container", "ExposureGeomMeta", "VulnerabilityMeta"]
@@ -15,13 +16,10 @@ class Container:
 
     _base = "ds"
 
-    def __new__(cls):
-        """Creation."""
-        obj = object.__new__(cls)
-        obj._i = 0
-        obj._db = []
-        obj._h = []
-        return obj
+    def __init__(self):
+        self._i: int = 0
+        self._db: list[str] = []
+        self._h: list[int] = []
 
     def __len__(self) -> int:
         return len(self._h)
@@ -73,17 +71,41 @@ class Container:
 
 
 @dataclass
+class RunMeta:
+    """Small container for geometry configuration metadata."""
+
+    risk: bool
+    type: str
+    type_length: int
+
+
+@dataclass
+class ExposureGeomData:
+    """Small container for exposure geometry data and settings."""
+
+    area_method: str
+    data: Any
+    path: Path
+    zonal_method: str
+
+    def __hash__(self):
+        return hash(self.data)
+
+
+@dataclass
 class ExposureGeomMeta:
     """Small container for exposure geometry metadata."""
 
-    indices_impact: dict[str, list]
-    indices_new: list[str]
-    indices_spec: list[str]
-    indices_total: dict[str, list]
+    area_method: str
+    indices_impact: dict[str, Any]
+    indices_new: list[int]
+    indices_spec: list[int]
+    indices_total: dict[str, list[int]]
     indices_type: dict[str, Any]
     new: list[str]
     new_length: int
     type_length: int
+    zonal_method: str
 
 
 @dataclass
@@ -108,16 +130,13 @@ class HazardMeta:
     indices_type: list[list[str]]
     length: int
     rp: list[float]
-    risk: bool
-    type: str
-    type_length: int
 
 
 @dataclass
 class VulnerabilityMeta:
     """Small container for some vulnerability metadata."""
 
-    fn: dict[str, Callable]
+    fn: dict[str, Callable[[float], float]]
     fn_list: list[str] | tuple[str]
     min: float | int
     max: float | int
