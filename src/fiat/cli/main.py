@@ -121,6 +121,7 @@ def args_parser():
         #    usage="%(prog)s <options> <commands>",
         add_help=False,
         formatter_class=MainHelpFormatter,
+        prog=FIAT,
     )
     # Help parser
     parser.add_argument(
