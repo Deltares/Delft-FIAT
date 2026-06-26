@@ -7,11 +7,13 @@ from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 from osgeo import osr
+from pyproj.crs import CRS
 from pytest_mock import MockerFixture
 
 from fiat.cfg import Configurations
-from fiat.fio import GeomIO, GridIO, open_csv, open_geom, open_grid
+from fiat.fio import Dataset, GeomIO
 from fiat.log import Logger
+from fiat.open import open_csv, open_geom, open_grid
 from fiat.struct import Table
 
 TEST_MODULE = Path(__file__).parent
@@ -109,37 +111,37 @@ def exposure_geom_data(exposure_geom_path: Path) -> GeomIO:
 
 
 @pytest.fixture
-def exposure_grid_data(exposure_grid_path: Path) -> GridIO:
+def exposure_grid_data(exposure_grid_path: Path) -> Dataset:
     ds = open_grid(exposure_grid_path, var_as_band=True)  # Read only
-    assert isinstance(ds, GridIO)
+    assert isinstance(ds, Dataset)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_event_data(hazard_event_path: Path) -> GridIO:
+def hazard_event_data(hazard_event_path: Path) -> Dataset:
     ds = open_grid(hazard_event_path)  # Read only
-    assert isinstance(ds, GridIO)
+    assert isinstance(ds, Dataset)
     return ds
 
 
 @pytest.fixture
-def hazard_event_highres_data(hazard_event_highres_path: Path) -> GridIO:
+def hazard_event_highres_data(hazard_event_highres_path: Path) -> Dataset:
     ds = open_grid(hazard_event_highres_path)  # Read only
-    assert isinstance(ds, GridIO)
+    assert isinstance(ds, Dataset)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_risk_data(hazard_risk_path: Path) -> GridIO:
+def hazard_risk_data(hazard_risk_path: Path) -> Dataset:
     ds = open_grid(hazard_risk_path, var_as_band=True)  # Read only
-    assert isinstance(ds, GridIO)
+    assert isinstance(ds, Dataset)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_risk_data_subsets(hazard_risk_path: Path) -> GridIO:
+def hazard_risk_data_subsets(hazard_risk_path: Path) -> Dataset:
     ds = open_grid(hazard_risk_path, var_as_band=False)  # Read only
-    assert isinstance(ds, GridIO)
+    assert isinstance(ds, Dataset)
     return ds
 
 
@@ -148,7 +150,7 @@ def mocked_exp_grid(
     mocker: MockerFixture,
     srs_4326: osr.SpatialReference,
 ) -> MagicMock:
-    grid = mocker.create_autospec(GridIO)
+    grid = mocker.create_autospec(Dataset)
     # Set attributes for practical use
     type(grid).geotransform = PropertyMock(
         side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
@@ -163,7 +165,7 @@ def mocked_hazard_grid(
     mocker: MockerFixture,
     srs_4326: osr.SpatialReference,
 ) -> MagicMock:
-    grid = mocker.create_autospec(GridIO)
+    grid = mocker.create_autospec(Dataset)
     # Set attributes for practical use
     type(grid).geotransform = PropertyMock(
         side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
@@ -178,6 +180,18 @@ def mp_queue() -> Queue:
     ctx = get_context()
     q = Queue(ctx=ctx, maxsize=2)
     return q
+
+
+@pytest.fixture(scope="session")
+def crs_4326() -> CRS:
+    s = CRS.from_user_input("EPSG:4326")
+    return s
+
+
+@pytest.fixture(scope="session")
+def crs_3857() -> CRS:
+    s = CRS.from_user_input("EPSG:3857")
+    return s
 
 
 @pytest.fixture(scope="session")

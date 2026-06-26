@@ -3,8 +3,7 @@
 from osgeo import gdal
 
 from .buffer import *
-from .fopen import *
 from .geom import *
-from .grid import *
+from .netcdf import *
 
 gdal.AllRegister()

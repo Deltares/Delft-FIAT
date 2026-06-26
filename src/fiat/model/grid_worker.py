@@ -9,10 +9,7 @@ from typing import Callable
 
 import numpy as np
 
-from fiat.fio import (
-    GridIO,
-)
-from fiat.model.grid_writer import GridItem
+from fiat.fio import Dataset
 from fiat.model.util import create_2d_windows
 from fiat.struct import GridBand
 from fiat.struct.container import (
@@ -24,6 +21,7 @@ from fiat.struct.container import (
 from fiat.thread import Sender
 from fiat.typing import MethodType
 from fiat.util import FIAT_METHOD, FN
+from fiat.writer import GridItem
 
 
 def initialize_pool(q: Queue, p: dict[str, Connection]):
@@ -52,10 +50,10 @@ def process_hazard(
 def array_worker(
     out_array: np.ndarray[np.float32],
     run_meta: RunMeta,
-    hazard: GridIO,
+    hazard: Dataset,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
-    exposure: GridIO,
+    exposure: Dataset,
     exposure_meta: ExposureGridMeta,
     fn_impact: Callable,
     window: tuple,
@@ -68,13 +66,13 @@ def array_worker(
         The array to which to put the output data in.
     run_meta : RunMeta
         Configurations runtime metadata.
-    hazard : GridIO
+    hazard : Dataset
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
-    exposure : GridIO
+    exposure : Dataset
         The exposure data.
     exposure_meta : ExposureGridMeta
         Metadata specific to the exposure data.
@@ -142,10 +140,10 @@ def array_worker(
 def worker(
     mem_id: str,
     run_meta: RunMeta,
-    hazard: GridIO,
+    hazard: Dataset,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
-    exposure: GridIO,
+    exposure: Dataset,
     exposure_meta: ExposureGridMeta,
     chunk: tuple,
     window: tuple,
@@ -153,7 +151,7 @@ def worker(
     """Run the grid model.
 
     This is the worker function corresponding to the run method \
-of the [GridIO](/api/GeomIO.qmd) object.
+of the [Dataset](/api/GeomIO.qmd) object.
 
     Parameters
     ----------
@@ -161,13 +159,13 @@ of the [GridIO](/api/GeomIO.qmd) object.
         The identifier/ name of the shared memory.
     run_meta : RunMeta
         The configurations runtime meta.
-    hazard : GridIO
+    hazard : Dataset
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
-    exposure : GridIO
+    exposure : Dataset
         The exposure data.
     exposure_meta : ExposureGridMeta
         Metadata specific to the exposure data.

@@ -2,11 +2,11 @@ import numpy as np
 import pytest
 from osgeo import gdal
 
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.struct.grid import GridBand
 
 
-def test_gridband(hazard_event_data: GridIO):
+def test_gridband(hazard_event_data: Dataset):
     # Retrieve the grid band from the I/O
     gb = hazard_event_data[0]
 
@@ -25,7 +25,7 @@ def test_gridband_init_error():
         _ = GridBand()
 
 
-def test_gridband_general_properties(hazard_event_data: GridIO):
+def test_gridband_general_properties(hazard_event_data: Dataset):
     # Retrieve the grid band from the I/O
     gb = hazard_event_data[0]
 
@@ -39,7 +39,7 @@ def test_gridband_general_properties(hazard_event_data: GridIO):
     assert gb.nodata == -9999
 
 
-def test_gridband_spatial_properties(hazard_event_data: GridIO):
+def test_gridband_spatial_properties(hazard_event_data: Dataset):
     # Retrieve the grid band from the I/O
     gb = hazard_event_data[0]
 
@@ -49,7 +49,7 @@ def test_gridband_spatial_properties(hazard_event_data: GridIO):
     assert gb.shape_xy == (10, 10)  # Grid is square.. will test also lateri
 
 
-def test_gridband_chunk(hazard_event_data: GridIO):
+def test_gridband_chunk(hazard_event_data: Dataset):
     # Retrieve the grid band from the I/O
     gb = hazard_event_data[0]
     # Assert the current chunking
@@ -62,7 +62,7 @@ def test_gridband_chunk(hazard_event_data: GridIO):
     assert gb.chunk == (5, 5)
 
 
-def test_gridband_chunk_errors(hazard_event_data: GridIO):
+def test_gridband_chunk_errors(hazard_event_data: Dataset):
     # Retrieve the grid band from the I/O
     gb = hazard_event_data[0]
 
@@ -74,7 +74,7 @@ def test_gridband_chunk_errors(hazard_event_data: GridIO):
         gb.chunk = (5, 5, 5)
 
 
-def test_gridband_iter(hazard_event_data: GridIO):
+def test_gridband_iter(hazard_event_data: Dataset):
     # Retrieve the grid band from the I/O
     gb = hazard_event_data[0]
     # Set some new, uneven chunking
@@ -95,7 +95,7 @@ def test_gridband_iter(hazard_event_data: GridIO):
     assert window == (8, 8, 2, 2)
 
 
-def test_gridband_get_meta(hazard_event_data: GridIO):
+def test_gridband_get_meta(hazard_event_data: Dataset):
     # Retrieve the grid band from the I/O
     gb = hazard_event_data[0]
 
@@ -104,7 +104,7 @@ def test_gridband_get_meta(hazard_event_data: GridIO):
     assert gb.get_meta("foo") is None  # Gdal stuff...
 
 
-def test_gridband_nodata(hazard_write: GridIO):
+def test_gridband_nodata(hazard_write: Dataset):
     # Retrieve the grid band from the I/O
     gb = hazard_write[0]
     # Assert the current nodata value
@@ -116,7 +116,7 @@ def test_gridband_nodata(hazard_write: GridIO):
     assert gb.nodata == -9999
 
 
-def test_gridband_write(hazard_write: GridIO):
+def test_gridband_write(hazard_write: Dataset):
     # Retrieve the grid band from the I/O
     gb = hazard_write[0]
     # Assert the current state of the data

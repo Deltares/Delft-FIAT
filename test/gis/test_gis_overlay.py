@@ -1,7 +1,7 @@
 import numpy as np
 from osgeo import ogr
 
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.gis.overlay import (
     area_mask,
     centroid_mask,
@@ -14,7 +14,7 @@ from fiat.gis.overlay import (
 
 def test_area_mask_linestring(
     feature_linestring: ogr.Feature,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
 ):
     # Call the function
     m, w = area_mask(
@@ -34,7 +34,7 @@ def test_area_mask_linestring(
 
 def test_area_mask_polygon(
     feature_polygon: ogr.Feature,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
 ):
     # Call the function
     m, w = area_mask(
@@ -52,7 +52,7 @@ def test_area_mask_polygon(
 
 def test_area_mask_polygon_complex(
     feature_polygon_complex: ogr.Feature,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
 ):
     # Call the function
     m, w = area_mask(
@@ -72,7 +72,7 @@ def test_area_mask_polygon_complex(
 
 def test_point_mask(
     feature_point: ogr.Feature,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
 ):
     # Call the function
     geom = feature_point.GetGeometryRef()
@@ -89,7 +89,7 @@ def test_point_mask(
 
 def test_centroid_mask(
     feature_polygon: ogr.Feature,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
 ):
     # Call the function
     geom = feature_polygon.GetGeometryRef()
@@ -106,7 +106,7 @@ def test_centroid_mask(
 
 def test_clip_linestring(
     feature_linestring: ogr.Feature,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
 ):
     # Mask first
     m, w = area_mask(
@@ -131,7 +131,7 @@ def test_clip_linestring(
 
 def test_clip_polygon(
     feature_polygon: ogr.Feature,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
 ):
     # Mask first
     m, w = area_mask(
@@ -156,7 +156,7 @@ def test_clip_polygon(
 
 def test_clip_polygon_complex(
     feature_polygon_complex: ogr.Feature,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
 ):
     # Mask first
     m, w = area_mask(
@@ -181,7 +181,7 @@ def test_clip_polygon_complex(
 
 def test_clip_point(
     feature_point: ogr.Feature,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
 ):
     # Mask First
     geom = feature_point.GetGeometryRef()
@@ -204,7 +204,7 @@ def test_clip_point(
 
 def test_clip_weighted_3(
     feature_polygon: ogr.Feature,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
 ):
     # Call the function
     c, m = clip_weighted(

@@ -8,7 +8,7 @@ from typing import Callable
 
 from osgeo import ogr
 
-from fiat.fio import GeomIO, GridIO
+from fiat.fio import Dataset, GeomIO
 from fiat.method.ead import fn_ead
 from fiat.model.geom_util import AREA_METHODS
 from fiat.model.geom_writer import GeomWriter
@@ -38,7 +38,7 @@ def initialize_pool(
 def feature_worker(
     ft: ogr.Feature,
     run_meta: RunMeta,
-    hazard: GridIO,
+    hazard: Dataset,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
     exposure_meta: ExposureGeomMeta,
@@ -53,7 +53,7 @@ def feature_worker(
         The feature.
     run_meta : RunMeta
         Configurations runtime metadata.
-    hazard : GridIO
+    hazard : Dataset
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
@@ -130,7 +130,7 @@ def feature_worker(
 def worker(
     output_path: Path,
     run_meta: RunMeta,
-    hazard: GridIO,
+    hazard: Dataset,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
     exposure: GeomIO,
@@ -148,7 +148,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The path to file to be written.
     run_meta : RunMeta
         The configurations runtime meta.
-    hazard : GridIO
+    hazard : Dataset
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.

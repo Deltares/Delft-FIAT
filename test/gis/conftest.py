@@ -3,7 +3,8 @@ from pathlib import Path
 import pytest
 from osgeo import gdal, ogr, osr
 
-from fiat.fio import GeomIO, GridIO, open_geom, open_grid
+from fiat.fio import Dataset, GeomIO
+from fiat.open import open_geom, open_grid
 
 
 ## Datasets
@@ -16,14 +17,14 @@ def exposure_geom_repr(exposure_geom_path: Path) -> GeomIO:
 
 
 @pytest.fixture
-def hazard_event_repr(hazard_event_path: Path) -> GridIO:
+def hazard_event_repr(hazard_event_path: Path) -> Dataset:
     ds = open_grid(hazard_event_path)  # Read only
-    assert isinstance(ds, GridIO)
+    assert isinstance(ds, Dataset)
     return ds
 
 
 @pytest.fixture
-def hazard_ds(tmp_path: Path, srs_4326: osr.SpatialReference) -> GridIO:
+def hazard_ds(tmp_path: Path, srs_4326: osr.SpatialReference) -> Dataset:
     ds = open_grid(Path(tmp_path, "tmp.tif"), "w")
     ds.create(shape=(10, 10), nb=1, dtype=gdal.GDT_Float32)
     ds.set_source_srs(srs_4326)

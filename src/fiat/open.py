@@ -3,8 +3,8 @@
 from pathlib import Path
 
 from fiat.fio.geom import GeomIO
-from fiat.fio.grid import GridIO
 from fiat.fio.handler import FileBufferHandler
+from fiat.fio.netcdf import Dataset
 from fiat.fio.parser import CSVParser
 from fiat.struct import Table, TableLazy
 
@@ -93,11 +93,10 @@ def open_geom(
 def open_grid(
     file: Path | str,
     mode: str = "r",
-    srs: str | None = None,
+    crs: str | None = None,
     chunk: tuple = None,
     subset: str = None,
-    var_as_band: bool = False,
-) -> GridIO:
+) -> Dataset:
     """Open a grid source file.
 
     This source file is lazily read.
@@ -108,27 +107,22 @@ def open_grid(
         Path to the file.
     mode : str, optional
         Open in `read` or `write` mode.
-    srs : str, optional
+    crs : str, optional
         A Spatial reference system string in case the dataset has none.
     chunk : tuple, optional
         Chunk size in x and y direction.
     subset : str, optional
         In netCDF files, multiple variables are seen as subsets and can therefore not
         be loaded like normal bands. Specify one if one of those it wanted.
-    var_as_band : bool, optional
-        Again with netCDF files: if all variables have the same dimensions, set this
-        flag to `True` to look the subsets as bands.
 
     Returns
     -------
-    GridIO
+    Dataset
         Object that holds a connection to the source file.
     """
-    return GridIO(
+    return Dataset(
         file,
         mode,
-        srs,
+        crs,
         chunk,
-        subset,
-        var_as_band,
     )

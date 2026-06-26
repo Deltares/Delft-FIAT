@@ -4,13 +4,11 @@ import numpy as np
 import pytest
 
 from fiat.fio import (
+    Dataset,
     GeomIO,
-    GridIO,
-    open_csv,
-    open_geom,
-    open_grid,
 )
 from fiat.fio.handler import FileBufferHandler
+from fiat.open import open_csv, open_geom, open_grid
 from fiat.struct import Table, TableLazy
 
 
@@ -153,7 +151,7 @@ def test_open_grid_context(hazard_event_path: Path):
     # Open the dataset with context managesubsetr
     with open_grid(hazard_event_path) as reader:
         # Assert some simple stuff
-        assert isinstance(reader, GridIO)
+        assert isinstance(reader, Dataset)
         assert reader.size == 1  # One band
 
     # Now it's closed but not deleted
@@ -173,7 +171,7 @@ def test_open_grid_read_only(hazard_event_path: Path):
     ds = open_grid(hazard_event_path)
 
     # Assert some simple stuff
-    assert isinstance(ds, GridIO)
+    assert isinstance(ds, Dataset)
     assert ds.size == 1  # One band
 
     ds.close()

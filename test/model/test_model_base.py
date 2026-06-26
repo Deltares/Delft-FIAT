@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from fiat.cfg import Configurations
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.log import Logger
 from fiat.model.base import BaseModel
 from fiat.struct import Table
@@ -114,7 +114,7 @@ def test_basemodel_read_hazard_config(
 
     # Assert the state
     assert m.hazard is not None
-    assert isinstance(m.hazard, GridIO)
+    assert isinstance(m.hazard, Dataset)
 
 
 def test_basemodel_read_hazard_argument(
@@ -131,7 +131,7 @@ def test_basemodel_read_hazard_argument(
 
     # Assert the state
     assert m.hazard is not None
-    assert isinstance(m.hazard, GridIO)
+    assert isinstance(m.hazard, Dataset)
 
 
 def test_basemodel_read_hazard_risk(
@@ -148,7 +148,7 @@ def test_basemodel_read_hazard_risk(
 
     # Assert the state
     assert m.hazard is not None
-    assert isinstance(m.hazard, GridIO)
+    assert isinstance(m.hazard, Dataset)
 
 
 def test_basemodel_read_hazard_warnings(

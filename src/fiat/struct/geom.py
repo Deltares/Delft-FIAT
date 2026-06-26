@@ -113,7 +113,7 @@ class GeomLayer(BaseStruct):
 
     @property
     def bounds(self) -> tuple:
-        """Return the bounds of the GridIO.
+        """Return the bounds of the Dataset.
 
         Returns
         -------

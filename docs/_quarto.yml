@@ -242,7 +242,7 @@ quartodoc:
     #   contents:
     #     - name: GeomIO
     #       children: separate
-    #     - name: GridIO
+    #     - name: Dataset
     #       children: separate
     #     - name: Grid
     #       children: separate

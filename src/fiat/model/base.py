@@ -16,9 +16,10 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
-from fiat.fio import GridIO, open_csv, open_grid
+from fiat.fio import Dataset
 from fiat.gis import grid
 from fiat.log import spawn_logger
+from fiat.open import open_csv, open_grid
 from fiat.struct import Table
 from fiat.typing import MethodType
 from fiat.util import (
@@ -64,7 +65,7 @@ class BaseModel(metaclass=ABCMeta):
         ## Declarations
         # Model data
         self._srs: osr.SpatialReference | None = None
-        self.hazard: GridIO | None = None
+        self.hazard: Dataset | None = None
         self.vulnerability: Table | None = None
 
         # Type of calculations
@@ -181,7 +182,7 @@ exceeds machine thread count ('{max_threads}')"
             Path to the hazard gridded dataset, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_grid]\
-(/api/fio/open_grid.qmd) after which into [GridIO](/api/GridIO.qmd)/
+(/api/fio/open_grid.qmd) after which into [Dataset](/api/Dataset.qmd)/
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations

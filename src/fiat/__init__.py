@@ -15,8 +15,8 @@
 from osgeo import osr
 
 from .cfg import Configurations
-from .fio import open_csv, open_geom, open_grid
 from .model import GeomModel, GridModel
+from .open import open_csv, open_geom, open_grid
 from .version import __version__
 
 osr.UseExceptions()

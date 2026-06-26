@@ -4,9 +4,10 @@ import numpy as np
 import pytest
 from osgeo import ogr, osr
 
-from fiat.fio import GeomIO, GridIO, open_geom, open_grid
+from fiat.fio import Dataset, GeomIO
 from fiat.fio.handler import FileBufferHandler
 from fiat.fio.parser import CSVParser
+from fiat.open import open_geom, open_grid
 
 
 ## I/O structures needed for this testing
@@ -19,9 +20,9 @@ def exposure_geom_write(srs_4326: osr.SpatialReference) -> GeomIO:
 
 
 @pytest.fixture
-def hazard_write(srs_4326: osr.SpatialReference) -> GridIO:
+def hazard_write(srs_4326: osr.SpatialReference) -> Dataset:
     ds = open_grid("tmp", mode="w")  # Write only
-    assert isinstance(ds, GridIO)
+    assert isinstance(ds, Dataset)
     ds.create(shape=(2, 3), nb=1, dtype=6)  # 6 = float32
     ds.set_source_srs(srs_4326)
     return ds

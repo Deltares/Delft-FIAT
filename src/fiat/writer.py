@@ -1,4 +1,4 @@
-"""Writer for grid model."""
+"""Writer classes."""
 
 from dataclasses import dataclass
 from multiprocessing.connection import Connection
@@ -9,62 +9,10 @@ from multiprocessing.synchronize import Lock
 from pathlib import Path
 
 import numpy as np
-from osgeo import osr
 
-from fiat.fio import GridIO, open_grid
+from fiat.fio.netcdf import Dataset
 from fiat.thread import Receiver
 from fiat.util import NODATA_VALUE
-
-
-def create_grid_handle(
-    path: Path,
-    shape: tuple[int],
-    nb: int,
-    srs: osr.SpatialReference,
-    gtf: tuple[float | int],
-) -> GridIO:
-    """Create a handle to a grid file (netcdf).
-
-    Data type is float32.
-
-    Parameters
-    ----------
-    path : Path
-        The path to the file.
-    shape : tuple[int]
-        The shape of the grid.
-    nb : int
-        The number of variables (bands).
-    srs : osr.SpatialReference
-        The coordinate system.
-    gtf : tuple[float  |  int]
-        The geotransform of the grid.
-
-    Returns
-    -------
-    GridIO
-        A handle for writing data.
-    """
-    # Ensure typing
-    path = Path(path)
-    # If exists, unlink
-    if path.exists():
-        path.unlink()
-
-    # Create a new data
-    out = open_grid(path, mode="w")
-    out.create(
-        shape=shape,
-        nb=nb,
-        dtype=6,  # Float32
-        options=["FORMAT=NC4", "COMPRESS=DEFLATE"],
-    )
-    out.set_source_srs(srs)
-    out.geotransform = gtf
-    for band in out.bands:
-        band.nodata = NODATA_VALUE
-
-    return out
 
 
 @dataclass
@@ -76,22 +24,58 @@ class GridItem:
     shape: tuple
 
 
-class GridWriter(Receiver):
+def create_netcdf_handle(
+    path: Path | str,
+    variables: list[str],
+    ds_like: Dataset,
+) -> Dataset:
+    """_summary_.
+
+    Parameters
+    ----------
+    path : Path | str
+        _description_
+    ds_like : Dataset
+        _description_
+
+    Returns
+    -------
+    Dataset
+        _description_
+    """
+    # Open the dataset
+    ds = Dataset(file=path, mode="w")
+    # Get meta data from ds_like
+    gtf = ds_like.transform
+    ny, nx = ds_like.shape
+    # Set the spatial dimensions
+    ds.create_spatial_dims(
+        lats=np.arange(gtf[3] + gtf[5] * 0.5, gtf[3] + gtf[5] * ny, gtf[5]),
+        lons=np.arange(gtf[0] + gtf[1] * 0.5, gtf[0] + gtf[1] * nx, gtf[1]),
+    )
+    ds.set_spatial_ref(ds_like.crs)
+    for var in variables:
+        ds.create_spatial_variable(var=var)
+
+    return ds
+
+
+class NetcdfWriter(Receiver):
     """A writer for the grid model.
 
     Parameters
     ----------
     queue : Queue
         The queue through which to signal the parent process.
-    handle : GridIO
-        A handle to file to be written.
+    handle : Dataset
+        A handle to the file to be written.
     ctx : SpawnContext
         The multiprocessing context currenly in use.
     """
 
     def __init__(
         self,
-        handle: GridIO,
+        handle: Dataset,
         queue: Queue,
         ctx: SpawnContext,
     ):
@@ -110,7 +94,7 @@ class GridWriter(Receiver):
     ## I/O methods
     def _close(self):
         """Close method specific for this class."""
-        self.handle.close()
+        # self.handle.close()
         # Close all memory blocks
         mem_ids = list(self.mem_locs.keys())
         for mem_id in mem_ids:
@@ -180,8 +164,8 @@ class GridWriter(Receiver):
         block = self.mem_blocks[mem_id]
         block[np.isnan(block)] = NODATA_VALUE
         # Write from the block
-        for idx, band in enumerate(self.handle):
-            band.write(
+        for idx, band in enumerate(self.handle.variables.values()):
+            band.set(
                 block[idx, :h, :w],
                 record.origin,
             )
@@ -190,7 +174,7 @@ class GridWriter(Receiver):
         block = None
 
         # Flush the handle
-        self.handle.flush()
+        # self.handle.flush()
 
         # Release the lock back for the worker to use
         self.locks[mem_id].release()

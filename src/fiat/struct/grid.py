@@ -12,7 +12,7 @@ from fiat.struct.base import BaseStruct
 class GridBand(BaseStruct):
     """A source object for a specific raster band.
 
-    Acquired by indexing a GridIO object.
+    Acquired by indexing a Dataset object.
     """
 
     def __init__(self, *args, **kwargs):

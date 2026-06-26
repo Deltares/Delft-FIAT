@@ -10,20 +10,20 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
-from fiat.fio import GridIO, open_grid
+from fiat.fio import Dataset
 from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.grid_util import equal_grid, get_exposure_meta
 from fiat.model.grid_worker import initialize_pool, worker
-from fiat.model.netcdf_writer import NetcdfWriter, create_netcdf_handle
 from fiat.model.util import (
     create_2d_chunks,
     get_hazard_meta,
     get_run_meta,
     get_vulnerability_meta,
 )
+from fiat.open import open_grid
 from fiat.struct import Table
 from fiat.util import (
     CHUNK,
@@ -44,6 +44,7 @@ from fiat.util import (
     generic_path_check,
     get_srs_repr,
 )
+from fiat.writer import NetcdfWriter, create_netcdf_handle
 
 logger = spawn_logger(__name__)
 
@@ -68,7 +69,7 @@ class GridModel(BaseModel):
         super().__init__(cfg)
 
         # Declare
-        self.exposure: GridIO | None = None
+        self.exposure: Dataset | None = None
 
         # Setup the model
         self.read_exposure()
@@ -92,7 +93,7 @@ class GridModel(BaseModel):
             Path to an exposure grid, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_grid]\
-(/api/fio/open_grid.qmd) after which into [GridSouce](/api/GridIO.qmd)/
+(/api/fio/open_grid.qmd) after which into [GridSouce](/api/Dataset.qmd)/
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations
@@ -144,9 +145,9 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         logger.info("Running the model")
         # Quick check if all cdata is set
         check_input_data(
-            [HAZARD, self.hazard, GridIO],
+            [HAZARD, self.hazard, Dataset],
             [VULNERABILITY, self.vulnerability, Table],
-            [EXPOSURE, self.exposure, GridIO],
+            [EXPOSURE, self.exposure, Dataset],
         )
 
         # Setup the basic metadata

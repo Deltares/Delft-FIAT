@@ -6,8 +6,8 @@ from pathlib import Path
 
 from osgeo import gdal, ogr, osr
 
-from fiat.fio.fopen import open_geom
 from fiat.fio.geom import GeomIO
+from fiat.open import open_geom
 from fiat.util import DummyLock
 
 __all__ = ["GeomWriter"]

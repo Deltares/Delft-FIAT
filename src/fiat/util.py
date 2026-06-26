@@ -16,6 +16,7 @@ from typing import Any, Callable, Generator
 import numpy as np
 import regex
 from osgeo import gdal, ogr, osr
+from pyproj.crs import CRS
 
 ## Config entries
 # Building blocks
@@ -359,6 +360,31 @@ def flatten_dict(
 
 
 # GIS related utility
+def get_crs_repr(
+    crs: CRS,
+) -> str:
+    """Get a representation of a spatial reference system object.
+
+    Parameters
+    ----------
+    crs : CRS
+        Spatial reference system.
+
+    Returns
+    -------
+    str
+        Representing string.
+    """
+    if crs is None:
+        raise ValueError("'srs' can not be None.")
+    auth = crs.to_authority()
+
+    if auth is None:
+        return crs.to_proj4()
+
+    return ":".join(auth)
+
+
 def get_srs_repr(
     srs: osr.SpatialReference,
 ) -> str:

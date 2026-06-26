@@ -6,7 +6,7 @@ from osgeo import osr
 from scipy.interpolate import make_interp_spline
 
 from fiat.cfg import Configurations
-from fiat.fio import GeomIO, GridIO
+from fiat.fio import Dataset, GeomIO
 from fiat.method.ead import fn_density
 from fiat.struct import Table
 from fiat.struct.container import (
@@ -39,8 +39,8 @@ def dummy_pipeline() -> DummyPipeline:
 
 
 @pytest.fixture
-def grid_handle(tmp_path: Path, srs_4326: osr.SpatialReference) -> GridIO:
-    ds = GridIO(
+def grid_handle(tmp_path: Path, srs_4326: osr.SpatialReference) -> Dataset:
+    ds = Dataset(
         file=Path(tmp_path, "foo.nc"),
         mode="w",
     )

@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from fiat.fio import open_geom
 from fiat.fio.handler import BufferHandler, FileBufferHandler
+from fiat.open import open_geom
 
 
 ## Paths to data and temporary data

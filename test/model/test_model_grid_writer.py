@@ -6,8 +6,8 @@ from pathlib import Path
 import numpy as np
 from osgeo import osr
 
-from fiat.fio import GridIO
-from fiat.model.grid_writer import GridItem, GridWriter, create_grid_handle
+from fiat.fio import Dataset
+from fiat.writer import GridItem, NetcdfWriter, create_netcdf_handle
 
 
 def test_create_grid_handle(
@@ -15,7 +15,7 @@ def test_create_grid_handle(
     srs_4326: osr.SpatialReference,
 ):
     # Creat the handle
-    h = create_grid_handle(
+    h = create_netcdf_handle(
         path=Path(tmp_path, "foo.nc"),
         shape=(10, 10),
         nb=1,
@@ -44,7 +44,7 @@ def test_create_grid_handle_overwrite(
     assert os.stat(p).st_size == 0
 
     # Creat the handle
-    h = create_grid_handle(
+    h = create_netcdf_handle(
         path=p,
         shape=(10, 10),
         nb=1,
@@ -63,7 +63,7 @@ def test_grid_writer(
     dummy_queue: type,
 ):
     # Create the writer
-    w = GridWriter(
+    w = NetcdfWriter(
         queue=dummy_queue,
         handle=None,
         ctx=None,
@@ -82,10 +82,10 @@ def test_grid_writer(
 
 def test_grid_writer_setup(
     dummy_queue: type,
-    grid_handle: GridIO,
+    grid_handle: Dataset,
 ):
     # Create the writer
-    w = GridWriter(
+    w = NetcdfWriter(
         queue=dummy_queue,
         handle=grid_handle,
         ctx=get_context("spawn"),
@@ -108,10 +108,10 @@ def test_grid_writer_setup(
 
 def test_grid_writer_close(
     dummy_queue: type,
-    grid_handle: GridIO,
+    grid_handle: Dataset,
 ):
     # Create the writer
-    w = GridWriter(
+    w = NetcdfWriter(
         queue=dummy_queue,
         handle=grid_handle,
         ctx=get_context("spawn"),
@@ -141,10 +141,10 @@ def test_grid_writer_close(
 
 def test_grid_writer_fn(
     dummy_queue: type,
-    grid_handle: GridIO,
+    grid_handle: Dataset,
 ):
     # Create the writer
-    w = GridWriter(
+    w = NetcdfWriter(
         queue=dummy_queue,
         handle=grid_handle,
         ctx=get_context("spawn"),
@@ -168,7 +168,7 @@ def test_grid_writer_fn(
     w.close()
 
     # Assert the output
-    ds = GridIO(w.handle.path)
+    ds = Dataset(w.handle.path)
     np.testing.assert_array_equal(
         ds[0][0, 0, 2, 2],
         np.array([[2, 2], [2, 2]]),

@@ -4,7 +4,8 @@ from pathlib import Path
 
 from osgeo import gdal, osr
 
-from fiat.fio import GridIO, open_grid
+from fiat.fio import Dataset
+from fiat.open import open_grid
 from fiat.struct import GridBand
 from fiat.util import CHUNK, NOT_IMPLEMENTED
 
@@ -29,19 +30,19 @@ def clip(
 
 
 def reproject(
-    gs: GridIO,
+    ds: Dataset,
     dst_srs: str,
     dst_gtf: list | tuple = None,
     dst_width: int = None,
     dst_height: int = None,
     resample: int = 0,
     output_dir: Path | str = None,
-) -> GridIO:
+) -> Dataset:
     """Reproject (warp) a grid.
 
     Parameters
     ----------
-    gs : GridIO
+    ds : Dataset
         Input object.
     dst_srs : str
         Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
@@ -62,18 +63,18 @@ def reproject(
 
     Returns
     -------
-    GridIO
+    Dataset
         Output object. A lazy reading of the just creating raster file.
     """
     # Set some kwargs before moving on
     gs_kwargs = {
-        CHUNK: gs.chunk,
+        CHUNK: ds.chunk,
     }
 
     if not Path(str(output_dir)).is_dir():
-        output_dir = gs.path.parent
+        output_dir = ds.path.parent
 
-    fname = Path(output_dir, f"{gs.path.stem}_repr.tif")
+    fname = Path(output_dir, f"{ds.path.stem}_repr.tif")
 
     out_srs = osr.SpatialReference()
     out_srs.SetFromUserInput(dst_srs)
@@ -98,8 +99,8 @@ def reproject(
 
     _ = gdal.Warp(
         str(fname),
-        gs.src,
-        srcSRS=gs.srs,
+        ds.src,
+        srcSRS=ds.srs,
         dstSRS=out_srs,
         resampleAlg=resample,
         **warp_kw,
@@ -107,5 +108,5 @@ def reproject(
 
     out_srs = None
 
-    gs.close()
+    ds.close()
     return open_grid(fname, **gs_kwargs)

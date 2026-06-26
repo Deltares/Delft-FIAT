@@ -2,7 +2,7 @@ from multiprocessing.shared_memory import SharedMemory
 
 import numpy as np
 
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.method import flood
 from fiat.model.grid_worker import (
     array_worker,
@@ -19,7 +19,7 @@ from fiat.struct.container import (
 
 
 def test_process_hazard(
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
     vulnerability_meta_run: VulnerabilityMeta,
 ):
     # Call the function
@@ -39,10 +39,10 @@ def test_process_hazard(
 
 def test_array_worker(
     run_meta: RunMeta,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_grid_data: GridIO,
+    exposure_grid_data: Dataset,
     exposure_grid_meta_run: ExposureGridMeta,
 ):
     # Create the out_array
@@ -72,10 +72,10 @@ def test_array_worker(
 
 def test_array_worker_risk(
     run_risk_meta: RunMeta,
-    hazard_risk_data: GridIO,
+    hazard_risk_data: Dataset,
     hazard_risk_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_grid_data: GridIO,
+    exposure_grid_data: Dataset,
     exposure_grid_risk_meta_run: ExposureGridMeta,
 ):
     # Create the out_array
@@ -115,10 +115,10 @@ def test_worker(
     dummy_queue: type,
     dummy_pipeline: type,
     run_meta: RunMeta,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_grid_data: GridIO,
+    exposure_grid_data: Dataset,
     exposure_grid_meta_run: ExposureGridMeta,
 ):
     # Create a block of shared memory to work with

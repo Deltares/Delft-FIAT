@@ -5,7 +5,7 @@ import pytest
 from osgeo import osr
 
 from fiat.cfg import Configurations
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.log import Logger
 from fiat.model import GeomModel
 from fiat.struct import Container, Table
@@ -105,7 +105,7 @@ def test_geommodel_run(
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
     exposure_geom_data_run: ExposureGeomData,
 ):
     # Monkeypatch the worker
@@ -133,7 +133,7 @@ def test_geommodel_run_fail(
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
     exposure_geom_data_run: ExposureGeomData,
 ):
     # Monkeypatch the worker

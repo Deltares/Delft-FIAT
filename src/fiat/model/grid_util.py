@@ -4,7 +4,7 @@ from collections import deque
 from itertools import product
 
 from fiat.check import check_exp_grid_fn, check_grid_exact
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.gis import grid
 from fiat.model.util import get_band_names
 from fiat.struct.container import (
@@ -17,7 +17,7 @@ from fiat.util import EAD, FN, TOTAL, get_srs_repr
 
 
 def get_exposure_meta(
-    exposure: GridIO,
+    exposure: Dataset,
     run_meta: RunMeta,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
@@ -64,17 +64,17 @@ def get_exposure_meta(
 
 
 def equal_grid(
-    gs1: GridIO,
-    gs2: GridIO,
+    gs1: Dataset,
+    gs2: Dataset,
     first: bool = True,
-) -> deque[GridIO] | tuple[GridIO]:
+) -> deque[Dataset] | tuple[Dataset]:
     """Ensure homogeneity between two grids.
 
     Parameters
     ----------
-    gs1 : GridIO
+    gs1 : Dataset
         The first dataset.
-    gs2 : GridIO
+    gs2 : Datset
         The second dataset.
     first : bool, optional
         Whether to make the second equal to the first of vice versa, by default True.
@@ -84,7 +84,7 @@ def equal_grid(
         return gs1, gs2
 
     # When not equal resample one of the two
-    gss: deque[GridIO] = deque([gs1, gs2])
+    gss: deque[Dataset] = deque([gs1, gs2])
     # Rotate based on the boolean
     gss.rotate(first)
 
@@ -92,7 +92,7 @@ def equal_grid(
     gs_out = grid.reproject(
         gss[0],
         dst_srs=get_srs_repr(gss[1].srs),
-        dst_gtf=gss[1].geotransform,
+        dst_gtf=gss[1].transform,
         dst_width=gss[1].shape_xy[0],
         dst_height=gss[1].shape_xy[1],
     )

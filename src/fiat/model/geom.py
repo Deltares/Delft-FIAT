@@ -14,10 +14,7 @@ from fiat.check import (
     check_internal_srs,
     check_vs_srs,
 )
-from fiat.fio import (
-    GridIO,
-    open_geom,
-)
+from fiat.fio import Dataset
 from fiat.gis import geom
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
@@ -31,6 +28,7 @@ from fiat.model.util import (
     get_run_meta,
     get_vulnerability_meta,
 )
+from fiat.open import open_geom
 from fiat.struct import Container, Table
 from fiat.struct.container import ExposureGeomData
 from fiat.util import (
@@ -188,7 +186,7 @@ class GeomModel(BaseModel):
         logger.info("Running the model")
         # Quick check if all data is set
         check_input_data(
-            [HAZARD, self.hazard, GridIO],
+            [HAZARD, self.hazard, Dataset],
             [VULNERABILITY, self.vulnerability, Table],
             [EXPOSURE, self.exposure, ExposureGeomData],
         )

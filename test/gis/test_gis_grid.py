@@ -2,12 +2,12 @@ from pathlib import Path
 
 import numpy as np
 
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.gis.grid import reproject
 from fiat.util import get_srs_repr
 
 
-def test_reproject(tmp_path: Path, hazard_event_repr: GridIO):
+def test_reproject(tmp_path: Path, hazard_event_repr: Dataset):
     # Assert the current state
     assert get_srs_repr(hazard_event_repr.srs) == "EPSG:4326"
     np.testing.assert_array_almost_equal(
@@ -27,7 +27,7 @@ def test_reproject(tmp_path: Path, hazard_event_repr: GridIO):
     )
 
 
-def test_reproject_resample(tmp_path: Path, hazard_event_repr: GridIO):
+def test_reproject_resample(tmp_path: Path, hazard_event_repr: Dataset):
     # Assert the current state
     assert get_srs_repr(hazard_event_repr.srs) == "EPSG:4326"
     np.testing.assert_array_almost_equal(
@@ -61,7 +61,7 @@ def test_reproject_resample(tmp_path: Path, hazard_event_repr: GridIO):
 
 
 def test_reproject_tif(
-    hazard_ds: GridIO,
+    hazard_ds: Dataset,
 ):
     # Assert the current state
     assert get_srs_repr(hazard_ds.srs) == "EPSG:4326"

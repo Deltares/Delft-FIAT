@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from osgeo import osr
 
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.util import (
     GEOM_DRIVER_MAP,
     GRID_DRIVER_MAP,
@@ -300,7 +300,7 @@ def test_get_srs_repr_error():
         _ = get_srs_repr(None)
 
 
-def test_gridsource_info(hazard_event_data: GridIO):
+def test_gridsource_info(hazard_event_data: Dataset):
     # Call the function
     data = read_gridsource_info(hazard_event_data.src)
 
@@ -308,7 +308,7 @@ def test_gridsource_info(hazard_event_data: GridIO):
     assert data["driverShortName"] == "netCDF"
 
 
-def test_gridsource_layers_single(hazard_event_data: GridIO):
+def test_gridsource_layers_single(hazard_event_data: Dataset):
     # Call the function
     layers = read_gridsource_layers(hazard_event_data.src)
 
@@ -316,7 +316,7 @@ def test_gridsource_layers_single(hazard_event_data: GridIO):
     assert layers is None
 
 
-def test_gridsource_layers_multi(hazard_risk_data_subsets: GridIO):
+def test_gridsource_layers_multi(hazard_risk_data_subsets: Dataset):
     # Call the function
     layers = read_gridsource_layers(hazard_risk_data_subsets.src)
     assert len(layers) == 4

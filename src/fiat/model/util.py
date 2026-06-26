@@ -12,7 +12,7 @@ from fiat.check import (
     check_hazard_rp,
     check_hazard_types,
 )
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.method.ead import fn_density
 from fiat.struct import Table
 from fiat.struct.container import HazardMeta, RunMeta, VulnerabilityMeta
@@ -174,7 +174,7 @@ def create_2d_windows(
 
 
 def get_band_names(
-    ds: GridIO,
+    ds: Dataset,
 ) -> list:
     """Determine the names of the bands.
 
@@ -204,7 +204,7 @@ def get_run_meta(
 
 
 def get_hazard_meta(
-    hazard: GridIO,
+    hazard: Dataset,
     risk: bool,
     method_types: list[str],
 ) -> HazardMeta:
