@@ -5,9 +5,9 @@ from itertools import product
 import numpy as np
 from osgeo import ogr
 
+from fiat.fio.netcdf import DataVariable
 from fiat.gis.geom import point_in_geom
 from fiat.gis.util import pixel2world, world2pixel
-from fiat.struct import GridBand
 
 
 def intersect_cell(
@@ -86,7 +86,7 @@ def area_mask(
     px_w = max(int(lrx - ulx) + 1 - abs(lrxn - lrx) - abs(ulxn - ulx), 0)
     px_h = max(int(lry - uly) + 1 - abs(lryn - lry) - abs(ulyn - uly), 0)
 
-    window = (ulxn, ulyn, px_w, px_h)
+    window = slice(ulyn, ulyn + px_h), slice(ulxn, ulxn + px_w)
     mask = np.ones((px_h, px_w))
 
     # Loop trough the cells
@@ -129,7 +129,7 @@ def point_mask(
     yn = int(0 <= y < oh)
 
     # Setup the mask and window
-    window = (x, y, xn, yn)
+    window = slice(y, y + yn), slice(x, x + xn)
     mask = np.ones((yn, xn))  # This really is a dummy mask, but makes my life easy
 
     return mask, window
@@ -165,7 +165,7 @@ def centroid_mask(
 
 
 def clip(
-    band: GridBand,
+    var: DataVariable,
     mask: np.ndarray[int],
     window: tuple[int, ...],
 ) -> np.ndarray:
@@ -175,12 +175,12 @@ def clip(
 
     Parameters
     ----------
-    band : GridBand
-        The raster band.
+    var : DataVariable
+        The raster variable.
     mask : np.ndarray[int]
         The mask of the geometry within the window of the geometry.
     window : tuple[int]
-        The window that the geometry covers of the raster (band).
+        The window that the geometry covers of the raster (variable).
 
     Returns
     -------
@@ -192,14 +192,14 @@ def clip(
     - [clip_weighted](/api/overlay/clip_weighted.qmd)
     """
     # Use the window and mask to extract the data
-    arr = band[*window][mask == 1]
-    arr[arr == band.nodata] = np.nan
+    arr = var[*window][mask == 1]
+    arr[arr == var.nodata] = np.nan
     return arr
 
 
 def clip_weighted(
     ft: ogr.Feature,
-    band: GridBand,
+    var: DataVariable,
     gtf: tuple,
     upscale: int = 3,
 ):
@@ -220,9 +220,9 @@ cells that are touched by the feature.
 [ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
         Can be optained by indexing a \
 [GeomIO](/api/GeomIO.qmd).
-    band : GridBand
-        An object that contains a connection the band within the dataset. For further
-        information, see [GridBand](/api/GridBand.qmd)!
+    var : DataVariable
+        An object that contains a connection the variable within the dataset.
+        For further information, see [DataVariable](/api/DataVariable.qmd)!
     gtf : tuple
         The geotransform of a grid dataset.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
@@ -252,7 +252,7 @@ cells that are touched by the feature.
     dyn = dy / upscale
     px_w = int(lrx - ulx) + 1
     px_h = int(lry - uly) + 1
-    clip = band[ulx, uly, px_w, px_h]
+    clip = var[uly : uly + px_h, ulx : ulx + px_w]
     mask = np.ones((px_h * upscale, px_w * upscale))
 
     # Loop trough the cells

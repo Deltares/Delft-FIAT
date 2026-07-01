@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Generator
 
 import pytest
-from osgeo import osr
+from pyproj.crs import CRS
 
 from fiat.cfg import Configurations
 from fiat.fio import Dataset
@@ -10,7 +10,7 @@ from fiat.log import Logger
 from fiat.model import GeomModel
 from fiat.struct import Container, Table
 from fiat.struct.container import ExposureGeomData
-from fiat.util import get_srs_repr
+from fiat.util import get_crs_repr
 
 
 def test_geommodel(config_empty: Configurations):
@@ -74,12 +74,12 @@ def test_geommodel_read_exposure_sig(
 def test_geommodel_read_exposure_reproj(
     caplog: Logger,
     config_empty: Configurations,
-    srs_3857: osr.SpatialReference,
+    crs_3857: CRS,
     exposure_geom_path: Path,
 ):
     # Create the object
     m = GeomModel(config_empty)
-    m._srs = srs_3857
+    m._crs = crs_3857
 
     # Call the method
     m.read_exposure(path=exposure_geom_path)
@@ -89,7 +89,7 @@ def test_geommodel_read_exposure_reproj(
     # Assert the dataset
     assert len(m.exposure) == 1
     assert m.exposure.ds1.data.layer.size == 4
-    assert get_srs_repr(m.exposure.ds1.data.srs) == "EPSG:3857"
+    assert get_crs_repr(m.exposure.ds1.data.crs) == "EPSG:3857"
 
 
 def mockworker(*args, **kwargs):

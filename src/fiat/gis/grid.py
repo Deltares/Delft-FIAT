@@ -1,41 +1,135 @@
 """Only raster methods for FIAT."""
 
+import math
 from pathlib import Path
 
-from osgeo import gdal, osr
+import numpy as np
+from pyproj import Transformer
+from pyproj.crs import CRS
+from scipy.interpolate import RegularGridInterpolator
 
 from fiat.fio import Dataset
-from fiat.open import open_grid
-from fiat.struct import GridBand
-from fiat.util import CHUNK, NOT_IMPLEMENTED
 
 
-def clip(
-    band: GridBand,
-    gtf: tuple,
-    idx: tuple,
-):
-    """Clip a grid.
+def transform_bounds(
+    bounds: tuple[float, float, float, float],
+    transformer: Transformer,
+) -> tuple[float, float, float, float]:
+    """Calculate the bounds in another projection.
 
     Parameters
     ----------
-    band : gdal.Band
-        _description_
-    gtf : tuple
-        _description_
-    idx : tuple
-        _description_
+    bounds : tuple[float, float, float, float]
+        The current bounds.
+    transformer : Transformer
+        The coordinate transformer.
+
+    Returns
+    -------
+    tuple[float, float, float, float]
+        The resulting bounds.
     """
-    raise NotImplementedError(NOT_IMPLEMENTED)
+    # Create the corners
+    x_c = [bounds[0], bounds[2], bounds[0], bounds[2]]
+    y_c = [bounds[1], bounds[1], bounds[3], bounds[3]]
+    # Transform the corners
+    x_c, y_c = transformer.transform(x_c, y_c)
+    # Return the max extent
+    return min(x_c), min(y_c), max(x_c), max(y_c)
+
+
+def default_transform(
+    transform: tuple[float, ...],
+    width: int,
+    height: int,
+    transformer: Transformer,
+    n_samples: int = 21,
+) -> tuple[tuple[float, ...], int, int]:
+    """Create a suggestion for the default transform.
+
+    The function is close but not the same as GDAL's SuggestedWarpOutput.
+
+    Parameters
+    ----------
+    transform : tuple[float, ...]
+        The geotransform of the source data.
+    width : int
+        The width of the source data
+    height : int
+        The height of the source data.
+    transformer : Transformer
+        The coordinates transformer mapping one system to another.
+    n_samples : int, optional
+        The number of samples along the edges, by default 21
+
+    Returns
+    -------
+    tuple[tuple[float, ...], int, int]
+        The resulting geotransform, width & height in the targer coordinate system.
+    """
+    originx, dx, _, originy, _, dy = transform
+
+    # Create the sample points along the axes
+    samples_lon = np.linspace(0, width, n_samples)
+    samples_lat = np.linspace(0, height, n_samples)
+
+    xs = []
+    ys = []
+    # Origin horizontal
+    xs.extend(originx + samples_lon * dx)
+    ys.extend(np.full_like(samples_lon, originy))
+    # Origin vertical
+    xs.extend(np.full_like(samples_lat, originx))
+    ys.extend(originy + samples_lat * dy)
+    # Opposed horizontal
+    xs.extend(originx + samples_lon * dx)
+    ys.extend(np.full_like(samples_lon, originy + height * dy))
+    # Opposed vertical
+    xs.extend(np.full_like(samples_lat, originx + width * dx))
+    ys.extend(originy + samples_lat * dy)
+
+    # Transform all the samples for possibly the full extent
+    xt, yt = transformer.transform(xs, ys)
+    # Get the maximum extend
+    xmin = float(np.min(xt))
+    xmax = float(np.max(xt))
+    ymin = float(np.min(yt))
+    ymax = float(np.max(yt))
+
+    # The inner distance based on the origin and opposing corner diagonally
+    origin_t = transformer.transform(originx, originy)
+    opposed_t = transformer.transform(originx + width * dx, originy + height * dy)
+    dst_diag_inner = math.hypot(opposed_t[0] - origin_t[0], opposed_t[1] - origin_t[1])
+
+    # Get the number of cells in diagonally (even though its not rounded)
+    ncells = math.hypot(width, height)
+
+    # First estimate of the destination resolution
+    dst_res = dst_diag_inner / ncells
+    # Get the first width and height estimate
+    # dst_width = max(1, int((xmax - xmin) / dst_res + 0.5))
+    # dst_height = max(1, int((ymax - ymin) / dst_res + 0.5))
+    # # Get the resolution in both x and y direction
+    # dst_res_x = (xmax - xmin) / dst_width
+    # dst_res_y = (ymax - ymin) / dst_height
+    # # Get max of the two as the final resolution
+    # dst_res = max(dst_res_x, dst_res_y)
+
+    # Set the output transform and the width and height
+    dst_transform = (xmin, dst_res, 0.0, ymax, 0.0, -dst_res)
+    dst_width = max(1, int((xmax - xmin) / dst_res + 0.5))
+    dst_height = max(1, int((ymax - ymin) / dst_res + 0.5))
+
+    return dst_transform, dst_width, dst_height
 
 
 def reproject(
     ds: Dataset,
-    dst_srs: str,
+    dst_crs: CRS | str,
     dst_gtf: list | tuple = None,
     dst_width: int = None,
     dst_height: int = None,
-    resample: int = 0,
+    method: str = "nearest",
     output_dir: Path | str = None,
 ) -> Dataset:
     """Reproject (warp) a grid.
@@ -44,20 +138,18 @@ def reproject(
     ----------
     ds : Dataset
         Input object.
-    dst_srs : str
+    dst_crs : CRS | str
         Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
     dst_gtf : list | tuple, optional
         The geotransform of the warped dataset. Must be defined in the same
-        coordinate reference system as dst_srs. When defined, its only used when
+        coordinate reference system as dst_crs. When defined, its only used when
         both 'dst_width' and 'dst_height' are defined.
     dst_width : int, optional
         The width of the warped dataset in pixels.
     dst_height : int, optional
         The height of the warped dataset in pixels.
-    resample : int, optional
-        Resampling method during warping. Interger corresponds with a resampling
-        method defined by GDAL. For more information: click \
-[here](https://gdal.org/api/gdalwarp_cpp.html#_CPPv415GDALResampleAlg).
+    method : str, optional
+        Resampling method during warping.
     output_dir : Path | str, optional
         Output directory. If not defined, if will be inferred from the input object.
 
@@ -66,47 +158,64 @@ def reproject(
     Dataset
         Output object. A lazy reading of the just creating raster file.
     """
-    # Set some kwargs before moving on
-    gs_kwargs = {
-        CHUNK: ds.chunk,
-    }
+    # Setup the transformer
+    transformer = Transformer.from_crs(ds.crs, dst_crs, always_xy=True)
+    inverse_transformer = Transformer.from_crs(dst_crs, ds.crs, always_xy=True)
 
-    if not Path(str(output_dir)).is_dir():
-        output_dir = ds.path.parent
-
-    fname = Path(output_dir, f"{ds.path.stem}_repr.tif")
-
-    out_srs = osr.SpatialReference()
-    out_srs.SetFromUserInput(dst_srs)
-    out_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
-
-    warp_kw = {}
-    if all([item is not None for item in [dst_gtf, dst_width, dst_height]]):
-        warp_kw.update(
-            {
-                "xRes": dst_gtf[1],
-                "yRes": dst_gtf[5],
-                "outputBounds": (
-                    dst_gtf[0],
-                    dst_gtf[3] + dst_gtf[5] * dst_height,
-                    dst_gtf[0] + dst_gtf[1] * dst_width,
-                    dst_gtf[3],
-                ),
-                # "width": dst_width,
-                # "height": dst_height,
-            }
+    # Calculate default transform if info is missing
+    if any(item is None for item in [dst_gtf, dst_width, dst_height]):
+        dst_gtf, dst_width, dst_height = default_transform(
+            ds.transform,
+            *ds.shape_xy,
+            transformer,
+            n_samples=21,
         )
 
-    _ = gdal.Warp(
-        str(fname),
-        ds.src,
-        srcSRS=ds.srs,
-        dstSRS=out_srs,
-        resampleAlg=resample,
-        **warp_kw,
+    # Create the lons and lats in the middle of the cells in the target projection
+    lons = np.arange(
+        dst_gtf[0] + 0.5 * dst_gtf[1],
+        dst_gtf[0] + dst_gtf[1] * dst_width,
+        dst_gtf[1],
+    )
+    lats = np.arange(
+        dst_gtf[3] + 0.5 * dst_gtf[5],
+        dst_gtf[3] + dst_gtf[5] * dst_height,
+        dst_gtf[5],
+    )
+    lons_grid, lats_grid = np.meshgrid(lons, lats)
+    # Transform the cell coordinates back the source projection
+    lons_src, lats_src = inverse_transformer.transform(lons_grid, lats_grid)
+    lons_src = lons_src.clip(min=min(ds.xvals), max=max(ds.xvals))
+    lats_src = lats_src.clip(min=min(ds.yvals), max=max(ds.yvals))
+
+    # Get the data from the variable
+    data = ds.variables["data"][:]
+
+    # Set up the interpolator
+    interpolator = RegularGridInterpolator(
+        (ds.yvals, ds.xvals),  # NOTE: order = (lats, lons)
+        data.filled(np.nan),
+        method=method,
+        bounds_error=False,
+        fill_value=np.nan,
     )
 
-    out_srs = None
+    # Resample the data to the new coordinates (in source projection still)
+    pts = np.stack([lats_src, lons_src], axis=-1)  # same order
+    data_out: np.ndarray = interpolator(pts)
+    data_out[np.isnan(data_out)] = -9999
 
-    ds.close()
-    return open_grid(fname, **gs_kwargs)
+    # Set the output path
+    output_dir = Path(output_dir or ds.path.parent)
+    write_path = Path(output_dir, f"{ds.path.stem}_repr.nc")
+    # Write the data
+    write_ds = Dataset(write_path, mode="w")
+    write_ds.create_spatial_dims(lats=lats, lons=lons)
+    write_ds.set_spatial_ref(CRS.from_user_input(dst_crs))
+    write_ds.create_spatial_variable("data")
+    write_ds.variables["data"].set(data_out, origin=[0, 0])
+    # Close the writing dataset
+    write_ds.close()
+    write_ds = None
+
+    return Dataset(write_path)

@@ -9,9 +9,8 @@ from typing import Callable
 
 import numpy as np
 
-from fiat.fio import Dataset
+from fiat.fio import Dataset, DataVariable
 from fiat.model.util import create_2d_windows
-from fiat.struct import GridBand
 from fiat.struct.container import (
     ExposureGridMeta,
     HazardMeta,
@@ -33,13 +32,13 @@ def initialize_pool(q: Queue, p: dict[str, Connection]):
 
 
 def process_hazard(
-    band: GridBand,
+    band: DataVariable,
     window: tuple,
     vulnerability_meta: VulnerabilityMeta,
 ):
     """Small processor of hazard data chunk."""
     out_array = band[*window]
-    out_array[out_array == band.nodata] = np.nan
+    out_array = out_array.filled(np.nan)
     out_array = np.fmax(
         np.fmin(out_array, vulnerability_meta.max),
         vulnerability_meta.min,
@@ -87,9 +86,13 @@ def array_worker(
         The calculated impact.
     """
     bn = 0
-    w, h = window[2:]
+    w = window[0].stop - window[0].start
+    h = window[1].stop - window[1].start
     # Loop through the combinations
-    for exp, haz_indices in product(exposure.bands, hazard_meta.indices_run):
+    for exp, haz_indices in product(
+        exposure.variables.values(),
+        hazard_meta.indices_run,
+    ):
         # Get and process the hazard data
         hazard_data = [
             process_hazard(
@@ -99,14 +102,14 @@ def array_worker(
         ]
         # Get the exposure data
         exposure_data = exp[*window]
-        exposure_data[exposure_data == exp.nodata] = np.nan
+        exposure_data = exposure_data.filled(np.nan)
 
         # Call the impact function
         out_array[bn, :h, :w] = fn_impact(
             *hazard_data,
             exposure_data,
             fact=1,
-            fn_curve=vulnerability_meta.fn[exp.get_meta(FN)],
+            fn_curve=vulnerability_meta.fn[exp._obj.getncattr(FN)],
         )
         bn += 1
 
@@ -145,8 +148,8 @@ def worker(
     vulnerability_meta: VulnerabilityMeta,
     exposure: Dataset,
     exposure_meta: ExposureGridMeta,
-    chunk: tuple,
     window: tuple,
+    chunk: tuple,
 ):
     """Run the grid model.
 
@@ -179,17 +182,17 @@ of the [Dataset](/api/GeomIO.qmd) object.
     # Setup the existing block of memory
     exshm = SharedMemory(name=mem_id)
     out_array = np.ndarray(
-        shape=(exposure_meta.nb, *window),
+        shape=(exposure_meta.nb, *chunk),
         dtype=np.float32,
         buffer=exshm.buf,
     )
     sender = Sender(queue=signalqueue)
 
     # Loop through the windows
-    for window_array in create_2d_windows(
-        shape=chunk[2:],
-        origin=chunk[0:2],
-        window=window,
+    for window2d in create_2d_windows(
+        shape=window[2:],
+        origin=window[0:2],
+        window_size=chunk,
     ):
         # Do the calculations
         array_worker(
@@ -201,14 +204,14 @@ of the [Dataset](/api/GeomIO.qmd) object.
             exposure=exposure,
             exposure_meta=exposure_meta,
             fn_impact=fn_impact,
-            window=window_array,
+            window=window2d,
         )
 
         # Report back that it's done for this window
         record = GridItem(
             mem_id=mem_id,
-            origin=window_array[:2],
-            shape=window_array[2:],
+            origin=window[0],
+            shape=window[1],
         )
         sender.emit(record=record)
 

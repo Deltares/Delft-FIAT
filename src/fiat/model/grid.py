@@ -7,7 +7,7 @@ from pathlib import Path
 from fiat.cfg import Configurations
 from fiat.check import (
     check_input_data,
-    check_internal_srs,
+    check_internal_crs,
     check_vs_srs,
 )
 from fiat.fio import Dataset
@@ -117,7 +117,7 @@ class GridModel(BaseModel):
         logger.info("Executing exposure data checks...")
 
         # Check if there is a srs present
-        check_internal_srs(
+        check_internal_crs(
             data.srs,
             path.name,
         )

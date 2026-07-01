@@ -24,8 +24,8 @@ def test_process_hazard(
 ):
     # Call the function
     a = process_hazard(
-        band=hazard_event_data[0],
-        window=(0, 0, 10, 10),
+        band=hazard_event_data.variables["data"],
+        window=(slice(0, 10), slice(0, 10)),
         vulnerability_meta=vulnerability_meta_run,
     )
 
@@ -57,7 +57,7 @@ def test_array_worker(
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_meta_run,
         fn_impact=flood.depth.fn_impact,
-        window=(0, 0, 10, 10),
+        window=(slice(0, 10), slice(0, 10)),
     )
 
     # Assert the output
@@ -90,7 +90,7 @@ def test_array_worker_risk(
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_risk_meta_run,
         fn_impact=flood.depth.fn_impact,
-        window=(0, 0, 10, 10),
+        window=(slice(0, 10), slice(0, 10)),
     )
 
     # Assert the output
@@ -136,8 +136,8 @@ def test_worker(
         vulnerability_meta=vulnerability_meta_run,
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_meta_run,
-        chunk=(0, 0, 10, 10),
-        window=(10, 10),
+        window=(0, 0, 10, 10),
+        chunk=(10, 10),
     )
 
     # Assert the output, same as the array worker

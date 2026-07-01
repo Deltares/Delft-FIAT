@@ -1,5 +1,6 @@
 import io
 import platform
+import shutil
 from multiprocessing import get_context
 from multiprocessing.queues import Queue
 from pathlib import Path
@@ -42,6 +43,14 @@ def testdata_dir() -> Path:
 @pytest.fixture(scope="session")
 def exposure_geom_path(testdata_dir: Path) -> Path:
     p = Path(testdata_dir, "exposure", "spatial.geojson")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture
+def exposure_geom_tmp_path(tmp_path: Path, exposure_geom_path: Path) -> Path:
+    p = Path(tmp_path, "tmp.geojson")
+    shutil.copy2(exposure_geom_path, p)
     assert p.is_file()
     return p
 
@@ -112,7 +121,7 @@ def exposure_geom_data(exposure_geom_path: Path) -> GeomIO:
 
 @pytest.fixture
 def exposure_grid_data(exposure_grid_path: Path) -> Dataset:
-    ds = open_grid(exposure_grid_path, var_as_band=True)  # Read only
+    ds = open_grid(exposure_grid_path)  # Read only
     assert isinstance(ds, Dataset)
     return ds
 
@@ -133,14 +142,14 @@ def hazard_event_highres_data(hazard_event_highres_path: Path) -> Dataset:
 
 @pytest.fixture(scope="session")
 def hazard_risk_data(hazard_risk_path: Path) -> Dataset:
-    ds = open_grid(hazard_risk_path, var_as_band=True)  # Read only
+    ds = open_grid(hazard_risk_path)  # Read only
     assert isinstance(ds, Dataset)
     return ds
 
 
 @pytest.fixture(scope="session")
 def hazard_risk_data_subsets(hazard_risk_path: Path) -> Dataset:
-    ds = open_grid(hazard_risk_path, var_as_band=False)  # Read only
+    ds = open_grid(hazard_risk_path)  # Read only
     assert isinstance(ds, Dataset)
     return ds
 

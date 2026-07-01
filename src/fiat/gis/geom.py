@@ -67,7 +67,7 @@ def reproject_feature(
 
 def reproject(
     gs: GeomIO,
-    srs: str,
+    crs: str,
     chunk: int = 200000,
     output_dir: Path | str = None,
 ):
@@ -77,7 +77,7 @@ def reproject(
     ----------
     gs : GeomIO
         Input object.
-    srs : str
+    crs : str
         Spatial reference system (projection). An accepted format is: `EPSG:3857`.
     chunk : int, optional
         The size of the chunks used during reprojecting.
@@ -92,20 +92,22 @@ def reproject(
     if not Path(str(output_dir)).is_dir():
         output_dir = gs.path.parent
 
-    fname = Path(output_dir, f"{gs.path.stem}_repr{gs.path.suffix}")
+    fname = Path(output_dir, f"{gs.path.stem}_repr.fgb")
 
+    src_srs = osr.SpatialReference()
+    src_srs.SetFromUserInput(gs.layer.crs.to_wkt())
     out_srs = osr.SpatialReference()
-    out_srs.SetFromUserInput(srs)
+    out_srs.SetFromUserInput(crs)
     out_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
     layer_defn = gs.layer.defn
 
     transform = osr.CoordinateTransformation(
-        gs.layer.srs,
+        src_srs,
         out_srs,
     )
 
     with open_geom(fname, mode="w", overwrite=True) as new_gs:
-        new_gs.create_layer(out_srs, gs.layer.geom_type)
+        new_gs.create_layer(out_srs.ExportToWkt(), gs.layer.geom_type)
         new_gs.layer.set_from_defn(layer_defn)
 
     mem_gs = GeomWriter(
@@ -114,7 +116,7 @@ def reproject(
     )
     mem_gs.setup(
         defn=layer_defn,
-        srs=out_srs,
+        crs=out_srs.ExportToWkt(),
     )
 
     for ft in gs.layer:

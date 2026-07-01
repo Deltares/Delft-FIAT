@@ -3,7 +3,8 @@
 import weakref
 from typing import Generator
 
-from osgeo import gdal, ogr, osr
+from osgeo import gdal, ogr
+from pyproj.crs import CRS
 
 from fiat.struct.base import BaseStruct
 
@@ -138,6 +139,11 @@ class GeomLayer(BaseStruct):
         return tuple(self._columns.keys())
 
     @property
+    def crs(self) -> CRS:
+        """Return the srs (Spatial Reference System)."""
+        return CRS.from_user_input(self._obj.GetSpatialRef().ExportToWkt())
+
+    @property
     def defn(self) -> ogr.FeatureDefn:
         """Return the layer definition."""
         return self._obj.GetLayerDefn()
@@ -174,11 +180,6 @@ class GeomLayer(BaseStruct):
         count = self._obj.GetFeatureCount()
         self._count = count
         return self._count
-
-    @property
-    def srs(self) -> osr.SpatialReference:
-        """Return the srs (Spatial Reference System)."""
-        return self._obj.GetSpatialRef()
 
     ## Set methods
     def add_feature(

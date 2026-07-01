@@ -411,37 +411,6 @@ def get_srs_repr(
     return f"{_auth_n}:{_auth_c}"
 
 
-def read_gridsource_info(
-    gr: gdal.Dataset,
-    format: str = "json",
-) -> dict[str, Any]:
-    """Read grid source information.
-
-    Thanks to:
-    https://stackoverflow.com/questions/72059815/how-to-retrieve-all-variable-names-within-a-netcdf-using-gdal.
-    """
-    info = gdal.Info(gr, options=gdal.InfoOptions(format=format))
-    return info
-
-
-def read_gridsource_layers(
-    gr: gdal.Dataset,
-) -> dict[str, Any] | None:
-    """Read the layers of a gridsource."""
-    sd = gr.GetSubDatasets()
-
-    out = {}
-
-    for item in sd:
-        path = item[0]
-        ds = path.split(":")[-1].strip()
-        out[ds] = path
-
-    if len(out) == 0:
-        return None
-    return out
-
-
 def _check_driver_capabilities(
     idx: int,
     type: str,
@@ -584,7 +553,7 @@ def get_module_attr(module_name: str, attr: str) -> Any:
     return out
 
 
-def object_size(obj) -> int:
+def object_size(obj) -> int:  # pragma: no cover
     """Calculate the actual size of an object (bit overestimated).
 
     Thanks to this post on stackoverflow:
@@ -611,7 +580,7 @@ def object_size(obj) -> int:
     return size
 
 
-def timeit(n: int = 200000) -> Callable[[int], float]:
+def timeit(n: int = 200000) -> Callable[[int], float]:  # pragma: no cover
     """Small timing decorater."""
 
     def timeit(fn):

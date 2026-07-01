@@ -57,7 +57,7 @@ class BaseDriver(metaclass=ABCMeta):
         return hash(self.path)
 
     def __del__(self):
-        if not self._closed:
+        if not self.closed:
             self.close()
 
     def __enter__(self):

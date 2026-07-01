@@ -4,7 +4,7 @@ import os
 from multiprocessing.synchronize import Lock
 from pathlib import Path
 
-from osgeo import gdal, ogr, osr
+from osgeo import gdal, ogr
 
 from fiat.fio.geom import GeomIO
 from fiat.open import open_geom
@@ -161,12 +161,12 @@ the fields in the buffer.
     def setup(
         self,
         defn: ogr.FeatureDefn,
-        srs: osr.SpatialReference,
+        crs: str,
         extra_fields: dict | zip | None = None,
     ) -> None:
         """Set up a layer for the buffer."""
         # Create the layer
-        self.buffer.create_layer(srs, geom_type=defn.GetGeomType())
+        self.buffer.create_layer(crs, geom_type=defn.GetGeomType())
         self.buffer.layer.set_from_defn(defn)
 
         # Update the layer with new fields

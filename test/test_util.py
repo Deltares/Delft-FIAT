@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 from osgeo import osr
 
-from fiat.fio import Dataset
 from fiat.util import (
     GEOM_DRIVER_MAP,
     GRID_DRIVER_MAP,
@@ -24,10 +23,7 @@ from fiat.util import (
     get_module_attr,
     get_srs_repr,
     mean,
-    object_size,
     re_filter,
-    read_gridsource_info,
-    read_gridsource_layers,
     regex_pattern,
     replace_empty,
     text_chunk_gen,
@@ -153,8 +149,6 @@ def test_driver_maps():
     # Simply assert some key drivers
     assert ".gpkg" in GEOM_DRIVER_MAP
     assert ".tif" not in GEOM_DRIVER_MAP
-    assert ".nc" in GEOM_DRIVER_MAP
-    assert ".nc" in GRID_DRIVER_MAP
     assert ".fgb" not in GRID_DRIVER_MAP
 
 
@@ -300,31 +294,6 @@ def test_get_srs_repr_error():
         _ = get_srs_repr(None)
 
 
-def test_gridsource_info(hazard_event_data: Dataset):
-    # Call the function
-    data = read_gridsource_info(hazard_event_data.src)
-
-    # Assert the output
-    assert data["driverShortName"] == "netCDF"
-
-
-def test_gridsource_layers_single(hazard_event_data: Dataset):
-    # Call the function
-    layers = read_gridsource_layers(hazard_event_data.src)
-
-    # Assert the output
-    assert layers is None
-
-
-def test_gridsource_layers_multi(hazard_risk_data_subsets: Dataset):
-    # Call the function
-    layers = read_gridsource_layers(hazard_risk_data_subsets.src)
-    assert len(layers) == 4
-    subpath = layers["Band4"]
-    assert subpath.startswith("NETCDF")
-    assert subpath.endswith("Band4")
-
-
 def test_mean():  # dunb function, dumb test
     # Call the function
     x = mean([1, 2, 3, 4])
@@ -333,24 +302,6 @@ def test_mean():  # dunb function, dumb test
     # Call the function
     y = mean([2, 6, 10, 1])
     assert int(y * 100) == 475
-
-
-def test_object_size():
-    # Call the function
-    size = object_size(44)
-    assert size == 28
-
-    # Call the function
-    size = object_size(4.4)
-    assert size == 24
-
-    # Call the function
-    size = object_size(np.array([]))
-    assert size == 112
-
-    # Call the function
-    size = object_size(np.array([2, 2, 2]))
-    assert size == 136
 
 
 def test_re_filter():

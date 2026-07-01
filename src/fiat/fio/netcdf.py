@@ -52,6 +52,11 @@ class Dataset(BaseDriver):
         if self.mode <= 1:
             self._discover_variables()
 
+    def __del__(self): ...
+
+    def __getitem__(self, idx: int):
+        return list(self.variables.values())[idx]
+
     def __reduce__(self):
         return self.__class__, (
             self.path,
@@ -94,7 +99,7 @@ class Dataset(BaseDriver):
             if var_name in self.src.dimensions or var_name == srs_var:
                 continue
             if var_name not in self.variables:
-                self.variables[var_name] = var
+                self.variables[var_name] = DataVariable._create(var, self)
 
     def _set_spatial_dim_values(self) -> None:
         self.yvals = self.ydim[:].data
@@ -117,12 +122,17 @@ class Dataset(BaseDriver):
         return CRS.from_user_input(self._crs) if self._crs is not None else None
 
     @property
+    def names(self) -> list[str]:
+        """Return the names of the data variables."""
+        return list(self.variables.keys())
+
+    @property
     def origin(self) -> tuple[float, float]:
         """Return the origin of the grid."""
         dx, dy = self.res
         xs, ys = self.xvals, self.yvals
         x0, y0 = xs[0] - dx / 2, ys[0] - dy / 2
-        return x0, y0
+        return float(x0), float(y0)
 
     @property
     def res(self) -> tuple[float]:
@@ -130,7 +140,7 @@ class Dataset(BaseDriver):
         self._discover_spatial_dims()
         dxs, dys = np.diff(self.xvals), np.diff(self.yvals)
         dx, dy = dxs.mean(), dys.mean()
-        return dx, dy
+        return float(dx), float(dy)
 
     @property
     @BaseDriver.check_state
@@ -163,6 +173,7 @@ class Dataset(BaseDriver):
         """Close the dataset."""
         BaseDriver.close(self)
         self.src.close()
+        self.src = None
 
     def flush(self) -> None:
         """Flush the data."""
@@ -207,16 +218,16 @@ class Dataset(BaseDriver):
         self.src.createDimension(dimname="lon", size=len(lons))
         self.ydim = self.src.createVariable(
             varname="lat",
-            datatype="f4",
+            datatype="f8",
             dimensions=("lat",),
         )
-        self.ydim[:] = np.sort(lats)[::-1]
+        self.ydim[:] = lats
         self.xdim = self.src.createVariable(
             varname="lon",
-            datatype="f4",
+            datatype="f8",
             dimensions=("lon",),
         )
-        self.xdim[:] = np.sort(lons)
+        self.xdim[:] = lons
         self._set_spatial_dim_values()
 
     @BaseDriver.check_mode
@@ -269,8 +280,11 @@ class Dataset(BaseDriver):
                 "spatial_ref": crs.to_wkt(),
             }
         )
-        gtf = [float(item) for item in self.transform]
-        self.reference.setncattr("GeoTransform", str(gtf).strip("[]").replace(",", ""))
+        # gtf = [float(item) for item in self.transform]
+        # self.reference.setncattr(
+        #     "GeoTransform",
+        #     str(gtf).strip("[]").replace(",", ""),
+        # )
 
 
 class DataVariable:
@@ -286,6 +300,12 @@ class DataVariable:
         # Attributes
         self._nodata: float | None = None
         raise AttributeError("No constructer defined")
+
+    def __getitem__(
+        self,
+        select: slice | tuple[slice, slice],
+    ):
+        return self._obj[select]
 
     ## Private methods
     def _cleanup(self, weak_ref):
@@ -310,6 +330,12 @@ class DataVariable:
 
     ## Properties
     @property
+    def dtype(self) -> str:
+        """Return the data type of the variable."""
+        return self._obj.datatype
+
+    ## Properties
+    @property
     def name(self) -> str:
         """Return the name of the variable."""
         return self._obj.name
@@ -318,6 +344,11 @@ class DataVariable:
     def nodata(self) -> float | None:
         """Return the nodata value."""
         return self._nodata
+
+    ## Get methods
+    def get_attr(self, var: str):
+        """Get am attribute from the netcdf variable."""
+        return self._obj.getncattr(name=var)
 
     ## Mutating methods
     def mask_nodata(self):

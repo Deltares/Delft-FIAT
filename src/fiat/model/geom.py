@@ -11,7 +11,7 @@ from fiat.cfg import Configurations
 from fiat.check import (
     check_geom_extent,
     check_input_data,
-    check_internal_srs,
+    check_internal_crs,
     check_vs_srs,
 )
 from fiat.fio import Dataset
@@ -52,7 +52,7 @@ from fiat.util import (
     ZONAL__METHOD,
     distribute_threads,
     generic_path_check,
-    get_srs_repr,
+    get_crs_repr,
 )
 
 logger = spawn_logger(__name__)
@@ -143,20 +143,20 @@ class GeomModel(BaseModel):
             logger.info("Executing exposure geometry checks...")
 
             # check the internal srs of the file
-            check_internal_srs(
-                data.layer.srs,
+            check_internal_crs(
+                data.layer.crs,
                 path.name,
             )
 
             # check if file srs is the same as the model srs
-            if not check_vs_srs(self.srs, data.layer.srs):
+            if not check_vs_srs(self.crs, data.layer.crs):
                 logger.warning(
                     f"Spatial reference of '{path.name}' \
-    ('{get_srs_repr(data.layer.srs)}') does not match \
-    the model spatial reference ('{get_srs_repr(self.srs)}')"
+    ('{get_crs_repr(data.layer.crs)}') does not match \
+    the model spatial reference ('{get_crs_repr(self.crs)}')"
                 )
-                logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
-                data = geom.reproject(data, self.srs.ExportToWkt())
+                logger.info(f"Reprojecting '{path.name}' to '{get_crs_repr(self.crs)}'")
+                data = geom.reproject(data, self.crs.to_wkt())
 
             # Set the data
             self.exposure.set(

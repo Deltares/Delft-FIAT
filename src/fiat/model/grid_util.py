@@ -6,7 +6,6 @@ from itertools import product
 from fiat.check import check_exp_grid_fn, check_grid_exact
 from fiat.fio import Dataset
 from fiat.gis import grid
-from fiat.model.util import get_band_names
 from fiat.struct.container import (
     ExposureGridMeta,
     HazardMeta,
@@ -24,15 +23,14 @@ def get_exposure_meta(
 ) -> ExposureGridMeta:
     """Simple method for sorting out the exposure grid meta."""  # noqa : D401
     # Check if all impact functions are correct
-    fn_list = [item.get_meta(FN) for item in exposure]
+    fn_list = [item.get_attr(FN) for item in exposure]
     check_exp_grid_fn(
         fn_list=fn_list,
         fn_available=vulnerability_meta.fn_list,
     )
 
     # Get the new band names
-    names = get_band_names(exposure)
-    new = ["_".join(c) for c in product(names, hazard_meta.ids)]
+    new = ["_".join(c) for c in product(exposure.names, hazard_meta.ids)]
     new += [f"{TOTAL}_{idi}" for idi in hazard_meta.ids]
 
     # Setup from indices

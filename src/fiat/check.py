@@ -4,7 +4,6 @@ from itertools import chain
 from pathlib import Path
 from typing import Any
 
-from osgeo import osr
 from pyproj.crs import CRS
 
 from fiat.cfg import Configurations
@@ -101,15 +100,15 @@ exposure data ({exp.shape})"
     return True
 
 
-def check_internal_srs(
-    source_srs: osr.SpatialReference,
+def check_internal_crs(
+    source_crs: CRS,
     fname: str,
 ) -> None:
     """Check the internal spatial reference system.
 
     This also should exist.
     """
-    if source_srs is None:
+    if source_crs is None:
         msg = f"Coordinate reference system is unknown for '{fname}', \
 cannot safely continue"
         raise FIATDataError(msg)
@@ -133,12 +132,12 @@ def check_geom_extent(
 
 
 def check_vs_srs(
-    global_srs: osr.SpatialReference,
-    source_srs: osr.SpatialReference,
+    target_srs: CRS,
+    source_crs: CRS,
 ):
     """Check if the spatial reference systems match."""
-    return CRS.from_user_input(global_srs.ExportToWkt()) == CRS.from_user_input(
-        source_srs.ExportToWkt()
+    return CRS.from_user_input(target_srs.to_wkt()) == CRS.from_user_input(
+        source_crs.to_wkt()
     )
 
 

@@ -28,7 +28,7 @@ def test_dataset_read(hazard_event_path: Path):
         ds.bounds,
         [0.0, 0.0, 10.0, 10.0],
     )
-    assert ds.variables["Band1"].datatype == np.float32
+    assert ds.variables["data"].dtype == np.float32
     assert ds.shape == (10, 10)
     assert ds.shape_xy == (10, 10)  # Shocker
     assert get_crs_repr(ds.crs) == "EPSG:4326"
@@ -73,34 +73,8 @@ def test_dataset_read_transform(hazard_event_path: Path):
     # Assert default geotransform
     np.testing.assert_array_almost_equal(
         ds.transform,
-        (0.0, 1.0, 0.0, 0.0, 0.0, 1.0),
+        (0.0, 1.0, 0.0, 10.0, 0.0, -1.0),
     )
-
-
-def test_dataset_chunk(hazard_event_path: Path):
-    # Open the dataset
-    ds = Dataset(hazard_event_path)
-
-    # Assert the current chunking
-    assert ds.chunk == (10, 10)
-    assert ds[0].chunk == (10, 10)
-
-    # Set the chunking
-    ds.chunk = (4, 4)
-    assert ds.chunk == (4, 4)
-    assert ds[0].chunk == (4, 4)
-
-
-def test_dataset_chunk_error(hazard_event_path: Path):
-    # Open the dataset
-    ds = Dataset(hazard_event_path)
-
-    # Assert error if not exactly two elements are passed
-    with pytest.raises(
-        ValueError,
-        match="Chunk should have two elements",
-    ):
-        ds.chunk = (4, 4, 4)
 
 
 def test_dataset_state_error(hazard_event_path: Path):

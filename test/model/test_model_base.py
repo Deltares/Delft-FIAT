@@ -8,7 +8,7 @@ from fiat.fio import Dataset
 from fiat.log import Logger
 from fiat.model.base import BaseModel
 from fiat.struct import Table
-from fiat.util import get_srs_repr
+from fiat.util import get_crs_repr
 
 # Overwrite the abstractmethods to be able to initialize it
 BaseModel.__abstractmethods__ = set()
@@ -30,7 +30,7 @@ def test_basemodel_general_properties(config_empty: Configurations):
 
     # Assert the important properties
     assert not m.risk
-    assert get_srs_repr(m.srs) == "EPSG:4326"
+    assert get_crs_repr(m.crs) == "EPSG:4326"
     assert m.threads == 1
     assert m.type == "flood.depth"
 
@@ -127,7 +127,7 @@ def test_basemodel_read_hazard_argument(
     assert m.hazard is None
 
     # Read with an argument
-    m.read_hazard_grid(path=hazard_event_path)
+    m.read_hazard(path=hazard_event_path)
 
     # Assert the state
     assert m.hazard is not None
@@ -141,7 +141,6 @@ def test_basemodel_read_hazard_risk(
     # Adjust the config
     config_empty.set("model.risk", True)
     config_empty.set("hazard.file", hazard_risk_path)
-    config_empty.set("hazard.settings.var_as_band", True)
 
     # Creat the object, which directly tries to read from the config
     m = BaseModel(config_empty)
@@ -167,11 +166,11 @@ def test_basemodel_read_hazard_warnings(
     assert "Setting the model srs from the hazard data." in caplog.text
 
     # Prefer global SRS over hazard SRS
-    m.srs = "EPSG:3857"
+    m.crs = "EPSG:3857"
     m.cfg.set("model.srs.force", True)
 
     # Re-read the hazard data
-    m.read_hazard_grid()
+    m.read_hazard()
 
     # Assert logging message
     assert (
@@ -213,7 +212,7 @@ def test_basemodel_read_vulnerability_argument(
     assert m.vulnerability is None
 
     # Read the data via argument
-    m.read_vulnerability_data(path=vulnerability_path)
+    m.read_vulnerability(path=vulnerability_path)
 
     # Assert the state
     assert m.vulnerability is not None

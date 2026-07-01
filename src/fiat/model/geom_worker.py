@@ -78,7 +78,7 @@ def feature_worker(
     # Mask and window for this feature
     mask, window = AREA_METHODS[exposure_meta.area_method](
         geom=ft.GetGeometryRef(),
-        gtf=hazard.geotransform,
+        gtf=hazard.transform,
         shape=hazard.shape_xy,
     )
 
@@ -173,7 +173,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     )
     writer.setup(
         defn=exposure.layer.defn,
-        srs=exposure.srs,
+        crs=exposure.crs,
         extra_fields=zip(exposure_meta.new, [ogr.OFTReal] * len(exposure_meta.new)),
     )
 

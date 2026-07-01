@@ -19,7 +19,7 @@ def test_area_mask_linestring(
     # Call the function
     m, w = area_mask(
         geom=feature_linestring.GetGeometryRef(),
-        gtf=hazard_event_data.geotransform,
+        gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
 
@@ -29,7 +29,7 @@ def test_area_mask_linestring(
     assert m[0, 0] == 0
     assert m[1, 3] == 0
     assert isinstance(w, tuple)
-    assert w == (1, 7, 4, 2)
+    assert w == (slice(7, 9), slice(1, 5))
 
 
 def test_area_mask_polygon(
@@ -39,7 +39,7 @@ def test_area_mask_polygon(
     # Call the function
     m, w = area_mask(
         geom=feature_polygon.GetGeometryRef(),
-        gtf=hazard_event_data.geotransform,
+        gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
 
@@ -47,7 +47,7 @@ def test_area_mask_polygon(
     assert m.shape == (2, 2)
     assert np.sum(m) == 4
     assert isinstance(w, tuple)
-    assert w == (1, 7, 2, 2)
+    assert w == (slice(7, 9), slice(1, 3))
 
 
 def test_area_mask_polygon_complex(
@@ -57,7 +57,7 @@ def test_area_mask_polygon_complex(
     # Call the function
     m, w = area_mask(
         geom=feature_polygon_complex.GetGeometryRef(),
-        gtf=hazard_event_data.geotransform,
+        gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
 
@@ -67,7 +67,7 @@ def test_area_mask_polygon_complex(
     assert m[0, 2] == 0
     assert m[1, 2] == 0
     assert isinstance(w, tuple)
-    assert w == (4, 4, 3, 4)
+    assert w == (slice(4, 8), slice(4, 7))
 
 
 def test_point_mask(
@@ -78,13 +78,13 @@ def test_point_mask(
     geom = feature_point.GetGeometryRef()
     m, w = point_mask(
         point=geom.GetPoint_2D(),
-        gtf=hazard_event_data.geotransform,
+        gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
 
     # Assert the output
     np.testing.assert_array_equal(m, [[1]])
-    np.testing.assert_array_equal(w, [1, 8, 1, 1])
+    np.testing.assert_array_equal(w, [slice(8, 9), slice(1, 2)])
 
 
 def test_centroid_mask(
@@ -95,13 +95,13 @@ def test_centroid_mask(
     geom = feature_polygon.GetGeometryRef()
     m, w = centroid_mask(
         geom=geom,
-        gtf=hazard_event_data.geotransform,
+        gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
 
     # Assert the output
     np.testing.assert_array_equal(m, [[1]])
-    np.testing.assert_array_equal(w, [2, 8, 1, 1])
+    np.testing.assert_array_equal(w, [slice(8, 9), slice(2, 3)])
 
 
 def test_clip_linestring(
@@ -111,13 +111,13 @@ def test_clip_linestring(
     # Mask first
     m, w = area_mask(
         geom=feature_linestring.GetGeometryRef(),
-        gtf=hazard_event_data.geotransform,
+        gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
 
     # Call the function
     c = clip(
-        band=hazard_event_data[0],
+        var=hazard_event_data[0],
         mask=m,
         window=w,
     )
@@ -136,13 +136,13 @@ def test_clip_polygon(
     # Mask first
     m, w = area_mask(
         geom=feature_polygon.GetGeometryRef(),
-        gtf=hazard_event_data.geotransform,
+        gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
 
     # Call the function
     c = clip(
-        band=hazard_event_data[0],
+        var=hazard_event_data[0],
         mask=m,
         window=w,
     )
@@ -161,13 +161,13 @@ def test_clip_polygon_complex(
     # Mask first
     m, w = area_mask(
         geom=feature_polygon_complex.GetGeometryRef(),
-        gtf=hazard_event_data.geotransform,
+        gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
 
     # Call the function
     c = clip(
-        band=hazard_event_data[0],
+        var=hazard_event_data[0],
         mask=m,
         window=w,
     )
@@ -187,13 +187,13 @@ def test_clip_point(
     geom = feature_point.GetGeometryRef()
     m, w = point_mask(
         point=geom.GetPoint_2D(),
-        gtf=hazard_event_data.geotransform,
+        gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
 
     # Call the function
     c = clip(
-        band=hazard_event_data[0],
+        var=hazard_event_data[0],
         mask=m,
         window=w,
     )
@@ -209,8 +209,8 @@ def test_clip_weighted_3(
     # Call the function
     c, m = clip_weighted(
         ft=feature_polygon,
-        band=hazard_event_data[0],
-        gtf=hazard_event_data.geotransform,
+        var=hazard_event_data[0],
+        gtf=hazard_event_data.transform,
         upscale=3,
     )
 

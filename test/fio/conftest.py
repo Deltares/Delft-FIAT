@@ -29,14 +29,6 @@ def exposure_geom_no_srs_path(testdata_dir: Path):
     return p
 
 
-@pytest.fixture
-def exposure_geom_tmp_path(tmp_path: Path, exposure_geom_path: Path) -> Path:
-    p = Path(tmp_path, "tmp.geojson")
-    shutil.copy2(exposure_geom_path, p)
-    assert p.is_file()
-    return p
-
-
 @pytest.fixture(scope="session")
 def hazard_event_no_srs_path(testdata_dir: Path):
     p = Path(testdata_dir, "event_map_no_srs.nc")
