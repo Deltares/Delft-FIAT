@@ -1,5 +1,5 @@
 """Flood methods."""
 
-from . import depth
+from . import depth, level
 
-__all__ = ["depth"]
+__all__ = ["depth", "level"]
