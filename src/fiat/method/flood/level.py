@@ -4,13 +4,16 @@ import math
 
 from fiat.method.flood.depth import fn_impact
 from fiat.method.util import ZONAL_METHODS
-from fiat.util import FLOOD_LEVEL, LEVEL
+from fiat.util import DEPTH, FLOOD_LEVEL, LEVEL
 
 __all__ = ["fn_impact"]
 
 COLUMNS = ["reference", "elevation"]
 NAME = FLOOD_LEVEL
-NEW_COLUMNS = [LEVEL]
+# The stored value is a depth above the floor (water_level - ground_elevation -
+# height_above_ground), the same quantity as the flood.depth method, so report
+# it under the "depth" column rather than "level".
+NEW_COLUMNS = [DEPTH]
 TYPES = [f"water_{LEVEL}"]
 
 
