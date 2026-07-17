@@ -1,6 +1,7 @@
 """Worker function for the geometry model (no csv)."""
 
 import importlib
+import math
 from multiprocessing.queues import Queue
 from multiprocessing.synchronize import Lock
 from pathlib import Path
@@ -100,15 +101,13 @@ def feature_worker(
                 exposure = ft.GetField(m)
                 out = 0
                 if curve_id and exposure:
-                    out = (
-                        fn_impact(
-                            hazard=haz,
-                            exposure=exposure,
-                            fn_curve=vulnerability_meta.fn[curve_id],
-                            fact=fact,
-                        )
-                        or 0
+                    out = fn_impact(
+                        hazard=haz,
+                        exposure=exposure,
+                        fn_curve=vulnerability_meta.fn[curve_id],
+                        fact=fact,
                     )
+                    out = 0 if math.isnan(out) else out
                 out_array[exposure_meta.indices_impact[key][n][i]] = out
                 tot += out
             out_array[exposure_meta.indices_total[key][n]] = tot

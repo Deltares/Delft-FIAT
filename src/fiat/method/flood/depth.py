@@ -6,6 +6,8 @@ from typing import Callable
 from fiat.method.util import ZONAL_METHODS
 from fiat.util import DEPTH, FLOOD_DEPTH
 
+__all__ = ["fn_hazard", "fn_impact"]
+
 COLUMNS = ["elevation"]
 INDEX = DEPTH
 NAME = FLOOD_DEPTH
