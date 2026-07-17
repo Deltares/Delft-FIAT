@@ -5,7 +5,7 @@ from osgeo import ogr
 
 from fiat.fio import GeomIO
 from fiat.gis.geom import point_in_geom, reproject, reproject_feature
-from fiat.util import get_srs_repr
+from fiat.util import get_crs_repr
 
 
 def test_point_in_geom_linestring(feature_linestring: ogr.Feature):
@@ -38,7 +38,7 @@ def test_reproject_feature_point(feature_point: ogr.Feature):
     assert geom.GetPoint_2D() == (1.5, 1.5)
 
     # Call the function
-    geom = reproject_feature(geom, src_srs="EPSG:4326", dst_srs="EPSG:3857")
+    geom = reproject_feature(geom, src_crs="EPSG:4326", dst_crs="EPSG:3857")
     # Assert the output
     np.testing.assert_array_almost_equal(
         geom.GetPoint_2D(),
@@ -52,7 +52,7 @@ def test_reproject_feature_polygon(feature_polygon: ogr.Feature):
     assert geom.GetGeometryRef(0).GetPoint_2D(0) == (1.5, 2.5)  # Due to interior
 
     # Call the function
-    geom = reproject_feature(geom, src_srs="EPSG:4326", dst_srs="EPSG:3857")
+    geom = reproject_feature(geom, src_crs="EPSG:4326", dst_crs="EPSG:3857")
     # Assert the output
     np.testing.assert_array_almost_equal(
         geom.GetGeometryRef(0).GetPoint_2D(0),
@@ -65,18 +65,18 @@ def test_reproject(
     exposure_geom_repr: GeomIO,
 ):
     # Assert the current state
-    assert get_srs_repr(exposure_geom_repr.srs) == "EPSG:4326"
+    assert get_crs_repr(exposure_geom_repr.crs) == "EPSG:4326"
     ft = exposure_geom_repr.layer[0]
     geom = ft.GetGeometryRef()
     assert geom.GetGeometryRef(0).GetPoint_2D(0) == (0.5, 9.5)
 
     # Call the function
-    gs = reproject(exposure_geom_repr, srs="EPSG:3857", output_dir=tmp_path)
+    ds = reproject(exposure_geom_repr, dst_crs="EPSG:3857", output_dir=tmp_path)
 
     # Assert the output
-    assert Path(tmp_path, "spatial_repr.geojson").is_file()
-    assert get_srs_repr(gs.srs) == "EPSG:3857"
-    ft = gs.layer[0]
+    assert Path(tmp_path, "spatial_repr.fgb").is_file()
+    assert get_crs_repr(ds.crs) == "EPSG:3857"
+    ft = ds.layer[0]
     geom = ft.GetGeometryRef()
     assert geom.GetGeometryRef(0).GetPoint_2D(0) == (
         55659.74539663678,

@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 from osgeo import osr
+from pyproj import CRS
 
 from fiat import Configurations
 from fiat.check import (
@@ -21,8 +22,8 @@ from fiat.check import (
     check_hazard_subsets,
     check_hazard_types,
     check_input_data,
-    check_internal_srs,
-    check_vs_srs,
+    check_internal_crs,
+    check_vs_crs,
 )
 from fiat.error import FIATDataError
 from fiat.log import Logger
@@ -85,7 +86,7 @@ def test_check_config_grid_fail(config: Configurations):
     assert not b
 
     # Call the function with missing entry but with grid stuff
-    config.set("exposure.grid.settings.srs", "EPSG:4326")
+    config.set("exposure.grid.settings.crs", "EPSG:4326")
     b = check_config_grid(config)
     # Assert it's not there, therefore false
     assert not b
@@ -231,15 +232,14 @@ def test_check_geom_extent_pass(
     assert caplog.text == ""
 
 
-def test_check_grid_exact_fail_srs(
+def test_check_grid_exact_fail_crs(
     mocked_hazard_grid: MagicMock,
     mocked_exp_grid: MagicMock,
     caplog: Logger,
 ):
-    # Set a different srs
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(3857)
-    type(mocked_exp_grid).srs = PropertyMock(side_effect=lambda: srs)
+    # Set a different crs
+    crs = CRS.from_epsg(3857)
+    type(mocked_exp_grid).crs = PropertyMock(side_effect=lambda: crs)
 
     # Call the method should produce a warning and a False return
     b = check_grid_exact(mocked_hazard_grid, mocked_exp_grid)
@@ -259,7 +259,7 @@ def test_check_grid_exact_fail_gtf(
     caplog: Logger,
 ):
     # Set a different geo transform
-    type(mocked_exp_grid).geotransform = PropertyMock(
+    type(mocked_exp_grid).transform = PropertyMock(
         side_effect=lambda: (0, 0.5, 0, 10, 0, -0.5),
     )
 
@@ -474,8 +474,8 @@ def test_check_input_data_container_fail():
         check_input_data(["foo", c, str])
 
 
-def test_check_internal_srs_fail():
-    # Call the function with no known srs
+def test_check_internal_crs_fail():
+    # Call the function with no known crs
     with pytest.raises(
         FIATDataError,
         match=re.escape(
@@ -483,34 +483,34 @@ def test_check_internal_srs_fail():
 cannot safely continu"
         ),
     ):
-        check_internal_srs(
-            source_srs=None,
+        check_internal_crs(
+            source_crs=None,
             fname="tmp.nc",
         )
 
 
-def test_check_internal_srs_pass():
-    # Call the function with a srs
-    check_internal_srs(
-        source_srs="EPSG:4326",
+def test_check_internal_crs_pass():
+    # Call the function with a crs
+    check_internal_crs(
+        source_crs="EPSG:4326",
         fname="tmp.nc",
     )
 
 
-def test_check_vs_srs_fail(
-    srs_4326: osr.SpatialReference,
-    srs_3857: osr.SpatialReference,
+def test_check_vs_crs_fail(
+    crs_4326: osr.SpatialReference,
+    crs_3857: osr.SpatialReference,
 ):
-    # Call the function with the different srs
-    b = check_vs_srs(srs_4326, srs_3857)
+    # Call the function with the different crs
+    b = check_vs_crs(crs_4326, crs_3857)
 
     # Assert the output
     assert not b
 
 
-def test_check_vs_srs_pass(srs_4326: osr.SpatialReference):
-    # Call the function with the different srs
-    b = check_vs_srs(srs_4326, srs_4326)
+def test_check_vs_crs_pass(crs_4326: osr.SpatialReference):
+    # Call the function with the different crs
+    b = check_vs_crs(crs_4326, crs_4326)
 
     # Assert the output
     assert b

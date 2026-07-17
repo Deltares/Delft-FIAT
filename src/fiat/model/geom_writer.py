@@ -4,10 +4,10 @@ import os
 from multiprocessing.synchronize import Lock
 from pathlib import Path
 
-from osgeo import gdal, ogr, osr
+from osgeo import gdal, ogr
 
-from fiat.fio.fopen import open_geom
 from fiat.fio.geom import GeomIO
+from fiat.open import open_geom
 from fiat.util import DummyLock
 
 __all__ = ["GeomWriter"]
@@ -82,17 +82,17 @@ class GeomWriter:
             return
         # Get the define
         defn = self.buffer.layer.defn
-        srs = self.buffer.srs
+        crs = self.buffer.crs
         # Delete
         self.buffer.delete()
 
         # Re-create
-        self.setup(defn, srs)
+        self.setup(defn, crs)
 
         # Reset current size
         self.size = 0
         defn = None
-        srs = None
+        crs = None
 
     ## I/O
     def write(self, reset: bool = True) -> None:
@@ -161,12 +161,12 @@ the fields in the buffer.
     def setup(
         self,
         defn: ogr.FeatureDefn,
-        srs: osr.SpatialReference,
+        crs: str,
         extra_fields: dict | zip | None = None,
     ) -> None:
         """Set up a layer for the buffer."""
         # Create the layer
-        self.buffer.create_layer(srs, geom_type=defn.GetGeomType())
+        self.buffer.create_layer(crs, geom_type=defn.GetGeomType())
         self.buffer.layer.set_from_defn(defn)
 
         # Update the layer with new fields

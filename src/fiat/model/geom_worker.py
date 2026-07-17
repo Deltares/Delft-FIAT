@@ -1,6 +1,7 @@
 """Worker function for the geometry model (no csv)."""
 
 import importlib
+import math
 from multiprocessing.queues import Queue
 from multiprocessing.synchronize import Lock
 from pathlib import Path
@@ -8,7 +9,8 @@ from typing import Callable
 
 from osgeo import ogr
 
-from fiat.fio import GeomIO, GridIO
+from fiat.fio import Dataset, GeomIO
+from fiat.gis import overlay
 from fiat.method.ead import fn_ead
 from fiat.model.geom_util import AREA_METHODS
 from fiat.model.geom_writer import GeomWriter
@@ -38,7 +40,7 @@ def initialize_pool(
 def feature_worker(
     ft: ogr.Feature,
     run_meta: RunMeta,
-    hazard: GridIO,
+    hazard: Dataset,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
     exposure_meta: ExposureGeomMeta,
@@ -53,7 +55,7 @@ def feature_worker(
         The feature.
     run_meta : RunMeta
         Configurations runtime metadata.
-    hazard : GridIO
+    hazard : Dataset
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
@@ -78,14 +80,14 @@ def feature_worker(
     # Mask and window for this feature
     mask, window = AREA_METHODS[exposure_meta.area_method](
         geom=ft.GetGeometryRef(),
-        gtf=hazard.geotransform,
+        gtf=hazard.transform,
         shape=hazard.shape_xy,
     )
 
     # Loop through the hazard band combo's
     n = 0
     for idxs in hazard_meta.indices_run:
-        haz = [hazard[idx][*window][mask == 1].tolist() for idx in idxs]
+        haz = [overlay.clip(hazard[idx], mask, window).tolist() for idx in idxs]
         haz, fact = fn_hazard(
             *haz,
             *haz_args,
@@ -99,15 +101,13 @@ def feature_worker(
                 exposure = ft.GetField(m)
                 out = 0
                 if curve_id and exposure:
-                    out = (
-                        fn_impact(
-                            hazard=haz,
-                            exposure=exposure,
-                            fn_curve=vulnerability_meta.fn[curve_id],
-                            fact=fact,
-                        )
-                        or 0
+                    out = fn_impact(
+                        hazard=haz,
+                        exposure=exposure,
+                        fn_curve=vulnerability_meta.fn[curve_id],
+                        fact=fact,
                     )
+                    out = 0 if math.isnan(out) else out
                 out_array[exposure_meta.indices_impact[key][n][i]] = out
                 tot += out
             out_array[exposure_meta.indices_total[key][n]] = tot
@@ -130,7 +130,7 @@ def feature_worker(
 def worker(
     output_path: Path,
     run_meta: RunMeta,
-    hazard: GridIO,
+    hazard: Dataset,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
     exposure: GeomIO,
@@ -148,7 +148,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The path to file to be written.
     run_meta : RunMeta
         The configurations runtime meta.
-    hazard : GridIO
+    hazard : Dataset
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
@@ -173,7 +173,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     )
     writer.setup(
         defn=exposure.layer.defn,
-        srs=exposure.srs,
+        crs=exposure.crs,
         extra_fields=zip(exposure_meta.new, [ogr.OFTReal] * len(exposure_meta.new)),
     )
 

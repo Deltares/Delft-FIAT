@@ -16,14 +16,17 @@ from typing import Any, Callable, Generator
 import numpy as np
 import regex
 from osgeo import gdal, ogr, osr
+from pyproj.crs import CRS
 
 ## Config entries
 # Building blocks
 AREA = "area"
-CALC = "calc"
 CENTROID = "centroid"
 CHUNK = "chunk"
 CONFIG = "config"
+CRSS = "crs"
+BASE = "base"
+DAMAGE = "damage"
 DEPTH = "depth"
 EAD = "ead"
 EXPOSURE = "exposure"
@@ -35,6 +38,7 @@ FORCE = "force"
 GEOM = "geom"
 GRID = "grid"
 HAZARD = "hazard"
+IMPACT = "impact"
 INDEX = "index"
 INPUT = "input"
 LEADING = "leading"
@@ -49,12 +53,12 @@ MODEL = "model"
 NAME = "name"
 OUTPUT = "output"
 PATH = "path"
+PROJECTION = "projection"
 RESALG = "resalg"
 RISK = "risk"
 RP = "rp"
 RUN = "run"
 SETTINGS = "settings"
-SRS = "srs"
 THREADS = "threads"
 TOTAL = "total"
 TYPE = "type"
@@ -64,37 +68,36 @@ VULNERABILITY = "vulnerability"
 WINDOW = "window"
 ZONAL = "zonal"
 # Model settings
-MODEL_CALC = f"{MODEL}.{CALC}"
 MODEL_GEOM_CHUNK = f"{MODEL}.{GEOM}.{CHUNK}"
+MODEL_GRID_BASE = f"{MODEL}.{GRID}.{BASE}"
 MODEL_GRID_CHUNK = f"{MODEL}.{GRID}.{CHUNK}"
-MODEL_GRID_LEADING = f"{MODEL}.{GRID}.{LEADING}"
 MODEL_LOGLEVEL = f"{MODEL}.{LOG}{LEVEL}"
+MODEL_METHOD = f"{MODEL}.{METHOD}"
+MODEL_PROJECTION = f"{MODEL}.{PROJECTION}"
+MODEL_PROJECTION_CRS = f"{MODEL}.{PROJECTION}.{CRSS}"
+MODEL_PROJECTION_FORCE = f"{MODEL}.{PROJECTION}.{FORCE}"
 MODEL_RISK = f"{MODEL}.{RISK}"
-MODEL_SRS = f"{MODEL}.{SRS}"
-MODEL_SRS_FORCE = f"{MODEL}.{SRS}.{FORCE}"
-MODEL_SRS_VALUE = f"{MODEL}.{SRS}.{VALUE}"
 MODEL_THREADS = f"{MODEL}.{THREADS}"
 MODEL_TYPE = f"{MODEL}.{TYPE}"
 # Output
 OUTPUT_PATH = f"{OUTPUT}.{PATH}"
-OUTPUT_GEOM_NAME = f"{OUTPUT}.{GEOM}.{NAME}"
-OUTPUT_GRID_NAME = f"{OUTPUT}.{GRID}.{NAME}"
+OUTPUT_GEOM_FILE = f"{OUTPUT}.{GEOM}.{FILE}"
+OUTPUT_GRID_FILE = f"{OUTPUT}.{GRID}.{FILE}"
 # Input
 AREA__METHOD = f"{AREA}_{METHOD}"
-EXPOSURE_AREA__METHOD = f"{EXPOSURE}.{AREA}_{METHOD}"  # TODO exposure specific
 EXPOSURE_GEOM = f"{EXPOSURE}.{GEOM}"
 EXPOSURE_GEOM_FILE = f"{EXPOSURE_GEOM}.{FILE}"
+EXPOSURE_GEOM_IMPACT__TYPES = f"{EXPOSURE}.{GEOM}.{IMPACT}_{TYPE}"
 EXPOSURE_GEOM_SETTINGS = f"{EXPOSURE_GEOM}.{SETTINGS}"
 EXPOSURE_GRID = f"{EXPOSURE}.{GRID}"
 EXPOSURE_GRID_FILE = f"{EXPOSURE_GRID}.{FILE}"
 EXPOSURE_GRID_RESALG = f"{EXPOSURE_GRID}.{RESALG}"
 EXPOSURE_GRID_SETTINGS = f"{EXPOSURE_GRID}.{SETTINGS}"
-EXPOSURE_TYPES = f"{EXPOSURE}.{TYPES}"
-EXPOSURE_ZONAL__METHOD = f"{EXPOSURE}.{ZONAL}_{METHOD}"
 HAZARD_FILE = f"{HAZARD}.{FILE}"
 HAZARD_RESALG = f"{HAZARD}.{RESALG}"
 HAZARD_SETTINGS = f"{HAZARD}.{SETTINGS}"
 HAZARD_TYPE = f"{HAZARD}.{TYPE}"
+IMPACT__TYPES = f"{IMPACT}_{TYPES}"
 VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
 VULNERABILITY_SETTINGS = f"{VULNERABILITY}.{SETTINGS}"
 ZONAL__METHOD = f"{ZONAL}_{METHOD}"
@@ -359,6 +362,31 @@ def flatten_dict(
 
 
 # GIS related utility
+def get_crs_repr(
+    crs: CRS,
+) -> str:
+    """Get a representation of a spatial reference system object.
+
+    Parameters
+    ----------
+    crs : CRS
+        Spatial reference system.
+
+    Returns
+    -------
+    str
+        Representing string.
+    """
+    if crs is None:
+        raise ValueError("'crs' can not be None.")
+    auth = crs.to_authority()
+
+    if auth is None:
+        return crs.to_proj4()
+
+    return ":".join(auth)
+
+
 def get_srs_repr(
     srs: osr.SpatialReference,
 ) -> str:
@@ -383,37 +411,6 @@ def get_srs_repr(
         return srs.ExportToProj4()
 
     return f"{_auth_n}:{_auth_c}"
-
-
-def read_gridsource_info(
-    gr: gdal.Dataset,
-    format: str = "json",
-) -> dict[str, Any]:
-    """Read grid source information.
-
-    Thanks to:
-    https://stackoverflow.com/questions/72059815/how-to-retrieve-all-variable-names-within-a-netcdf-using-gdal.
-    """
-    info = gdal.Info(gr, options=gdal.InfoOptions(format=format))
-    return info
-
-
-def read_gridsource_layers(
-    gr: gdal.Dataset,
-) -> dict[str, Any] | None:
-    """Read the layers of a gridsource."""
-    sd = gr.GetSubDatasets()
-
-    out = {}
-
-    for item in sd:
-        path = item[0]
-        ds = path.split(":")[-1].strip()
-        out[ds] = path
-
-    if len(out) == 0:
-        return None
-    return out
 
 
 def _check_driver_capabilities(
@@ -558,7 +555,7 @@ def get_module_attr(module_name: str, attr: str) -> Any:
     return out
 
 
-def object_size(obj) -> int:
+def object_size(obj) -> int:  # pragma: no cover
     """Calculate the actual size of an object (bit overestimated).
 
     Thanks to this post on stackoverflow:
@@ -585,7 +582,7 @@ def object_size(obj) -> int:
     return size
 
 
-def timeit(n: int = 200000) -> Callable[[int], float]:
+def timeit(n: int = 200000) -> Callable[[int], float]:  # pragma: no cover
     """Small timing decorater."""
 
     def timeit(fn):

@@ -136,7 +136,6 @@ def test_get_exposure_meta(
         run_meta=run_meta,
         hazard_meta=hazard_meta_run,
         method=flood.depth,
-        types=["damage"],
     )
 
     # Assert the output
@@ -162,7 +161,6 @@ def test_get_exposure_meta_risk(
         run_meta=run_risk_meta,
         hazard_meta=hazard_risk_meta_run,
         method=flood.depth,
-        types=["damage"],
     )
 
     # Assert the output
@@ -196,5 +194,4 @@ def test_get_exposure_meta_errors(
             run_meta=None,  # Can all be nonsense
             hazard_meta=None,
             method=None,
-            types=None,
         )

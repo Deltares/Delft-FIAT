@@ -9,12 +9,8 @@ from typing import Callable
 
 import numpy as np
 
-from fiat.fio import (
-    GridIO,
-)
-from fiat.model.grid_writer import GridItem
+from fiat.fio import Dataset, DataVariable
 from fiat.model.util import create_2d_windows
-from fiat.struct import GridBand
 from fiat.struct.container import (
     ExposureGridMeta,
     HazardMeta,
@@ -24,6 +20,7 @@ from fiat.struct.container import (
 from fiat.thread import Sender
 from fiat.typing import MethodType
 from fiat.util import FIAT_METHOD, FN
+from fiat.writer import GridItem
 
 
 def initialize_pool(q: Queue, p: dict[str, Connection]):
@@ -35,7 +32,7 @@ def initialize_pool(q: Queue, p: dict[str, Connection]):
 
 
 def process_hazard(
-    band: GridBand,
+    band: DataVariable,
     window: tuple,
     vulnerability_meta: VulnerabilityMeta,
 ):
@@ -52,10 +49,10 @@ def process_hazard(
 def array_worker(
     out_array: np.ndarray[np.float32],
     run_meta: RunMeta,
-    hazard: GridIO,
+    hazard: Dataset,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
-    exposure: GridIO,
+    exposure: Dataset,
     exposure_meta: ExposureGridMeta,
     fn_impact: Callable,
     window: tuple,
@@ -68,13 +65,13 @@ def array_worker(
         The array to which to put the output data in.
     run_meta : RunMeta
         Configurations runtime metadata.
-    hazard : GridIO
+    hazard : Dataset
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
-    exposure : GridIO
+    exposure : Dataset
         The exposure data.
     exposure_meta : ExposureGridMeta
         Metadata specific to the exposure data.
@@ -89,9 +86,13 @@ def array_worker(
         The calculated impact.
     """
     bn = 0
-    w, h = window[2:]
+    w = window[0].stop - window[0].start
+    h = window[1].stop - window[1].start
     # Loop through the combinations
-    for exp, haz_indices in product(exposure.bands, hazard_meta.indices_run):
+    for exp, haz_indices in product(
+        exposure.variables.values(),
+        hazard_meta.indices_run,
+    ):
         # Get and process the hazard data
         hazard_data = [
             process_hazard(
@@ -108,7 +109,7 @@ def array_worker(
             *hazard_data,
             exposure_data,
             fact=1,
-            fn_curve=vulnerability_meta.fn[exp.get_meta(FN)],
+            fn_curve=vulnerability_meta.fn[exp._obj.getncattr(FN)],
         )
         bn += 1
 
@@ -142,18 +143,18 @@ def array_worker(
 def worker(
     mem_id: str,
     run_meta: RunMeta,
-    hazard: GridIO,
+    hazard: Dataset,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
-    exposure: GridIO,
+    exposure: Dataset,
     exposure_meta: ExposureGridMeta,
-    chunk: tuple,
     window: tuple,
+    chunk: tuple,
 ):
     """Run the grid model.
 
     This is the worker function corresponding to the run method \
-of the [GridIO](/api/GeomIO.qmd) object.
+of the [Dataset](/api/GeomIO.qmd) object.
 
     Parameters
     ----------
@@ -161,13 +162,13 @@ of the [GridIO](/api/GeomIO.qmd) object.
         The identifier/ name of the shared memory.
     run_meta : RunMeta
         The configurations runtime meta.
-    hazard : GridIO
+    hazard : Dataset
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
-    exposure : GridIO
+    exposure : Dataset
         The exposure data.
     exposure_meta : ExposureGridMeta
         Metadata specific to the exposure data.
@@ -181,17 +182,17 @@ of the [GridIO](/api/GeomIO.qmd) object.
     # Setup the existing block of memory
     exshm = SharedMemory(name=mem_id)
     out_array = np.ndarray(
-        shape=(exposure_meta.nb, *window),
+        shape=(exposure_meta.nb, *chunk),
         dtype=np.float32,
         buffer=exshm.buf,
     )
     sender = Sender(queue=signalqueue)
 
     # Loop through the windows
-    for window_array in create_2d_windows(
-        shape=chunk[2:],
-        origin=chunk[0:2],
-        window=window,
+    for window2d in create_2d_windows(
+        shape=window[2:],
+        origin=window[0:2],
+        window_size=chunk,
     ):
         # Do the calculations
         array_worker(
@@ -203,14 +204,14 @@ of the [GridIO](/api/GeomIO.qmd) object.
             exposure=exposure,
             exposure_meta=exposure_meta,
             fn_impact=fn_impact,
-            window=window_array,
+            window=window2d,
         )
 
         # Report back that it's done for this window
         record = GridItem(
             mem_id=mem_id,
-            origin=window_array[:2],
-            shape=window_array[2:],
+            origin=window[0],
+            shape=window[1],
         )
         sender.emit(record=record)
 

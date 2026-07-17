@@ -4,13 +4,13 @@ import math
 
 from fiat.method.flood.depth import fn_impact
 from fiat.method.util import ZONAL_METHODS
-from fiat.util import FLOOD_LEVEL, LEVEL
+from fiat.util import DEPTH, FLOOD_LEVEL, LEVEL
 
 __all__ = ["fn_impact"]
 
 COLUMNS = ["reference", "elevation"]
 NAME = FLOOD_LEVEL
-NEW_COLUMNS = [LEVEL]
+NEW_COLUMNS = [DEPTH]
 TYPES = [f"water_{LEVEL}"]
 
 

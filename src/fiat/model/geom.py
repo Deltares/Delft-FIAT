@@ -11,13 +11,10 @@ from fiat.cfg import Configurations
 from fiat.check import (
     check_geom_extent,
     check_input_data,
-    check_internal_srs,
-    check_vs_srs,
+    check_internal_crs,
+    check_vs_crs,
 )
-from fiat.fio import (
-    GridIO,
-    open_geom,
-)
+from fiat.fio import Dataset
 from fiat.gis import geom
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
@@ -31,22 +28,25 @@ from fiat.model.util import (
     get_run_meta,
     get_vulnerability_meta,
 )
+from fiat.open import open_geom
 from fiat.struct import Container, Table
 from fiat.struct.container import ExposureGeomData
 from fiat.util import (
     AREA__METHOD,
     CENTROID,
     CHUNK,
+    DAMAGE,
     EXPOSURE,
     EXPOSURE__META,
     EXPOSURE_GEOM,
-    EXPOSURE_TYPES,
     FILE,
     HAZARD,
     HAZARD__META,
+    IMPACT__TYPES,
     MEAN,
     OUTPUT__PATH,
-    OUTPUT_GEOM_NAME,
+    OUTPUT_GEOM_FILE,
+    OUTPUT_PATH,
     RUN__META,
     SETTINGS,
     VULNERABILITY,
@@ -54,7 +54,7 @@ from fiat.util import (
     ZONAL__METHOD,
     distribute_threads,
     generic_path_check,
-    get_srs_repr,
+    get_crs_repr,
 )
 
 logger = spawn_logger(__name__)
@@ -80,7 +80,6 @@ class GeomModel(BaseModel):
 
         # Set/ declare some variables
         self.exposure: Container[ExposureGeomData] = Container()
-        self.exposure_types: list[str] = self.cfg.get(EXPOSURE_TYPES, ["damage"])
 
         # Setup the geometry model
         self.read_exposure()
@@ -144,27 +143,28 @@ class GeomModel(BaseModel):
             ## checks
             logger.info("Executing exposure geometry checks...")
 
-            # check the internal srs of the file
-            check_internal_srs(
-                data.layer.srs,
+            # check the internal crs of the file
+            check_internal_crs(
+                data.layer.crs,
                 path.name,
             )
 
-            # check if file srs is the same as the model srs
-            if not check_vs_srs(self.srs, data.layer.srs):
+            # check if file crs is the same as the model crs
+            if not check_vs_crs(self.crs, data.layer.crs):
                 logger.warning(
                     f"Spatial reference of '{path.name}' \
-    ('{get_srs_repr(data.layer.srs)}') does not match \
-    the model spatial reference ('{get_srs_repr(self.srs)}')"
+    ('{get_crs_repr(data.layer.crs)}') does not match \
+    the model spatial reference ('{get_crs_repr(self.crs)}')"
                 )
-                logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
-                data = geom.reproject(data, self.srs.ExportToWkt())
+                logger.info(f"Reprojecting '{path.name}' to '{get_crs_repr(self.crs)}'")
+                data = geom.reproject(data, self.crs.to_wkt())
 
             # Set the data
             self.exposure.set(
                 ExposureGeomData(
                     area_method=element.get(AREA__METHOD, CENTROID),
                     data=data,
+                    impact_types=element.get(IMPACT__TYPES, [DAMAGE]),
                     path=path,
                     zonal_method=element.get(ZONAL__METHOD, MEAN),
                 )
@@ -188,7 +188,7 @@ class GeomModel(BaseModel):
         logger.info("Running the model")
         # Quick check if all data is set
         check_input_data(
-            [HAZARD, self.hazard, GridIO],
+            [HAZARD, self.hazard, Dataset],
             [VULNERABILITY, self.vulnerability, Table],
             [EXPOSURE, self.exposure, ExposureGeomData],
         )
@@ -210,7 +210,7 @@ class GeomModel(BaseModel):
 
         # Get the output filepaths
         output_paths = generate_output_filepaths(
-            outfiles=self.cfg.get(OUTPUT_GEOM_NAME),
+            outfiles=self.cfg.get(OUTPUT_GEOM_FILE),
             infiles=[item.path for item in self.exposure],
             output_dir=self.cfg.output_dir,
         )
@@ -239,7 +239,6 @@ class GeomModel(BaseModel):
                 run_meta=run_meta,
                 hazard_meta=hazard_meta,
                 method=self.method,
-                types=self.exposure_types,
             )
             # Check the output file path
             ensure_writable_filepath(output_path)
@@ -283,5 +282,5 @@ class GeomModel(BaseModel):
             exc_info = None
 
         else:
-            logger.info(f"Output generated in: '{self.cfg.get(OUTPUT__PATH)}'")
+            logger.info(f"Output generated in: '{self.cfg.get(OUTPUT_PATH)}'")
             logger.info("Model run is done!")

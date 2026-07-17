@@ -4,9 +4,8 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from osgeo import osr
+from pyproj.crs import CRS
 
-from fiat.fio import GridIO
 from fiat.util import (
     GEOM_DRIVER_MAP,
     GRID_DRIVER_MAP,
@@ -21,13 +20,10 @@ from fiat.util import (
     flatten_dict,
     generic_directory_check,
     generic_path_check,
+    get_crs_repr,
     get_module_attr,
-    get_srs_repr,
     mean,
-    object_size,
     re_filter,
-    read_gridsource_info,
-    read_gridsource_layers,
     regex_pattern,
     replace_empty,
     text_chunk_gen,
@@ -153,8 +149,6 @@ def test_driver_maps():
     # Simply assert some key drivers
     assert ".gpkg" in GEOM_DRIVER_MAP
     assert ".tif" not in GEOM_DRIVER_MAP
-    assert ".nc" in GEOM_DRIVER_MAP
-    assert ".nc" in GRID_DRIVER_MAP
     assert ".fgb" not in GRID_DRIVER_MAP
 
 
@@ -273,56 +267,57 @@ def test_get_module_attr():
     assert attr == ["depth"]
 
 
-def test_get_srs_repr(srs_4326: osr.SpatialReference):
+def test_get_crs_repr(crs_4326: CRS):
     # Call the function
-    r = get_srs_repr(srs_4326)
+    r = get_crs_repr(crs_4326)
 
     # Assert the output
     assert r == "EPSG:4326"
 
 
-def test_get_srs_repr_proj():
-    srs = osr.SpatialReference()
-    srs.ImportFromProj4("+proj=longlat +datum=WGS84 +no_defs +type=crs")
+def test_get_crs_repr_proj():
+    crs = CRS.from_wkt("""
+PROJCRS["Custom Site Grid",
+    BASEGEOGCRS["WGS 84",
+        DATUM["World Geodetic System 1984",
+            ELLIPSOID["WGS 84",6378137,298.257223563]
+        ],
+        PRIMEM["Greenwich",0],
+        ANGLEUNIT["degree",0.0174532925199433]
+    ],
+    CONVERSION["Local Transverse Mercator",
+        METHOD["Transverse Mercator"],
+        PARAMETER["Latitude of natural origin",52.0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        PARAMETER["Longitude of natural origin",5.0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        PARAMETER["Scale factor at natural origin",1.0,
+            SCALEUNIT["unity",1]],
+        PARAMETER["False easting",0,
+            LENGTHUNIT["metre",1]],
+        PARAMETER["False northing",0,
+            LENGTHUNIT["metre",1]]
+    ],
+    CS[Cartesian,2],
+        AXIS["Easting",east,ORDER[1]],
+        AXIS["Northing",north,ORDER[2]],
+    LENGTHUNIT["metre",1]
+]
+    """)
     # Call the function
-    r = get_srs_repr(srs)
+    r = get_crs_repr(crs)
 
     # Assert the output
     assert r.startswith("+proj")
 
 
-def test_get_srs_repr_error():
-    # Call the function with no srs as input
+def test_get_crs_repr_error():
+    # Call the function with no crs as input
     with pytest.raises(
         ValueError,
-        match="'srs' can not be None.",
+        match="'crs' can not be None.",
     ):
-        _ = get_srs_repr(None)
-
-
-def test_gridsource_info(hazard_event_data: GridIO):
-    # Call the function
-    data = read_gridsource_info(hazard_event_data.src)
-
-    # Assert the output
-    assert data["driverShortName"] == "netCDF"
-
-
-def test_gridsource_layers_single(hazard_event_data: GridIO):
-    # Call the function
-    layers = read_gridsource_layers(hazard_event_data.src)
-
-    # Assert the output
-    assert layers is None
-
-
-def test_gridsource_layers_multi(hazard_risk_data_subsets: GridIO):
-    # Call the function
-    layers = read_gridsource_layers(hazard_risk_data_subsets.src)
-    assert len(layers) == 4
-    subpath = layers["Band4"]
-    assert subpath.startswith("NETCDF")
-    assert subpath.endswith("Band4")
+        _ = get_crs_repr(None)
 
 
 def test_mean():  # dunb function, dumb test
@@ -333,24 +328,6 @@ def test_mean():  # dunb function, dumb test
     # Call the function
     y = mean([2, 6, 10, 1])
     assert int(y * 100) == 475
-
-
-def test_object_size():
-    # Call the function
-    size = object_size(44)
-    assert size == 28
-
-    # Call the function
-    size = object_size(4.4)
-    assert size == 24
-
-    # Call the function
-    size = object_size(np.array([]))
-    assert size == 112
-
-    # Call the function
-    size = object_size(np.array([2, 2, 2]))
-    assert size == 136
 
 
 def test_re_filter():

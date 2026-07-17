@@ -9,7 +9,8 @@ from pathlib import Path
 
 import numpy as np
 import tomlkit
-from osgeo import gdal, ogr, osr
+from generate_helpers import netcdf_handle, netcdf_variable
+from osgeo import ogr, osr
 
 p = Path(__file__).parent
 
@@ -43,7 +44,7 @@ def create_exposure_geoms(epsg=None):
         "POLYGON ((6.05 7.95, 8.95 7.95, 8.5 6.05, 6.5 6.05, 6.05 7.95))",
     )
     driver = "FlatGeoBuf"
-    add = "_no_srs"
+    add = "_no_crs"
     suffix = ".fgb"
     srs = None
     # In all honesty, this seems stupid
@@ -211,31 +212,15 @@ def create_exposure_geoms_outside():
 
 def create_exposure_grid():
     """Create raster file with exposure data for grid model."""
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(4326)
-
-    # Set up the data source
-    dr = gdal.GetDriverByName("netCDF")
-    src = dr.Create(
-        str(Path(p, "exposure", "spatial.nc")),
-        10,
-        10,
-        2,
-        gdal.GDT_Float32,
+    ds = netcdf_handle(
+        fname="exposure/spatial.nc",
+        lats=np.arange(9.5, 0.4, -1),
+        lons=np.arange(0.5, 9.6, 1),
+        crs="EPSG:4326",
     )
-    gtf = (
-        0.0,
-        1.0,
-        0.0,
-        10.0,
-        0.0,
-        -1.0,
-    )
-    src.SetSpatialRef(srs)
-    src.SetGeoTransform(gtf)
 
-    # Setup band 1
-    band = src.GetRasterBand(1)
+    # Setup variables 1
+    var = netcdf_variable(ds=ds, name="exposure1")
     data = np.ones((10, 10)) * -9999
     # Create spatially different data
     data[0, 1] = 2200
@@ -245,15 +230,14 @@ def create_exposure_grid():
     data[9, 2] = 4600
     data[8, 8] = 3200
     # Write the data
-    band.WriteArray(data)
-    band.SetMetadataItem("fn", "struct_1")
-    band.SetNoDataValue(-9999)
+    var.setncattr("fn", "struct_1")
+    var[:] = data
     # Flush the data
-    band.FlushCache()
-    band = None
+    ds.sync()
+    var = None
 
     # Setup band 2
-    band = src.GetRasterBand(2)
+    var = netcdf_variable(ds=ds, name="exposure2")
     data = np.ones((10, 10)) * -9999
     # Create spatially different data
     data[0, 1] = 3100
@@ -264,173 +248,113 @@ def create_exposure_grid():
     data[9, 2] = 5500
     data[8, 8] = 4100
     # Write the data
-    band.WriteArray(data)
-    band.SetMetadataItem("fn", "struct_2")
-    band.SetNoDataValue(-9999)
+    var.setncattr("fn", "struct_2")
+    var[:] = data
     # Flush the data
-    band.FlushCache()
-    band = None
+    ds.sync()
+    var = None
 
     # Flush the dataaset
-    src.FlushCache()
+    ds.close()
 
     # Dereference everything
-    srs = None
-    src = None
-    dr = None
+    ds = None
 
 
-def create_hazard_event_map(epsg: int = None):
+def create_hazard_event_map(fname: Path | str, crs: str = None):
     """Create hazard event map."""
-    add = "_no_srs"
-    if epsg is not None:
-        add = ""
-
-    # Set up the data source
-    dr = gdal.GetDriverByName("netCDF")
-    src = dr.Create(
-        str(Path(p, f"event_map{add}.nc")),
-        10,
-        10,
-        1,
-        gdal.GDT_Float32,
+    ds = netcdf_handle(
+        fname=fname,
+        lats=np.arange(9.5, 0.4, -1),
+        lons=np.arange(0.5, 9.6, 1),
+        crs=crs,
     )
-    # This is stupid
-    srs = None
-    if epsg is not None:
-        srs = osr.SpatialReference()
-        srs.ImportFromEPSG(4326)
-        src.SetSpatialRef(srs)
-    gtf = (
-        0.0,
-        1.0,
-        0.0,
-        10.0,
-        0.0,
-        -1.0,
-    )
-    src.SetGeoTransform(gtf)
 
-    # Create a band
-    band = src.GetRasterBand(1)
+    # Create the variables
+    var = netcdf_variable(ds=ds, name="data")
+
+    # Create the data
     data = np.zeros((10, 10))
     oneD = tuple(range(10))
     # Create spatially different data
     for x, y in product(oneD, oneD):
         data[x, y] = 3.6 - ((x + y) * 0.2)
     # Write blyat
-    band.SetMetadataItem("type", "water_depth")
-    band.SetNoDataValue(-9999)
-    band.WriteArray(data)
+    var.setncattr("type", "water_depth")
+    var[:] = data
 
     # Flush the data
-    band.FlushCache()
-    src.FlushCache()
+    ds.sync()
+    ds.close()
 
     # Dereference everything
-    srs = None
-    band = None
-    src = None
-    dr = None
+    var = None
+    ds = None
 
 
 def create_hazard_event_map_highres():
     """Create a high resolution hazard map to be reprojected."""
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(4326)
-
-    # Set up the data source
-    dr = gdal.GetDriverByName("netCDF")
-    src = dr.Create(
-        str(Path(p, "event_map_highres.nc")),
-        100,
-        100,
-        1,
-        gdal.GDT_Float32,
+    ds = netcdf_handle(
+        fname="event_map_highres.nc",
+        lats=np.arange(0.05, 9.96, 0.1),
+        lons=np.arange(9.95, 0.04, -0.1),
+        crs="EPSG:4326",
     )
-    gtf = (
-        0.0,
-        0.1,
-        0.0,
-        10.0,
-        0.0,
-        -0.1,
-    )
-    src.SetSpatialRef(srs)
-    src.SetGeoTransform(gtf)
 
-    # Create band
-    band = src.GetRasterBand(1)
+    # Create the variable
+    var = netcdf_variable(ds=ds, name="data")
+
+    # Create the data
     data = np.zeros((100, 100))
     oneD = tuple(range(100))
     # Create spatially different data
     for x, y in product(oneD, oneD):
         data[x, y] = 3.6 - ((x + y) * 0.02)
     # Write the data
-    band.SetMetadataItem("type", "water_depth")
-    band.SetNoDataValue(-9999)
-    band.WriteArray(data)
+    var.setncattr("type", "water_depth")
+    var[:] = data
 
     # Flush the data
-    band.FlushCache()
-    src.FlushCache()
+    ds.sync()
+    ds.close()
 
     # Dereference everything
-    srs = None
-    band = None
-    src = None
-    dr = None
+    var = None
+    ds = None
 
 
 def create_hazard_risk_map():
     """Create a hazard map for risk calculations."""
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(4326)
-
-    # Set up the data source
-    dr = gdal.GetDriverByName("netCDF")
-    src = dr.Create(
-        str(Path(p, "risk_map.nc")),
-        10,
-        10,
-        4,
-        gdal.GDT_Float32,
+    ds = netcdf_handle(
+        fname="risk_map.nc",
+        lats=np.arange(9.5, 0.4, -1),
+        lons=np.arange(0.5, 9.6, 1),
+        crs="EPSG:4326",
     )
-    gtf = (
-        0.0,
-        1.0,
-        0.0,
-        10.0,
-        0.0,
-        -1.0,
-    )
-    src.SetSpatialRef(srs)
-    src.SetGeoTransform(gtf)
 
     # Set return periods values
     rps = [2, 5, 10, 25]
     for idx, fc in enumerate((1.5, 1.8, 1.9, 1.95)):
-        band = src.GetRasterBand(idx + 1)
+        var = netcdf_variable(ds=ds, name=f"{rps[idx]}Y")
         data = np.zeros((10, 10))
         oneD = tuple(range(10))
         # Create spatially different data
         for x, y in product(oneD, oneD):
             data[x, y] = 3.6 - ((x + y) * 0.2)
         data *= fc
-        band.SetMetadataItem("rp", f"{rps[idx]}")
-        band.SetMetadataItem("type", "water_depth")
-        band.SetNoDataValue(-9999)
-        band.WriteArray(data)
-        band.FlushCache()
-        band = None
+        # Set the attributes
+        var.setncattr("rp", f"{rps[idx]}")
+        var.setncattr("type", "water_depth")
+        # Set the data
+        var[:] = data
+        var = None
 
     # Flush the source
-    src.FlushCache()
+    ds.sync()
+    ds.close()
 
     # Dereference
-    srs = None
-    src = None
-    dr = None
+    ds = None
 
 
 def create_settings_geom():
@@ -439,30 +363,30 @@ def create_settings_geom():
         "model": {
             "type": "geom",
             "risk": False,
-            "srs": {
-                "value": "EPSG:4326",
+            "projection": {
+                "crs": "EPSG:4326",
             },
         },
         "output": {
             "path": "output/geom_event",
-            "geom": [{"name": "spatial.gpkg"}],
+            "geom": [{"file": "spatial.gpkg"}],
         },
         "vulnerability": {
             "file": "vulnerability/curves.csv",
-            "step_size": 0.01,
         },
         "hazard": {
             "file": "event_map.nc",
             "settings": {
-                "srs": "EPSG:4326",
+                "crs": "EPSG:4326",
             },
         },
         "exposure": {
             "geom": [
                 {
                     "file": "exposure/spatial.geojson",
+                    "area_method": "area",
                     "settings": {
-                        "srs": "EPSG:4326",
+                        "crs": "EPSG:4326",
                     },
                 },
             ],
@@ -476,7 +400,7 @@ def create_settings_geom():
     # Setup toml with two geometry files
     doc2g = copy.deepcopy(doc)
     doc2g["output"]["path"] = "output/geom_event_2g"
-    doc2g["output"]["geom"].append({"name": "spatial2.gpkg"})
+    doc2g["output"]["geom"].append({"file": "spatial2.gpkg"})
     doc2g["exposure"]["geom"].append({"file": "exposure/spatial2.geojson"})
 
     with open(Path(p, "geom_event_2g.toml"), "w") as f:
@@ -495,7 +419,6 @@ def create_settings_geom():
     doc_r["output"]["path"] = "output/geom_risk"
     doc_r["hazard"]["file"] = "risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
-    doc_r["hazard"]["settings"].update({"var_as_band": True})
 
     with open(Path(p, "geom_risk.toml"), "w") as f:
         tomlkit.dump(doc_r, f)
@@ -503,8 +426,8 @@ def create_settings_geom():
     # Setup toml for risk calculation with 2 geometries
     doc_r2g = copy.deepcopy(doc_r)
     doc_r2g["output"]["path"] = "output/geom_risk_2g"
-    doc_r2g["output"]["geom"].append({"name": "spatial2.gpkg"})
-    doc_r2g["exposure"]["geom"].append({"file2": "exposure/spatial2.geojson"})
+    doc_r2g["output"]["geom"].append({"file": "spatial2.gpkg"})
+    doc_r2g["exposure"]["geom"].append({"file": "exposure/spatial2.geojson"})
 
     with open(Path(p, "geom_risk_2g.toml"), "w") as f:
         tomlkit.dump(doc_r2g, f)
@@ -516,8 +439,8 @@ def create_settings_grid():
         "model": {
             "type": "grid",
             "risk": False,
-            "srs": {
-                "value": "EPSG:4326",
+            "projection": {
+                "crs": "EPSG:4326",
             },
         },
         "output": {
@@ -526,20 +449,18 @@ def create_settings_grid():
         },
         "vulnerability": {
             "file": "vulnerability/curves.csv",
-            "step_size": 0.01,
         },
         "hazard": {
             "file": "event_map.nc",
             "settings": {
-                "srs": "EPSG:4326",
+                "crs": "EPSG:4326",
             },
         },
         "exposure": {
             "grid": {
                 "file": "exposure/spatial.nc",
                 "settings": {
-                    "srs": "EPSG:4326",
-                    "var_as_band": True,
+                    "crs": "EPSG:4326",
                 },
             },
         },
@@ -555,7 +476,6 @@ def create_settings_grid():
     doc_r["output"]["path"] = "output/grid_risk"
     doc_r["hazard"]["file"] = "risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
-    doc_r["hazard"]["settings"].update({"var_as_band": True})
 
     with open(Path(p, "grid_risk.toml"), "w") as f:
         tomlkit.dump(doc_r, f)
@@ -621,8 +541,8 @@ if __name__ == "__main__":
     create_exposure_geoms_5th()
     create_exposure_geoms_outside()
     create_exposure_grid()
-    create_hazard_event_map(epsg=4326)
-    create_hazard_event_map(epsg=None)
+    create_hazard_event_map(fname="event_map.nc", crs="EPSG:4326")
+    create_hazard_event_map(fname="event_map_no_crs.nc", crs=None)
     create_hazard_event_map_highres()
     create_hazard_risk_map()
     create_settings_geom()

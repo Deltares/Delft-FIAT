@@ -1,14 +1,11 @@
-from pathlib import Path
-
 import numpy as np
 
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.method import flood
 from fiat.model.util import (
     create_1d_chunks,
     create_2d_chunks,
     create_2d_windows,
-    get_band_names,
     get_hazard_meta,
     get_run_meta,
     get_vulnerability_meta,
@@ -63,39 +60,17 @@ def test_create_2d_windows_even():
 
     # Assert the output
     assert len(windows) == 25
-    assert windows[0] == (0, 0, 2, 2)
-    assert windows[-1] == (8, 8, 2, 2)  # Should nicely fit
+    assert windows[0] == (slice(0, 2), slice(0, 2))
+    assert windows[-1] == (slice(8, 10), slice(8, 10))  # Should nicely fit
 
 
 def test_create_2d_windows_uneven():
     # Call the function
     windows = list(create_2d_windows((10, 10), (0, 0), (4, 4)))
     assert len(windows) == 9
-    assert windows[0] == (0, 0, 4, 4)
-    assert windows[-1] == (8, 8, 2, 2)  # It's the same as it does not fit
-
-
-def test_get_band_names(hazard_event_path: Path):
-    # Setup the object
-    gio = GridIO(hazard_event_path)
-
-    # Call the function
-    names = get_band_names(gio)
-
-    # Assert the output
-    assert names == ["band1"]
-
-
-def test_get_band_names_empty(tmp_path: Path):
-    # Setup the object
-    gio = GridIO(Path(tmp_path, "tmp.tif"), mode="w")
-    gio.create((2, 2), 1, 6)
-
-    # Call the function
-    names = get_band_names(gio)
-
-    # Assert the output
-    assert names == ["band1"]  # Notice that the first letter is not capitalized
+    assert windows[0] == (slice(0, 4), slice(0, 4))
+    assert windows[-1] == (slice(8, 10), slice(8, 10))
+    # It's the same as it does not fit
 
 
 def test_get_run_meta():
@@ -111,7 +86,7 @@ def test_get_run_meta():
     assert meta.type_length == 1
 
 
-def test_get_hazard_meta(hazard_event_data: GridIO):
+def test_get_hazard_meta(hazard_event_data: Dataset):
     # Call the function
     meta = get_hazard_meta(hazard_event_data, risk=False, method_types=["water_depth"])
 
@@ -123,7 +98,7 @@ def test_get_hazard_meta(hazard_event_data: GridIO):
     assert meta.rp is None
 
 
-def test_get_hazard_meta_risk(hazard_risk_data: GridIO):
+def test_get_hazard_meta_risk(hazard_risk_data: Dataset):
     # Call the function
     meta = get_hazard_meta(hazard_risk_data, risk=True, method_types=["water_depth"])
 

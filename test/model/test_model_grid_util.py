@@ -1,10 +1,11 @@
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.model.grid_util import equal_grid, get_exposure_meta
 from fiat.struct.container import HazardMeta, RunMeta, VulnerabilityMeta
+from fiat.util import EXPOSURE
 
 
 def test_get_exposure_meta(
-    exposure_grid_data: GridIO,
+    exposure_grid_data: Dataset,
     run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -23,11 +24,11 @@ def test_get_exposure_meta(
     assert meta.indices_new == [[0, 1]]
     assert meta.indices_total == [2]
     assert meta.nb == 3
-    assert meta.new == ["band1_1", "band2_1", "total_1"]
+    assert meta.new == ["exposure1_1", "exposure2_1", "total_1"]
 
 
 def test_get_exposure_meta_risk(
-    exposure_grid_data: GridIO,
+    exposure_grid_data: Dataset,
     run_risk_meta: RunMeta,
     hazard_risk_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -46,15 +47,15 @@ def test_get_exposure_meta_risk(
     assert meta.indices_new == [[0, 4], [1, 5], [2, 6], [3, 7]]
     assert meta.indices_total == [8, 9, 10, 11]
     assert meta.nb == 13
-    assert "band1_5" in meta.new
-    assert "band2_10" in meta.new
+    assert "exposure1_5" in meta.new
+    assert "exposure2_10" in meta.new
     assert "total_25" in meta.new
     assert "ead" in meta.new
 
 
 def test_equal_grid(
-    hazard_event_data: GridIO,
-    exposure_grid_data: GridIO,
+    hazard_event_data: Dataset,
+    exposure_grid_data: Dataset,
 ):
     # Assert the current state
     assert hazard_event_data.shape == (10, 10)
@@ -72,17 +73,17 @@ def test_equal_grid(
 
 
 def test_equal_grid_unequal(
-    hazard_event_highres_data: GridIO,
-    exposure_grid_data: GridIO,
+    hazard_event_highres_data: Dataset,
+    hazard_event_data: Dataset,
 ):
     # Assert the current state
     assert hazard_event_highres_data.shape == (100, 100)
-    assert exposure_grid_data.shape == (10, 10)
+    assert hazard_event_data.shape == (10, 10)
 
     # Call the function
     ds1, ds2 = equal_grid(
         gs1=hazard_event_highres_data,
-        gs2=exposure_grid_data,
+        gs2=hazard_event_data,
     )
 
     # Assert exposure data is resampled to 100, 100
@@ -91,8 +92,8 @@ def test_equal_grid_unequal(
 
 
 def test_equal_grid_unequal_second(
-    hazard_event_highres_data: GridIO,
-    exposure_grid_data: GridIO,
+    hazard_event_highres_data: Dataset,
+    exposure_grid_data: Dataset,
 ):
     # Assert the current state
     assert hazard_event_highres_data.shape == (100, 100)
@@ -102,7 +103,7 @@ def test_equal_grid_unequal_second(
     ds1, ds2 = equal_grid(
         gs1=hazard_event_highres_data,
         gs2=exposure_grid_data,
-        first=False,
+        base=EXPOSURE,
     )
 
     # Assert hazard data is resampled to 10, 10

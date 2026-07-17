@@ -4,7 +4,7 @@ from osgeo import ogr
 
 from fiat.fio import GeomIO
 from fiat.struct.geom import GeomLayer
-from fiat.util import get_srs_repr
+from fiat.util import get_crs_repr
 
 
 def test_geomlayer(exposure_geom_data: GeomIO):
@@ -60,7 +60,7 @@ def test_geomlayer_spatial_properties(exposure_geom_data: GeomIO):
         (0.5, 1.05, 8.95, 9.5),
     )
     assert gl.geom_type == 3  # i.e. 3 = Polygon
-    assert get_srs_repr(gl.srs) == "EPSG:4326"
+    assert get_crs_repr(gl.crs) == "EPSG:4326"
 
 
 def test_geomlayer_iter(exposure_geom_data: GeomIO):

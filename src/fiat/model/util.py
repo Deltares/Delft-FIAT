@@ -12,23 +12,17 @@ from fiat.check import (
     check_hazard_rp,
     check_hazard_types,
 )
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.method.ead import fn_density
 from fiat.struct import Table
 from fiat.struct.container import HazardMeta, RunMeta, VulnerabilityMeta
 from fiat.typing import MethodType
 from fiat.util import (
-    EXPOSURE,
-    HAZARD,
     RP,
     TYPE,
 )
 
 GEOM_DEFAULT_CHUNK = 50000
-GRID_PREFER = {
-    False: HAZARD,
-    True: EXPOSURE,
-}
 
 
 def create_1d_chunks(
@@ -136,8 +130,8 @@ def create_2d_chunks(
 def create_2d_windows(
     shape: tuple,
     origin: tuple,
-    window: tuple,
-) -> Generator[tuple, None, None]:
+    window_size: tuple,
+) -> Generator[tuple[slice, slice], None, None]:
     """Create chunk windows from a grid.
 
     Parameters
@@ -158,35 +152,17 @@ def create_2d_windows(
     x, y = shape
     lu = tuple(
         product(
-            range(ox, ox + x, window[1]),
-            range(oy, oy + y, window[0]),
+            range(ox, ox + x, window_size[1]),
+            range(oy, oy + y, window_size[0]),
         ),
     )
     for l, u in lu:
-        w = min(window[1], ox + x - l)
-        h = min(window[0], oy + y - u)
+        w = min(window_size[1], ox + x - l)
+        h = min(window_size[0], oy + y - u)
         yield (
-            l,
-            u,
-            w,
-            h,
+            slice(l, l + w),
+            slice(u, u + h),
         )
-
-
-def get_band_names(
-    ds: GridIO,
-) -> list:
-    """Determine the names of the bands.
-
-    If the bands do not have any names of themselves,
-    they will be set to a default.
-    """
-    names = []
-    for idx, band in enumerate(ds):
-        name = band.name
-        names.append(name or f"band{idx+1}")
-
-    return names
 
 
 def get_run_meta(
@@ -204,13 +180,13 @@ def get_run_meta(
 
 
 def get_hazard_meta(
-    hazard: GridIO,
+    hazard: Dataset,
     risk: bool,
     method_types: list[str],
 ) -> HazardMeta:
     """Obtain some metadata from the hazard data."""
     # Get the types from the metadata
-    types = [band.get_meta(TYPE) for band in hazard]
+    types = [band.get_attr(TYPE) for band in hazard]
     # Check the typing
     indices_type = check_hazard_types(
         types,
@@ -225,7 +201,7 @@ def get_hazard_meta(
     # If identifier is not None
     if identifier is not None:
         ids, ids_list = check_hazard_identifier(
-            [band.get_meta(identifier) for band in hazard],
+            [band.get_attr(identifier) for band in hazard],
             indices_type=indices_type,
         )
 

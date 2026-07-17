@@ -4,19 +4,19 @@ import gc
 from pathlib import Path
 
 from osgeo import gdal, ogr, osr
+from pyproj import CRS
 
 from fiat.error import DriverNotFoundError
-from fiat.fio.base import BaseIO
+from fiat.fio.base import BaseDriver
 from fiat.struct import GeomLayer
 from fiat.util import (
     GEOM_DRIVER_MAP,
-    get_srs_repr,
 )
 
 __all__ = ["GeomIO"]
 
 
-class GeomIO(BaseIO):
+class GeomIO(BaseDriver):
     """A source object for geospatial vector data.
 
     Essentially an OGR DataSource wrapper.
@@ -29,7 +29,7 @@ class GeomIO(BaseIO):
         The I/O mode. Either `r` for reading or `w` for writing.
     overwrite : bool, optional
         Whether or not to overwrite an existing dataset.
-    srs : str, optional
+    crs : str, optional
         A Spatial reference system string in case the dataset has none.
 
     Examples
@@ -49,7 +49,7 @@ class GeomIO(BaseIO):
         file: str,
         mode: str = "r",
         overwrite: bool = False,
-        srs: str | None = None,
+        crs: str | None = None,
     ):
         """Create a GeomIO object."""
         obj = object.__new__(cls)
@@ -61,11 +61,12 @@ class GeomIO(BaseIO):
         file: Path | str,
         mode: str = "r",
         overwrite: bool = False,
-        srs: str | None = None,
+        crs: str | None = None,
     ):
+        self._crs = crs
         self.src: gdal.Dataset = None
         # Supercharge
-        BaseIO.__init__(self, file, mode)
+        BaseDriver.__init__(self, file, mode)
 
         # Check for the driver
         if self.path.suffix not in GEOM_DRIVER_MAP:
@@ -85,31 +86,37 @@ class GeomIO(BaseIO):
             self.create(self.path)
 
         self._layer: GeomLayer = None
-        self._srs: osr.SpatialReference = None
-        if srs is not None:
-            self._srs = osr.SpatialReference()
-            self._srs.SetFromUserInput(srs)
 
     def __reduce__(self):
-        srs = None
-        if self._srs is not None:
-            srs = get_srs_repr(self._srs)
         return self.__class__, (
             self.path,
             self.mode_str,
             False,
-            srs,
+            self._crs,
         )
 
     ## Properties
     @property
-    @BaseIO.check_state
+    @BaseDriver.check_state
+    def crs(self) -> CRS | None:
+        """Return the crs (Spatial Reference System)."""
+        _crs = self.layer.crs or self._crs
+        if _crs is not None:
+            return CRS.from_user_input(_crs)
+        return None
+
+    @crs.setter
+    def crs(self, value: str):
+        self._crs = value
+
+    @property
+    @BaseDriver.check_state
     def driver_meta(self) -> dict:
         """Return the driver meta data."""
         return self.driver.GetMetadata()
 
     @property
-    @BaseIO.check_state
+    @BaseDriver.check_state
     def layer(self) -> GeomLayer:
         """Return the geometries layer."""
         if self._layer is not None:
@@ -119,27 +126,14 @@ class GeomIO(BaseIO):
             self._layer = GeomLayer._create(self.src, obj, self.mode)
             return self._layer
 
-    @property
-    @BaseIO.check_state
-    def srs(self) -> osr.SpatialReference:
-        """Return the srs (Spatial Reference System)."""
-        _srs = self.layer.srs
-        if _srs is None:
-            _srs = self._srs
-        return _srs
-
-    @srs.setter
-    def srs(self, srs: osr.SpatialReference):
-        self._srs = srs
-
     ## Basic I/O methods
     def close(self) -> None:
         """Close the dataset."""
-        BaseIO.close(self)
+        BaseDriver.close(self)
         if self.src is not None:
             self.src.Close()
 
-        self._srs = None
+        self._crs = None
         self._layer = None
         self.src = None
         self.driver = None
@@ -166,8 +160,8 @@ class GeomIO(BaseIO):
         return obj
 
     ## Specific I/O methods
-    @BaseIO.check_mode
-    @BaseIO.check_state
+    @BaseDriver.check_mode
+    @BaseDriver.check_state
     def create(
         self,
         path: Path | str,
@@ -184,11 +178,11 @@ class GeomIO(BaseIO):
         self.src = self.driver.CreateDataSource(path.as_posix())
         self.path = path  # Overwrite the path
 
-    @BaseIO.check_mode
-    @BaseIO.check_state
+    @BaseDriver.check_mode
+    @BaseDriver.check_state
     def create_layer(
         self,
-        srs: osr.SpatialReference,
+        crs: CRS | str,
         geom_type: int,
     ) -> None:
         """Create a new vector layer.
@@ -197,17 +191,20 @@ class GeomIO(BaseIO):
 
         Parameters
         ----------
-        srs : osr.SpatialReference
+        crs : CRS | str
             Spatial Reference System.
         geom_type : int
             Type of geometry. E.g. 'POINT' or 'POLYGON'. It is supplied as an integer
             that complies with a specific geometry type according to GDAL.
         """
+        srs = osr.SpatialReference()
+        srs.SetFromUserInput(CRS.from_user_input(crs).to_wkt())
         obj = self.src.CreateLayer(self.path.stem, srs, geom_type)
         self._layer = GeomLayer._create(self.src, obj, self.mode)
+        srs = None
 
-    @BaseIO.check_mode
-    @BaseIO.check_state
+    @BaseDriver.check_mode
+    @BaseDriver.check_state
     def delete(
         self,
         all=False,

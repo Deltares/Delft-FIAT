@@ -1,5 +1,6 @@
 import io
 import platform
+import shutil
 from multiprocessing import get_context
 from multiprocessing.queues import Queue
 from pathlib import Path
@@ -7,11 +8,13 @@ from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 from osgeo import osr
+from pyproj.crs import CRS
 from pytest_mock import MockerFixture
 
 from fiat.cfg import Configurations
-from fiat.fio import GeomIO, GridIO, open_csv, open_geom, open_grid
+from fiat.fio import Dataset, GeomIO
 from fiat.log import Logger
+from fiat.open import open_csv, open_geom, open_grid
 from fiat.struct import Table
 
 TEST_MODULE = Path(__file__).parent
@@ -44,6 +47,14 @@ def exposure_geom_path(testdata_dir: Path) -> Path:
     return p
 
 
+@pytest.fixture
+def exposure_geom_tmp_path(tmp_path: Path, exposure_geom_path: Path) -> Path:
+    p = Path(tmp_path, "tmp.geojson")
+    shutil.copy2(exposure_geom_path, p)
+    assert p.is_file()
+    return p
+
+
 @pytest.fixture(scope="session")
 def exposure_grid_path(testdata_dir: Path) -> Path:
     p = Path(testdata_dir, "exposure", "spatial.nc")
@@ -54,6 +65,14 @@ def exposure_grid_path(testdata_dir: Path) -> Path:
 @pytest.fixture(scope="session")
 def hazard_event_path(testdata_dir: Path) -> Path:
     p = Path(testdata_dir, "event_map.nc")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture
+def hazard_event_tmp_path(tmp_path: Path, hazard_event_path: Path) -> Path:
+    p = Path(tmp_path, "event_map.nc")
+    shutil.copy2(hazard_event_path, p)
     assert p.is_file()
     return p
 
@@ -109,51 +128,51 @@ def exposure_geom_data(exposure_geom_path: Path) -> GeomIO:
 
 
 @pytest.fixture
-def exposure_grid_data(exposure_grid_path: Path) -> GridIO:
-    ds = open_grid(exposure_grid_path, var_as_band=True)  # Read only
-    assert isinstance(ds, GridIO)
+def exposure_grid_data(exposure_grid_path: Path) -> Dataset:
+    ds = open_grid(exposure_grid_path)  # Read only
+    assert isinstance(ds, Dataset)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_event_data(hazard_event_path: Path) -> GridIO:
+def hazard_event_data(hazard_event_path: Path) -> Dataset:
     ds = open_grid(hazard_event_path)  # Read only
-    assert isinstance(ds, GridIO)
+    assert isinstance(ds, Dataset)
     return ds
 
 
 @pytest.fixture
-def hazard_event_highres_data(hazard_event_highres_path: Path) -> GridIO:
+def hazard_event_highres_data(hazard_event_highres_path: Path) -> Dataset:
     ds = open_grid(hazard_event_highres_path)  # Read only
-    assert isinstance(ds, GridIO)
+    assert isinstance(ds, Dataset)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_risk_data(hazard_risk_path: Path) -> GridIO:
-    ds = open_grid(hazard_risk_path, var_as_band=True)  # Read only
-    assert isinstance(ds, GridIO)
+def hazard_risk_data(hazard_risk_path: Path) -> Dataset:
+    ds = open_grid(hazard_risk_path)  # Read only
+    assert isinstance(ds, Dataset)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_risk_data_subsets(hazard_risk_path: Path) -> GridIO:
-    ds = open_grid(hazard_risk_path, var_as_band=False)  # Read only
-    assert isinstance(ds, GridIO)
+def hazard_risk_data_subsets(hazard_risk_path: Path) -> Dataset:
+    ds = open_grid(hazard_risk_path)  # Read only
+    assert isinstance(ds, Dataset)
     return ds
 
 
 @pytest.fixture
 def mocked_exp_grid(
     mocker: MockerFixture,
-    srs_4326: osr.SpatialReference,
+    crs_4326: osr.SpatialReference,
 ) -> MagicMock:
-    grid = mocker.create_autospec(GridIO)
+    grid = mocker.create_autospec(Dataset)
     # Set attributes for practical use
-    type(grid).geotransform = PropertyMock(
+    type(grid).transform = PropertyMock(
         side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
     )
-    type(grid).srs = PropertyMock(side_effect=lambda: srs_4326)
+    type(grid).crs = PropertyMock(side_effect=lambda: crs_4326)
     type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
     return grid
 
@@ -161,14 +180,14 @@ def mocked_exp_grid(
 @pytest.fixture
 def mocked_hazard_grid(
     mocker: MockerFixture,
-    srs_4326: osr.SpatialReference,
+    crs_4326: osr.SpatialReference,
 ) -> MagicMock:
-    grid = mocker.create_autospec(GridIO)
+    grid = mocker.create_autospec(Dataset)
     # Set attributes for practical use
-    type(grid).geotransform = PropertyMock(
+    type(grid).transform = PropertyMock(
         side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
     )
-    type(grid).srs = PropertyMock(side_effect=lambda: srs_4326)
+    type(grid).crs = PropertyMock(side_effect=lambda: crs_4326)
     type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
     return grid
 
@@ -181,16 +200,14 @@ def mp_queue() -> Queue:
 
 
 @pytest.fixture(scope="session")
-def srs_4326() -> osr.SpatialReference:
-    s = osr.SpatialReference()
-    s.SetFromUserInput("EPSG:4326")
+def crs_4326() -> CRS:
+    s = CRS.from_user_input("EPSG:4326")
     return s
 
 
 @pytest.fixture(scope="session")
-def srs_3857() -> osr.SpatialReference:
-    s = osr.SpatialReference()
-    s.SetFromUserInput("EPSG:3857")
+def crs_3857() -> CRS:
+    s = CRS.from_user_input("EPSG:3857")
     return s
 
 

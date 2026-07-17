@@ -4,13 +4,11 @@ import numpy as np
 import pytest
 
 from fiat.fio import (
+    Dataset,
     GeomIO,
-    GridIO,
-    open_csv,
-    open_geom,
-    open_grid,
 )
 from fiat.fio.handler import FileBufferHandler
+from fiat.open import open_csv, open_geom, open_grid
 from fiat.struct import Table, TableLazy
 
 
@@ -153,8 +151,8 @@ def test_open_grid_context(hazard_event_path: Path):
     # Open the dataset with context managesubsetr
     with open_grid(hazard_event_path) as reader:
         # Assert some simple stuff
-        assert isinstance(reader, GridIO)
-        assert reader.size == 1  # One band
+        assert isinstance(reader, Dataset)
+        assert reader.size == 1  # One variable
 
     # Now it's closed but not deleted
     assert reader.closed == True
@@ -165,7 +163,7 @@ def test_open_grid_context(hazard_event_path: Path):
         match="Invalid operation on a closed file",
     ):
         # Requent the size
-        _ = reader.size
+        _ = reader.shape
 
 
 def test_open_grid_read_only(hazard_event_path: Path):
@@ -173,68 +171,21 @@ def test_open_grid_read_only(hazard_event_path: Path):
     ds = open_grid(hazard_event_path)
 
     # Assert some simple stuff
-    assert isinstance(ds, GridIO)
+    assert isinstance(ds, Dataset)
     assert ds.size == 1  # One band
 
     ds.close()
 
 
-def test_open_grid_chunk(hazard_event_path: Path):
-    # Open the dataset
-    ds = open_grid(hazard_event_path, chunk=None)  # Default
+def test_open_grid_append(hazard_event_tmp_path: Path):
+    # Open a dataset in write mode
+    ds = open_grid(hazard_event_tmp_path, mode="a")
 
     # Assert some simple stuff
-    assert ds.shape == (10, 10)
-    assert ds.chunk == (10, 10)  # As no chunking was given, it is set to the shape
-
-    ds.close()
-
-    # Open the dataset with chunks
-    ds = open_grid(hazard_event_path, chunk=(4, 4))
-
-    # Assert some simple stuff
-    assert ds.shape == (10, 10)
-    assert ds.chunk == (4, 4)
-
-    ds.close()
-
-
-def test_open_grid_subset(hazard_risk_path: Path):
-    # Open the dataset
-    ds = open_grid(hazard_risk_path, subset=None)  # Default
-
-    # Assert some simple stuff
-    assert ds.size == 0  # Nothing found
-    assert ds.subdatasets is not None  # Subsets are found
-
-    ds.close()
-
-    # Open the dataset, but ask for as subset (band)
-    ds = open_grid(hazard_risk_path, subset="Band1")
-
-    # Assert some simple stuff
-    assert ds.size == 1  # A single band
-    assert ds.subdatasets is None  # No longer any subsets
-
-    ds.close()
-
-
-def test_open_grid_var(hazard_risk_path: Path):
-    # Open the dataset
-    ds = open_grid(hazard_risk_path, var_as_band=False)  # Default
-
-    # Assert some simple stuff
-    assert ds.size == 0  # Nothing found
-    assert ds.subdatasets is not None  # Subsets are found
-
-    ds.close()
-
-    # Open the dataset, but handle the subsets as bands
-    ds = open_grid(hazard_risk_path, var_as_band=True)
-
-    # Assert some simple stuff
-    assert ds.size == 4  # All subsets as bands
-    assert ds.subdatasets is None  # No longer any subsets
+    assert isinstance(ds, Dataset)
+    assert ds.mode == 1  # Write/ update mode
+    assert ds.src is not None  # Hasn't been created yet
+    assert ds.size == 1
 
     ds.close()
 
@@ -246,4 +197,4 @@ def test_open_grid_write(tmp_path: Path):
 
     # Assert some simple stuff
     assert ds.mode == 2
-    assert ds.src is None
+    assert ds.src is not None

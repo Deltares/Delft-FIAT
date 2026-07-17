@@ -32,6 +32,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "gdal>=3.5",
+    "netcdf4",
     "numpy",
     "pyproj",
     "scipy",
@@ -207,7 +208,7 @@ clean-docs-site = { cmd = ["rm", "-rf", "docs/_site"] }
 docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 
 # Testdata
-testdata = { cmd = ["python", "data/create_test_data.py"] }
+testdata = { cmd = ["python", "data/generate.py"] }
 
 # Build specific tasks
 [tool.pixi.feature.build.tasks]
@@ -286,8 +287,6 @@ test-system = { cmd = [
 ## Dependencies
 [tool.pixi.dependencies]
 libgdal-core = ">=3.5"
-libgdal-arrow-parquet = "*"
-libgdal-netcdf = "*"
 pip = "*"
 uv = "*"
 
@@ -296,16 +295,12 @@ uv = "*"
 delft_fiat = { path = ".", editable = true }
 
 # Specific environment dependencies and definitions
-[tool.pixi.feature.build]
-dependencies = { python = "3.14.*" }
-
-# All that can simple use conda-forge's GDAL
 [tool.pixi.feature.gdal]
 dependencies = { gdal = ">=3.5" }
 
 # Docs builder framework
 [tool.pixi.feature.docs]
-dependencies = { quarto = "==1.8.27" }
+dependencies = { quarto = "==1.9.38" }
 
 # Wheel building env
 [tool.pixi.feature.wheel.dependencies]
@@ -334,10 +329,10 @@ dependencies = { python = "3.11.*" }
 
 ## Workspace environments
 [tool.pixi.environments]
-build = { features = ["all", "build"] }
-default = { features = ["all", "dev", "docs", "gdal", "test"] }
-docs = { features = ["all", "docs", "gdal"] }
-slim = { features = ["all", "gdal"] }
+build = { features = ["py314", "all", "build"] }
+default = { features = ["py314", "all", "dev", "docs", "gdal", "test"] }
+docs = { features = ["py314", "all", "docs", "gdal"] }
+slim = { features = ["py314", "all", "gdal"] }
 test-py314 = { features = ["py314", "all", "gdal", "test"] }
 test-py313 = { features = ["py313", "all", "gdal", "test"] }
 test-py312 = { features = ["py312", "all", "gdal", "test"] }

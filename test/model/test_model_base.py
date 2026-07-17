@@ -4,11 +4,11 @@ from pathlib import Path
 import pytest
 
 from fiat.cfg import Configurations
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.log import Logger
 from fiat.model.base import BaseModel
 from fiat.struct import Table
-from fiat.util import get_srs_repr
+from fiat.util import get_crs_repr
 
 # Overwrite the abstractmethods to be able to initialize it
 BaseModel.__abstractmethods__ = set()
@@ -30,7 +30,7 @@ def test_basemodel_general_properties(config_empty: Configurations):
 
     # Assert the important properties
     assert not m.risk
-    assert get_srs_repr(m.srs) == "EPSG:4326"
+    assert get_crs_repr(m.crs) == "EPSG:4326"
     assert m.threads == 1
     assert m.type == "flood.depth"
 
@@ -114,7 +114,7 @@ def test_basemodel_read_hazard_config(
 
     # Assert the state
     assert m.hazard is not None
-    assert isinstance(m.hazard, GridIO)
+    assert isinstance(m.hazard, Dataset)
 
 
 def test_basemodel_read_hazard_argument(
@@ -127,11 +127,11 @@ def test_basemodel_read_hazard_argument(
     assert m.hazard is None
 
     # Read with an argument
-    m.read_hazard_grid(path=hazard_event_path)
+    m.read_hazard(path=hazard_event_path)
 
     # Assert the state
     assert m.hazard is not None
-    assert isinstance(m.hazard, GridIO)
+    assert isinstance(m.hazard, Dataset)
 
 
 def test_basemodel_read_hazard_risk(
@@ -141,14 +141,13 @@ def test_basemodel_read_hazard_risk(
     # Adjust the config
     config_empty.set("model.risk", True)
     config_empty.set("hazard.file", hazard_risk_path)
-    config_empty.set("hazard.settings.var_as_band", True)
 
     # Creat the object, which directly tries to read from the config
     m = BaseModel(config_empty)
 
     # Assert the state
     assert m.hazard is not None
-    assert isinstance(m.hazard, GridIO)
+    assert isinstance(m.hazard, Dataset)
 
 
 def test_basemodel_read_hazard_warnings(
@@ -157,21 +156,21 @@ def test_basemodel_read_hazard_warnings(
     caplog: Logger,
 ):
     # Adjust the config
-    config_empty.set("model.srs.value", "EPSG:3857")
+    config_empty.set("model.crs.value", "EPSG:3857")
     config_empty.set("hazard.file", hazard_event_path)
 
     # Creat the object, which directly tries to read from the config
     m = BaseModel(config_empty)
 
     # Assert logging message
-    assert "Setting the model srs from the hazard data." in caplog.text
+    assert "Setting the model crs from the hazard data." in caplog.text
 
     # Prefer global SRS over hazard SRS
-    m.srs = "EPSG:3857"
-    m.cfg.set("model.srs.force", True)
+    m.crs = "EPSG:3857"
+    m.cfg.set("model.projection.force", True)
 
     # Re-read the hazard data
-    m.read_hazard_grid()
+    m.read_hazard()
 
     # Assert logging message
     assert (
@@ -182,7 +181,7 @@ model spatial reference ('EPSG:3857')"
     )
     assert Path(
         hazard_event_path.parent,
-        f"{hazard_event_path.stem}_repr.tif",
+        f"{hazard_event_path.stem}_repr.nc",
     ).is_file()
 
 
@@ -213,7 +212,7 @@ def test_basemodel_read_vulnerability_argument(
     assert m.vulnerability is None
 
     # Read the data via argument
-    m.read_vulnerability_data(path=vulnerability_path)
+    m.read_vulnerability(path=vulnerability_path)
 
     # Assert the state
     assert m.vulnerability is not None

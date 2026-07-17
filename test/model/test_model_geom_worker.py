@@ -2,9 +2,10 @@ from pathlib import Path
 
 import numpy as np
 
-from fiat.fio import GeomIO, GridIO, open_geom
+from fiat.fio import Dataset, GeomIO
 from fiat.method.flood.depth import fn_hazard, fn_impact
 from fiat.model.geom_worker import feature_worker, worker
+from fiat.open import open_geom
 from fiat.struct.container import (
     ExposureGeomMeta,
     HazardMeta,
@@ -15,7 +16,7 @@ from fiat.struct.container import (
 
 def test_feature_worker(
     run_meta: RunMeta,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_geom_data: GeomIO,
@@ -39,7 +40,7 @@ def test_feature_worker(
 
 def test_feature_worker_risk(
     run_risk_meta: RunMeta,
-    hazard_risk_data: GridIO,
+    hazard_risk_data: Dataset,
     hazard_risk_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_geom_data: GeomIO,
@@ -71,7 +72,7 @@ def test_feature_worker_risk(
 def test_worker(
     tmp_path: Path,
     run_meta: RunMeta,
-    hazard_event_data: GridIO,
+    hazard_event_data: Dataset,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
     exposure_geom_data: GeomIO,

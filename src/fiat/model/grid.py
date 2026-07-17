@@ -7,23 +7,23 @@ from pathlib import Path
 from fiat.cfg import Configurations
 from fiat.check import (
     check_input_data,
-    check_internal_srs,
-    check_vs_srs,
+    check_internal_crs,
+    check_vs_crs,
 )
-from fiat.fio import GridIO, open_grid
+from fiat.fio import Dataset
 from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.grid_util import equal_grid, get_exposure_meta
 from fiat.model.grid_worker import initialize_pool, worker
-from fiat.model.grid_writer import GridWriter, create_grid_handle
 from fiat.model.util import (
     create_2d_chunks,
     get_hazard_meta,
     get_run_meta,
     get_vulnerability_meta,
 )
+from fiat.open import open_grid
 from fiat.struct import Table
 from fiat.util import (
     CHUNK,
@@ -34,16 +34,17 @@ from fiat.util import (
     EXPOSURE_GRID_SETTINGS,
     HAZARD,
     HAZARD__META,
+    MODEL_GRID_BASE,
     MODEL_GRID_CHUNK,
-    MODEL_GRID_LEADING,
-    OUTPUT_GRID_NAME,
+    OUTPUT_GRID_FILE,
     RUN__META,
     VULNERABILITY,
     VULNERABILITY__META,
     WINDOW,
     generic_path_check,
-    get_srs_repr,
+    get_crs_repr,
 )
+from fiat.writer import NetcdfWriter, create_netcdf_handle
 
 logger = spawn_logger(__name__)
 
@@ -68,7 +69,7 @@ class GridModel(BaseModel):
         super().__init__(cfg)
 
         # Declare
-        self.exposure: GridIO | None = None
+        self.exposure: Dataset | None = None
 
         # Setup the model
         self.read_exposure()
@@ -92,7 +93,7 @@ class GridModel(BaseModel):
             Path to an exposure grid, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_grid]\
-(/api/fio/open_grid.qmd) after which into [GridSouce](/api/GridIO.qmd)/
+(/api/fio/open_grid.qmd) after which into [GridSouce](/api/Dataset.qmd)/
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations
@@ -115,21 +116,21 @@ class GridModel(BaseModel):
         ## checks
         logger.info("Executing exposure data checks...")
 
-        # Check if there is a srs present
-        check_internal_srs(
-            data.srs,
+        # Check if there is a crs present
+        check_internal_crs(
+            data.crs,
             path.name,
         )
 
-        if not check_vs_srs(self.srs, data.srs):
+        if not check_vs_crs(self.crs, data.crs):
             logger.warning(
                 f"Spatial reference of '{path.name}' \
-('{get_srs_repr(data.srs)}') does not match the \
-model spatial reference ('{get_srs_repr(self.srs)}')"
+('{get_crs_repr(data.crs)}') does not match the \
+model spatial reference ('{get_crs_repr(self.crs)}')"
             )
-            logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
+            logger.info(f"Reprojecting '{path.name}' to '{get_crs_repr(self.crs)}'")
             _resalg = self.cfg.get(EXPOSURE_GRID_RESALG, 0)
-            data = grid.reproject(data, self.srs.ExportToWkt(), _resalg)
+            data = grid.reproject(data, self.crs.to_wkt(), _resalg)
 
         # Reset to ensure the entry is present
         self.cfg.set(EXPOSURE_GRID_FILE, path)
@@ -144,9 +145,9 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         logger.info("Running the model")
         # Quick check if all cdata is set
         check_input_data(
-            [HAZARD, self.hazard, GridIO],
+            [HAZARD, self.hazard, Dataset],
             [VULNERABILITY, self.vulnerability, Table],
-            [EXPOSURE, self.exposure, GridIO],
+            [EXPOSURE, self.exposure, Dataset],
         )
 
         # Setup the basic metadata
@@ -173,24 +174,21 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         self.hazard, self.exposure = equal_grid(
             self.hazard,
             self.exposure,
-            first=self.cfg.get(MODEL_GRID_LEADING, True),
+            base=self.cfg.get(MODEL_GRID_BASE, HAZARD),
         )
 
         # Get the output path
-        output_name = self.cfg.get(OUTPUT_GRID_NAME) or self.exposure.path.name
+        output_name = self.cfg.get(OUTPUT_GRID_FILE) or self.exposure.path.name
         output_filepath = Path(self.cfg.output_dir, output_name)
 
         # Setup the queue and the writer
         self.queue = self.ctx.Queue(maxsize=1000)
-        handle = create_grid_handle(
+        handle = create_netcdf_handle(
             path=output_filepath,
-            shape=self.exposure.shape_xy,
-            nb=exposure_meta.nb,
-            srs=self.exposure.srs,
-            gtf=self.exposure.geotransform,
+            variables=exposure_meta.new,
+            ds_like=self.exposure,
         )
-        writer = GridWriter(handle=handle, queue=self.queue, ctx=self.ctx)
-
+        writer = NetcdfWriter(handle=handle, queue=self.queue, ctx=self.ctx)
         # Get the chunks and the window(s)
         chunks = list(create_2d_chunks(self.hazard.shape, parts=self.threads))
         window = self.cfg.get(MODEL_GRID_CHUNK, fallback=self.exposure.shape)

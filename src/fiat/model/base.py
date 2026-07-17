@@ -7,18 +7,18 @@ from multiprocessing.queues import Queue
 from os import cpu_count
 from pathlib import Path
 
-from osgeo import osr
+from pyproj.crs import CRS
 
 from fiat.cfg import Configurations
 from fiat.check import (
     check_duplicate_columns,
-    check_hazard_subsets,
-    check_internal_srs,
-    check_vs_srs,
+    check_internal_crs,
+    check_vs_crs,
 )
-from fiat.fio import GridIO, open_csv, open_grid
+from fiat.fio import Dataset
 from fiat.gis import grid
 from fiat.log import spawn_logger
+from fiat.open import open_csv, open_grid
 from fiat.struct import Table
 from fiat.typing import MethodType
 from fiat.util import (
@@ -29,17 +29,17 @@ from fiat.util import (
     HAZARD_RESALG,
     HAZARD_SETTINGS,
     INDEX,
-    MODEL_CALC,
     MODEL_GRID_CHUNK,
+    MODEL_METHOD,
+    MODEL_PROJECTION_CRS,
+    MODEL_PROJECTION_FORCE,
     MODEL_RISK,
-    MODEL_SRS_FORCE,
-    MODEL_SRS_VALUE,
     MODEL_THREADS,
     NEED_IMPLEMENTED,
     VULNERABILITY_FILE,
     VULNERABILITY_SETTINGS,
     generic_path_check,
-    get_srs_repr,
+    get_crs_repr,
 )
 
 logger = spawn_logger(__name__)
@@ -63,12 +63,12 @@ class BaseModel(metaclass=ABCMeta):
 
         ## Declarations
         # Model data
-        self._srs: osr.SpatialReference | None = None
-        self.hazard: GridIO | None = None
+        self._crs: CRS | None = None
+        self.hazard: Dataset | None = None
         self.vulnerability: Table | None = None
 
         # Type of calculations
-        self._type: str = self.cfg.get(MODEL_CALC, FLOOD_DEPTH)
+        self._type: str = self.cfg.get(MODEL_METHOD, FLOOD_DEPTH)
         self.method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{self.type}")
         # Risk or event based
         self._risk: bool = self.cfg.get(MODEL_RISK, False)
@@ -80,19 +80,41 @@ class BaseModel(metaclass=ABCMeta):
         self._threads: int = 1
 
         ## Call the necessary methods at init
-        self.srs = self.cfg.get(MODEL_SRS_VALUE, "EPSG:4326")
+        self._crs = self.cfg.get(MODEL_PROJECTION_CRS, "EPSG:4326")
         self.threads = self.cfg.get(MODEL_THREADS)
-        self.read_hazard_grid()
-        self.read_vulnerability_data()
+        self.read_hazard()
+        self.read_vulnerability()
 
     @abstractmethod
     def __del__(self):
-        self._srs = None
+        self._crs = None
 
     def __repr__(self):
         return f"<{self.__class__.__name__} object at {id(self):#018x}>"
 
     ## Properties
+    @property
+    def crs(self) -> CRS:
+        """Return the model crs."""
+        return CRS.from_user_input(self._crs)
+
+    @crs.setter
+    def crs(self, value: str):
+        """Set the model spatial reference system.
+
+        Parameters
+        ----------
+        crs : str
+            The spatial reference system described by a string (e.g. 'EPSG:4326'),
+            by default None
+        """
+        # Infer the spatial reference system
+        try:
+            CRS.from_user_input(value)
+            self._crs = value
+        except BaseException as e:
+            raise e
+
     @property
     def risk(self) -> bool:
         """Return the calculation modus."""
@@ -102,29 +124,6 @@ class BaseModel(metaclass=ABCMeta):
     def risk(self, value: bool):
         """Set the calculation modus."""
         self._risk = value
-
-    @property
-    def srs(self) -> osr.SpatialReference:
-        """Return the model srs."""
-        return self._srs
-
-    @srs.setter
-    def srs(self, value: str):
-        """Set the model spatial reference system.
-
-        Parameters
-        ----------
-        srs : str
-            The spatial reference system described by a string (e.g. 'EPSG:4326'),
-            by default None
-        """
-        # Infer the spatial reference system
-        self._srs = osr.SpatialReference()
-        self._srs.SetFromUserInput(value)
-
-        # Set crs for later use
-        self.cfg.set(MODEL_SRS_VALUE, get_srs_repr(self._srs))
-        logger.info(f"Model srs set to: '{get_srs_repr(self._srs)}'")
 
     @property
     def threads(self) -> int:
@@ -165,7 +164,7 @@ exceeds machine thread count ('{max_threads}')"
         self.method = importlib.import_module(f"{FIAT_METHOD}.{value}")
 
     ## Read data methods
-    def read_hazard_grid(
+    def read_hazard(
         self,
         path: Path | str = None,
         **kwargs: dict,
@@ -181,7 +180,7 @@ exceeds machine thread count ('{max_threads}')"
             Path to the hazard gridded dataset, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_grid]\
-(/api/fio/open_grid.qmd) after which into [GridIO](/api/GridIO.qmd)/
+(/api/fio/open_grid.qmd) after which into [Dataset](/api/Dataset.qmd)/
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations
@@ -204,35 +203,29 @@ exceeds machine thread count ('{max_threads}')"
         ## checks
         logger.info("Executing hazard checks...")
 
-        # check for subsets
-        check_hazard_subsets(
-            data.subdatasets,
-            path,
-        )
-
-        # check the internal srs of the file
-        check_internal_srs(
-            data.srs,
+        # check the internal crs of the file
+        check_internal_crs(
+            data.crs,
             path.name,
         )
 
-        if not self.cfg.get(MODEL_SRS_FORCE, False):
-            logger.warning("Setting the model srs from the hazard data.")
-            self.srs = data.srs.ExportToWkt()
+        if not self.cfg.get(MODEL_PROJECTION_FORCE, False):
+            logger.warning("Setting the model crs from the hazard data.")
+            self.crs = data.crs.to_wkt()
 
-        # check if file srs is the same as the model srs
-        if not check_vs_srs(self.srs, data.srs):
+        # check if file crs is the same as the model crs
+        if not check_vs_crs(self.crs, data.crs):
             logger.warning(
                 f"Spatial reference of '{path.name}' \
-('{get_srs_repr(data.srs)}') does not match the \
-model spatial reference ('{get_srs_repr(self.srs)}')"
+('{get_crs_repr(data.crs)}') does not match the \
+model spatial reference ('{get_crs_repr(self.crs)}')"
             )
-            logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
-            _resalg = self.cfg.get(HAZARD_RESALG, 0)
+            logger.info(f"Reprojecting '{path.name}' to '{get_crs_repr(self.crs)}'")
+            _resalg = self.cfg.get(HAZARD_RESALG, "nearest")
             data = grid.reproject(
                 data,
-                dst_srs=self.srs.ExportToWkt(),
-                resample=_resalg,
+                dst_crs=self.crs.to_wkt(),
+                method=_resalg,
             )
 
         # Reset to ensure the entry is present
@@ -240,7 +233,7 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         # When all is done, add it
         self.hazard = data
 
-    def read_vulnerability_data(
+    def read_vulnerability(
         self,
         path: Path | str = None,
         **kwargs: dict,

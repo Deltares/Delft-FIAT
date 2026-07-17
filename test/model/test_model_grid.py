@@ -2,14 +2,14 @@ from pathlib import Path
 from typing import Generator
 
 import pytest
-from osgeo import osr
+from pyproj.crs import CRS
 
 from fiat.cfg import Configurations
-from fiat.fio import GridIO
+from fiat.fio import Dataset
 from fiat.log import Logger
 from fiat.model import GridModel
 from fiat.struct import Table
-from fiat.util import get_srs_repr
+from fiat.util import get_crs_repr
 
 
 def test_gridmodel(config_empty: Configurations):
@@ -41,7 +41,7 @@ def test_gridmodel_read_exposure_config(
     m.read_exposure()
 
     # Assert the presense of a dataset
-    assert isinstance(m.exposure, GridIO)
+    assert isinstance(m.exposure, Dataset)
     assert m.exposure.size == 2
 
 
@@ -53,32 +53,32 @@ def test_gridmodel_read_exposure_sig(
     m = GridModel(config_empty)
 
     # Call the method
-    m.read_exposure(path=exposure_grid_path, var_as_band=True)
+    m.read_exposure(path=exposure_grid_path)
 
     # Assert the presense of a dataset
-    assert isinstance(m.exposure, GridIO)
+    assert isinstance(m.exposure, Dataset)
     assert m.exposure.size == 2
 
 
 def test_gridmodel_read_exposure_reproj(
     caplog: Logger,
     config_empty: Configurations,
-    srs_3857: osr.SpatialReference,
+    crs_3857: CRS,
     exposure_grid_path: Path,
 ):
     # Create the object
     m = GridModel(config_empty)
-    m._srs = srs_3857
+    m._crs = crs_3857
 
     # Call the method
-    m.read_exposure(path=exposure_grid_path, var_as_band=True)
+    m.read_exposure(path=exposure_grid_path)
 
     # Assert the logging
     assert "Reprojecting 'spatial.nc' to 'EPSG:3857'" in caplog.text
     # Assert the dataset
-    assert isinstance(m.exposure, GridIO)
+    assert isinstance(m.exposure, Dataset)
     assert m.exposure.size == 2
-    assert get_srs_repr(m.exposure.srs) == "EPSG:3857"
+    assert get_crs_repr(m.exposure.crs) == "EPSG:3857"
 
 
 def mockworker(*args, **kwargs):
@@ -94,8 +94,8 @@ def test_gridmodel_run(
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,
-    hazard_event_data: GridIO,
-    exposure_grid_data: GridIO,
+    hazard_event_data: Dataset,
+    exposure_grid_data: Dataset,
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.grid.worker", mockworker)
@@ -122,8 +122,8 @@ def test_gridmodel_run_fail(
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,
-    hazard_event_data: GridIO,
-    exposure_grid_data: GridIO,
+    hazard_event_data: Dataset,
+    exposure_grid_data: Dataset,
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.grid.worker", mockworker_error)
