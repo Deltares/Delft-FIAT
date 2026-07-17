@@ -327,7 +327,7 @@ class DataVariable:
         obj._obj = var
 
         obj._discover_attributes()
-        obj._data = obj._obj[:] 
+        obj._data = obj._obj[:]
 
         return obj
 

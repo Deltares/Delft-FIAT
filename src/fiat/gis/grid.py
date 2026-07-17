@@ -203,7 +203,7 @@ def reproject(
         write_ds.create_spatial_variable(var)
         # Get the data
         data = var_obj[:]
-        data[data==var_obj.nodata] = np.nan
+        data[data == var_obj.nodata] = np.nan
 
         # Set up the interpolator
         interpolator = RegularGridInterpolator(
