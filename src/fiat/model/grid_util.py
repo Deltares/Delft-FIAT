@@ -12,7 +12,7 @@ from fiat.struct.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.util import EAD, FN, TOTAL, get_srs_repr
+from fiat.util import EAD, FN, HAZARD, TOTAL, get_crs_repr
 
 
 def get_exposure_meta(
@@ -64,7 +64,7 @@ def get_exposure_meta(
 def equal_grid(
     gs1: Dataset,
     gs2: Dataset,
-    first: bool = True,
+    base: str = HAZARD,
 ) -> deque[Dataset] | tuple[Dataset]:
     """Ensure homogeneity between two grids.
 
@@ -74,8 +74,8 @@ def equal_grid(
         The first dataset.
     gs2 : Datset
         The second dataset.
-    first : bool, optional
-        Whether to make the second equal to the first of vice versa, by default True.
+    base : str, optional
+        Which dataset is the base for the geotransfrom, extent etc., by default True.
     """
     equal = check_grid_exact(gs1, gs2)
     if equal:
@@ -84,12 +84,12 @@ def equal_grid(
     # When not equal resample one of the two
     gss: deque[Dataset] = deque([gs1, gs2])
     # Rotate based on the boolean
-    gss.rotate(first)
+    gss.rotate(base == HAZARD)
 
     # Reproject the data
     gs_out = grid.reproject(
         gss[0],
-        dst_srs=get_srs_repr(gss[1].srs),
+        dst_crs=get_crs_repr(gss[1].crs),
         dst_gtf=gss[1].transform,
         dst_width=gss[1].shape_xy[0],
         dst_height=gss[1].shape_xy[1],
@@ -98,7 +98,7 @@ def equal_grid(
     # Set the output dataset in the deque
     gss[0] = gs_out
     # Re-shift it
-    gss.rotate(first)
+    gss.rotate(base == HAZARD)
 
     # Return the output
     return gss

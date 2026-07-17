@@ -27,7 +27,7 @@ def test_geommodel_properties(config_empty: Configurations):
     m = GeomModel(config_empty)
 
     # Assert important properties/ attributes (one in this case :p)
-    assert m.exposure_types == ["damage"]
+    assert m.exposure is not None
 
 
 def test_geommodel_read_exposure(config_empty: Configurations):

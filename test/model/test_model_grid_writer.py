@@ -4,34 +4,31 @@ from multiprocessing.shared_memory import SharedMemory
 from pathlib import Path
 
 import numpy as np
-from osgeo import osr
 
 from fiat.fio import Dataset
 from fiat.writer import GridItem, NetcdfWriter, create_netcdf_handle
 
 
-def test_create_grid_handle(
+def test_create_netcdf_handle(
     tmp_path: Path,
-    srs_4326: osr.SpatialReference,
+    hazard_event_data: Dataset,
 ):
     # Creat the handle
     h = create_netcdf_handle(
         path=Path(tmp_path, "foo.nc"),
-        shape=(10, 10),
-        nb=1,
-        srs=srs_4326,
-        gtf=(0.0, 1.0, 0.0, 10.0, 0.0, -1.0),
+        variables=["data"],
+        ds_like=hazard_event_data,
     )
 
     # Assert the output
     assert Path(tmp_path, "foo.nc").is_file()
     assert h.shape == (10, 10)
-    assert len(h.bands) == 1
+    assert h.size == 1
 
 
-def test_create_grid_handle_overwrite(
+def test_create_netcdf_handle_overwrite(
     tmp_path: Path,
-    srs_4326: osr.SpatialReference,
+    hazard_event_data: Dataset,
 ):
     p = Path(tmp_path, "foo.nc")
     # Assert current state
@@ -45,21 +42,19 @@ def test_create_grid_handle_overwrite(
 
     # Creat the handle
     h = create_netcdf_handle(
-        path=p,
-        shape=(10, 10),
-        nb=1,
-        srs=srs_4326,
-        gtf=(0.0, 1.0, 0.0, 10.0, 0.0, -1.0),
+        path=Path(tmp_path, "foo.nc"),
+        variables=["data"],
+        ds_like=hazard_event_data,
     )
 
     # Assert the output
     assert Path(tmp_path, "foo.nc").is_file()
     assert os.stat(p).st_size > 0
     assert h.shape == (10, 10)
-    assert len(h.bands) == 1
+    assert h.size == 1
 
 
-def test_grid_writer(
+def test_netcdf_writer(
     dummy_queue: type,
 ):
     # Create the writer
@@ -80,7 +75,7 @@ def test_grid_writer(
     assert w.pipesend == {}
 
 
-def test_grid_writer_setup(
+def test_netcdf_writer_setup(
     dummy_queue: type,
     grid_handle: Dataset,
 ):
@@ -106,7 +101,7 @@ def test_grid_writer_setup(
     assert "test-block" in w.pipesend
 
 
-def test_grid_writer_close(
+def test_netcdf_writer_close(
     dummy_queue: type,
     grid_handle: Dataset,
 ):
@@ -139,7 +134,7 @@ def test_grid_writer_close(
     assert "foo" not in w.pipesend
 
 
-def test_grid_writer_fn(
+def test_netcdf_writer_fn(
     dummy_queue: type,
     grid_handle: Dataset,
 ):
@@ -170,6 +165,6 @@ def test_grid_writer_fn(
     # Assert the output
     ds = Dataset(w.handle.path)
     np.testing.assert_array_equal(
-        ds[0][0, 0, 2, 2],
+        ds[0][slice(0, 2), slice(0, 2)],
         np.array([[2, 2], [2, 2]]),
     )

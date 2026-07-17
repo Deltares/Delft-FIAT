@@ -32,12 +32,14 @@ class Dataset(BaseDriver):
         file: Path | str,
         mode: str = "r",
         crs: str | None = None,
-        chunk: tuple[int] | None = None,
+        mask: bool = True,
     ):
         # Supercharge
         BaseDriver.__init__(self, file, mode)
         # Load the source
         self.src = nc4.Dataset(filename=file, mode=mode)
+        self.src.set_auto_mask(mask)
+        self.src.set_auto_scale(True)
 
         # Attributes
         self._crs: str | None = crs
@@ -48,6 +50,7 @@ class Dataset(BaseDriver):
         self.xvals: np.ndarray | None = None
         self.reference: nc4.Variable | None = None
         self.variables: dict[str, DataVariable] = {}
+        self._variables: list[DataVariable] = []
 
         if self.mode <= 1:
             self._discover_variables()
@@ -55,7 +58,7 @@ class Dataset(BaseDriver):
     def __del__(self): ...
 
     def __getitem__(self, idx: int):
-        return list(self.variables.values())[idx]
+        return self._variables[idx]
 
     def __reduce__(self):
         return self.__class__, (
@@ -94,12 +97,13 @@ class Dataset(BaseDriver):
 
     def _discover_variables(self) -> None:
         self._discover_reference()
-        srs_var = self.reference.name if self.reference is not None else None
+        crs_var = self.reference.name if self.reference is not None else None
         for var_name, var in self.src.variables.items():
-            if var_name in self.src.dimensions or var_name == srs_var:
+            if var_name in self.src.dimensions or var_name == crs_var:
                 continue
             if var_name not in self.variables:
                 self.variables[var_name] = DataVariable._create(var, self)
+        self._variables = list(self.variables.values())
 
     def _set_spatial_dim_values(self) -> None:
         self.yvals = self.ydim[:].data
@@ -257,7 +261,9 @@ class Dataset(BaseDriver):
             fill_value=nodata,
         )
         data.setncattr("grid_mapping", self.reference.name)
-        self.variables[var] = DataVariable._create(var=data, ref=self.src)
+        dv = DataVariable._create(var=data, ref=self.src)
+        self.variables[var] = dv
+        self._variables.append(dv)
 
     @BaseDriver.check_mode
     @BaseDriver.check_state
@@ -265,12 +271,12 @@ class Dataset(BaseDriver):
         self,
         crs: CRS,
     ) -> None:
-        """_summary_.
+        """Set the spatial reference system for the dataset.
 
         Parameters
         ----------
         crs : CRS
-            _description_
+            The coordinate reference system (CRS) to set.
         """
         self.reference = self.src.createVariable("spatial_ref", datatype="i4")
         self.reference.setncatts({"x_dim": self.xdim.name, "y_dim": self.ydim.name})
@@ -280,11 +286,6 @@ class Dataset(BaseDriver):
                 "spatial_ref": crs.to_wkt(),
             }
         )
-        # gtf = [float(item) for item in self.transform]
-        # self.reference.setncattr(
-        #     "GeoTransform",
-        #     str(gtf).strip("[]").replace(",", ""),
-        # )
 
 
 class DataVariable:

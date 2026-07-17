@@ -125,7 +125,6 @@ def get_exposure_meta(
     run_meta: RunMeta,
     hazard_meta: HazardMeta,
     method: MethodType,
-    types: list | tuple,
 ):
     """Simple method for sorting out the exposure meta."""  # noqa: D401
     # Check the area method
@@ -155,7 +154,7 @@ def get_exposure_meta(
     indices_type = {}
     length_type = {}
     type_dict = {}
-    for t in types:
+    for t in exposure.impact_types:
         indices_type[t] = {}
         found, found_idx, missing = discover_exp_columns(columns, type=t)
         check_exp_derived_types(t, found, missing)

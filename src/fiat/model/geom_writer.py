@@ -82,17 +82,17 @@ class GeomWriter:
             return
         # Get the define
         defn = self.buffer.layer.defn
-        srs = self.buffer.srs
+        crs = self.buffer.crs
         # Delete
         self.buffer.delete()
 
         # Re-create
-        self.setup(defn, srs)
+        self.setup(defn, crs)
 
         # Reset current size
         self.size = 0
         defn = None
-        srs = None
+        crs = None
 
     ## I/O
     def write(self, reset: bool = True) -> None:

@@ -24,10 +24,10 @@ def hazard_event_repr(hazard_event_path: Path) -> Dataset:
 
 
 @pytest.fixture
-def hazard_ds(tmp_path: Path, srs_4326: osr.SpatialReference) -> Dataset:
+def hazard_ds(tmp_path: Path, crs_4326: osr.SpatialReference) -> Dataset:
     ds = open_grid(Path(tmp_path, "tmp.tif"), "w")
     ds.create(shape=(10, 10), nb=1, dtype=gdal.GDT_Float32)
-    ds.set_source_srs(srs_4326)
+    ds.set_source_crs(crs_4326)
     ds.geotransform = (0.0, 1.0, 0.0, 10.0, 0.0, -1.0)
     ds.close()
     return ds.reopen()

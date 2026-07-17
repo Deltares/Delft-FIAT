@@ -60,7 +60,7 @@ def open_geom(
     file: Path | str,
     mode: str = "r",
     overwrite: bool = False,
-    srs: str | None = None,
+    crs: str | None = None,
 ) -> GeomIO:
     """Open a geometry source file.
 
@@ -74,7 +74,7 @@ def open_geom(
         Open in `read` or `write` mode.
     overwrite : bool, optional
         Whether or not to overwrite an existing dataset.
-    srs : str, optional
+    crs : str, optional
         A Spatial reference system string in case the dataset has none.
 
     Returns
@@ -86,7 +86,7 @@ def open_geom(
         file,
         mode,
         overwrite,
-        srs,
+        crs,
     )
 
 
@@ -94,7 +94,6 @@ def open_grid(
     file: Path | str,
     mode: str = "r",
     crs: str | None = None,
-    chunk: tuple = None,
     subset: str = None,
 ) -> Dataset:
     """Open a grid source file.
@@ -124,5 +123,4 @@ def open_grid(
         file,
         mode,
         crs,
-        chunk,
     )

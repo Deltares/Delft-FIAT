@@ -156,18 +156,18 @@ def test_basemodel_read_hazard_warnings(
     caplog: Logger,
 ):
     # Adjust the config
-    config_empty.set("model.srs.value", "EPSG:3857")
+    config_empty.set("model.crs.value", "EPSG:3857")
     config_empty.set("hazard.file", hazard_event_path)
 
     # Creat the object, which directly tries to read from the config
     m = BaseModel(config_empty)
 
     # Assert logging message
-    assert "Setting the model srs from the hazard data." in caplog.text
+    assert "Setting the model crs from the hazard data." in caplog.text
 
     # Prefer global SRS over hazard SRS
     m.crs = "EPSG:3857"
-    m.cfg.set("model.srs.force", True)
+    m.cfg.set("model.projection.force", True)
 
     # Re-read the hazard data
     m.read_hazard()
@@ -181,7 +181,7 @@ model spatial reference ('EPSG:3857')"
     )
     assert Path(
         hazard_event_path.parent,
-        f"{hazard_event_path.stem}_repr.tif",
+        f"{hazard_event_path.stem}_repr.nc",
     ).is_file()
 
 

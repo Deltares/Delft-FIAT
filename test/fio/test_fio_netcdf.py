@@ -34,25 +34,25 @@ def test_dataset_read(hazard_event_path: Path):
     assert get_crs_repr(ds.crs) == "EPSG:4326"
 
 
-def test_dataset_read_srs(
-    hazard_event_no_srs_path: Path,
+def test_dataset_read_crs(
+    hazard_event_no_crs_path: Path,
     crs_4326: CRS,
 ):
     # Open a Dataset
-    ds = Dataset(hazard_event_no_srs_path)
+    ds = Dataset(hazard_event_no_crs_path)
 
     # Assert some simple stuff
     assert ds.size == 1
-    assert ds.reference is None  # Verify that there is no srs
+    assert ds.reference is None  # Verify that there is no crs
     assert ds.crs is None  # Cant induce from src and not set at GeomIO level
 
     # Close the dataset
     ds.close()
 
-    # Open with srs as input argument to set the srs at GeomIO level
-    ds = Dataset(hazard_event_no_srs_path, crs="EPSG:4326")
+    # Open with crs as input argument to set the crs at GeomIO level
+    ds = Dataset(hazard_event_no_crs_path, crs="EPSG:4326")
 
-    # Assert the srs
+    # Assert the crs
     assert isinstance(ds.crs, CRS)
     assert get_crs_repr(ds.crs) == "EPSG:4326"
     assert ds.reference is None  # Induces from layer still returns None
@@ -62,7 +62,7 @@ def test_dataset_read_srs(
     assert ds.crs is None
     ds._crs = crs_4326.to_wkt()
 
-    # Assert the srs
+    # Assert the crs
     assert get_crs_repr(ds.crs) == "EPSG:4326"
 
 
@@ -127,11 +127,11 @@ def test_dataset_write(tmp_path: Path, crs_4326: CRS):
     assert ds.shape_xy == (7, 5)  # har
     assert ds.size == 0
 
-    # Source srs is None
+    # Source crs is None
     assert ds.crs is None
     ds.set_spatial_ref(crs_4326)
 
-    # Assert the srs
+    # Assert the crs
     assert get_crs_repr(ds.crs) == "EPSG:4326"
     # Close and assert the file is present
     ds.close()

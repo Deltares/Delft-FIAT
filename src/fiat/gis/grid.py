@@ -158,6 +158,10 @@ def reproject(
     Dataset
         Output object. A lazy reading of the just creating raster file.
     """
+    # Set the output path
+    output_dir = Path(output_dir or ds.path.parent)
+    write_path = Path(output_dir, f"{ds.path.stem}_repr.nc")
+
     # Setup the transformer
     transformer = Transformer.from_crs(ds.crs, dst_crs, always_xy=True)
     inverse_transformer = Transformer.from_crs(dst_crs, ds.crs, always_xy=True)
@@ -188,32 +192,35 @@ def reproject(
     lons_src = lons_src.clip(min=min(ds.xvals), max=max(ds.xvals))
     lats_src = lats_src.clip(min=min(ds.yvals), max=max(ds.yvals))
 
-    # Get the data from the variable
-    data = ds.variables["data"][:]
-
-    # Set up the interpolator
-    interpolator = RegularGridInterpolator(
-        (ds.yvals, ds.xvals),  # NOTE: order = (lats, lons)
-        data.filled(np.nan),
-        method=method,
-        bounds_error=False,
-        fill_value=np.nan,
-    )
-
-    # Resample the data to the new coordinates (in source projection still)
-    pts = np.stack([lats_src, lons_src], axis=-1)  # same order
-    data_out: np.ndarray = interpolator(pts)
-    data_out[np.isnan(data_out)] = -9999
-
-    # Set the output path
-    output_dir = Path(output_dir or ds.path.parent)
-    write_path = Path(output_dir, f"{ds.path.stem}_repr.nc")
-    # Write the data
+    # Setup the output dataset
     write_ds = Dataset(write_path, mode="w")
     write_ds.create_spatial_dims(lats=lats, lons=lons)
     write_ds.set_spatial_ref(CRS.from_user_input(dst_crs))
-    write_ds.create_spatial_variable("data")
-    write_ds.variables["data"].set(data_out, origin=[0, 0])
+
+    # Loop though the variables
+    for var, var_obj in ds.variables.items():
+        # Create the spatial data variable
+        write_ds.create_spatial_variable(var)
+        # Get the data
+        data = var_obj[:]
+
+        # Set up the interpolator
+        interpolator = RegularGridInterpolator(
+            (ds.yvals, ds.xvals),  # NOTE: order = (lats, lons)
+            data.filled(np.nan),
+            method=method,
+            bounds_error=False,
+            fill_value=np.nan,
+        )
+
+        # Resample the data to the new coordinates (in source projection still)
+        pts = np.stack([lats_src, lons_src], axis=-1)  # same order
+        data_out: np.ndarray = interpolator(pts)
+        data_out[np.isnan(data_out)] = -9999
+
+        # Write the array to the dataset variable
+        write_ds.variables[var].set(data_out, origin=[0, 0])
+
     # Close the writing dataset
     write_ds.close()
     write_ds = None

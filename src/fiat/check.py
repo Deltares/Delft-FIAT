@@ -10,7 +10,7 @@ from fiat.cfg import Configurations
 from fiat.error import FIATDataError
 from fiat.log import spawn_logger
 from fiat.struct import Container
-from fiat.util import EXPOSURE_GRID_FILE, deter_type, get_srs_repr
+from fiat.util import EXPOSURE_GRID_FILE, deter_type, get_crs_repr
 
 logger = spawn_logger(__name__)
 
@@ -73,17 +73,17 @@ def check_grid_exact(
     exp,
 ) -> bool:
     """Check whether the hazard and exposure grid align."""
-    if not check_vs_srs(
-        haz.srs,
-        exp.srs,
+    if not check_vs_crs(
+        haz.crs,
+        exp.crs,
     ):
-        msg = f"CRS of hazard data ({get_srs_repr(haz.srs)}) does not match the \
-CRS of the exposure data ({get_srs_repr(exp.srs)})"
+        msg = f"CRS of hazard data ({get_crs_repr(haz.crs)}) does not match the \
+CRS of the exposure data ({get_crs_repr(exp.crs)})"
         logger.warning(msg)
         return False
 
-    gtf1 = [round(_n, 2) for _n in haz.geotransform]
-    gtf2 = [round(_n, 2) for _n in exp.geotransform]
+    gtf1 = [round(_n, 2) for _n in haz.transform]
+    gtf2 = [round(_n, 2) for _n in exp.transform]
 
     if gtf1 != gtf2:
         msg = f"Geotransform of hazard data ({gtf1}) does not match geotransform of \
@@ -131,12 +131,12 @@ def check_geom_extent(
         logger.warning(msg)
 
 
-def check_vs_srs(
-    target_srs: CRS,
+def check_vs_crs(
+    target_crs: CRS,
     source_crs: CRS,
 ):
     """Check if the spatial reference systems match."""
-    return CRS.from_user_input(target_srs.to_wkt()) == CRS.from_user_input(
+    return CRS.from_user_input(target_crs.to_wkt()) == CRS.from_user_input(
         source_crs.to_wkt()
     )
 

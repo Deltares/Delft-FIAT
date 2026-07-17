@@ -300,7 +300,7 @@ dependencies = { gdal = ">=3.5" }
 
 # Docs builder framework
 [tool.pixi.feature.docs]
-dependencies = { quarto = "==1.8.27" }
+dependencies = { quarto = "==1.9.38" }
 
 # Wheel building env
 [tool.pixi.feature.wheel.dependencies]

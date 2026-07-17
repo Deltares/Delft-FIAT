@@ -18,17 +18,11 @@ from fiat.struct import Table
 from fiat.struct.container import HazardMeta, RunMeta, VulnerabilityMeta
 from fiat.typing import MethodType
 from fiat.util import (
-    EXPOSURE,
-    HAZARD,
     RP,
     TYPE,
 )
 
 GEOM_DEFAULT_CHUNK = 50000
-GRID_PREFER = {
-    False: HAZARD,
-    True: EXPOSURE,
-}
 
 
 def create_1d_chunks(

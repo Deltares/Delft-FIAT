@@ -2,12 +2,13 @@ import pickle
 from pathlib import Path
 
 import pytest
-from osgeo import ogr, osr
+from osgeo import ogr
+from pyproj.crs import CRS
 
 from fiat.error import DriverNotFoundError
 from fiat.fio.geom import GeomIO
 from fiat.struct import GeomLayer
-from fiat.util import get_srs_repr
+from fiat.util import get_crs_repr
 
 
 def test_geomio_read_only(exposure_geom_path: Path):
@@ -16,41 +17,41 @@ def test_geomio_read_only(exposure_geom_path: Path):
 
     # Assert some simple stuff
     assert ds.mode == 0
-    assert get_srs_repr(ds.srs) == "EPSG:4326"  # Induced from layer
+    assert get_crs_repr(ds.crs) == "EPSG:4326"  # Induced from layer
     assert isinstance(ds.layer, GeomLayer)
     assert hash(ds) == hash(exposure_geom_path)
 
 
-def test_geomio_read_no_srs(
-    exposure_geom_no_srs_path: Path,
-    srs_4326: osr.SpatialReference,
+def test_geomio_read_no_crs(
+    exposure_geom_no_crs_path: Path,
+    crs_4326: CRS,
 ):
     # Open a Dataset
-    ds = GeomIO(exposure_geom_no_srs_path)
+    ds = GeomIO(exposure_geom_no_crs_path)
 
     # Assert some simple stuff
     assert ds.layer.size == 4
-    assert ds.layer.srs is None  # Verify that there is no srs
-    assert ds.srs is None  # Cant induce from layer and not set at GeomIO level
+    assert ds.layer.crs is None  # Verify that there is no crs
+    assert ds.crs is None  # Cant induce from layer and not set at GeomIO level
 
     # Close the dataset
     ds.close()
 
-    # Open with srs as input argument to set the srs at GeomIO level
-    ds = GeomIO(exposure_geom_no_srs_path, srs="EPSG:4326")
+    # Open with crs as input argument to set the crs at GeomIO level
+    ds = GeomIO(exposure_geom_no_crs_path, crs="EPSG:4326")
 
-    # Assert the srs
-    assert isinstance(ds.srs, osr.SpatialReference)
-    assert get_srs_repr(ds.srs) == "EPSG:4326"
-    assert ds.layer.srs is None  # Induces from layer still returns None
+    # Assert the crs
+    assert isinstance(ds.crs, CRS)
+    assert get_crs_repr(ds.crs) == "EPSG:4326"
+    assert ds.layer.crs is None  # Induces from layer still returns None
 
     # Or set directly
-    ds._srs = None
-    assert ds.srs is None
-    ds.srs = srs_4326
+    ds._crs = None
+    assert ds.crs is None
+    ds.crs = crs_4326
 
-    # Assert the srs
-    assert get_srs_repr(ds.srs) == "EPSG:4326"
+    # Assert the crs
+    assert get_crs_repr(ds.crs) == "EPSG:4326"
 
 
 def test_geomio_driver_error(tmp_path: Path):
@@ -114,7 +115,7 @@ def test_geomio_delete(exposure_geom_tmp_path: Path):
     assert ds.src is None  # If src is None, layer cannot be requested
 
 
-def test_geomio_write(tmp_path: Path, srs_4326: osr.SpatialReference):
+def test_geomio_write(tmp_path: Path, crs_4326: CRS):
     p = Path(tmp_path, "tmp.geojson")
     # Open the dataset
     ds = GeomIO(p, mode="w")
@@ -126,7 +127,7 @@ def test_geomio_write(tmp_path: Path, srs_4326: osr.SpatialReference):
     assert ds.layer is None  # But no layer present
 
     # Create a layer
-    ds.create_layer(srs_4326, geom_type=1)  # Point
+    ds.create_layer(crs_4326, geom_type=1)  # Point
     # Assert there is a layer
     assert ds.layer is not None
     assert ogr.GeometryTypeToName(ds.layer.geom_type) == "Point"

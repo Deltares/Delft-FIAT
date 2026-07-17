@@ -177,9 +177,9 @@ def test_open_grid_read_only(hazard_event_path: Path):
     ds.close()
 
 
-def test_open_grid_append(hazard_event_path: Path):
+def test_open_grid_append(hazard_event_tmp_path: Path):
     # Open a dataset in write mode
-    ds = open_grid(hazard_event_path, mode="a")
+    ds = open_grid(hazard_event_tmp_path, mode="a")
 
     # Assert some simple stuff
     assert isinstance(ds, Dataset)

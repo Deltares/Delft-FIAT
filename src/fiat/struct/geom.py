@@ -140,8 +140,11 @@ class GeomLayer(BaseStruct):
 
     @property
     def crs(self) -> CRS:
-        """Return the srs (Spatial Reference System)."""
-        return CRS.from_user_input(self._obj.GetSpatialRef().ExportToWkt())
+        """Return the crs (Spatial Reference System)."""
+        ref = self._obj.GetSpatialRef()
+        if ref is not None:
+            return CRS.from_user_input(ref.ExportToWkt())
+        return None
 
     @property
     def defn(self) -> ogr.FeatureDefn:

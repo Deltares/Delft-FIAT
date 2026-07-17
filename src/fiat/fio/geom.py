@@ -29,7 +29,7 @@ class GeomIO(BaseDriver):
         The I/O mode. Either `r` for reading or `w` for writing.
     overwrite : bool, optional
         Whether or not to overwrite an existing dataset.
-    srs : str, optional
+    crs : str, optional
         A Spatial reference system string in case the dataset has none.
 
     Examples
@@ -49,7 +49,7 @@ class GeomIO(BaseDriver):
         file: str,
         mode: str = "r",
         overwrite: bool = False,
-        srs: str | None = None,
+        crs: str | None = None,
     ):
         """Create a GeomIO object."""
         obj = object.__new__(cls)
@@ -98,12 +98,12 @@ class GeomIO(BaseDriver):
     ## Properties
     @property
     @BaseDriver.check_state
-    def crs(self) -> CRS:
+    def crs(self) -> CRS | None:
         """Return the crs (Spatial Reference System)."""
-        _crs = self.layer.crs
-        if _crs is None:
-            _crs = self._crs
-        return CRS.from_user_input(_crs)
+        _crs = self.layer.crs or self._crs
+        if _crs is not None:
+            return CRS.from_user_input(_crs)
+        return None
 
     @crs.setter
     def crs(self, value: str):
@@ -133,7 +133,7 @@ class GeomIO(BaseDriver):
         if self.src is not None:
             self.src.Close()
 
-        self._srs = None
+        self._crs = None
         self._layer = None
         self.src = None
         self.driver = None

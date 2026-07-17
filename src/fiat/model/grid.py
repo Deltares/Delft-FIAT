@@ -8,7 +8,7 @@ from fiat.cfg import Configurations
 from fiat.check import (
     check_input_data,
     check_internal_crs,
-    check_vs_srs,
+    check_vs_crs,
 )
 from fiat.fio import Dataset
 from fiat.gis import grid
@@ -34,15 +34,15 @@ from fiat.util import (
     EXPOSURE_GRID_SETTINGS,
     HAZARD,
     HAZARD__META,
+    MODEL_GRID_BASE,
     MODEL_GRID_CHUNK,
-    MODEL_GRID_LEADING,
-    OUTPUT_GRID_NAME,
+    OUTPUT_GRID_FILE,
     RUN__META,
     VULNERABILITY,
     VULNERABILITY__META,
     WINDOW,
     generic_path_check,
-    get_srs_repr,
+    get_crs_repr,
 )
 from fiat.writer import NetcdfWriter, create_netcdf_handle
 
@@ -116,21 +116,21 @@ class GridModel(BaseModel):
         ## checks
         logger.info("Executing exposure data checks...")
 
-        # Check if there is a srs present
+        # Check if there is a crs present
         check_internal_crs(
-            data.srs,
+            data.crs,
             path.name,
         )
 
-        if not check_vs_srs(self.srs, data.srs):
+        if not check_vs_crs(self.crs, data.crs):
             logger.warning(
                 f"Spatial reference of '{path.name}' \
-('{get_srs_repr(data.srs)}') does not match the \
-model spatial reference ('{get_srs_repr(self.srs)}')"
+('{get_crs_repr(data.crs)}') does not match the \
+model spatial reference ('{get_crs_repr(self.crs)}')"
             )
-            logger.info(f"Reprojecting '{path.name}' to '{get_srs_repr(self.srs)}'")
+            logger.info(f"Reprojecting '{path.name}' to '{get_crs_repr(self.crs)}'")
             _resalg = self.cfg.get(EXPOSURE_GRID_RESALG, 0)
-            data = grid.reproject(data, self.srs.ExportToWkt(), _resalg)
+            data = grid.reproject(data, self.crs.to_wkt(), _resalg)
 
         # Reset to ensure the entry is present
         self.cfg.set(EXPOSURE_GRID_FILE, path)
@@ -174,11 +174,11 @@ model spatial reference ('{get_srs_repr(self.srs)}')"
         self.hazard, self.exposure = equal_grid(
             self.hazard,
             self.exposure,
-            first=self.cfg.get(MODEL_GRID_LEADING, True),
+            base=self.cfg.get(MODEL_GRID_BASE, HAZARD),
         )
 
         # Get the output path
-        output_name = self.cfg.get(OUTPUT_GRID_NAME) or self.exposure.path.name
+        output_name = self.cfg.get(OUTPUT_GRID_FILE) or self.exposure.path.name
         output_filepath = Path(self.cfg.output_dir, output_name)
 
         # Setup the queue and the writer

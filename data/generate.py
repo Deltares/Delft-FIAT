@@ -44,7 +44,7 @@ def create_exposure_geoms(epsg=None):
         "POLYGON ((6.05 7.95, 8.95 7.95, 8.5 6.05, 6.5 6.05, 6.05 7.95))",
     )
     driver = "FlatGeoBuf"
-    add = "_no_srs"
+    add = "_no_crs"
     suffix = ".fgb"
     srs = None
     # In all honesty, this seems stupid
@@ -363,22 +363,21 @@ def create_settings_geom():
         "model": {
             "type": "geom",
             "risk": False,
-            "srs": {
-                "value": "EPSG:4326",
+            "projection": {
+                "crs": "EPSG:4326",
             },
         },
         "output": {
             "path": "output/geom_event",
-            "geom": [{"name": "spatial.gpkg"}],
+            "geom": [{"file": "spatial.gpkg"}],
         },
         "vulnerability": {
             "file": "vulnerability/curves.csv",
-            "step_size": 0.01,
         },
         "hazard": {
             "file": "event_map.nc",
             "settings": {
-                "srs": "EPSG:4326",
+                "crs": "EPSG:4326",
             },
         },
         "exposure": {
@@ -386,7 +385,7 @@ def create_settings_geom():
                 {
                     "file": "exposure/spatial.geojson",
                     "settings": {
-                        "srs": "EPSG:4326",
+                        "crs": "EPSG:4326",
                     },
                 },
             ],
@@ -400,7 +399,7 @@ def create_settings_geom():
     # Setup toml with two geometry files
     doc2g = copy.deepcopy(doc)
     doc2g["output"]["path"] = "output/geom_event_2g"
-    doc2g["output"]["geom"].append({"name": "spatial2.gpkg"})
+    doc2g["output"]["geom"].append({"file": "spatial2.gpkg"})
     doc2g["exposure"]["geom"].append({"file": "exposure/spatial2.geojson"})
 
     with open(Path(p, "geom_event_2g.toml"), "w") as f:
@@ -419,7 +418,6 @@ def create_settings_geom():
     doc_r["output"]["path"] = "output/geom_risk"
     doc_r["hazard"]["file"] = "risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
-    doc_r["hazard"]["settings"].update({"var_as_band": True})
 
     with open(Path(p, "geom_risk.toml"), "w") as f:
         tomlkit.dump(doc_r, f)
@@ -427,8 +425,8 @@ def create_settings_geom():
     # Setup toml for risk calculation with 2 geometries
     doc_r2g = copy.deepcopy(doc_r)
     doc_r2g["output"]["path"] = "output/geom_risk_2g"
-    doc_r2g["output"]["geom"].append({"name": "spatial2.gpkg"})
-    doc_r2g["exposure"]["geom"].append({"file2": "exposure/spatial2.geojson"})
+    doc_r2g["output"]["geom"].append({"file": "spatial2.gpkg"})
+    doc_r2g["exposure"]["geom"].append({"file": "exposure/spatial2.geojson"})
 
     with open(Path(p, "geom_risk_2g.toml"), "w") as f:
         tomlkit.dump(doc_r2g, f)
@@ -440,8 +438,8 @@ def create_settings_grid():
         "model": {
             "type": "grid",
             "risk": False,
-            "srs": {
-                "value": "EPSG:4326",
+            "projection": {
+                "crs": "EPSG:4326",
             },
         },
         "output": {
@@ -450,20 +448,18 @@ def create_settings_grid():
         },
         "vulnerability": {
             "file": "vulnerability/curves.csv",
-            "step_size": 0.01,
         },
         "hazard": {
             "file": "event_map.nc",
             "settings": {
-                "srs": "EPSG:4326",
+                "crs": "EPSG:4326",
             },
         },
         "exposure": {
             "grid": {
                 "file": "exposure/spatial.nc",
                 "settings": {
-                    "srs": "EPSG:4326",
-                    "var_as_band": True,
+                    "crs": "EPSG:4326",
                 },
             },
         },
@@ -479,7 +475,6 @@ def create_settings_grid():
     doc_r["output"]["path"] = "output/grid_risk"
     doc_r["hazard"]["file"] = "risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
-    doc_r["hazard"]["settings"].update({"var_as_band": True})
 
     with open(Path(p, "grid_risk.toml"), "w") as f:
         tomlkit.dump(doc_r, f)
@@ -546,7 +541,7 @@ if __name__ == "__main__":
     create_exposure_geoms_outside()
     create_exposure_grid()
     create_hazard_event_map(fname="event_map.nc", crs="EPSG:4326")
-    create_hazard_event_map(fname="event_map_no_srs.nc", crs=None)
+    create_hazard_event_map(fname="event_map_no_crs.nc", crs=None)
     create_hazard_event_map_highres()
     create_hazard_risk_map()
     create_settings_geom()

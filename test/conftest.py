@@ -69,6 +69,14 @@ def hazard_event_path(testdata_dir: Path) -> Path:
     return p
 
 
+@pytest.fixture
+def hazard_event_tmp_path(tmp_path: Path, hazard_event_path: Path) -> Path:
+    p = Path(tmp_path, "event_map.nc")
+    shutil.copy2(hazard_event_path, p)
+    assert p.is_file()
+    return p
+
+
 @pytest.fixture(scope="session")
 def hazard_event_highres_path(testdata_dir: Path) -> Path:
     p = Path(testdata_dir, "event_map_highres.nc")
@@ -157,14 +165,14 @@ def hazard_risk_data_subsets(hazard_risk_path: Path) -> Dataset:
 @pytest.fixture
 def mocked_exp_grid(
     mocker: MockerFixture,
-    srs_4326: osr.SpatialReference,
+    crs_4326: osr.SpatialReference,
 ) -> MagicMock:
     grid = mocker.create_autospec(Dataset)
     # Set attributes for practical use
-    type(grid).geotransform = PropertyMock(
+    type(grid).transform = PropertyMock(
         side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
     )
-    type(grid).srs = PropertyMock(side_effect=lambda: srs_4326)
+    type(grid).crs = PropertyMock(side_effect=lambda: crs_4326)
     type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
     return grid
 
@@ -172,14 +180,14 @@ def mocked_exp_grid(
 @pytest.fixture
 def mocked_hazard_grid(
     mocker: MockerFixture,
-    srs_4326: osr.SpatialReference,
+    crs_4326: osr.SpatialReference,
 ) -> MagicMock:
     grid = mocker.create_autospec(Dataset)
     # Set attributes for practical use
-    type(grid).geotransform = PropertyMock(
+    type(grid).transform = PropertyMock(
         side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
     )
-    type(grid).srs = PropertyMock(side_effect=lambda: srs_4326)
+    type(grid).crs = PropertyMock(side_effect=lambda: crs_4326)
     type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
     return grid
 
@@ -200,20 +208,6 @@ def crs_4326() -> CRS:
 @pytest.fixture(scope="session")
 def crs_3857() -> CRS:
     s = CRS.from_user_input("EPSG:3857")
-    return s
-
-
-@pytest.fixture(scope="session")
-def srs_4326() -> osr.SpatialReference:
-    s = osr.SpatialReference()
-    s.SetFromUserInput("EPSG:4326")
-    return s
-
-
-@pytest.fixture(scope="session")
-def srs_3857() -> osr.SpatialReference:
-    s = osr.SpatialReference()
-    s.SetFromUserInput("EPSG:3857")
     return s
 
 

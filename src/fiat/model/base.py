@@ -13,7 +13,7 @@ from fiat.cfg import Configurations
 from fiat.check import (
     check_duplicate_columns,
     check_internal_crs,
-    check_vs_srs,
+    check_vs_crs,
 )
 from fiat.fio import Dataset
 from fiat.gis import grid
@@ -29,11 +29,11 @@ from fiat.util import (
     HAZARD_RESALG,
     HAZARD_SETTINGS,
     INDEX,
-    MODEL_CALC,
     MODEL_GRID_CHUNK,
+    MODEL_METHOD,
+    MODEL_PROJECTION_CRS,
+    MODEL_PROJECTION_FORCE,
     MODEL_RISK,
-    MODEL_SRS_FORCE,
-    MODEL_SRS_VALUE,
     MODEL_THREADS,
     NEED_IMPLEMENTED,
     VULNERABILITY_FILE,
@@ -68,7 +68,7 @@ class BaseModel(metaclass=ABCMeta):
         self.vulnerability: Table | None = None
 
         # Type of calculations
-        self._type: str = self.cfg.get(MODEL_CALC, FLOOD_DEPTH)
+        self._type: str = self.cfg.get(MODEL_METHOD, FLOOD_DEPTH)
         self.method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{self.type}")
         # Risk or event based
         self._risk: bool = self.cfg.get(MODEL_RISK, False)
@@ -80,14 +80,14 @@ class BaseModel(metaclass=ABCMeta):
         self._threads: int = 1
 
         ## Call the necessary methods at init
-        self._crs = self.cfg.get(MODEL_SRS_VALUE, "EPSG:4326")
+        self._crs = self.cfg.get(MODEL_PROJECTION_CRS, "EPSG:4326")
         self.threads = self.cfg.get(MODEL_THREADS)
         self.read_hazard()
         self.read_vulnerability()
 
     @abstractmethod
     def __del__(self):
-        self._srs = None
+        self._crs = None
 
     def __repr__(self):
         return f"<{self.__class__.__name__} object at {id(self):#018x}>"
@@ -95,7 +95,7 @@ class BaseModel(metaclass=ABCMeta):
     ## Properties
     @property
     def crs(self) -> CRS:
-        """Return the model srs."""
+        """Return the model crs."""
         return CRS.from_user_input(self._crs)
 
     @crs.setter
@@ -203,18 +203,18 @@ exceeds machine thread count ('{max_threads}')"
         ## checks
         logger.info("Executing hazard checks...")
 
-        # check the internal srs of the file
+        # check the internal crs of the file
         check_internal_crs(
             data.crs,
             path.name,
         )
 
-        if not self.cfg.get(MODEL_SRS_FORCE, False):
-            logger.warning("Setting the model srs from the hazard data.")
+        if not self.cfg.get(MODEL_PROJECTION_FORCE, False):
+            logger.warning("Setting the model crs from the hazard data.")
             self.crs = data.crs.to_wkt()
 
-        # check if file srs is the same as the model srs
-        if not check_vs_srs(self.crs, data.crs):
+        # check if file crs is the same as the model crs
+        if not check_vs_crs(self.crs, data.crs):
             logger.warning(
                 f"Spatial reference of '{path.name}' \
 ('{get_crs_repr(data.crs)}') does not match the \

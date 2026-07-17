@@ -29,19 +29,21 @@ def create_netcdf_handle(
     variables: list[str],
     ds_like: Dataset,
 ) -> Dataset:
-    """_summary_.
+    """Create a NetCDF handle.
 
     Parameters
     ----------
     path : Path | str
-        _description_
+        The path to the NetCDF file.
+    variables : list[str]
+        The variables to create in the NetCDF file.
     ds_like : Dataset
-        _description_
+        A dataset to use as a template for creating the new NetCDF file.
 
     Returns
     -------
     Dataset
-        _description_
+        The created NetCDF dataset.
     """
     # Open the dataset
     ds = Dataset(file=path, mode="w")

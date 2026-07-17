@@ -85,6 +85,7 @@ class ExposureGeomData:
 
     area_method: str
     data: Any
+    impact_types: list[str]
     path: Path
     zonal_method: str
 

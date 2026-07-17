@@ -84,7 +84,7 @@ def test_geom_writer_setup_layer(
     # Setup the (buffer) layer
     w.setup(
         defn=exposure_geom_data.layer.defn,
-        srs=exposure_geom_data.srs,
+        crs=exposure_geom_data.crs,
     )
 
     # Assert the state
@@ -112,7 +112,7 @@ def test_geom_writer_setup_layer_with_fields(
     # Setup the (buffer) layer
     w.setup(
         defn=exposure_geom_data.layer.defn,
-        srs=exposure_geom_data.srs,
+        crs=exposure_geom_data.crs,
         extra_fields={"foo": 0},
     )
 
@@ -138,7 +138,7 @@ def test_geom_writer_add(
     )
     # Create the layer like dummy
     w.buffer.create_layer(
-        srs=exposure_geom_data.srs,
+        crs=exposure_geom_data.crs,
         geom_type=exposure_geom_data.layer.geom_type,
     )
     w.buffer.layer.set_from_defn(defn=exposure_geom_data.layer.defn)
@@ -166,7 +166,7 @@ def test_geom_writer_add_write(
     )
     # Create the layer like dummy
     w.buffer.create_layer(
-        srs=exposure_geom_data.srs,
+        crs=exposure_geom_data.crs,
         geom_type=exposure_geom_data.layer.geom_type,
     )
     w.buffer.layer.set_from_defn(defn=exposure_geom_data.layer.defn)
@@ -201,7 +201,7 @@ def test_geom_writer_add_with_map(
     )
     # Create the layer like dummy
     w.buffer.create_layer(
-        srs=exposure_geom_data.srs,
+        crs=exposure_geom_data.crs,
         geom_type=exposure_geom_data.layer.geom_type,
     )
     w.buffer.layer.set_from_defn(defn=exposure_geom_data.layer.defn)

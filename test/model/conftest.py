@@ -1,8 +1,9 @@
 from itertools import product
 from pathlib import Path
 
+import numpy as np
 import pytest
-from osgeo import osr
+from pyproj import CRS
 from scipy.interpolate import make_interp_spline
 
 from fiat.cfg import Configurations
@@ -39,18 +40,22 @@ def dummy_pipeline() -> DummyPipeline:
 
 
 @pytest.fixture
-def grid_handle(tmp_path: Path, srs_4326: osr.SpatialReference) -> Dataset:
+def grid_handle(
+    tmp_path: Path,
+    crs_4326: CRS,
+) -> Dataset:
     ds = Dataset(
         file=Path(tmp_path, "foo.nc"),
         mode="w",
     )
-    ds.create(
-        (10, 10),
-        nb=1,
-        dtype=6,
+    gtf = (0.0, 1.0, 0.0, 10.0, 0.0, -1.0)
+    ny, nx = (10, 10)
+    ds.create_spatial_dims(
+        lats=np.arange(gtf[3] + gtf[5] * 0.5, gtf[3] + gtf[5] * ny, gtf[5]),
+        lons=np.arange(gtf[0] + gtf[1] * 0.5, gtf[0] + gtf[1] * nx, gtf[1]),
     )
-    ds.geotransform = (0.0, 1.0, 0.0, 10.0, 0.0, -1.0)
-    ds.set_source_srs(srs_4326)
+    ds.set_spatial_ref(crs_4326)
+    ds.create_spatial_variable(var="data")
     return ds
 
 
@@ -81,7 +86,6 @@ def config_read_grid(
     config: Configurations,
 ) -> Configurations:
     config.set("exposure.grid.file", "exposure/spatial.nc")
-    config.set("exposure.grid.settings.var_as_band", True)
     return config
 
 
@@ -108,6 +112,7 @@ def exposure_geom_data_run(
     data = ExposureGeomData(
         area_method="area",
         data=exposure_geom_data,
+        impact_types=["damage"],
         path=exposure_geom_data.path,
         zonal_method="mean",
     )
