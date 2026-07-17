@@ -2,10 +2,11 @@
 
 from itertools import product
 
-from numpy import ndarray, ones
+import numpy as np
 from osgeo import ogr
 
-from fiat.fio import Grid
+from fiat.fio.netcdf import DataVariable
+from fiat.gis.geom import point_in_geom
 from fiat.gis.util import pixel2world, world2pixel
 
 
@@ -44,39 +45,32 @@ def intersect_cell(
     return geom.Intersects(cell)
 
 
-def clip(
-    ft: ogr.Feature,
-    band: Grid,
-    gtf: tuple,
-):
-    """Clip a grid based on a feature (vector).
+def area_mask(
+    geom: ogr.Geometry,
+    gtf: tuple[float, ...],
+    shape: tuple[int, int],
+) -> tuple[np.ndarray[int], tuple[int, ...]]:
+    """Mask a grid based on a geometry (vector).
 
     Parameters
     ----------
-    ft : ogr.Feature
-        A Feature according to the \
+    geom : ogr.Geometry
+        The Geometry according to the \
 [ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
-        Can be optained by indexing a \
-[GeomSource](/api/GeomSource.qmd).
-    band : Grid
-        An object that contains a connection the band within the dataset. For further
-        information, see [Grid](/api/Grid.qmd)!
     gtf : tuple
         The geotransform of a grid dataset.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
+    shape : tuple
+        The shape of the grid dataset set (width, height).
 
     Returns
     -------
-    array
-        A 1D array containing the clipped values.
-
-    See Also
-    --------
-    - [clip_weighted](/api/overlay/clip_weighted.qmd)
+    tuple
+        An array containing the polygon mask and a tuple containing the location of the
+        polygon window in the grid.
     """
     # Get the geometry information form the feature
-    geom = ft.GetGeometryRef()
-    ow, oh = band.shape_xy
+    ow, oh = shape
 
     # Extract information
     dx = gtf[1]
@@ -92,20 +86,120 @@ def clip(
     px_w = max(int(lrx - ulx) + 1 - abs(lrxn - lrx) - abs(ulxn - ulx), 0)
     px_h = max(int(lry - uly) + 1 - abs(lryn - lry) - abs(ulyn - uly), 0)
 
-    clip = band[ulxn, ulyn, px_w, px_h]
-    mask = ones(clip.shape)
+    window = slice(ulyn, ulyn + px_h), slice(ulxn, ulxn + px_w)
+    mask = np.ones((px_h, px_w))
 
     # Loop trough the cells
     for i, j in product(range(px_w), range(px_h)):
         if not intersect_cell(geom, plx + (dx * i), ply + (dy * j), dx, dy):
             mask[j, i] = 0
 
-    return clip[mask == 1]
+    return mask, window
+
+
+def point_mask(
+    point: tuple,
+    gtf: tuple[float, ...],
+    shape: tuple[int, int],
+) -> tuple[tuple[int], np.ndarray[int]]:
+    """Create a mask of a point on a grid.
+
+    Parameters
+    ----------
+    point : tuple
+        x and y coordinate.
+    gtf : tuple
+        The geotransform of a grid dataset.
+        Has the following shape: (left, xres, xrot, upper, yrot, yres).
+    shape : tuple
+        The shape of the grid dataset set (width, height).
+
+    Returns
+    -------
+    tuple
+        An array containing the polygon mask and a tuple containing the location of the
+        polygon window in the grid.
+    """
+    # Get metadata
+    ow, oh = shape
+
+    # Get the coordinates
+    x, y = world2pixel(gtf, *point)
+    xn = int(0 <= x < ow)
+    yn = int(0 <= y < oh)
+
+    # Setup the mask and window
+    window = slice(y, y + yn), slice(x, x + xn)
+    mask = np.ones((yn, xn))  # This really is a dummy mask, but makes my life easy
+
+    return mask, window
+
+
+def centroid_mask(
+    geom: ogr.Geometry,
+    gtf: tuple[float, ...],
+    shape: tuple[int, int],
+) -> tuple[tuple[int], np.ndarray[int]]:
+    """Get point mask based on centroid of e.g. a polygon geometry.
+
+    Parameters
+    ----------
+    geom : ogr.Geometry
+        The Geometry according to the \
+[ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
+    gtf : tuple
+        The geotransform of a grid dataset.
+        Has the following shape: (left, xres, xrot, upper, yrot, yres).
+    shape : tuple
+        The shape of the grid dataset set (width, height).
+
+    Returns
+    -------
+    tuple
+        An array containing the polygon mask and a tuple containing the location of the
+        polygon window in the grid.
+    """
+    # Get the x,y coordinates
+    point = point_in_geom(geometry=geom)
+    return point_mask(point=point, gtf=gtf, shape=shape)
+
+
+def clip(
+    var: DataVariable,
+    mask: np.ndarray[int],
+    window: tuple[int, ...],
+) -> np.ndarray:
+    """Clip a grid based on a mask.
+
+    The mask is the geometry's footprint on the raster.
+
+    Parameters
+    ----------
+    var : DataVariable
+        The raster variable.
+    mask : np.ndarray[int]
+        The mask of the geometry within the window of the geometry.
+    window : tuple[int]
+        The window that the geometry covers of the raster (variable).
+
+    Returns
+    -------
+    np.ndarray
+        The resulting values.
+
+    See Also
+    --------
+    - [clip_weighted](/api/overlay/clip_weighted.qmd)
+    """
+    # Use the window and mask to extract the data
+    arr = var[*window][mask == 1]
+    arr[arr == var.nodata] = np.nan
+    return arr
 
 
 def clip_weighted(
     ft: ogr.Feature,
-    band: Grid,
+    var: DataVariable,
     gtf: tuple,
     upscale: int = 3,
 ):
@@ -125,10 +219,10 @@ cells that are touched by the feature.
         A Feature according to the \
 [ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
         Can be optained by indexing a \
-[GeomSource](/api/GeomSource.qmd).
-    band : Grid
-        An object that contains a connection the band within the dataset. For further
-        information, see [Grid](/api/Grid.qmd)!
+[GeomIO](/api/GeomIO.qmd).
+    var : DataVariable
+        An object that contains a connection the variable within the dataset.
+        For further information, see [DataVariable](/api/DataVariable.qmd)!
     gtf : tuple
         The geotransform of a grid dataset.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
@@ -158,8 +252,8 @@ cells that are touched by the feature.
     dyn = dy / upscale
     px_w = int(lrx - ulx) + 1
     px_h = int(lry - uly) + 1
-    clip = band[ulx, uly, px_w, px_h]
-    mask = ones((px_h * upscale, px_w * upscale))
+    clip = var[uly : uly + px_h, ulx : ulx + px_w]
+    mask = np.ones((px_h * upscale, px_w * upscale))
 
     # Loop trough the cells
     for i, j in product(range(px_w * upscale), range(px_h * upscale)):
@@ -171,39 +265,3 @@ cells that are touched by the feature.
     clip = clip[mask != 0]
 
     return clip, mask
-
-
-def pin(
-    point: tuple,
-    band: Grid,
-    gtf: tuple,
-) -> ndarray:
-    """Pin a the value of a cell based on a coordinate.
-
-    Parameters
-    ----------
-    point : tuple
-        x and y coordinate.
-    band : Grid
-        Input object. This holds a connection to the specified band.
-    gtf : tuple
-        The geotransform of a grid dataset.
-        Has the following shape: (left, xres, xrot, upper, yrot, yres).
-
-    Returns
-    -------
-    ndarray
-        A NumPy array containing one value.
-    """
-    # Get metadata
-    ow, oh = band.shape_xy
-
-    # Get the coordinates
-    x, y = world2pixel(gtf, *point)
-    xn = int(0 <= x < ow)
-    yn = int(0 <= y < oh)
-
-    value = band[x, y, xn, yn]
-    mask = ones(value.shape)  # This really is a dummy mask, but makes my life easy
-
-    return value[mask == 1]

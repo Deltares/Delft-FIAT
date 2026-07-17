@@ -1,0 +1,93 @@
+---
+name: Pypi release
+on:
+  release:
+    types:
+      - published
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
+        name: Install Python
+        with:
+          python-version: "3.13"
+
+      - name: Setup build packages
+        run: |
+          pip install build tomli twine wheel
+
+      - name: Build sdist/ wheel
+        run: |
+          python -m build --sdist
+          python -m build --wheel
+          python -m twine check dist/*
+
+      - name: Upload sdist/ wheel
+        uses: actions/upload-artifact@v6
+        with:
+          name: source-distribution
+          path: dist
+
+  test-build:
+    name: "linux-64 - py313"
+    needs: build
+
+    uses: ./.github/workflows/wheel.yml
+    with:
+      os: ubuntu-latest
+      python-version: "313"
+      artifact-name: source-distribution
+
+  upload-testpypi:
+    needs: test-build
+    if: github.event_name == 'push'
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/Delft-FIAT
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download sdist/ wheel
+        uses: actions/download-artifact@v7
+        with:
+          name: source-distribution
+          path: dist
+
+      - name: Publish TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  upload-pypi:
+    needs: test-build
+    if: ${{ github.event_name == 'release' && !github.event.act }}
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/Delft-FIAT
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download sdist/ wheel
+        uses: actions/download-artifact@v7
+        with:
+          name: source-distribution
+          path: dist
+
+      - name: Publish PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

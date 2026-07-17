@@ -1,79 +1,86 @@
-import copy
-import shutil
-import sys
+import time
+from io import BytesIO
 from pathlib import Path
 
 import numpy as np
+import pytest
+from pyproj.crs import CRS
 
 from fiat.util import (
-    GEOM_READ_DRIVER_MAP,
-    GEOM_WRITE_DRIVER_MAP,
+    GEOM_DRIVER_MAP,
     GRID_DRIVER_MAP,
-    create_1d_chunk,
-    create_dir,
-    create_windows,
+    DummyLock,
+    DummyWriter,
+    _diff_table,
+    _load_diff,
     deter_dec,
     deter_type,
-    discover_exp_columns,
+    distribute_threads,
     find_duplicates,
     flatten_dict,
-    generate_output_columns,
+    generic_directory_check,
     generic_path_check,
+    get_crs_repr,
     get_module_attr,
     mean,
-    object_size,
     re_filter,
-    read_gridsource_info,
-    read_gridsource_layers,
     regex_pattern,
     replace_empty,
+    text_chunk_gen,
+    timeit,
 )
 
 
-def test_create_1d_chunk():
-    length = 500
-    parts = 6
-    chunks = list(create_1d_chunk(length, parts))
-    assert len(chunks) == 6
-    assert chunks[0] == (1, 84)
-    assert chunks[-1] == (421, 500)
+def test__load_diff():
+    # Call the function
+    rl = _load_diff(size=100000, threads=5, diff=-1, max_threads=8)
+    rm = _load_diff(size=100000, threads=5, diff=1, max_threads=8)
 
-    parts = 20
-    chunks = list(create_1d_chunk(length, parts))
-    assert len(chunks) == 20
-    assert chunks[0] == (1, 25)
-    assert chunks[-1] == (476, 500)
+    # Assert the output
+    assert int(rl) == 5000
+    assert int(rm) == 3333
 
 
-def test_create_dir(tmp_path):
-    new_dir = Path("output")
-    assert new_dir.is_absolute() == False
-    assert Path(tmp_path, new_dir).exists() == False
-    new_dir = create_dir(root=tmp_path, path=new_dir)
-    assert new_dir.exists()
-    assert new_dir.is_absolute()
+def test__load_diff_inf():
+    # Call the function going below 1
+    r = _load_diff(size=100000, threads=1, diff=-1, max_threads=8)
+
+    # Assert the output
+    assert r == np.inf
 
 
-def test_create_windows():
-    shape = (10, 10)
-    chunk = (2, 2)
-    windows = list(create_windows(shape, chunk))
-    assert len(windows) == 25
-    assert windows[0] == (0, 0, 2, 2)
-    assert windows[-1] == (8, 8, 2, 2)  # Should nicely fit
+def test__load_diff_zero():
+    # Call the function going over the max
+    r = _load_diff(size=100000, threads=8, diff=1, max_threads=8)
 
-    chunk = (4, 4)
-    windows = list(create_windows(shape, chunk))
-    assert len(windows) == 9
-    assert windows[0] == (0, 0, 4, 4)
-    assert windows[-1] == (8, 8, 2, 2)  # It's the same as it does not fit
+    # Assert the output
+    assert r == 0
+
+
+def test__diff_table():
+    # Call the function
+    f, d = _diff_table(
+        sizes=[100000, 4000, 20000, 50],
+        threads_diss=[5, 1, 1, 1],
+        max_threads=8,
+    )
+
+    # Assert the output
+    assert np.sum(f) == 1
+    assert f[2, 0] == 1
+    assert int(d[2, 0]) == 5000
+    assert d[2, 1] == np.inf
 
 
 def test_deter_dec():
+    # Call the function
     out = deter_dec(0.00001)
+    # Assert the output
     assert out == 5
 
+    # Call the function
     out = deter_dec(0.01)
+    # Assert the output
     assert out == 2
 
 
@@ -94,190 +101,392 @@ def test_deter_type():
     assert out == 3  # Cannot solve, default to string
 
 
-def test_discover_columns(geom_partial_data):
-    cols = copy.deepcopy(geom_partial_data._columns)
-    dmg_suffix, dmg_idx, missing = discover_exp_columns(cols, type="damage")
-    assert dmg_suffix == ["_structure"]
-    assert dmg_idx["fn"]["_structure"] == 4
-    assert dmg_idx["max"]["_structure"] == 6
-    assert missing == ["_content"]
+def test_distribute_threads():
+    # Call the function
+    t = distribute_threads(
+        size=[100000, 4000, 20000, 50],
+        threads=8,
+    )
 
-    cols["max_damage_content"] = 7
-    dmg_suffix, dmg_idx, missing = discover_exp_columns(cols, type="damage")
-    assert dmg_suffix == ["_structure", "_content"]
-    assert len(missing) == 0
+    # Assert the output
+    assert t == [4, 1, 2, 1]
+
+
+def test_distribute_threads_single():
+    # Call the function
+    t = distribute_threads(
+        size=[100000],
+        threads=8,
+    )
+
+    # Assert the output
+    assert t == [8]
+
+
+def test_distribute_threads_one():
+    # Call the function
+    t = distribute_threads(
+        size=[100000, 4000, 20000, 50],
+        threads=1,
+    )
+
+    # Assert the output
+    assert t == [1, 1, 1, 1]
+
+
+def test_distribute_threads_fill():
+    # Call the function
+    t = distribute_threads(
+        size=[100000, 25000, 25000],
+        threads=8,
+    )
+
+    # Assert the output
+    assert t == [4, 2, 2]
 
 
 def test_driver_maps():
-    assert ".gpkg" in GEOM_WRITE_DRIVER_MAP
-    assert ".nc" not in GEOM_WRITE_DRIVER_MAP
-    assert ".nc" in GEOM_READ_DRIVER_MAP
-    assert ".nc" in GRID_DRIVER_MAP
+    # Simply assert some key drivers
+    assert ".gpkg" in GEOM_DRIVER_MAP
+    assert ".tif" not in GEOM_DRIVER_MAP
+    assert ".fgb" not in GRID_DRIVER_MAP
+
+
+def test_dummy_lock():
+    # Create the object
+    l = DummyLock()
+
+    # Empty so calling the methods shouldnt do anything
+    l.acquire()
+    l.release()
+
+
+def test_dummy_writer():
+    # Create the object
+    w = DummyWriter()
+
+    # Empty so calling the methods shouldnt do anything
+    w.add()
+    w.add_iterable()
+    w.close()
 
 
 def test_find_duplicated():
+    # Assert no duplicates
     data = [1, 2, 3, 4]
+    # Call the function
     res = find_duplicates(data)
     assert res is None
 
+    # Assert one duplicate
     data.append(1)
+    # Call the function
     res = find_duplicates(data)
     assert res is not None
     assert res == [1]
 
+    # Assert two duplicates
     data += [5, 5]
+    # Call the function
     res = find_duplicates(data)
     assert res == [1, 5]
 
 
 def test_flatten_dict():
+    # Test a dictionary that cannot be flattened
     data = {"entry1": "stuff", "entry2": "stuff"}
+    # Call the function
     flattened = flatten_dict(data)
     assert "entry2" in flattened  # nothing happened
 
+    # Dictionary that can the flattened
     data = {"entry1": "stuff", "entry2": {"sub1": "stuff"}}
+    # Call the function
     flattened = flatten_dict(data)
+    # Assert the output
     assert "entry2" not in flattened
     assert "entry2.sub1" in flattened
 
 
-def test_generate_output_columns(geom_partial_data):
-    dmg_suffix, dmg_idx, missing = discover_exp_columns(
-        geom_partial_data._columns,
-        type="damage",
-    )
-    new_fields, len1, total_idx = generate_output_columns(
-        specific_columns=["inun_depth"],
-        exposure_types={"damage": dmg_idx},
-    )
-    assert len(new_fields) == 4
-    assert new_fields[2] == "damage_structure"
-    assert len1 == 4
-    assert total_idx[0] == -1
+def test_generic_path_check(
+    testdata_dir: Path,
+):
+    # Call the function
+    p = generic_path_check("geom_event.toml", root=testdata_dir)
+    # Assert the output
+    assert p == Path(testdata_dir, "geom_event.toml")
 
-    new_fields, len1, total_idx = generate_output_columns(
-        specific_columns=["inun_depth"],
-        exposure_types={"damage": dmg_idx},
-        extra=["ead"],
-    )
-    assert len1 == 5
-    assert new_fields[-1] == "ead_damage"
-
-    new_fields, len1, total_idx = generate_output_columns(
-        specific_columns=["inun_depth"],
-        exposure_types={"damage": dmg_idx},
-        extra=["ead"],
-        suffix=["1", "2"],
-    )
-    assert len1 == 4
-    assert len(new_fields) == 9
-    assert new_fields[4] == "inun_depth_2"
+    # Call the function on absolute path
+    p = generic_path_check(Path(testdata_dir, "geom_event.toml"), root=testdata_dir)
+    # Assert the output
+    assert p == Path(testdata_dir, "geom_event.toml")
 
 
-def test_generic_path_check(tmp_path, vul_path):
-    _ = generic_path_check(vul_path, root=tmp_path)
-    shutil.copy2(vul_path, Path(tmp_path, vul_path.name))
-    path = generic_path_check(vul_path.name, tmp_path)
-    assert path.is_absolute()
+def test_generic_path_check_error(
+    tmp_path: Path,
+):
+    p = Path(tmp_path, "tmp.unknown")
+    # Call the function while the path doesnt exist
+    with pytest.raises(
+        FileNotFoundError,
+        match=f"{p.as_posix()} is not a valid path",
+    ):
+        generic_path_check(p, root=tmp_path)
 
-    try:
-        file = "data.dat"
-        _ = generic_path_check(file, tmp_path)
-    except FileNotFoundError:
-        t, v, tb = sys.exc_info()
-        assert v.args[0].endswith("is not a valid path")
-    finally:
-        assert v
+
+def test_generic_directory_check(tmp_path: Path):
+    # Create a path an assert it's state
+    new_dir = Path("output")
+    assert new_dir.is_absolute() == False
+    assert Path(tmp_path, new_dir).exists() == False
+
+    # Call the function
+    new_dir = generic_directory_check(path=new_dir, root=tmp_path)
+
+    # Assert the properties and existence of the directory
+    assert new_dir.exists()
+    assert new_dir.is_absolute()
+
+
+def test_generic_directory_check_exist(tmp_path: Path):
+    # Create a path an assert it's state
+    assert tmp_path.exists()
+
+    # Call the function
+    new_dir = generic_directory_check(path=tmp_path)
+
+    # Assert the properties and existence of the directory
+    assert new_dir == tmp_path
+    assert new_dir.exists()
 
 
 def test_get_module_attr():
-    module = "fiat.methods.flood"
-    attr = get_module_attr(module, "NEW_COLUMNS")
-    assert attr == ["inun_depth"]
+    # Call the function
+    attr = get_module_attr("fiat.method.flood.depth", "NEW_COLUMNS")
+    # Assert the output
+    assert attr == ["depth"]
 
 
-def test_gridsource_info(grid_event_data):
-    data = read_gridsource_info(grid_event_data.src)
-    assert data["driverShortName"] == "netCDF"
+def test_get_crs_repr(crs_4326: CRS):
+    # Call the function
+    r = get_crs_repr(crs_4326)
+
+    # Assert the output
+    assert r == "EPSG:4326"
 
 
-def test_gridsource_layers(grid_event_data, grid_risk_data):
-    layers = read_gridsource_layers(grid_event_data.src)
-    assert len(layers) == 0
+def test_get_crs_repr_proj():
+    crs = CRS.from_wkt("""
+PROJCRS["Custom Site Grid",
+    BASEGEOGCRS["WGS 84",
+        DATUM["World Geodetic System 1984",
+            ELLIPSOID["WGS 84",6378137,298.257223563]
+        ],
+        PRIMEM["Greenwich",0],
+        ANGLEUNIT["degree",0.0174532925199433]
+    ],
+    CONVERSION["Local Transverse Mercator",
+        METHOD["Transverse Mercator"],
+        PARAMETER["Latitude of natural origin",52.0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        PARAMETER["Longitude of natural origin",5.0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        PARAMETER["Scale factor at natural origin",1.0,
+            SCALEUNIT["unity",1]],
+        PARAMETER["False easting",0,
+            LENGTHUNIT["metre",1]],
+        PARAMETER["False northing",0,
+            LENGTHUNIT["metre",1]]
+    ],
+    CS[Cartesian,2],
+        AXIS["Easting",east,ORDER[1]],
+        AXIS["Northing",north,ORDER[2]],
+    LENGTHUNIT["metre",1]
+]
+    """)
+    # Call the function
+    r = get_crs_repr(crs)
 
-    layers = read_gridsource_layers(grid_risk_data.src)
-    assert len(layers) == 4
-    subpath = layers["Band4"]
-    assert subpath.startswith("NETCDF")
-    assert subpath.endswith("Band4")
+    # Assert the output
+    assert r.startswith("+proj")
+
+
+def test_get_crs_repr_error():
+    # Call the function with no crs as input
+    with pytest.raises(
+        ValueError,
+        match="'crs' can not be None.",
+    ):
+        _ = get_crs_repr(None)
 
 
 def test_mean():  # dunb function, dumb test
+    # Call the function
     x = mean([1, 2, 3, 4])
     assert int(x * 100) == 250
 
+    # Call the function
     y = mean([2, 6, 10, 1])
     assert int(y * 100) == 475
 
 
-def test_object_size():
-    size = object_size(44)
-    assert size == 28
-
-    size = object_size(4.4)
-    assert size == 24
-
-    size = object_size(np.array([]))
-    assert size == 112
-
-    size = object_size(np.array([2, 2, 2]))
-    assert size == 136
-
-
 def test_re_filter():
-    # Set up testing vars
-    pattern = r"^fn_damage(_\w+)?$"
-    values = ["fn_damage", "fn_damage_structure", "something_else"]
-    # Filter
-    filt = re_filter(values, pattern)
+    # Call the function with an element that cannot be matched
+    filt = re_filter(
+        values=["fn_damage", "fn_damage_structure", "something_else"],
+        pat=r"^fn_damage(_\w+)?$",
+    )
+
+    # Assert the output
     assert len(filt) == 2
     assert "fn_damage" in filt
 
+
+def test_re_filter_edge():
     # Edge case: only underscore after the normal characters
-    values = ["fn_damage", "fn_damage_"]
-    # Filter
-    filt = re_filter(values, pattern)
+    # Call the function
+    filt = re_filter(
+        values=["fn_damage", "fn_damage_"],
+        pat=r"^fn_damage(_\w+)?$",
+    )
     assert len(filt) == 1
     assert "fn_damage_" not in filt
 
 
-def test_regex_pattern(vul_raw_data):
+def test_regex_pattern(vulnerability_path: Path):
+    # Open the data as binary
+    with open(vulnerability_path, "rb") as r:
+        data = r.read()
+
+    # Call the function
     pat = regex_pattern(delimiter=",")
-    elem = pat.split(vul_raw_data)
-    assert len(elem) == 47
+    elem = pat.split(data)
+    # Assert the output
+    assert len(elem) == 46
 
+    # Call the function
     pat = regex_pattern(delimiter=",", multi=True)
-    elem = pat.split(vul_raw_data)
-    assert len(elem) == 71
+    elem = pat.split(data)
+    # Assert the output
+    assert len(elem) == 70
 
+
+def test_regex_pattern_other(vulnerability_path: Path):
+    # Open the data as binary
+    with open(vulnerability_path, "rb") as r:
+        data = r.read()
+
+    # Call the function
     pat = regex_pattern(delimiter=";")
-    elem = pat.split(vul_raw_data)
+    elem = pat.split(data)
+    # Assert the output
     assert len(elem) == 1
 
+    # Call the function
     pat = regex_pattern(delimiter=";", multi=True)
-    elem = pat.split(vul_raw_data)
+    elem = pat.split(data)
+    # Assert the output
     assert len(elem) == 25
 
+    # Call the function
     pat = regex_pattern(delimiter=";", multi=True, nchar=b"\r\n")
-    elem = pat.split(vul_raw_data)
+    elem = pat.split(data)
+    # Assert the output
     assert len(elem) == 1
 
 
 def test_replace_emptry():
-    data = [b"1", b"2", b"3"]
-    out = replace_empty(data)
+    # Call the function
+    out = replace_empty([b"1", b"2", b"3"])
+    # Assert the output
     assert out == ["1", "2", "3"]
 
-    data[2] = b""
-    out = replace_empty(data)
+    # Call the function
+    out = replace_empty([b"1", b"2", b""])
+    # Assert the output
     assert out == ["1", "2", "nan"]
+
+
+def test_text_chunk_gen(vulnerability_path: Path):
+    # Get a stream handler
+    data = open(vulnerability_path, "rb")
+    # Setup a pattern
+    pat = regex_pattern(",", multi=True)
+
+    # Call the function
+    cg = text_chunk_gen(
+        data,
+        pattern=pat,
+        chunk_size=100,
+    )
+    # Make a list out of it
+    cg = list(cg)
+
+    # Assert the output
+    assert len(cg) == 4
+    assert cg[0][0] == 5
+    assert cg[3][0] == 3
+
+
+def test_text_chunk_gen_res():
+    # Setup a buffer
+    buffer = BytesIO()
+    buffer.write(b"1,2,3,4\n2,3,4,5")
+    buffer.seek(0)
+    # Setup a pattern
+    pat = regex_pattern(",", multi=True)
+
+    # Call the function
+    cg = text_chunk_gen(
+        buffer,
+        pattern=pat,
+        chunk_size=100,
+    )
+    # Make a list out of it
+    cg = list(cg)
+
+    # Assert the output
+    assert len(cg) == 2
+    assert cg[0][0] == 0
+    assert cg[1][1] == [b"2", b"3", b"4", b"5"]
+
+
+def test_text_chunk_gen_single():
+    # Setup a buffer
+    buffer = BytesIO()
+    buffer.write(b"1,2,3,4")
+    buffer.seek(0)
+    # Setup a pattern
+    pat = regex_pattern(",", multi=True)
+
+    # Call the function
+    cg = text_chunk_gen(
+        buffer,
+        pattern=pat,
+        chunk_size=100,
+    )
+    # Make a list out of it
+    cg = list(cg)
+
+    # Assert the output
+    assert len(cg) == 1
+    assert cg[0][0] == 0
+
+
+@timeit(n=20)
+def func_dummy1():
+    time.sleep(0.001)
+
+
+@timeit(n=100)
+def func_dummy2():
+    time.sleep(0.001)
+
+
+def test_timeit():
+    # Call the functions
+    t1 = func_dummy1()
+    t2 = func_dummy2()
+
+    # t2 should take longer
+    assert t2 > 2 * t1

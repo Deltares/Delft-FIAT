@@ -1,0 +1,45 @@
+---
+name: Pages versioning
+on:
+  repository_dispatch:
+      types:
+        - docs-updated
+  workflow_dispatch:
+
+jobs:
+  version:
+    defaults:
+      run:
+        shell: bash -l {0}
+    name: linux-64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+            ref: gh-pages
+
+      - name: Install package(s)
+        run: |
+          sudo apt install -y jq
+
+      - name: Run versioning script
+        id: check
+        run: |
+          ./version.sh
+        continue-on-error: true
+
+      - name: Adjust stable symbolic link
+        if: ${{ steps.check.outcome == 'success' }}
+        run: |
+          ln -sfn ${{ env.NEW_STABLE_VERSION }} stable
+
+      - name: Commit and push changes
+        if: ${{ steps.check.outcome == 'success' }}
+        run: |
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add .
+            git commit -m "Added version ${{ env.NEW_STABLE_VERSION }}"
+            git push

@@ -1,0 +1,57 @@
+---
+name: Build Docker
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - Dockerfile
+      - pyproject.toml
+      - pixi.lock
+      - .github/workflows/ci_docker.yml
+  pull_request:
+    branches:
+      - master
+    paths:
+      - Dockerfile
+      - pyproject.toml
+      - pixi.lock
+      - .github/workflows/ci_docker.yml
+
+jobs:
+  docker:
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "ubuntu-latest"
+        include:
+          - os: ubuntu-latest
+            label: linux-64
+
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Build docker image
+        run: |
+          docker build -f Dockerfile --build-arg="PIXIENV=default" --build-arg="UID=1001" -t fiat .
+
+      - name: Execute docker container
+        uses: addnab/docker-run-action@v3
+        with:
+          username: deltares
+          options: -v ${{ github.workspace }}/data:/home/deltares/data
+          shell: bash
+          image: fiat:latest
+          run: |
+            pixi run testdata
+            pixi run fiat run data/geom_event.toml
+            exit

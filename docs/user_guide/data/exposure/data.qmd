@@ -8,10 +8,9 @@ In the table down below, an overview is provided od the necessary inputs in eith
 |--------------------------------------------------------|----------|----------|---------------------------|
 | [object_id](#object_id)                                | Yes      | -        | 1                         |
 | [object_name](#object-name)                            | No       | -        | fp_1                      |
-| [extract_method](#extraction-method)                   | Yes      | -        | centroid                  |
+| [method](#method)                                      | Yes      | -        | centroid                  |
 | [fn_< any >_< any >](#damage-functions)                | Yes      | Yes      | struct_2                  |
-| [ground_flht](#ground-floor-height)                    | No       | -        | 4                         |
-| [ground_elevtn](#ground-elevation)                     | No       | -        | 10.11                     |
+| [ref](#reference)                                      | No       | -        | 4                         |
 | [max_< any >_< any >](#max-potential-damage)           | Yes      | Yes      | 193457.00                 |
 | [< Additional attributes >](#additional-attributes)    | No       |          | 1205                      |
 : exposure.csv input {#tbl-exposure .hover}
@@ -24,7 +23,7 @@ The object ID is used to link the geometries to the information in the exposure 
 #### Object name
 The object name field can be chosen freely and can serve as a field for identifying the damages assets.
 
-#### Extraction Method
+#### Method
 The extraction method refers to how the water level or water depth is sampled per asset. The options are (1) *centroid*, which samples the water level or depth at the estimated centroid inside of the asset, or (2) area, which considers the water level or depth over the entire polygon or line and takes either an average or maximum. The user can set the choice for the latter per damage function, in the [vulnerability curves file](../vulnerability.qmd).
 
 ::: {.callout-important}
@@ -34,15 +33,9 @@ The extraction method refers to how the water level or water depth is sampled pe
 #### Damage Functions
 The user can input as many damage functions and related max potential damages as required. However, at least one damage function and related max potential damage must be provides per asset. Damage function column are named as `fn_< exposure_type >_< component >` (for exposure types, see [here](../../settings/optional.qmd#exposure)). This name can be chosen freely but it is recommended to give it a descriptive name, such as **damage** (exposure type) in combination with **structure** or **content** (components), and it is required to use the same name in the max potential damage column. (i.e. `max_< exposure-type >_< component >`) The value that must be entered is the name of the damage function, relating to the names in the corresponding damage functions in the [vulnerability curves file](../vulnerability.qmd). Globally, continental damage functions can be obtained from [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific functions when available.
 
-#### Ground Floor Height
-The ground floor height column indicates the height of the ground floor of an asset above the ground elevation. For example, when a building is built on poles, the ground floor (finished floor in the US) is lifted off the ground with a certain height. Usually, buildings are at least a certain amount above ground elevation because of the road and sidewalk. This value is used to calculate the water depth inside of the asset, for buildings.
-
-::: {.callout-important}
- Required for flood damage calculation, see [global model types](../../settings/optional.qmd#model)
-:::
-
-#### Ground Elevation
-The ground elevation is the value of a digital elevation model (DEM) at the location of the asset.
+#### Reference
+The reference (height) of the exposure data compared to the hazard data. This can very well be
+a combination of the ground elevation and the groud floor elevation.
 
 ::: {.callout-important}
  Required for flood damage calculation, see [global model types](../../settings/optional.qmd#model)

@@ -5,11 +5,13 @@ from pathlib import Path
 
 from osgeo import ogr, osr
 
-from fiat.fio import BufferedGeomWriter, GeomSource, open_geom
+from fiat.fio import GeomIO
+from fiat.model.geom_writer import GeomWriter
+from fiat.open import open_geom
 
 
 def point_in_geom(
-    ft: ogr.Feature,
+    geometry: ogr.Geometry,
 ) -> tuple:
     """Create a point within a polygon.
 
@@ -18,17 +20,15 @@ def point_in_geom(
 
     Parameters
     ----------
-    ft : ogr.Feature
-        The feature (polygon or linestring) in which to create the point.
+    ft : ogr.Geometry
+        The feature geometry (polygon or linestring) in which to create the point.
 
     Returns
     -------
     tuple
         The x and y coordinate of the created point.
     """
-    geom = ft.GetGeometryRef()
-    p = geom.PointOnSurface()
-    geom = None
+    p = geometry.PointOnSurface()
     return p.GetX(), p.GetY()
 
 
@@ -48,76 +48,83 @@ def reproject_feature(
     dst_crs : str
         Coordinate reference system to which the feature is transformed.
     """
-    src_srs = osr.SpatialReference()
-    src_srs.SetFromUserInput(src_crs)
-    src_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
-    dst_srs = osr.SpatialReference()
-    dst_srs.SetFromUserInput(dst_crs)
-    src_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+    src = osr.SpatialReference()
+    src.SetFromUserInput(src_crs)
+    src.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+    dst = osr.SpatialReference()
+    dst.SetFromUserInput(dst_crs)
+    dst.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
-    transform = osr.CoordinateTransformation(src_srs, dst_srs)
+    transform = osr.CoordinateTransformation(src, dst)
     geometry.Transform(transform)
 
-    src_srs = None
-    dst_srs = None
+    src = None
+    dst = None
     transform = None
+
+    return geometry
 
 
 def reproject(
-    gs: GeomSource,
-    crs: str,
+    ds: GeomIO,
+    dst_crs: str,
     chunk: int = 200000,
-    out_dir: Path | str = None,
+    output_dir: Path | str = None,
 ):
     """Reproject a geometry layer.
 
     Parameters
     ----------
-    gs : GeomSource
+    ds : GeomIO
         Input object.
-    crs : str
-        Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
+    dst_crs : str
+        Spatial reference system (projection). An accepted format is: `EPSG:3857`.
     chunk : int, optional
         The size of the chunks used during reprojecting.
-    out_dir : Path | str, optional
+    output_dir : Path | str, optional
         Output directory. If not defined, if will be inferred from the input object.
 
     Returns
     -------
-    GeomSource
+    GeomIO
         Output object. A lazy reading of the just creating geometry file.
     """
-    if not Path(str(out_dir)).is_dir():
-        out_dir = gs.path.parent
+    output_dir = output_dir or ds.path.parent
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    fname = Path(out_dir, f"{gs.path.stem}_repr{gs.path.suffix}")
+    fname = Path(output_dir, f"{ds.path.stem}_repr.fgb")
 
-    out_srs = osr.SpatialReference()
-    out_srs.SetFromUserInput(crs)
-    out_srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
-    layer_defn = gs.layer.GetLayerDefn()
+    src_crs = osr.SpatialReference()
+    src_crs.SetFromUserInput(ds.layer.crs.to_wkt())
+    src_crs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+    out_crs = osr.SpatialReference()
+    out_crs.SetFromUserInput(dst_crs)
+    out_crs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+    layer_defn = ds.layer.defn
 
     transform = osr.CoordinateTransformation(
-        gs.srs,
-        out_srs,
+        src_crs,
+        out_crs,
     )
 
     with open_geom(fname, mode="w", overwrite=True) as new_gs:
-        new_gs.create_layer(out_srs, layer_defn.GetGeomType())
-        new_gs.set_layer_from_defn(layer_defn)
+        new_gs.create_layer(out_crs.ExportToWkt(), ds.layer.geom_type)
+        new_gs.layer.set_from_defn(layer_defn)
 
-    mem_gs = BufferedGeomWriter(
+    mem_gs = GeomWriter(
         fname,
-        srs=out_srs,
-        layer_defn=gs.layer.GetLayerDefn(),
         buffer_size=chunk,
     )
+    mem_gs.setup(
+        defn=layer_defn,
+        crs=out_crs.ExportToWkt(),
+    )
 
-    for ft in gs.layer:
+    for ft in ds.layer:
         geom = ft.GetGeometryRef()
         geom.Transform(transform)
 
-        new_ft = ogr.Feature(mem_gs.buffer.layer.GetLayerDefn())
+        new_ft = ogr.Feature(mem_gs.buffer.layer.defn)
         new_ft.SetFrom(ft)
         new_ft.SetGeometry(geom)
         mem_gs.add_feature(new_ft)
@@ -125,14 +132,14 @@ def reproject(
     geom = None
     ft = None
     new_ft = None
-    out_srs = None
+    out_crs = None
     transform = None
     layer_defn = None
 
     mem_gs.close()
     mem_gs = None
-    gs.close()
-    gs = None
+    ds.close()
+    ds = None
     gc.collect()
 
     return open_geom(fname)

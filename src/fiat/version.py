@@ -1,7 +1,7 @@
 """FIAT version."""
 
-main = 0
-major = 5
+main = 1
+major = 0
 minor = 0
 build = 0
 suffix = ".dev"
