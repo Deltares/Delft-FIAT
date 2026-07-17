@@ -9,6 +9,7 @@ from typing import Callable
 from osgeo import ogr
 
 from fiat.fio import Dataset, GeomIO
+from fiat.gis import overlay
 from fiat.method.ead import fn_ead
 from fiat.model.geom_util import AREA_METHODS
 from fiat.model.geom_writer import GeomWriter
@@ -85,7 +86,7 @@ def feature_worker(
     # Loop through the hazard band combo's
     n = 0
     for idxs in hazard_meta.indices_run:
-        haz = [hazard[idx][*window][mask == 1].tolist() for idx in idxs]
+        haz = [overlay.clip(hazard[idx], mask, window).tolist() for idx in idxs]
         haz, fact = fn_hazard(
             *haz,
             *haz_args,

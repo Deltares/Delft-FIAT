@@ -38,8 +38,8 @@ class Dataset(BaseDriver):
         BaseDriver.__init__(self, file, mode)
         # Load the source
         self.src = nc4.Dataset(filename=file, mode=mode)
-        self.src.set_auto_mask(mask)
-        self.src.set_auto_scale(True)
+        self.src.set_auto_mask(False)
+        self.src.set_auto_scale(False)
 
         # Attributes
         self._crs: str | None = crs
@@ -299,6 +299,7 @@ class DataVariable:
         self._obj: nc4.Variable | None = None
 
         # Attributes
+        self._data: np.ndarray | None = None
         self._nodata: float | None = None
         raise AttributeError("No constructer defined")
 
@@ -306,14 +307,14 @@ class DataVariable:
         self,
         select: slice | tuple[slice, slice],
     ):
-        return self._obj[select]
+        return self._data[select]
 
     ## Private methods
     def _cleanup(self, weak_ref):
         self._obj = None
 
     def _discover_attributes(self):
-        self._nodata = self.__dict__.get("_FillValue")
+        self._nodata = self._obj.__dict__.get("_FillValue")
 
     @classmethod
     def _create(
@@ -326,6 +327,7 @@ class DataVariable:
         obj._obj = var
 
         obj._discover_attributes()
+        obj._data = obj._obj[:] 
 
         return obj
 

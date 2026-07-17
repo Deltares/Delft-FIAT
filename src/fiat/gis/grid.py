@@ -203,11 +203,12 @@ def reproject(
         write_ds.create_spatial_variable(var)
         # Get the data
         data = var_obj[:]
+        data[data==var_obj.nodata] = np.nan
 
         # Set up the interpolator
         interpolator = RegularGridInterpolator(
             (ds.yvals, ds.xvals),  # NOTE: order = (lats, lons)
-            data.filled(np.nan),
+            data,
             method=method,
             bounds_error=False,
             fill_value=np.nan,

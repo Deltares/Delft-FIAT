@@ -38,7 +38,7 @@ def process_hazard(
 ):
     """Small processor of hazard data chunk."""
     out_array = band[*window]
-    out_array = out_array.filled(np.nan)
+    out_array[out_array == band.nodata] = np.nan
     out_array = np.fmax(
         np.fmin(out_array, vulnerability_meta.max),
         vulnerability_meta.min,
@@ -102,7 +102,7 @@ def array_worker(
         ]
         # Get the exposure data
         exposure_data = exp[*window]
-        exposure_data = exposure_data.filled(np.nan)
+        exposure_data[exposure_data == exp.nodata] = np.nan
 
         # Call the impact function
         out_array[bn, :h, :w] = fn_impact(
