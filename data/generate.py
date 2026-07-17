@@ -384,6 +384,7 @@ def create_settings_geom():
             "geom": [
                 {
                     "file": "exposure/spatial.geojson",
+                    "area_method": "area",
                     "settings": {
                         "crs": "EPSG:4326",
                     },
