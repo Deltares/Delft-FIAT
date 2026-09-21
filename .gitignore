@@ -1,12 +1,6 @@
 # Visual Studio
 .vs/
 
-# C++ compilation
-*.manifest
-!.build/gui/*.manifest
-src/bin/
-bin/
-
 # Visual Studio Code
 .vscode/
 
@@ -31,8 +25,8 @@ whl/
 # C extensions
 *.so
 
-# Pyinstaller files
-.build/fiat_build_time.py
+# Pyinstaller
+bin/
 
 # Distribution / packaging
 .Python
@@ -72,9 +66,6 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
-.testdata/*
-!.testdata/.gitkeep
-!.testdata/create_test_data.py
 cover/
 
 # Scrapy stuff:

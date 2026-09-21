@@ -1,0 +1,27 @@
+---
+name: Purge Cache
+on:
+  schedule:
+    - cron: "30 7 * * 1"
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Clear cache
+        run: |
+          if gh cache list | grep -vq "No cache"; then
+            gh cache delete -a
+          else
+            echo "No caches found. skipping..."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

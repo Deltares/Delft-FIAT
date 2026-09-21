@@ -46,6 +46,9 @@ def multiply(x, y):
     return x * y
 
 
+def dummy_init(): ...
+
+
 # Testing of the execution
 def test_execute_pool_single_thread():
     # Setup the context
@@ -57,10 +60,17 @@ def test_execute_pool_single_thread():
         func=multiply,
         jobs=generate_jobs({"x": [2], "y": [4]}),
         threads=1,
+        initializer=dummy_init,
+        initargs=(),
     )
 
     # Assert the output
     assert res == [8]
+
+
+def test_execute_pool_single_thread_m():
+    # Setup the context
+    ctx = get_context("spawn")
 
     # Execute the pool with more than one job
     res = execute_pool(
@@ -68,6 +78,8 @@ def test_execute_pool_single_thread():
         func=multiply,
         jobs=generate_jobs({"x": [2, 4], "y": [4, 5]}),
         threads=1,
+        initializer=dummy_init,
+        initargs=(),
     )
 
     assert res == [8, 10, 16, 20]
@@ -83,6 +95,8 @@ def test_execute_pool_multi_thread():
         func=multiply,
         jobs=generate_jobs({"x": [2, 4], "y": [4, 5]}),
         threads=2,
+        initializer=dummy_init,
+        initargs=(),
     )
 
     assert res == [8, 10, 16, 20]
