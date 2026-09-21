@@ -6,12 +6,12 @@ import pytest
 from osgeo import ogr
 from pyproj.crs import CRS
 
-from fiat.driver.geom import GeomIO, GeomLayer
+from fiat.driver.geom import GeomDriver, GeomLayer
 from fiat.error import DriverNotFoundError
 from fiat.util import get_crs_repr
 
 
-def test_geomlayer(exposure_geom_data: GeomIO):
+def test_geomlayer(exposure_geom_data: GeomDriver):
     # Retrieve the geom layer from the I/O
     gl = exposure_geom_data.layer
 
@@ -30,7 +30,7 @@ def test_geomlayer_init_error():
         _ = GeomLayer()
 
 
-def test_geomlayer_general_properties(exposure_geom_data: GeomIO):
+def test_geomlayer_general_properties(exposure_geom_data: GeomDriver):
     # Retrieve the geom layer from the I/O
     gl = exposure_geom_data.layer
 
@@ -42,7 +42,7 @@ def test_geomlayer_general_properties(exposure_geom_data: GeomIO):
     assert gl.size == 4
 
 
-def test_geomlayer_field_properties(exposure_geom_data: GeomIO):
+def test_geomlayer_field_properties(exposure_geom_data: GeomDriver):
     # Retrieve the geom layer from the I/O
     gl = exposure_geom_data.layer
 
@@ -54,7 +54,7 @@ def test_geomlayer_field_properties(exposure_geom_data: GeomIO):
     assert isinstance(gl.defn, ogr.FeatureDefn)
 
 
-def test_geomlayer_spatial_properties(exposure_geom_data: GeomIO):
+def test_geomlayer_spatial_properties(exposure_geom_data: GeomDriver):
     # Retrieve the geom layer from the I/O
     gl = exposure_geom_data.layer
 
@@ -67,7 +67,7 @@ def test_geomlayer_spatial_properties(exposure_geom_data: GeomIO):
     assert get_crs_repr(gl.crs) == "EPSG:4326"
 
 
-def test_geomlayer_iter(exposure_geom_data: GeomIO):
+def test_geomlayer_iter(exposure_geom_data: GeomDriver):
     # Retrieve the geom layer from the I/O
     gl = exposure_geom_data.layer
 
@@ -81,7 +81,7 @@ def test_geomlayer_iter(exposure_geom_data: GeomIO):
     assert idx == gl.size
 
 
-def test_geomlayer_reduced_iter(exposure_geom_data: GeomIO):
+def test_geomlayer_reduced_iter(exposure_geom_data: GeomDriver):
     # Retrieve the geom layer from the I/O
     gl = exposure_geom_data.layer
 
@@ -94,7 +94,7 @@ def test_geomlayer_reduced_iter(exposure_geom_data: GeomIO):
     assert idx == 2
 
 
-def test_geomlayer_add_feature(exposure_geom_write: GeomIO):
+def test_geomlayer_add_feature(exposure_geom_write: GeomDriver):
     # Retrieve the geom layer from the I/O
     gl = exposure_geom_write.layer
     # Assert the current state
@@ -115,7 +115,7 @@ def test_geomlayer_add_feature(exposure_geom_write: GeomIO):
 
 
 def test_geomlayer_add_feature_with_map(
-    exposure_geom_write: GeomIO,
+    exposure_geom_write: GeomDriver,
     feature: ogr.Feature,
 ):
     # Retrieve the geom layer from the I/O
@@ -134,7 +134,7 @@ def test_geomlayer_add_feature_with_map(
     assert gl[0].GetField(0) == 2.2
 
 
-def test_geomlayer_create_field(exposure_geom_write: GeomIO):
+def test_geomlayer_create_field(exposure_geom_write: GeomDriver):
     # Retrieve the geom layer from the I/O
     gl = exposure_geom_write.layer
     # Assert the current state
@@ -149,7 +149,7 @@ def test_geomlayer_create_field(exposure_geom_write: GeomIO):
     assert gl.dtypes == [2]
 
 
-def test_geomlayer_create_fields(exposure_geom_write: GeomIO):
+def test_geomlayer_create_fields(exposure_geom_write: GeomDriver):
     # Retrieve the geom layer from the I/O
     gl = exposure_geom_write.layer
     # Assert the current state
@@ -164,7 +164,7 @@ def test_geomlayer_create_fields(exposure_geom_write: GeomIO):
     assert gl.dtypes == [2, 0]
 
 
-def test_geomlayer_set_from_defn(exposure_geom_write: GeomIO):
+def test_geomlayer_set_from_defn(exposure_geom_write: GeomDriver):
     # Retrieve the geom layer from the I/O
     gl = exposure_geom_write.layer
     # Assert the current state
@@ -185,9 +185,9 @@ def test_geomlayer_set_from_defn(exposure_geom_write: GeomIO):
     assert gl.dtypes == [2, 0]
 
 
-def test_geomio_read_only(exposure_geom_path: Path):
-    # Open a Dataset
-    ds = GeomIO(exposure_geom_path)
+def test_geomdriver_read_only(exposure_geom_path: Path):
+    # Open a NetcdfDriver
+    ds = GeomDriver(exposure_geom_path)
 
     # Assert some simple stuff
     assert ds.mode == 0
@@ -196,23 +196,23 @@ def test_geomio_read_only(exposure_geom_path: Path):
     assert hash(ds) == hash(exposure_geom_path)
 
 
-def test_geomio_read_no_crs(
+def test_geomdriver_read_no_crs(
     exposure_geom_no_crs_path: Path,
     crs_4326: CRS,
 ):
-    # Open a Dataset
-    ds = GeomIO(exposure_geom_no_crs_path)
+    # Open a NetcdfDriver
+    ds = GeomDriver(exposure_geom_no_crs_path)
 
     # Assert some simple stuff
     assert ds.layer.size == 4
     assert ds.layer.crs is None  # Verify that there is no crs
-    assert ds.crs is None  # Cant induce from layer and not set at GeomIO level
+    assert ds.crs is None  # Cant induce from layer and not set at GeomDriver level
 
     # Close the dataset
     ds.close()
 
-    # Open with crs as input argument to set the crs at GeomIO level
-    ds = GeomIO(exposure_geom_no_crs_path, crs="EPSG:4326")
+    # Open with crs as input argument to set the crs at GeomDriver level
+    ds = GeomDriver(exposure_geom_no_crs_path, crs="EPSG:4326")
 
     # Assert the crs
     assert isinstance(ds.crs, CRS)
@@ -228,28 +228,28 @@ def test_geomio_read_no_crs(
     assert get_crs_repr(ds.crs) == "EPSG:4326"
 
 
-def test_geomio_driver_error(tmp_path: Path):
+def test_geomdriver_driver_error(tmp_path: Path):
     # Read a file extension that is not accepted
     with pytest.raises(
         DriverNotFoundError,
         match="Geometry data -> \
 Extension of file: tmp.unknown not recoqnized",
     ):
-        _ = GeomIO(Path(tmp_path, "tmp.unknown"), mode="w")
+        _ = GeomDriver(Path(tmp_path, "tmp.unknown"), mode="w")
 
 
-def test_geomio_read_error(tmp_path: Path):
+def test_geomdriver_read_error(tmp_path: Path):
     # Read something that does not exist
     p = Path(tmp_path, "tmp.geojson")
     with pytest.raises(
         FileNotFoundError,
         match=f"{p.as_posix()} doesn't exist, can't read",
     ):
-        _ = GeomIO(p)
+        _ = GeomDriver(p)
 
 
-def test_geomio_state_errors(exposure_geom_path: Path):
-    ds = GeomIO(exposure_geom_path)
+def test_geomdriver_state_errors(exposure_geom_path: Path):
+    ds = GeomDriver(exposure_geom_path)
     # Create e.g. a layer in read only mode
     with pytest.raises(ValueError, match="Invalid operation on a read-only file"):
         ds.create_layer(None, None)  # Doesn't matter that the args are bullshit
@@ -262,9 +262,9 @@ def test_geomio_state_errors(exposure_geom_path: Path):
         _ = ds.layer
 
 
-def test_geomio_append(exposure_geom_tmp_path: Path):
+def test_geomdriver_append(exposure_geom_tmp_path: Path):
     # Open the dataset
-    ds = GeomIO(exposure_geom_tmp_path, mode="a")
+    ds = GeomDriver(exposure_geom_tmp_path, mode="a")
 
     # Assert some simple stuff
     assert ds.mode == 1
@@ -273,9 +273,9 @@ def test_geomio_append(exposure_geom_tmp_path: Path):
     assert ds.layer.size == 4
 
 
-def test_geomio_delete(exposure_geom_tmp_path: Path):
+def test_geomdriver_delete(exposure_geom_tmp_path: Path):
     # Open the dataset
-    ds = GeomIO(exposure_geom_tmp_path, mode="a")
+    ds = GeomDriver(exposure_geom_tmp_path, mode="a")
 
     # Assert some simple stuff
     assert ds.src is not None
@@ -289,10 +289,10 @@ def test_geomio_delete(exposure_geom_tmp_path: Path):
     assert ds.src is None  # If src is None, layer cannot be requested
 
 
-def test_geomio_write(tmp_path: Path, crs_4326: CRS):
+def test_geomdriver_write(tmp_path: Path, crs_4326: CRS):
     p = Path(tmp_path, "tmp.geojson")
     # Open the dataset
-    ds = GeomIO(p, mode="w")
+    ds = GeomDriver(p, mode="w")
 
     # Assert some simple stuff
     assert ds.mode == 2
@@ -307,11 +307,11 @@ def test_geomio_write(tmp_path: Path, crs_4326: CRS):
     assert ogr.GeometryTypeToName(ds.layer.geom_type) == "Point"
 
 
-def test_geomio_write_overwrite(exposure_geom_tmp_path: Path):
+def test_geomdriver_write_overwrite(exposure_geom_tmp_path: Path):
     # Assert that the file exists
     assert exposure_geom_tmp_path.is_file()
     # Open the dataset
-    ds = GeomIO(exposure_geom_tmp_path, mode="w", overwrite=True)
+    ds = GeomDriver(exposure_geom_tmp_path, mode="w", overwrite=True)
 
     # Assert some simple stuff
     assert ds.mode == 2
@@ -319,9 +319,9 @@ def test_geomio_write_overwrite(exposure_geom_tmp_path: Path):
     assert ds.layer is None  # But no layer present
 
 
-def test_geomio_reopen(exposure_geom_tmp_path: Path):
+def test_geomdriver_reopen(exposure_geom_tmp_path: Path):
     # Open the dataset
-    ds = GeomIO(exposure_geom_tmp_path, mode="a")
+    ds = GeomDriver(exposure_geom_tmp_path, mode="a")
 
     # Reopen without closing should return same dataset
     obj = ds.reopen()
@@ -339,9 +339,9 @@ def test_geomio_reopen(exposure_geom_tmp_path: Path):
     assert obj.src is not None
 
 
-def test_geomio_reduce(exposure_geom_path: Path):
+def test_geomdriver_reduce(exposure_geom_path: Path):
     # Open the dataset
-    ds = GeomIO(exposure_geom_path)
+    ds = GeomDriver(exposure_geom_path)
 
     # Assert some simple stuff
     assert ds.layer.size == 4

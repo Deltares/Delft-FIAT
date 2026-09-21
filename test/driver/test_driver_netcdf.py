@@ -5,13 +5,13 @@ import numpy as np
 import pytest
 from pyproj.crs import CRS
 
-from fiat.driver.netcdf import Dataset
+from fiat.driver.netcdf import NetcdfDriver
 from fiat.util import get_crs_repr
 
 
 def test_dataset(tmp_path: Path):
     # Open the dataset
-    ds = Dataset(Path(tmp_path, "foo.nc"), "w")
+    ds = NetcdfDriver(Path(tmp_path, "foo.nc"), "w")
 
     # Assert some simple stuff
     assert ds.mode == 2
@@ -20,7 +20,7 @@ def test_dataset(tmp_path: Path):
 
 def test_dataset_read(hazard_event_path: Path):
     # Open the dataset
-    ds = Dataset(hazard_event_path)
+    ds = NetcdfDriver(hazard_event_path)
 
     # Assert that the properties return info and assert that the info is correct
     # assert ds.variables == [None]
@@ -38,19 +38,19 @@ def test_dataset_read_crs(
     hazard_event_no_crs_path: Path,
     crs_4326: CRS,
 ):
-    # Open a Dataset
-    ds = Dataset(hazard_event_no_crs_path)
+    # Open a NetcdfDriver
+    ds = NetcdfDriver(hazard_event_no_crs_path)
 
     # Assert some simple stuff
     assert ds.size == 1
     assert ds.reference is None  # Verify that there is no crs
-    assert ds.crs is None  # Cant induce from src and not set at GeomIO level
+    assert ds.crs is None  # Cant induce from src and not set at GeomDriver level
 
     # Close the dataset
     ds.close()
 
-    # Open with crs as input argument to set the crs at GeomIO level
-    ds = Dataset(hazard_event_no_crs_path, crs="EPSG:4326")
+    # Open with crs as input argument to set the crs at GeomDriver level
+    ds = NetcdfDriver(hazard_event_no_crs_path, crs="EPSG:4326")
 
     # Assert the crs
     assert isinstance(ds.crs, CRS)
@@ -68,7 +68,7 @@ def test_dataset_read_crs(
 
 def test_dataset_read_transform(hazard_event_path: Path):
     # Open the dataset
-    ds = Dataset(hazard_event_path, mode="r")
+    ds = NetcdfDriver(hazard_event_path, mode="r")
 
     # Assert default geotransform
     np.testing.assert_array_almost_equal(
@@ -79,7 +79,7 @@ def test_dataset_read_transform(hazard_event_path: Path):
 
 def test_dataset_state_error(hazard_event_path: Path):
     # Open the dataset
-    ds = Dataset(hazard_event_path)
+    ds = NetcdfDriver(hazard_event_path)
 
     # Should error when using a write only method
     with pytest.raises(ValueError, match="Invalid operation on a read-only file"):
@@ -99,7 +99,7 @@ def test_dataset_state_error(hazard_event_path: Path):
 
 def test_dataset_append(hazard_event_path: Path):
     # Open the dataset
-    ds = Dataset(hazard_event_path, mode="a")
+    ds = NetcdfDriver(hazard_event_path, mode="a")
 
     # Assert some simple stuff
     assert ds.mode == 1
@@ -110,7 +110,7 @@ def test_dataset_append(hazard_event_path: Path):
 def test_dataset_write(tmp_path: Path, crs_4326: CRS):
     p = Path(tmp_path, "foo.nc")  # Make a path
     # Open the dataset
-    ds = Dataset(p, mode="w")
+    ds = NetcdfDriver(p, mode="w")
 
     # Assert the mode
     assert ds.mode == 2
@@ -140,7 +140,7 @@ def test_dataset_write(tmp_path: Path, crs_4326: CRS):
 
 def test_dataset_reduce(hazard_event_path: Path):
     # Open the dataset
-    ds = Dataset(hazard_event_path)
+    ds = NetcdfDriver(hazard_event_path)
 
     # Assert some simple stuff
     assert ds.size == 1

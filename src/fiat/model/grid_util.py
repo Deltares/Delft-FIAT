@@ -10,13 +10,13 @@ from fiat.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import Dataset
+from fiat.driver import NetcdfDriver
 from fiat.gis import grid
 from fiat.util import EAD, FN, HAZARD, TOTAL, get_crs_repr
 
 
 def get_exposure_meta(
-    exposure: Dataset,
+    exposure: NetcdfDriver,
     run_meta: RunMeta,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
@@ -62,15 +62,15 @@ def get_exposure_meta(
 
 
 def equal_grid(
-    gs1: Dataset,
-    gs2: Dataset,
+    gs1: NetcdfDriver,
+    gs2: NetcdfDriver,
     base: str = HAZARD,
-) -> deque[Dataset] | tuple[Dataset]:
+) -> deque[NetcdfDriver] | tuple[NetcdfDriver]:
     """Ensure homogeneity between two grids.
 
     Parameters
     ----------
-    gs1 : Dataset
+    gs1 : NetcdfDriver
         The first dataset.
     gs2 : Datset
         The second dataset.
@@ -82,7 +82,7 @@ def equal_grid(
         return gs1, gs2
 
     # When not equal resample one of the two
-    gss: deque[Dataset] = deque([gs1, gs2])
+    gss: deque[NetcdfDriver] = deque([gs1, gs2])
     # Rotate based on the boolean
     gss.rotate(base == HAZARD)
 

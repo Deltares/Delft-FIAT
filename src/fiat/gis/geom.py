@@ -5,7 +5,7 @@ from pathlib import Path
 
 from osgeo import ogr, osr
 
-from fiat.driver import GeomIO
+from fiat.driver import GeomDriver
 from fiat.model.geom_writer import GeomWriter
 from fiat.open import open_geom
 
@@ -66,7 +66,7 @@ def reproject_feature(
 
 
 def reproject(
-    ds: GeomIO,
+    ds: GeomDriver,
     dst_crs: str,
     chunk: int = 200000,
     output_dir: Path | str = None,
@@ -75,7 +75,7 @@ def reproject(
 
     Parameters
     ----------
-    ds : GeomIO
+    ds : GeomDriver
         Input object.
     dst_crs : str
         Spatial reference system (projection). An accepted format is: `EPSG:3857`.
@@ -86,7 +86,7 @@ def reproject(
 
     Returns
     -------
-    GeomIO
+    GeomDriver
         Output object. A lazy reading of the just creating geometry file.
     """
     output_dir = output_dir or ds.path.parent

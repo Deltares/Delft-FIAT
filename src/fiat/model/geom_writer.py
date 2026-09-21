@@ -6,7 +6,7 @@ from pathlib import Path
 
 from osgeo import gdal, ogr
 
-from fiat.driver.geom import GeomIO
+from fiat.driver.geom import GeomDriver
 from fiat.open import open_geom
 from fiat.util import DummyLock
 
@@ -56,7 +56,7 @@ class GeomWriter:
         self.n: int = 1
 
         # Create the buffer
-        self.buffer: GeomIO = open_geom(f"/vsimem/{file.stem}.gpkg", mode="w")
+        self.buffer: GeomDriver = open_geom(f"/vsimem/{file.stem}.gpkg", mode="w")
 
         # Set some check vars
         # TODO: do this based om memory foodprint

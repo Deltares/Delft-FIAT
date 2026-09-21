@@ -10,7 +10,7 @@ from fiat.check import (
     check_internal_crs,
     check_vs_crs,
 )
-from fiat.driver import Dataset, Table
+from fiat.driver import NetcdfDriver, Table
 from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
@@ -68,7 +68,7 @@ class GridModel(BaseModel):
         super().__init__(cfg)
 
         # Declare
-        self.exposure: Dataset | None = None
+        self.exposure: NetcdfDriver | None = None
 
         # Setup the model
         self.read_exposure()
@@ -92,7 +92,7 @@ class GridModel(BaseModel):
             Path to an exposure grid, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_grid]\
-(/api/driver/open_grid.qmd) after which into [GridSouce](/api/Dataset.qmd)/
+(/api/driver/open_grid.qmd) after which into [GridSouce](/api/NetcdfDriver.qmd)/
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations
@@ -144,9 +144,9 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         logger.info("Running the model")
         # Quick check if all cdata is set
         check_input_data(
-            [HAZARD, self.hazard, Dataset],
+            [HAZARD, self.hazard, NetcdfDriver],
             [VULNERABILITY, self.vulnerability, Table],
-            [EXPOSURE, self.exposure, Dataset],
+            [EXPOSURE, self.exposure, NetcdfDriver],
         )
 
         # Setup the basic metadata

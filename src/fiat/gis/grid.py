@@ -8,7 +8,7 @@ from pyproj import Transformer
 from pyproj.crs import CRS
 from scipy.interpolate import RegularGridInterpolator
 
-from fiat.driver import Dataset
+from fiat.driver import NetcdfDriver
 
 
 def transform_bounds(
@@ -124,19 +124,19 @@ def default_transform(
 
 
 def reproject(
-    ds: Dataset,
+    ds: NetcdfDriver,
     dst_crs: CRS | str,
     dst_gtf: list | tuple = None,
     dst_width: int = None,
     dst_height: int = None,
     method: str = "nearest",
     output_dir: Path | str = None,
-) -> Dataset:
+) -> NetcdfDriver:
     """Reproject (warp) a grid.
 
     Parameters
     ----------
-    ds : Dataset
+    ds : NetcdfDriver
         Input object.
     dst_crs : CRS | str
         Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
@@ -155,7 +155,7 @@ def reproject(
 
     Returns
     -------
-    Dataset
+    NetcdfDriver
         Output object. A lazy reading of the just creating raster file.
     """
     # Set the output path
@@ -193,7 +193,7 @@ def reproject(
     lats_src = lats_src.clip(min=min(ds.yvals), max=max(ds.yvals))
 
     # Setup the output dataset
-    write_ds = Dataset(write_path, mode="w")
+    write_ds = NetcdfDriver(write_path, mode="w")
     write_ds.create_spatial_dims(lats=lats, lons=lons)
     write_ds.set_spatial_ref(CRS.from_user_input(dst_crs))
 
@@ -226,4 +226,4 @@ def reproject(
     write_ds.close()
     write_ds = None
 
-    return Dataset(write_path)
+    return NetcdfDriver(write_path)

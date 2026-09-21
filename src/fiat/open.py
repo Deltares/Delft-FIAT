@@ -3,9 +3,9 @@
 from pathlib import Path
 
 from fiat.driver.csv import CSVParser, Table
-from fiat.driver.geom import GeomIO
+from fiat.driver.geom import GeomDriver
 from fiat.driver.handler import FileBufferHandler
-from fiat.driver.netcdf import Dataset
+from fiat.driver.netcdf import NetcdfDriver
 
 __all__ = ["open_csv", "open_geom", "open_grid"]
 
@@ -56,7 +56,7 @@ def open_geom(
     mode: str = "r",
     overwrite: bool = False,
     crs: str | None = None,
-) -> GeomIO:
+) -> GeomDriver:
     """Open a geometry source file.
 
     This source file is lazily read.
@@ -74,10 +74,10 @@ def open_geom(
 
     Returns
     -------
-    GeomIO
+    GeomDriver
         Object that holds a connection to the source file.
     """
-    return GeomIO(
+    return GeomDriver(
         file,
         mode,
         overwrite,
@@ -90,7 +90,7 @@ def open_grid(
     mode: str = "r",
     crs: str | None = None,
     subset: str = None,
-) -> Dataset:
+) -> NetcdfDriver:
     """Open a grid source file.
 
     This source file is lazily read.
@@ -111,10 +111,10 @@ def open_grid(
 
     Returns
     -------
-    Dataset
+    NetcdfDriver
         Object that holds a connection to the source file.
     """
-    return Dataset(
+    return NetcdfDriver(
         file,
         mode,
         crs,

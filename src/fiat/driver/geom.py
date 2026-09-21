@@ -14,7 +14,7 @@ from fiat.util import (
     GEOM_DRIVER_MAP,
 )
 
-__all__ = ["GeomIO", "GeomLayer"]
+__all__ = ["GeomDriver", "GeomLayer"]
 
 
 class GeomLayer(BaseStruct):
@@ -291,7 +291,7 @@ class GeomLayer(BaseStruct):
             self._obj.CreateField(defn.GetFieldDefn(n))
 
 
-class GeomIO(BaseDriver):
+class GeomDriver(BaseDriver):
     """A source object for geospatial vector data.
 
     Essentially an OGR DataSource wrapper.
@@ -309,10 +309,10 @@ class GeomIO(BaseDriver):
 
     Examples
     --------
-    Index the GeomIO directly to get features.
+    Index the GeomDriver directly to get features.
     ```Python
     # Load a file
-    gm = GeomIO(< path-to-file >)
+    gm = GeomDriver(< path-to-file >)
 
     # Index it!
     feature = gm.layer[1]
@@ -326,7 +326,7 @@ class GeomIO(BaseDriver):
         overwrite: bool = False,
         crs: str | None = None,
     ):
-        """Create a GeomIO object."""
+        """Create a GeomDriver object."""
         obj = object.__new__(cls)
 
         return obj
@@ -426,11 +426,11 @@ class GeomIO(BaseDriver):
     def reopen(
         self,
         mode: str = "r",
-    ) -> "GeomIO":
-        """Reopen a closed GeomIO."""
+    ) -> "GeomDriver":
+        """Reopen a closed GeomDriver."""
         if not self.closed:
             return self
-        obj = GeomIO.__new__(GeomIO, self.path, mode=mode)
+        obj = GeomDriver.__new__(GeomDriver, self.path, mode=mode)
         obj.__init__(self.path, mode=mode)
         return obj
 

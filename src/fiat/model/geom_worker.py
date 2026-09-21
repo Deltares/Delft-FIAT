@@ -15,7 +15,7 @@ from fiat.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import Dataset, GeomIO
+from fiat.driver import GeomDriver, NetcdfDriver
 from fiat.gis import overlay
 from fiat.method.ead import fn_ead
 from fiat.model.geom_util import AREA_METHODS
@@ -40,7 +40,7 @@ def initialize_pool(
 def feature_worker(
     ft: ogr.Feature,
     run_meta: RunMeta,
-    hazard: Dataset,
+    hazard: NetcdfDriver,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
     exposure_meta: ExposureGeomMeta,
@@ -55,7 +55,7 @@ def feature_worker(
         The feature.
     run_meta : RunMeta
         Configurations runtime metadata.
-    hazard : Dataset
+    hazard : NetcdfDriver
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
@@ -130,10 +130,10 @@ def feature_worker(
 def worker(
     output_path: Path,
     run_meta: RunMeta,
-    hazard: Dataset,
+    hazard: NetcdfDriver,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
-    exposure: GeomIO,
+    exposure: GeomDriver,
     exposure_meta: ExposureGeomMeta,
     chunk: tuple | list,
 ):
@@ -148,13 +148,13 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The path to file to be written.
     run_meta : RunMeta
         The configurations runtime meta.
-    hazard : Dataset
+    hazard : NetcdfDriver
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
-    exposure : GeomIO
+    exposure : GeomDriver
         The exposure geometries.
     exposure_meta : ExposureGeomMeta
         Metadata specific to the exposure data.

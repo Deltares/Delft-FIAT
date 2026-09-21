@@ -5,13 +5,13 @@ from pathlib import Path
 
 import numpy as np
 
-from fiat.driver import Dataset
+from fiat.driver import NetcdfDriver
 from fiat.writer import GridItem, NetcdfWriter, create_netcdf_handle
 
 
 def test_create_netcdf_handle(
     tmp_path: Path,
-    hazard_event_data: Dataset,
+    hazard_event_data: NetcdfDriver,
 ):
     # Creat the handle
     h = create_netcdf_handle(
@@ -28,7 +28,7 @@ def test_create_netcdf_handle(
 
 def test_create_netcdf_handle_overwrite(
     tmp_path: Path,
-    hazard_event_data: Dataset,
+    hazard_event_data: NetcdfDriver,
 ):
     p = Path(tmp_path, "foo.nc")
     # Assert current state
@@ -77,7 +77,7 @@ def test_netcdf_writer(
 
 def test_netcdf_writer_setup(
     dummy_queue: type,
-    grid_handle: Dataset,
+    grid_handle: NetcdfDriver,
 ):
     # Create the writer
     w = NetcdfWriter(
@@ -103,7 +103,7 @@ def test_netcdf_writer_setup(
 
 def test_netcdf_writer_close(
     dummy_queue: type,
-    grid_handle: Dataset,
+    grid_handle: NetcdfDriver,
 ):
     # Create the writer
     w = NetcdfWriter(
@@ -136,7 +136,7 @@ def test_netcdf_writer_close(
 
 def test_netcdf_writer_fn(
     dummy_queue: type,
-    grid_handle: Dataset,
+    grid_handle: NetcdfDriver,
 ):
     # Create the writer
     w = NetcdfWriter(
@@ -163,7 +163,7 @@ def test_netcdf_writer_fn(
     w.close()
 
     # Assert the output
-    ds = Dataset(w.handle.path)
+    ds = NetcdfDriver(w.handle.path)
     np.testing.assert_array_equal(
         ds[0][slice(0, 2), slice(0, 2)],
         np.array([[2, 2], [2, 2]]),

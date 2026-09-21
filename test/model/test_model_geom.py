@@ -6,7 +6,7 @@ from pyproj.crs import CRS
 
 from fiat.cfg import Configurations
 from fiat.container import Container, ExposureGeomData
-from fiat.driver import Dataset, Table
+from fiat.driver import NetcdfDriver, Table
 from fiat.log import Logger
 from fiat.model import GeomModel
 from fiat.util import get_crs_repr
@@ -104,7 +104,7 @@ def test_geommodel_run(
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,
-    hazard_event_data: Dataset,
+    hazard_event_data: NetcdfDriver,
     exposure_geom_data_run: ExposureGeomData,
 ):
     # Monkeypatch the worker
@@ -132,7 +132,7 @@ def test_geommodel_run_fail(
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,
-    hazard_event_data: Dataset,
+    hazard_event_data: NetcdfDriver,
     exposure_geom_data_run: ExposureGeomData,
 ):
     # Monkeypatch the worker

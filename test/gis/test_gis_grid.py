@@ -3,12 +3,12 @@ from pathlib import Path
 import numpy as np
 from pyproj import Transformer
 
-from fiat.driver import Dataset
+from fiat.driver import NetcdfDriver
 from fiat.gis.grid import default_transform, reproject, transform_bounds
 from fiat.util import get_crs_repr
 
 
-def test_default_transform(hazard_event_repr: Dataset):
+def test_default_transform(hazard_event_repr: NetcdfDriver):
     # Assert the current transform
     shape = hazard_event_repr.shape_xy
     transform = hazard_event_repr.transform
@@ -36,7 +36,7 @@ def test_default_transform(hazard_event_repr: Dataset):
     assert h == 10
 
 
-def test_reproject(tmp_path: Path, hazard_event_repr: Dataset):
+def test_reproject(tmp_path: Path, hazard_event_repr: NetcdfDriver):
     # Assert the current state
     assert get_crs_repr(hazard_event_repr.crs) == "EPSG:4326"
     np.testing.assert_array_almost_equal(
@@ -56,7 +56,7 @@ def test_reproject(tmp_path: Path, hazard_event_repr: Dataset):
     )
 
 
-def test_reproject_resample(tmp_path: Path, hazard_event_repr: Dataset):
+def test_reproject_resample(tmp_path: Path, hazard_event_repr: NetcdfDriver):
     # Assert the current state
     assert get_crs_repr(hazard_event_repr.crs) == "EPSG:4326"
     np.testing.assert_array_almost_equal(
@@ -89,7 +89,7 @@ def test_reproject_resample(tmp_path: Path, hazard_event_repr: Dataset):
     assert ds.shape == (5, 5)
 
 
-def test_transform_bounds(hazard_event_repr: Dataset):
+def test_transform_bounds(hazard_event_repr: NetcdfDriver):
     # Call the function
     b = transform_bounds(
         bounds=hazard_event_repr.bounds,

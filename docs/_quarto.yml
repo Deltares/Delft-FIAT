@@ -240,9 +240,9 @@ quartodoc:
     #   desc: Objects constructed from data
     #   package: fiat.driver
     #   contents:
-    #     - name: GeomIO
+    #     - name: GeomDriver
     #       children: separate
-    #     - name: Dataset
+    #     - name: NetcdfDriver
     #       children: separate
     #     - name: Grid
     #       children: separate

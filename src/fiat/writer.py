@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-from fiat.driver.netcdf import Dataset
+from fiat.driver.netcdf import NetcdfDriver
 from fiat.thread import Receiver
 from fiat.util import NODATA_VALUE
 
@@ -27,8 +27,8 @@ class GridItem:
 def create_netcdf_handle(
     path: Path | str,
     variables: list[str],
-    ds_like: Dataset,
-) -> Dataset:
+    ds_like: NetcdfDriver,
+) -> NetcdfDriver:
     """Create a NetCDF handle.
 
     Parameters
@@ -37,16 +37,16 @@ def create_netcdf_handle(
         The path to the NetCDF file.
     variables : list[str]
         The variables to create in the NetCDF file.
-    ds_like : Dataset
+    ds_like : NetcdfDriver
         A dataset to use as a template for creating the new NetCDF file.
 
     Returns
     -------
-    Dataset
+    NetcdfDriver
         The created NetCDF dataset.
     """
     # Open the dataset
-    ds = Dataset(file=path, mode="w")
+    ds = NetcdfDriver(file=path, mode="w")
     # Get meta data from ds_like
     gtf = ds_like.transform
     ny, nx = ds_like.shape
@@ -69,7 +69,7 @@ class NetcdfWriter(Receiver):
     ----------
     queue : Queue
         The queue through which to signal the parent process.
-    handle : Dataset
+    handle : NetcdfDriver
         A handle to the file to be written.
     ctx : SpawnContext
         The multiprocessing context currenly in use.
@@ -77,7 +77,7 @@ class NetcdfWriter(Receiver):
 
     def __init__(
         self,
-        handle: Dataset,
+        handle: NetcdfDriver,
         queue: Queue,
         ctx: SpawnContext,
     ):

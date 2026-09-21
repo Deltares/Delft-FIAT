@@ -1,11 +1,11 @@
 from fiat.container import HazardMeta, RunMeta, VulnerabilityMeta
-from fiat.driver import Dataset
+from fiat.driver import NetcdfDriver
 from fiat.model.grid_util import equal_grid, get_exposure_meta
 from fiat.util import EXPOSURE
 
 
 def test_get_exposure_meta(
-    exposure_grid_data: Dataset,
+    exposure_grid_data: NetcdfDriver,
     run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -28,7 +28,7 @@ def test_get_exposure_meta(
 
 
 def test_get_exposure_meta_risk(
-    exposure_grid_data: Dataset,
+    exposure_grid_data: NetcdfDriver,
     run_risk_meta: RunMeta,
     hazard_risk_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -54,8 +54,8 @@ def test_get_exposure_meta_risk(
 
 
 def test_equal_grid(
-    hazard_event_data: Dataset,
-    exposure_grid_data: Dataset,
+    hazard_event_data: NetcdfDriver,
+    exposure_grid_data: NetcdfDriver,
 ):
     # Assert the current state
     assert hazard_event_data.shape == (10, 10)
@@ -73,8 +73,8 @@ def test_equal_grid(
 
 
 def test_equal_grid_unequal(
-    hazard_event_highres_data: Dataset,
-    hazard_event_data: Dataset,
+    hazard_event_highres_data: NetcdfDriver,
+    hazard_event_data: NetcdfDriver,
 ):
     # Assert the current state
     assert hazard_event_highres_data.shape == (100, 100)
@@ -92,8 +92,8 @@ def test_equal_grid_unequal(
 
 
 def test_equal_grid_unequal_second(
-    hazard_event_highres_data: Dataset,
-    exposure_grid_data: Dataset,
+    hazard_event_highres_data: NetcdfDriver,
+    exposure_grid_data: NetcdfDriver,
 ):
     # Assert the current state
     assert hazard_event_highres_data.shape == (100, 100)

@@ -15,7 +15,7 @@ from fiat.check import (
     check_vs_crs,
 )
 from fiat.container import Container, ExposureGeomData
-from fiat.driver import Dataset, Table
+from fiat.driver import NetcdfDriver, Table
 from fiat.gis import geom
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
@@ -105,7 +105,7 @@ class GeomModel(BaseModel):
             By default None.
         **kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_geom]\
-(/api/driver/open_geom.qmd) after which into [GeomIO](/api/GeomIO.qmd)/
+(/api/driver/open_geom.qmd) after which into [GeomDriver](/api/GeomDriver.qmd)/
         """
         # Sort the settings
         # Hierarchy: 1) signature, 2) configurations
@@ -187,7 +187,7 @@ class GeomModel(BaseModel):
         logger.info("Running the model")
         # Quick check if all data is set
         check_input_data(
-            [HAZARD, self.hazard, Dataset],
+            [HAZARD, self.hazard, NetcdfDriver],
             [VULNERABILITY, self.vulnerability, Table],
             [EXPOSURE, self.exposure, ExposureGeomData],
         )

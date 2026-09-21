@@ -4,7 +4,7 @@ from pathlib import Path
 
 from osgeo import ogr
 
-from fiat.driver.geom import GeomIO
+from fiat.driver.geom import GeomDriver
 from fiat.model.geom_writer import GeomWriter, ensure_writable_filepath
 from fiat.util import DummyLock
 
@@ -45,7 +45,7 @@ def test_geom_writer_init(tmp_path: Path):
     # Assert some simple stuff
     assert w.max_size == 2
     assert isinstance(w.lock, DummyLock)
-    assert isinstance(w.buffer, GeomIO)
+    assert isinstance(w.buffer, GeomDriver)
     assert w.buffer.path.as_posix() == "/vsimem/tmp.gpkg"
 
     # Clear the data
@@ -62,7 +62,7 @@ def test_geom_writer_init_lock(tmp_path: Path):
 
     # Assert some simple stuff
     assert isinstance(w.lock, Lock)
-    assert isinstance(w.buffer, GeomIO)
+    assert isinstance(w.buffer, GeomDriver)
 
     # Clear the data
     w.close()
@@ -70,7 +70,7 @@ def test_geom_writer_init_lock(tmp_path: Path):
 
 def test_geom_writer_setup_layer(
     tmp_path: Path,
-    exposure_geom_data: GeomIO,
+    exposure_geom_data: GeomDriver,
 ):
     p = Path(tmp_path, "tmp.gpkg")
     # Create the writer
@@ -97,7 +97,7 @@ def test_geom_writer_setup_layer(
 
 def test_geom_writer_setup_layer_with_fields(
     tmp_path: Path,
-    exposure_geom_data: GeomIO,
+    exposure_geom_data: GeomDriver,
 ):
     p = Path(tmp_path, "tmp.gpkg")
     # Create the writer
@@ -128,7 +128,7 @@ def test_geom_writer_setup_layer_with_fields(
 
 def test_geom_writer_add(
     tmp_path: Path,
-    exposure_geom_data: GeomIO,
+    exposure_geom_data: GeomDriver,
 ):
     p = Path(tmp_path, "tmp.gpkg")
     # Create the writer
@@ -156,7 +156,7 @@ def test_geom_writer_add(
 
 def test_geom_writer_add_write(
     tmp_path: Path,
-    exposure_geom_data: GeomIO,
+    exposure_geom_data: GeomDriver,
 ):
     p = Path(tmp_path, "tmp.gpkg")
     # Create the writer
@@ -191,7 +191,7 @@ def test_geom_writer_add_write(
 
 def test_geom_writer_add_with_map(
     tmp_path: Path,
-    exposure_geom_data: GeomIO,
+    exposure_geom_data: GeomDriver,
 ):
     p = Path(tmp_path, "tmp.gpkg")
     # Create the writer

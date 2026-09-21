@@ -13,7 +13,7 @@ from fiat.check import (
     check_hazard_types,
 )
 from fiat.container import HazardMeta, RunMeta, VulnerabilityMeta
-from fiat.driver import Dataset
+from fiat.driver import NetcdfDriver
 from fiat.driver.csv import Table
 from fiat.method.ead import fn_density
 from fiat.typing import MethodType
@@ -180,7 +180,7 @@ def get_run_meta(
 
 
 def get_hazard_meta(
-    hazard: Dataset,
+    hazard: NetcdfDriver,
     risk: bool,
     method_types: list[str],
 ) -> HazardMeta:

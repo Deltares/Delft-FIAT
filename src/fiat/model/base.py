@@ -15,7 +15,7 @@ from fiat.check import (
     check_internal_crs,
     check_vs_crs,
 )
-from fiat.driver import Dataset, Table
+from fiat.driver import NetcdfDriver, Table
 from fiat.gis import grid
 from fiat.log import spawn_logger
 from fiat.open import open_csv, open_grid
@@ -63,7 +63,7 @@ class BaseModel(metaclass=ABCMeta):
         ## Declarations
         # Model data
         self._crs: CRS | None = None
-        self.hazard: Dataset | None = None
+        self.hazard: NetcdfDriver | None = None
         self.vulnerability: Table | None = None
 
         # Type of calculations
@@ -179,7 +179,7 @@ exceeds machine thread count ('{max_threads}')"
             Path to the hazard gridded dataset, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_grid]\
-(/api/driver/open_grid.qmd) after which into [Dataset](/api/Dataset.qmd)/
+(/api/driver/open_grid.qmd) after which into [NetcdfDriver](/api/NetcdfDriver.qmd)/
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations

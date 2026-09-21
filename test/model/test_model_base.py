@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from fiat.cfg import Configurations
-from fiat.driver import Dataset, Table
+from fiat.driver import NetcdfDriver, Table
 from fiat.log import Logger
 from fiat.model.base import BaseModel
 from fiat.util import get_crs_repr
@@ -113,7 +113,7 @@ def test_basemodel_read_hazard_config(
 
     # Assert the state
     assert m.hazard is not None
-    assert isinstance(m.hazard, Dataset)
+    assert isinstance(m.hazard, NetcdfDriver)
 
 
 def test_basemodel_read_hazard_argument(
@@ -130,7 +130,7 @@ def test_basemodel_read_hazard_argument(
 
     # Assert the state
     assert m.hazard is not None
-    assert isinstance(m.hazard, Dataset)
+    assert isinstance(m.hazard, NetcdfDriver)
 
 
 def test_basemodel_read_hazard_risk(
@@ -146,7 +146,7 @@ def test_basemodel_read_hazard_risk(
 
     # Assert the state
     assert m.hazard is not None
-    assert isinstance(m.hazard, Dataset)
+    assert isinstance(m.hazard, NetcdfDriver)
 
 
 def test_basemodel_read_hazard_warnings(

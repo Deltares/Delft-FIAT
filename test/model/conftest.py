@@ -15,7 +15,7 @@ from fiat.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import Dataset, GeomIO, Table
+from fiat.driver import GeomDriver, NetcdfDriver, Table
 from fiat.method.ead import fn_density
 
 
@@ -42,8 +42,8 @@ def dummy_pipeline() -> DummyPipeline:
 def grid_handle(
     tmp_path: Path,
     crs_4326: CRS,
-) -> Dataset:
-    ds = Dataset(
+) -> NetcdfDriver:
+    ds = NetcdfDriver(
         file=Path(tmp_path, "foo.nc"),
         mode="w",
     )
@@ -106,7 +106,7 @@ def density():
 
 @pytest.fixture(scope="session")
 def exposure_geom_data_run(
-    exposure_geom_data: GeomIO,
+    exposure_geom_data: GeomDriver,
 ) -> ExposureGeomData:
     data = ExposureGeomData(
         area_method="area",

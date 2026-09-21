@@ -5,7 +5,7 @@ import pytest
 from pyproj.crs import CRS
 
 from fiat.cfg import Configurations
-from fiat.driver import Dataset, Table
+from fiat.driver import NetcdfDriver, Table
 from fiat.log import Logger
 from fiat.model import GridModel
 from fiat.util import get_crs_repr
@@ -40,7 +40,7 @@ def test_gridmodel_read_exposure_config(
     m.read_exposure()
 
     # Assert the presense of a dataset
-    assert isinstance(m.exposure, Dataset)
+    assert isinstance(m.exposure, NetcdfDriver)
     assert m.exposure.size == 2
 
 
@@ -55,7 +55,7 @@ def test_gridmodel_read_exposure_sig(
     m.read_exposure(path=exposure_grid_path)
 
     # Assert the presense of a dataset
-    assert isinstance(m.exposure, Dataset)
+    assert isinstance(m.exposure, NetcdfDriver)
     assert m.exposure.size == 2
 
 
@@ -75,7 +75,7 @@ def test_gridmodel_read_exposure_reproj(
     # Assert the logging
     assert "Reprojecting 'spatial.nc' to 'EPSG:3857'" in caplog.text
     # Assert the dataset
-    assert isinstance(m.exposure, Dataset)
+    assert isinstance(m.exposure, NetcdfDriver)
     assert m.exposure.size == 2
     assert get_crs_repr(m.exposure.crs) == "EPSG:3857"
 
@@ -93,8 +93,8 @@ def test_gridmodel_run(
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,
-    hazard_event_data: Dataset,
-    exposure_grid_data: Dataset,
+    hazard_event_data: NetcdfDriver,
+    exposure_grid_data: NetcdfDriver,
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.grid.worker", mockworker)
@@ -121,8 +121,8 @@ def test_gridmodel_run_fail(
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,
-    hazard_event_data: Dataset,
-    exposure_grid_data: Dataset,
+    hazard_event_data: NetcdfDriver,
+    exposure_grid_data: NetcdfDriver,
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.grid.worker", mockworker_error)

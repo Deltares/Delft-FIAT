@@ -7,9 +7,9 @@ import pytest
 from osgeo import ogr, osr
 
 from fiat.driver.csv import CSVParser
-from fiat.driver.geom import GeomIO
+from fiat.driver.geom import GeomDriver
 from fiat.driver.handler import BufferHandler, FileBufferHandler
-from fiat.driver.netcdf import Dataset
+from fiat.driver.netcdf import NetcdfDriver
 from fiat.open import open_geom, open_grid
 
 
@@ -87,24 +87,24 @@ def vulnerability_win_path(testdata_dir: Path) -> Path:
 
 ## I/O structures needed for this testing
 @pytest.fixture
-def exposure_geom_write(crs_4326: osr.SpatialReference) -> GeomIO:
+def exposure_geom_write(crs_4326: osr.SpatialReference) -> GeomDriver:
     ds = open_geom("tmp", mode="w")  # Write only
-    assert isinstance(ds, GeomIO)
+    assert isinstance(ds, GeomDriver)
     ds.create_layer(crs_4326, 1)
     return ds
 
 
 @pytest.fixture
-def hazard_write(crs_4326: osr.SpatialReference) -> Dataset:
+def hazard_write(crs_4326: osr.SpatialReference) -> NetcdfDriver:
     ds = open_grid("tmp", mode="w")  # Write only
-    assert isinstance(ds, Dataset)
+    assert isinstance(ds, NetcdfDriver)
     ds.create(shape=(2, 3), nb=1, dtype=6)  # 6 = float32
     ds.set_source_crs(crs_4326)
     return ds
 
 
 @pytest.fixture
-def feature(exposure_geom_write: GeomIO) -> ogr.Feature:
+def feature(exposure_geom_write: GeomDriver) -> ogr.Feature:
     geom = ogr.Geometry(ogr.wkbPoint)
     geom.AddPoint_2D(1, 1)
     ft = ogr.Feature(exposure_geom_write.layer.defn)

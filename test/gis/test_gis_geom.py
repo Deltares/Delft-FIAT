@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 from osgeo import ogr
 
-from fiat.driver import GeomIO
+from fiat.driver import GeomDriver
 from fiat.gis.geom import point_in_geom, reproject, reproject_feature
 from fiat.util import get_crs_repr
 
@@ -62,7 +62,7 @@ def test_reproject_feature_polygon(feature_polygon: ogr.Feature):
 
 def test_reproject(
     tmp_path: Path,
-    exposure_geom_repr: GeomIO,
+    exposure_geom_repr: GeomDriver,
 ):
     # Assert the current state
     assert get_crs_repr(exposure_geom_repr.crs) == "EPSG:4326"

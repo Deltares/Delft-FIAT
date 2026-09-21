@@ -34,7 +34,6 @@ dependencies = [
     "gdal>=3.5",
     "netcdf4",
     "numpy",
-    "polars",
     "pyproj",
     "regex",
     "scipy",

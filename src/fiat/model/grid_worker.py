@@ -15,7 +15,7 @@ from fiat.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import Dataset, DataVariable
+from fiat.driver import NetcdfDriver, NetcdfVariable
 from fiat.model.util import create_2d_windows
 from fiat.thread import Sender
 from fiat.typing import MethodType
@@ -32,7 +32,7 @@ def initialize_pool(q: Queue, p: dict[str, Connection]):
 
 
 def process_hazard(
-    band: DataVariable,
+    band: NetcdfVariable,
     window: tuple,
     vulnerability_meta: VulnerabilityMeta,
 ):
@@ -49,10 +49,10 @@ def process_hazard(
 def array_worker(
     out_array: np.ndarray[np.float32],
     run_meta: RunMeta,
-    hazard: Dataset,
+    hazard: NetcdfDriver,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
-    exposure: Dataset,
+    exposure: NetcdfDriver,
     exposure_meta: ExposureGridMeta,
     fn_impact: Callable,
     window: tuple,
@@ -65,13 +65,13 @@ def array_worker(
         The array to which to put the output data in.
     run_meta : RunMeta
         Configurations runtime metadata.
-    hazard : Dataset
+    hazard : NetcdfDriver
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
-    exposure : Dataset
+    exposure : NetcdfDriver
         The exposure data.
     exposure_meta : ExposureGridMeta
         Metadata specific to the exposure data.
@@ -143,10 +143,10 @@ def array_worker(
 def worker(
     mem_id: str,
     run_meta: RunMeta,
-    hazard: Dataset,
+    hazard: NetcdfDriver,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
-    exposure: Dataset,
+    exposure: NetcdfDriver,
     exposure_meta: ExposureGridMeta,
     window: tuple,
     chunk: tuple,
@@ -154,7 +154,7 @@ def worker(
     """Run the grid model.
 
     This is the worker function corresponding to the run method \
-of the [Dataset](/api/GeomIO.qmd) object.
+of the [NetcdfDriver](/api/GeomDriver.qmd) object.
 
     Parameters
     ----------
@@ -162,13 +162,13 @@ of the [Dataset](/api/GeomIO.qmd) object.
         The identifier/ name of the shared memory.
     run_meta : RunMeta
         The configurations runtime meta.
-    hazard : Dataset
+    hazard : NetcdfDriver
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
-    exposure : Dataset
+    exposure : NetcdfDriver
         The exposure data.
     exposure_meta : ExposureGridMeta
         Metadata specific to the exposure data.

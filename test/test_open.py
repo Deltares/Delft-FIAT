@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 
 from fiat.driver import (
-    Dataset,
-    GeomIO,
+    GeomDriver,
+    NetcdfDriver,
 )
 from fiat.driver.csv import Table
 from fiat.open import open_csv, open_geom, open_grid
@@ -72,7 +72,7 @@ def test_open_geom_context(exposure_geom_path: Path):
     # Open the dataset with context manager
     with open_geom(exposure_geom_path) as reader:
         # Assert some simple stuff
-        assert isinstance(reader, GeomIO)
+        assert isinstance(reader, GeomDriver)
         assert reader.mode == 0  # Read only
         assert reader.layer is not None
 
@@ -93,7 +93,7 @@ def test_open_geom_read_only(exposure_geom_path: Path):
     ds = open_geom(exposure_geom_path)
 
     # Assert simple stufValueErrorf
-    assert isinstance(ds, GeomIO)
+    assert isinstance(ds, GeomDriver)
     assert ds.mode == 0  # Read only
     assert ds.layer is not None
 
@@ -105,7 +105,7 @@ def test_open_geom_append(exposure_geom_tmp_path: Path):
     ds = open_geom(exposure_geom_tmp_path, mode="a")
 
     # Assert some simple stuff
-    assert isinstance(ds, GeomIO)
+    assert isinstance(ds, GeomDriver)
     assert ds.mode == 1  # Write/ update mode
     assert ds.layer is not None  # Hasn't been created yet
     assert ds.layer.size == 4
@@ -118,7 +118,7 @@ def test_open_geom_write_new(tmp_path: Path):
     ds = open_geom(Path(tmp_path, "tmp.geojson"), mode="w")
 
     # Assert some simple stuff
-    assert isinstance(ds, GeomIO)
+    assert isinstance(ds, GeomDriver)
     assert ds.mode == 2  # Write/ update mode
     assert ds.layer is None  # Hasn't been created yet
 
@@ -130,7 +130,7 @@ def test_open_geom_write_overwrite(exposure_geom_tmp_path: Path):
     ds = open_geom(exposure_geom_tmp_path, mode="w", overwrite=True)
 
     # Assert some simple stuff
-    assert isinstance(ds, GeomIO)
+    assert isinstance(ds, GeomDriver)
     assert ds.mode == 2  # Write/ update mode
     assert ds.layer is None  # Overwritten source, so has to be newly created
 
@@ -141,7 +141,7 @@ def test_open_grid_context(hazard_event_path: Path):
     # Open the dataset with context managesubsetr
     with open_grid(hazard_event_path) as reader:
         # Assert some simple stuff
-        assert isinstance(reader, Dataset)
+        assert isinstance(reader, NetcdfDriver)
         assert reader.size == 1  # One variable
 
     # Now it's closed but not deleted
@@ -161,7 +161,7 @@ def test_open_grid_read_only(hazard_event_path: Path):
     ds = open_grid(hazard_event_path)
 
     # Assert some simple stuff
-    assert isinstance(ds, Dataset)
+    assert isinstance(ds, NetcdfDriver)
     assert ds.size == 1  # One band
 
     ds.close()
@@ -172,7 +172,7 @@ def test_open_grid_append(hazard_event_tmp_path: Path):
     ds = open_grid(hazard_event_tmp_path, mode="a")
 
     # Assert some simple stuff
-    assert isinstance(ds, Dataset)
+    assert isinstance(ds, NetcdfDriver)
     assert ds.mode == 1  # Write/ update mode
     assert ds.src is not None  # Hasn't been created yet
     assert ds.size == 1

@@ -10,10 +10,10 @@ from pyproj.crs import CRS
 from fiat.driver.base import BaseDriver
 from fiat.util import NODATA_VALUE
 
-__all__ = ["Dataset", "DataVariable"]
+__all__ = ["NetcdfDriver", "NetcdfVariable"]
 
 
-class Dataset(BaseDriver):
+class NetcdfDriver(BaseDriver):
     """Simple netcdf dataset driver.
 
     Parameters
@@ -42,15 +42,18 @@ class Dataset(BaseDriver):
         self.src.set_auto_scale(False)
 
         # Attributes
+        self._bounds: tuple[float, ...] | None = None
         self._crs: str | None = crs
-        self.gtf: tuple[float] | None = None
-        self.ydim: nc4.Variable | None = None
-        self.yvals: np.ndarray | None = None
-        self.xdim: nc4.Variable | None = None
-        self.xvals: np.ndarray | None = None
+        self._origin: tuple[float, float] | None = None
+        self._res: tuple[float, float] | None = None
+        self._transform: tuple[float, ...] | None = None
+        self._variables: list[NetcdfVariable] = []
+        self._xvals: np.ndarray | None = None
+        self._yvals: np.ndarray | None = None
         self.reference: nc4.Variable | None = None
-        self.variables: dict[str, DataVariable] = {}
-        self._variables: list[DataVariable] = []
+        self.variables: dict[str, NetcdfVariable] = {}
+        self.ydim: nc4.Variable | None = None
+        self.xdim: nc4.Variable | None = None
 
         if self.mode <= 1:
             self._discover_variables()
@@ -70,6 +73,7 @@ class Dataset(BaseDriver):
 
     # Internals
     def _discover_reference(self) -> None:
+        """Discover the spatial reference."""
         try:
             var = next(
                 item for item in ["spatial_ref", "crs"] if item in self.src.variables
@@ -79,8 +83,13 @@ class Dataset(BaseDriver):
             ...
 
     def _discover_spatial_dims(self) -> None:
+        """Discover the spatial dimensions of the dataset."""
+        # If the values already exist set the values and return
         if self.xdim is not None and self.ydim is not None:
+            self._set_spatial_dim_values()
+            self._set_spatial_variables()
             return
+        # Otherwise try to discover
         try:
             yvar = next(
                 item for item in ["y", "lat", "latitude"] if item in self.src.dimensions
@@ -93,31 +102,61 @@ class Dataset(BaseDriver):
             self.ydim = self.src.variables[yvar]
             self.xdim = self.src.variables[xvar]
             self._set_spatial_dim_values()
+            self._set_spatial_variables()
+        # Raise a custom error to tell the user it failed
         except StopIteration:
             raise ValueError("Couldn't derive the spatial dimensions")
 
     def _discover_variables(self) -> None:
+        """Discover the dataset variables."""
         self._discover_reference()
         crs_var = self.reference.name if self.reference is not None else None
         for var_name, var in self.src.variables.items():
             if var_name in self.src.dimensions or var_name == crs_var:
                 continue
             if var_name not in self.variables:
-                self.variables[var_name] = DataVariable._create(var, self)
+                self.variables[var_name] = NetcdfVariable._create(var, self)
         self._variables = list(self.variables.values())
 
     def _set_spatial_dim_values(self) -> None:
+        """Set the x and y dimensions values to a variable."""
         self.yvals = self.ydim[:]
         self.xvals = self.xdim[:]
+
+    def _set_spatial_variables(self) -> None:
+        """Set the spatial variables derived from the spatial dimensions."""
+        # The resolution
+        dxs, dys = np.diff(self.xvals), np.diff(self.yvals)
+        dx, dy = dxs.mean(), dys.mean()
+        self._res = (float(dx), float(dy))
+
+        # The origin
+        dx, dy = self.res
+        xs, ys = self.xvals, self.yvals
+        x0, y0 = xs[0] - dx / 2, ys[0] - dy / 2
+        self._origin = (float(x0), float(y0))
+
+        # The transform
+        self._transform = (
+            self.origin[0],
+            self.res[0],
+            0.0,
+            self.origin[1],
+            0.0,
+            self.res[1],
+        )
+
+        # The bounds
+        gtf = self.transform
+        xmin, xmax = sorted([gtf[0], gtf[0] + gtf[1] * self.xdim.size])
+        ymin, ymax = sorted([gtf[3] + gtf[5] * self.ydim.size, gtf[3]])
+        self._bounds = (xmin, ymin, xmax, ymax)
 
     # Properties
     @property
     def bounds(self) -> tuple[float, ...]:
         """Return the bounds of the data."""
-        gtf = self.transform
-        xmin, xmax = sorted([gtf[0], gtf[0] + gtf[1] * self.xdim.size])
-        ymin, ymax = sorted([gtf[3] + gtf[5] * self.ydim.size, gtf[3]])
-        return (xmin, ymin, xmax, ymax)
+        return self._bounds
 
     @property
     def crs(self) -> CRS | None:
@@ -134,18 +173,12 @@ class Dataset(BaseDriver):
     @property
     def origin(self) -> tuple[float, float]:
         """Return the origin of the grid."""
-        dx, dy = self.res
-        xs, ys = self.xvals, self.yvals
-        x0, y0 = xs[0] - dx / 2, ys[0] - dy / 2
-        return float(x0), float(y0)
+        return self._origin
 
     @property
-    def res(self) -> tuple[float]:
+    def res(self) -> tuple[float, float]:
         """Return the resolution of the data."""
-        self._discover_spatial_dims()
-        dxs, dys = np.diff(self.xvals), np.diff(self.yvals)
-        dx, dy = dxs.mean(), dys.mean()
-        return float(dx), float(dy)
+        return self._res
 
     @property
     @BaseDriver.check_state
@@ -169,9 +202,7 @@ class Dataset(BaseDriver):
     @property
     def transform(self) -> tuple[float, ...]:
         """Return the geotransform of the data."""
-        origin = self.origin
-        res = self.res
-        return (origin[0], res[0], 0.0, origin[1], 0.0, res[1])
+        return self._transform
 
     # I/O related
     def close(self) -> None:
@@ -234,6 +265,7 @@ class Dataset(BaseDriver):
         )
         self.xdim[:] = lons
         self._set_spatial_dim_values()
+        self._set_spatial_variables()
 
     @BaseDriver.check_mode
     @BaseDriver.check_state
@@ -266,7 +298,7 @@ class Dataset(BaseDriver):
             complevel=complevel,
         )
         data.setncattr("grid_mapping", self.reference.name)
-        dv = DataVariable._create(var=data, ref=self.src)
+        dv = NetcdfVariable._create(var=data, ref=self.src)
         self.variables[var] = dv
         self._variables.append(dv)
 
@@ -293,7 +325,7 @@ class Dataset(BaseDriver):
         )
 
 
-class DataVariable:
+class NetcdfVariable:
     """Netcdf variable wrapper."""
 
     def __init__(
@@ -327,7 +359,7 @@ class DataVariable:
         var: nc4.Variable,
         ref: nc4.Dataset,
     ):
-        obj = DataVariable.__new__(cls)
+        obj = NetcdfVariable.__new__(cls)
         obj._obj_ref = weakref.ref(ref, obj._cleanup)
         obj._obj = var
 

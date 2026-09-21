@@ -8,7 +8,7 @@ from fiat.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import Dataset, GeomIO
+from fiat.driver import GeomDriver, NetcdfDriver
 from fiat.method.flood.depth import fn_hazard, fn_impact
 from fiat.model.geom_worker import feature_worker, worker
 from fiat.open import open_geom
@@ -16,10 +16,10 @@ from fiat.open import open_geom
 
 def test_feature_worker(
     run_meta: RunMeta,
-    hazard_event_data: Dataset,
+    hazard_event_data: NetcdfDriver,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_geom_data: GeomIO,
+    exposure_geom_data: GeomDriver,
     exposure_geom_meta_run: ExposureGeomMeta,
 ):
     # Call the function
@@ -40,10 +40,10 @@ def test_feature_worker(
 
 def test_feature_worker_risk(
     run_risk_meta: RunMeta,
-    hazard_risk_data: Dataset,
+    hazard_risk_data: NetcdfDriver,
     hazard_risk_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_geom_data: GeomIO,
+    exposure_geom_data: GeomDriver,
     exposure_geom_risk_meta_run: ExposureGeomMeta,
 ):
     # Call the function
@@ -72,10 +72,10 @@ def test_feature_worker_risk(
 def test_worker(
     tmp_path: Path,
     run_meta: RunMeta,
-    hazard_event_data: Dataset,
+    hazard_event_data: NetcdfDriver,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_geom_data: GeomIO,
+    exposure_geom_data: GeomDriver,
     exposure_geom_meta_run: ExposureGeomMeta,
 ):
     # Call the function

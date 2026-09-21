@@ -5,7 +5,7 @@ from itertools import product
 import numpy as np
 from osgeo import ogr
 
-from fiat.driver.netcdf import DataVariable
+from fiat.driver.netcdf import NetcdfVariable
 from fiat.gis.geom import point_in_geom
 from fiat.gis.util import pixel2world, world2pixel
 
@@ -165,7 +165,7 @@ def centroid_mask(
 
 
 def clip(
-    var: DataVariable,
+    var: NetcdfVariable,
     mask: np.ndarray[int],
     window: tuple[int, ...],
 ) -> np.ndarray:
@@ -175,7 +175,7 @@ def clip(
 
     Parameters
     ----------
-    var : DataVariable
+    var : NetcdfVariable
         The raster variable.
     mask : np.ndarray[int]
         The mask of the geometry within the window of the geometry.
@@ -199,7 +199,7 @@ def clip(
 
 def clip_weighted(
     ft: ogr.Feature,
-    var: DataVariable,
+    var: NetcdfVariable,
     gtf: tuple,
     upscale: int = 3,
 ):
@@ -219,10 +219,10 @@ cells that are touched by the feature.
         A Feature according to the \
 [ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
         Can be optained by indexing a \
-[GeomIO](/api/GeomIO.qmd).
-    var : DataVariable
+[GeomDriver](/api/GeomDriver.qmd).
+    var : NetcdfVariable
         An object that contains a connection the variable within the dataset.
-        For further information, see [DataVariable](/api/DataVariable.qmd)!
+        For further information, see [NetcdfVariable](/api/NetcdfVariable.qmd)!
     gtf : tuple
         The geotransform of a grid dataset.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).

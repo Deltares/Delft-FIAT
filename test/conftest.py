@@ -12,7 +12,7 @@ from pyproj.crs import CRS
 from pytest_mock import MockerFixture
 
 from fiat.cfg import Configurations
-from fiat.driver import Dataset, GeomIO, Table
+from fiat.driver import GeomDriver, NetcdfDriver, Table
 from fiat.log import Logger
 from fiat.open import open_csv, open_geom, open_grid
 
@@ -120,44 +120,44 @@ def exposure_cols() -> dict:
 
 
 @pytest.fixture(scope="session")
-def exposure_geom_data(exposure_geom_path: Path) -> GeomIO:
+def exposure_geom_data(exposure_geom_path: Path) -> GeomDriver:
     ds = open_geom(exposure_geom_path)  # Read only
-    assert isinstance(ds, GeomIO)
+    assert isinstance(ds, GeomDriver)
     return ds
 
 
 @pytest.fixture
-def exposure_grid_data(exposure_grid_path: Path) -> Dataset:
+def exposure_grid_data(exposure_grid_path: Path) -> NetcdfDriver:
     ds = open_grid(exposure_grid_path)  # Read only
-    assert isinstance(ds, Dataset)
+    assert isinstance(ds, NetcdfDriver)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_event_data(hazard_event_path: Path) -> Dataset:
+def hazard_event_data(hazard_event_path: Path) -> NetcdfDriver:
     ds = open_grid(hazard_event_path)  # Read only
-    assert isinstance(ds, Dataset)
+    assert isinstance(ds, NetcdfDriver)
     return ds
 
 
 @pytest.fixture
-def hazard_event_highres_data(hazard_event_highres_path: Path) -> Dataset:
+def hazard_event_highres_data(hazard_event_highres_path: Path) -> NetcdfDriver:
     ds = open_grid(hazard_event_highres_path)  # Read only
-    assert isinstance(ds, Dataset)
+    assert isinstance(ds, NetcdfDriver)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_risk_data(hazard_risk_path: Path) -> Dataset:
+def hazard_risk_data(hazard_risk_path: Path) -> NetcdfDriver:
     ds = open_grid(hazard_risk_path)  # Read only
-    assert isinstance(ds, Dataset)
+    assert isinstance(ds, NetcdfDriver)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_risk_data_subsets(hazard_risk_path: Path) -> Dataset:
+def hazard_risk_data_subsets(hazard_risk_path: Path) -> NetcdfDriver:
     ds = open_grid(hazard_risk_path)  # Read only
-    assert isinstance(ds, Dataset)
+    assert isinstance(ds, NetcdfDriver)
     return ds
 
 
@@ -166,7 +166,7 @@ def mocked_exp_grid(
     mocker: MockerFixture,
     crs_4326: osr.SpatialReference,
 ) -> MagicMock:
-    grid = mocker.create_autospec(Dataset)
+    grid = mocker.create_autospec(NetcdfDriver)
     # Set attributes for practical use
     type(grid).transform = PropertyMock(
         side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
@@ -181,7 +181,7 @@ def mocked_hazard_grid(
     mocker: MockerFixture,
     crs_4326: osr.SpatialReference,
 ) -> MagicMock:
-    grid = mocker.create_autospec(Dataset)
+    grid = mocker.create_autospec(NetcdfDriver)
     # Set attributes for practical use
     type(grid).transform = PropertyMock(
         side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
