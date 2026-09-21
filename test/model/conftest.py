@@ -7,10 +7,7 @@ from pyproj import CRS
 from scipy.interpolate import make_interp_spline
 
 from fiat.cfg import Configurations
-from fiat.fio import Dataset, GeomIO
-from fiat.method.ead import fn_density
-from fiat.struct import Table
-from fiat.struct.container import (
+from fiat.container import (
     ExposureGeomData,
     ExposureGeomMeta,
     ExposureGridMeta,
@@ -18,6 +15,8 @@ from fiat.struct.container import (
     RunMeta,
     VulnerabilityMeta,
 )
+from fiat.driver import Dataset, GeomIO, Table
+from fiat.method.ead import fn_density
 
 
 ## Structures

@@ -3,7 +3,7 @@ from typing import Callable
 import pytest
 from scipy.interpolate import make_interp_spline
 
-from fiat.struct import Table
+from fiat.driver import Table
 
 
 @pytest.fixture(scope="session")

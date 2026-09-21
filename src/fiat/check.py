@@ -7,9 +7,9 @@ from typing import Any
 from pyproj.crs import CRS
 
 from fiat.cfg import Configurations
+from fiat.container import Container
 from fiat.error import FIATDataError
 from fiat.log import spawn_logger
-from fiat.struct import Container
 from fiat.util import EXPOSURE_GRID_FILE, deter_type, get_crs_repr
 
 logger = spawn_logger(__name__)

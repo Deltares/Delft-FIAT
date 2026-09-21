@@ -12,10 +12,10 @@ from fiat.check import (
     check_hazard_rp,
     check_hazard_types,
 )
-from fiat.fio import Dataset
+from fiat.container import HazardMeta, RunMeta, VulnerabilityMeta
+from fiat.driver import Dataset
+from fiat.driver.csv import Table
 from fiat.method.ead import fn_density
-from fiat.struct import Table
-from fiat.struct.container import HazardMeta, RunMeta, VulnerabilityMeta
 from fiat.typing import MethodType
 from fiat.util import (
     RP,

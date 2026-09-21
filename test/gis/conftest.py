@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from osgeo import gdal, ogr, osr
 
-from fiat.fio import Dataset, GeomIO
+from fiat.driver import Dataset, GeomIO
 from fiat.open import open_geom, open_grid
 
 

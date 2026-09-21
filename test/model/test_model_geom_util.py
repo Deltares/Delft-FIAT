@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from fiat.container import ExposureGeomData, HazardMeta, RunMeta
 from fiat.error import FIATDataError
 from fiat.method import flood
 from fiat.model.geom_util import (
@@ -12,7 +13,6 @@ from fiat.model.geom_util import (
     generate_output_filepaths,
     get_exposure_meta,
 )
-from fiat.struct.container import ExposureGeomData, HazardMeta, RunMeta
 
 
 def test_discover_columns_found(exposure_cols: dict):

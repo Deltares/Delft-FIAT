@@ -10,7 +10,7 @@ from fiat.check import (
     check_internal_crs,
     check_vs_crs,
 )
-from fiat.fio import Dataset
+from fiat.driver import Dataset, Table
 from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
@@ -24,7 +24,6 @@ from fiat.model.util import (
     get_vulnerability_meta,
 )
 from fiat.open import open_grid
-from fiat.struct import Table
 from fiat.util import (
     CHUNK,
     EXPOSURE,
@@ -93,7 +92,7 @@ class GridModel(BaseModel):
             Path to an exposure grid, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_grid]\
-(/api/fio/open_grid.qmd) after which into [GridSouce](/api/Dataset.qmd)/
+(/api/driver/open_grid.qmd) after which into [GridSouce](/api/Dataset.qmd)/
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations

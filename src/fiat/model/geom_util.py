@@ -10,14 +10,14 @@ from fiat.check import (
     check_exp_columns,
     check_exp_derived_types,
 )
-from fiat.gis import overlay
-from fiat.method.util import ZONAL_METHODS
-from fiat.struct.container import (
+from fiat.container import (
     ExposureGeomData,
     ExposureGeomMeta,
     HazardMeta,
     RunMeta,
 )
+from fiat.gis import overlay
+from fiat.method.util import ZONAL_METHODS
 from fiat.typing import MethodType
 from fiat.util import AREA, CENTROID, EAD, FN, MAX, TOTAL, re_filter
 

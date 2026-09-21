@@ -29,14 +29,15 @@ description = "Fast Impact Assessment Tool"
 license = "MIT"
 readme = "README.md"
 
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "gdal>=3.5",
     "netcdf4",
     "numpy",
+    "polars",
     "pyproj",
-    "scipy",
     "regex",
+    "scipy",
 ]
 
 keywords = ["FIAT", "Assessment", "Damage"]
@@ -65,9 +66,9 @@ classifiers = [
 # Specify the Python versions you support here. In particular, ensure
 # that you indicate whether you support Python 2, Python 3 or both.
 'Programming Language :: Python :: 3',
-'Programming Language :: Python :: 3.11',
 'Programming Language :: Python :: 3.12',
 'Programming Language :: Python :: 3.13',
+'Programming Language :: Python :: 3.14',
 ]
 
 [project.optional-dependencies] # Optional
@@ -324,9 +325,6 @@ dependencies = { python = "3.13.*" }
 [tool.pixi.feature.py312]
 dependencies = { python = "3.12.*" }
 
-[tool.pixi.feature.py311]
-dependencies = { python = "3.11.*" }
-
 ## Workspace environments
 [tool.pixi.environments]
 build = { features = ["py314", "all", "build"] }
@@ -336,5 +334,4 @@ slim = { features = ["py314", "all", "gdal"] }
 test-py314 = { features = ["py314", "all", "gdal", "test"] }
 test-py313 = { features = ["py313", "all", "gdal", "test"] }
 test-py312 = { features = ["py312", "all", "gdal", "test"] }
-test-py311 = { features = ["py311", "all", "gdal", "test"] }
 wheel = { features = ["py313", "gdal", "test", "wheel"], no-default-feature=true }

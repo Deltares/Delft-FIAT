@@ -1,6 +1,6 @@
-from fiat.fio import Dataset
+from fiat.container import HazardMeta, RunMeta, VulnerabilityMeta
+from fiat.driver import Dataset
 from fiat.model.grid_util import equal_grid, get_exposure_meta
-from fiat.struct.container import HazardMeta, RunMeta, VulnerabilityMeta
 from fiat.util import EXPOSURE
 
 

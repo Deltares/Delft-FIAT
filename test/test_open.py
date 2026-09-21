@@ -3,13 +3,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from fiat.fio import (
+from fiat.driver import (
     Dataset,
     GeomIO,
 )
-from fiat.fio.handler import FileBufferHandler
+from fiat.driver.csv import Table
 from fiat.open import open_csv, open_geom, open_grid
-from fiat.struct import Table, TableLazy
 
 
 def test_open_csv_default(vulnerability_path: Path):
@@ -67,15 +66,6 @@ def test_open_csv_index(vulnerability_path: Path):
     # Assert the new index
     assert ds.index_name == "depth"
     assert ds.index[:5] == (0.0, 0.25, 0.5, 0.75, 1.0)
-
-
-def test_open_csv_lazy(vulnerability_path: Path):
-    # Open the dataset in lazy mode
-    ds = open_csv(vulnerability_path, lazy=True)
-
-    # Assert some simple stuff
-    assert isinstance(ds, TableLazy)
-    assert isinstance(ds.data, FileBufferHandler)  # A stream handler is the data
 
 
 def test_open_geom_context(exposure_geom_path: Path):

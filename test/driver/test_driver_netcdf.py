@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from pyproj.crs import CRS
 
-from fiat.fio.netcdf import Dataset
+from fiat.driver.netcdf import Dataset
 from fiat.util import get_crs_repr
 
 

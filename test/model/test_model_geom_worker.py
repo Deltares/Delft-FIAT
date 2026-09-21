@@ -2,16 +2,16 @@ from pathlib import Path
 
 import numpy as np
 
-from fiat.fio import Dataset, GeomIO
-from fiat.method.flood.depth import fn_hazard, fn_impact
-from fiat.model.geom_worker import feature_worker, worker
-from fiat.open import open_geom
-from fiat.struct.container import (
+from fiat.container import (
     ExposureGeomMeta,
     HazardMeta,
     RunMeta,
     VulnerabilityMeta,
 )
+from fiat.driver import Dataset, GeomIO
+from fiat.method.flood.depth import fn_hazard, fn_impact
+from fiat.model.geom_worker import feature_worker, worker
+from fiat.open import open_geom
 
 
 def test_feature_worker(

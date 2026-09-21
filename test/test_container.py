@@ -1,6 +1,6 @@
 import pytest
 
-from fiat.struct import Container
+from fiat.container import Container
 
 
 def test_container_empty():

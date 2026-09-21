@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-from fiat.fio.netcdf import Dataset
+from fiat.driver.netcdf import Dataset
 from fiat.thread import Receiver
 from fiat.util import NODATA_VALUE
 

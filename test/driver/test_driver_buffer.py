@@ -2,7 +2,7 @@ from multiprocessing import get_context
 from multiprocessing.synchronize import Lock
 from pathlib import Path
 
-from fiat.fio.buffer import BufferedTextWriter
+from fiat.driver.buffer import BufferedTextWriter
 from fiat.util import NEWLINE_CHAR, DummyLock
 
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-from fiat.fio import Dataset
+from fiat.driver import Dataset, Table
 from fiat.method import flood
 from fiat.model.util import (
     create_1d_chunks,
@@ -11,7 +11,6 @@ from fiat.model.util import (
     get_vulnerability_meta,
     vectorize_function,
 )
-from fiat.struct import Table
 
 
 def test_create_1d_chunks_few():

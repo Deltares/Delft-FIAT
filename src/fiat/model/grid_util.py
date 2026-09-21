@@ -4,14 +4,14 @@ from collections import deque
 from itertools import product
 
 from fiat.check import check_exp_grid_fn, check_grid_exact
-from fiat.fio import Dataset
-from fiat.gis import grid
-from fiat.struct.container import (
+from fiat.container import (
     ExposureGridMeta,
     HazardMeta,
     RunMeta,
     VulnerabilityMeta,
 )
+from fiat.driver import Dataset
+from fiat.gis import grid
 from fiat.util import EAD, FN, HAZARD, TOTAL, get_crs_repr
 
 

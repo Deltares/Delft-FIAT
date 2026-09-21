@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 from osgeo import ogr
 
-from fiat.fio import GeomIO
+from fiat.driver import GeomIO
 from fiat.gis.geom import point_in_geom, reproject, reproject_feature
 from fiat.util import get_crs_repr
 

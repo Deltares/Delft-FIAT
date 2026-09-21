@@ -1,7 +1,7 @@
 import numpy as np
 from osgeo import ogr
 
-from fiat.fio import Dataset
+from fiat.driver import Dataset
 from fiat.gis.overlay import (
     area_mask,
     centroid_mask,

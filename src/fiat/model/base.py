@@ -15,11 +15,10 @@ from fiat.check import (
     check_internal_crs,
     check_vs_crs,
 )
-from fiat.fio import Dataset
+from fiat.driver import Dataset, Table
 from fiat.gis import grid
 from fiat.log import spawn_logger
 from fiat.open import open_csv, open_grid
-from fiat.struct import Table
 from fiat.typing import MethodType
 from fiat.util import (
     DEPTH,
@@ -180,7 +179,7 @@ exceeds machine thread count ('{max_threads}')"
             Path to the hazard gridded dataset, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_grid]\
-(/api/fio/open_grid.qmd) after which into [Dataset](/api/Dataset.qmd)/
+(/api/driver/open_grid.qmd) after which into [Dataset](/api/Dataset.qmd)/
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations
@@ -249,7 +248,7 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             Path to the vulnerabulity data, by default None.
         **kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_csv]\
-(/api/fio/open_csv.qmd) after which into [Table](/api/Table.qmd)/.
+(/api/driver/open_csv.qmd) after which into [Table](/api/Table.qmd)/.
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations

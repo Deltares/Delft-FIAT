@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from fiat.fio.handler import FileBufferHandler
+from fiat.driver.handler import FileBufferHandler
 
 
 def test_buffer_handler_basic(vulnerability_path: Path):

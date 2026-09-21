@@ -2,11 +2,10 @@
 
 from pathlib import Path
 
-from fiat.fio.geom import GeomIO
-from fiat.fio.handler import FileBufferHandler
-from fiat.fio.netcdf import Dataset
-from fiat.fio.parser import CSVParser
-from fiat.struct import Table, TableLazy
+from fiat.driver.csv import CSVParser, Table
+from fiat.driver.geom import GeomIO
+from fiat.driver.handler import FileBufferHandler
+from fiat.driver.netcdf import Dataset
 
 __all__ = ["open_csv", "open_geom", "open_grid"]
 
@@ -17,8 +16,7 @@ def open_csv(
     delimiter: str = ",",
     header: bool = True,
     index: str = None,
-    lazy: bool = False,
-) -> Table | TableLazy:
+) -> Table:
     """Open a csv file.
 
     Parameters
@@ -47,9 +45,6 @@ def open_csv(
         header,
         index,
     )
-
-    if lazy:
-        return TableLazy(parser=parser)
 
     return Table.from_parser(
         parser=parser,

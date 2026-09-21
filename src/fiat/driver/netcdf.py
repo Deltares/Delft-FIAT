@@ -7,7 +7,7 @@ import netCDF4 as nc4
 import numpy as np
 from pyproj.crs import CRS
 
-from fiat.fio.base import BaseDriver
+from fiat.driver.base import BaseDriver
 from fiat.util import NODATA_VALUE
 
 __all__ = ["Dataset", "DataVariable"]
@@ -54,6 +54,7 @@ class Dataset(BaseDriver):
 
         if self.mode <= 1:
             self._discover_variables()
+            self._discover_spatial_dims()
 
     def __del__(self): ...
 
@@ -106,8 +107,8 @@ class Dataset(BaseDriver):
         self._variables = list(self.variables.values())
 
     def _set_spatial_dim_values(self) -> None:
-        self.yvals = self.ydim[:].data
-        self.xvals = self.xdim[:].data
+        self.yvals = self.ydim[:]
+        self.xvals = self.xdim[:]
 
     # Properties
     @property
@@ -241,6 +242,8 @@ class Dataset(BaseDriver):
         var: str,
         dtype: str = "f4",
         nodata: float = NODATA_VALUE,
+        compression: str = "zlib",
+        complevel: int = 5,
     ) -> None:
         """Create a spatial variable.
 
@@ -259,6 +262,8 @@ class Dataset(BaseDriver):
             datatype=dtype,
             dimensions=(self.ydim.name, self.xdim.name),
             fill_value=nodata,
+            compression=compression,
+            complevel=complevel,
         )
         data.setncattr("grid_mapping", self.reference.name)
         dv = DataVariable._create(var=data, ref=self.src)

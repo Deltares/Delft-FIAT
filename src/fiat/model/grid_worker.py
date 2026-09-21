@@ -9,14 +9,14 @@ from typing import Callable
 
 import numpy as np
 
-from fiat.fio import Dataset, DataVariable
-from fiat.model.util import create_2d_windows
-from fiat.struct.container import (
+from fiat.container import (
     ExposureGridMeta,
     HazardMeta,
     RunMeta,
     VulnerabilityMeta,
 )
+from fiat.driver import Dataset, DataVariable
+from fiat.model.util import create_2d_windows
 from fiat.thread import Sender
 from fiat.typing import MethodType
 from fiat.util import FIAT_METHOD, FN

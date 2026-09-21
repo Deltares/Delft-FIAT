@@ -4,7 +4,7 @@ from pathlib import Path
 
 from osgeo import ogr
 
-from fiat.fio.geom import GeomIO
+from fiat.driver.geom import GeomIO
 from fiat.model.geom_writer import GeomWriter, ensure_writable_filepath
 from fiat.util import DummyLock
 
@@ -72,7 +72,7 @@ def test_geom_writer_setup_layer(
     tmp_path: Path,
     exposure_geom_data: GeomIO,
 ):
-    p = Path(tmp_path, "tmp.geojson")
+    p = Path(tmp_path, "tmp.gpkg")
     # Create the writer
     w = GeomWriter(
         p,
@@ -99,7 +99,7 @@ def test_geom_writer_setup_layer_with_fields(
     tmp_path: Path,
     exposure_geom_data: GeomIO,
 ):
-    p = Path(tmp_path, "tmp.geojson")
+    p = Path(tmp_path, "tmp.gpkg")
     # Create the writer
     w = GeomWriter(
         p,
@@ -130,7 +130,7 @@ def test_geom_writer_add(
     tmp_path: Path,
     exposure_geom_data: GeomIO,
 ):
-    p = Path(tmp_path, "tmp.geojson")
+    p = Path(tmp_path, "tmp.gpkg")
     # Create the writer
     w = GeomWriter(
         p,
@@ -158,7 +158,7 @@ def test_geom_writer_add_write(
     tmp_path: Path,
     exposure_geom_data: GeomIO,
 ):
-    p = Path(tmp_path, "tmp.geojson")
+    p = Path(tmp_path, "tmp.gpkg")
     # Create the writer
     w = GeomWriter(
         p,
@@ -193,7 +193,7 @@ def test_geom_writer_add_with_map(
     tmp_path: Path,
     exposure_geom_data: GeomIO,
 ):
-    p = Path(tmp_path, "tmp.geojson")
+    p = Path(tmp_path, "tmp.gpkg")
     # Create the writer
     w = GeomWriter(
         p,

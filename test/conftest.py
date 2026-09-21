@@ -12,10 +12,9 @@ from pyproj.crs import CRS
 from pytest_mock import MockerFixture
 
 from fiat.cfg import Configurations
-from fiat.fio import Dataset, GeomIO
+from fiat.driver import Dataset, GeomIO, Table
 from fiat.log import Logger
 from fiat.open import open_csv, open_geom, open_grid
-from fiat.struct import Table
 
 TEST_MODULE = Path(__file__).parent
 

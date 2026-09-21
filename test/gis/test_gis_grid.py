@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 from pyproj import Transformer
 
-from fiat.fio import Dataset
+from fiat.driver import Dataset
 from fiat.gis.grid import default_transform, reproject, transform_bounds
 from fiat.util import get_crs_repr
 

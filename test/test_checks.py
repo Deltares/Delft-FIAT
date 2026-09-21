@@ -25,10 +25,10 @@ from fiat.check import (
     check_internal_crs,
     check_vs_crs,
 )
+from fiat.container import Container
 from fiat.error import FIATDataError
 from fiat.log import Logger
 from fiat.method.flood.depth import COLUMNS
-from fiat.struct import Container
 from fiat.util import MANDATORY_MODEL_ENTRIES
 
 

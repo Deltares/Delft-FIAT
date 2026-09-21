@@ -14,7 +14,8 @@ from fiat.check import (
     check_internal_crs,
     check_vs_crs,
 )
-from fiat.fio import Dataset
+from fiat.container import Container, ExposureGeomData
+from fiat.driver import Dataset, Table
 from fiat.gis import geom
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
@@ -29,8 +30,6 @@ from fiat.model.util import (
     get_vulnerability_meta,
 )
 from fiat.open import open_geom
-from fiat.struct import Container, Table
-from fiat.struct.container import ExposureGeomData
 from fiat.util import (
     AREA__METHOD,
     CENTROID,
@@ -106,7 +105,7 @@ class GeomModel(BaseModel):
             By default None.
         **kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_geom]\
-(/api/fio/open_geom.qmd) after which into [GeomIO](/api/GeomIO.qmd)/
+(/api/driver/open_geom.qmd) after which into [GeomIO](/api/GeomIO.qmd)/
         """
         # Sort the settings
         # Hierarchy: 1) signature, 2) configurations

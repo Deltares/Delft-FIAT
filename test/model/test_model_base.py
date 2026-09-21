@@ -4,10 +4,9 @@ from pathlib import Path
 import pytest
 
 from fiat.cfg import Configurations
-from fiat.fio import Dataset
+from fiat.driver import Dataset, Table
 from fiat.log import Logger
 from fiat.model.base import BaseModel
-from fiat.struct import Table
 from fiat.util import get_crs_repr
 
 # Overwrite the abstractmethods to be able to initialize it

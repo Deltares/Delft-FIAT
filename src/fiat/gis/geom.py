@@ -5,7 +5,7 @@ from pathlib import Path
 
 from osgeo import ogr, osr
 
-from fiat.fio import GeomIO
+from fiat.driver import GeomIO
 from fiat.model.geom_writer import GeomWriter
 from fiat.open import open_geom
 

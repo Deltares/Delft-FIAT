@@ -6,7 +6,7 @@ from pathlib import Path
 
 from osgeo import gdal, ogr
 
-from fiat.fio.geom import GeomIO
+from fiat.driver.geom import GeomIO
 from fiat.open import open_geom
 from fiat.util import DummyLock
 

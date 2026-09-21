@@ -2,19 +2,19 @@ from multiprocessing.shared_memory import SharedMemory
 
 import numpy as np
 
-from fiat.fio import Dataset
+from fiat.container import (
+    ExposureGridMeta,
+    HazardMeta,
+    RunMeta,
+    VulnerabilityMeta,
+)
+from fiat.driver import Dataset
 from fiat.method import flood
 from fiat.model.grid_worker import (
     array_worker,
     initialize_pool,
     process_hazard,
     worker,
-)
-from fiat.struct.container import (
-    ExposureGridMeta,
-    HazardMeta,
-    RunMeta,
-    VulnerabilityMeta,
 )
 
 

@@ -230,7 +230,7 @@ quartodoc:
     # - title: I/O
     # - subtitle: Methods
     #   desc: Input/ output bound operations
-    #   package: fiat.fio
+    #   package: fiat.driver
     #   contents:
     #     - merge_geom_layers
     #     - open_csv
@@ -238,7 +238,7 @@ quartodoc:
     #     - open_grid
     # - subtitle: Objects
     #   desc: Objects constructed from data
-    #   package: fiat.fio
+    #   package: fiat.driver
     #   contents:
     #     - name: GeomIO
     #       children: separate

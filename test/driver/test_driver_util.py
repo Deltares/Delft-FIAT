@@ -1,6 +1,6 @@
 import numpy as np
 
-from fiat.struct.util import convert_to_numpy_dtype, infer_column_types
+from fiat.driver.util import convert_to_numpy_dtype, infer_column_types
 
 
 def test_convert_to_numpy_dtype_uni():

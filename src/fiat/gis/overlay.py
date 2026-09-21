@@ -5,7 +5,7 @@ from itertools import product
 import numpy as np
 from osgeo import ogr
 
-from fiat.fio.netcdf import DataVariable
+from fiat.driver.netcdf import DataVariable
 from fiat.gis.geom import point_in_geom
 from fiat.gis.util import pixel2world, world2pixel
 

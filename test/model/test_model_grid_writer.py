@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from fiat.fio import Dataset
+from fiat.driver import Dataset
 from fiat.writer import GridItem, NetcdfWriter, create_netcdf_handle
 
 

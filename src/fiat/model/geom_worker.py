@@ -9,17 +9,17 @@ from typing import Callable
 
 from osgeo import ogr
 
-from fiat.fio import Dataset, GeomIO
-from fiat.gis import overlay
-from fiat.method.ead import fn_ead
-from fiat.model.geom_util import AREA_METHODS
-from fiat.model.geom_writer import GeomWriter
-from fiat.struct.container import (
+from fiat.container import (
     ExposureGeomMeta,
     HazardMeta,
     RunMeta,
     VulnerabilityMeta,
 )
+from fiat.driver import Dataset, GeomIO
+from fiat.gis import overlay
+from fiat.method.ead import fn_ead
+from fiat.model.geom_util import AREA_METHODS
+from fiat.model.geom_writer import GeomWriter
 from fiat.typing import MethodType
 from fiat.util import FIAT_METHOD
 

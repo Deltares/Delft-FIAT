@@ -8,7 +8,7 @@ from pyproj import Transformer
 from pyproj.crs import CRS
 from scipy.interpolate import RegularGridInterpolator
 
-from fiat.fio import Dataset
+from fiat.driver import Dataset
 
 
 def transform_bounds(
