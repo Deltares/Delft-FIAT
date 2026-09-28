@@ -2,10 +2,12 @@
 
 import math
 
+import numpy as np
+
 
 def fn_ead(
     rp_coef: list[float],
-    impact: list[float],
+    impact: list[float] | np.ndarray,
 ) -> float:
     """Calculate the EAD (risk).
 

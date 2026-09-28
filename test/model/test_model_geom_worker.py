@@ -22,9 +22,13 @@ def test_feature_worker(
     exposure_geom_data: GeomDriver,
     exposure_geom_meta_run: ExposureGeomMeta,
 ):
+    # Create the array
+    out_array = np.zeros(exposure_geom_meta_run.new_length, dtype=np.float32)
+
     # Call the function
-    out_array = feature_worker(
+    feature_worker(
         ft=exposure_geom_data.layer[0],
+        out_array=out_array,
         run_meta=run_meta,
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
@@ -46,9 +50,13 @@ def test_feature_worker_risk(
     exposure_geom_data: GeomDriver,
     exposure_geom_risk_meta_run: ExposureGeomMeta,
 ):
+    # Create the array
+    out_array = np.zeros(exposure_geom_risk_meta_run.new_length, dtype=np.float32)
+
     # Call the function
-    out_array = feature_worker(
+    feature_worker(
         ft=exposure_geom_data.layer[2],
+        out_array=out_array,
         run_meta=run_risk_meta,
         hazard=hazard_risk_data,
         hazard_meta=hazard_risk_meta_run,
@@ -66,7 +74,7 @@ def test_feature_worker_risk(
     np.testing.assert_almost_equal(out_array[2], 1792.3, decimal=1)
     np.testing.assert_almost_equal(out_array[6], 3.31, decimal=2)
     np.testing.assert_almost_equal(out_array[10], 2279.1, decimal=1)
-    np.testing.assert_almost_equal(out_array[-1], 1085.8, decimal=1)
+    np.testing.assert_almost_equal(out_array[-1], 1022.7, decimal=1)
 
 
 def test_worker(

@@ -38,14 +38,14 @@ class GeomWriter:
         self,
         file: Path | str,
         buffer_size: int = 100000,  # geometries
-        lock: Lock = None,
+        lock: Lock | None = None,
     ):
         # Ensure pathlib.Path
         path = Path(file)
         self.path: Path = path
 
         # Set the lock
-        self.lock: Lock | DummyLock = lock
+        self.lock: Lock | DummyLock | None = lock
         if lock is None:
             self.lock = DummyLock()
 
@@ -56,7 +56,10 @@ class GeomWriter:
         self.n: int = 1
 
         # Create the buffer
-        self.buffer: GeomDriver = open_geom(f"/vsimem/{file.stem}.gpkg", mode="w")
+        self.buffer: GeomDriver | None = open_geom(
+            f"/vsimem/{path.stem}.gpkg",
+            mode="w",
+        )
 
         # Set some check vars
         # TODO: do this based om memory foodprint

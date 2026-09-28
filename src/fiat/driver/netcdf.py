@@ -86,8 +86,8 @@ class NetcdfDriver(BaseDriver):
         """Discover the spatial dimensions of the dataset."""
         # If the values already exist set the values and return
         if self.xdim is not None and self.ydim is not None:
-            self._set_spatial_dim_values()
-            self._set_spatial_variables()
+            if self.xvals is None or self.yvals is None:
+                self._set_spatial_dim_values()
             return
         # Otherwise try to discover
         try:
@@ -184,14 +184,12 @@ class NetcdfDriver(BaseDriver):
     @BaseDriver.check_state
     def shape(self) -> tuple[int, int]:
         """Return the shape of the raster (y, x)."""
-        self._discover_spatial_dims()
         return self.ydim.size, self.xdim.size
 
     @property
     @BaseDriver.check_state
     def shape_xy(self) -> tuple[int, int]:
         """Return the shape of the raster (x, y)."""
-        self._discover_spatial_dims()
         return self.xdim.size, self.ydim.size
 
     @property

@@ -7,6 +7,7 @@ from multiprocessing.synchronize import Lock
 from pathlib import Path
 from typing import Callable
 
+import numpy as np
 from osgeo import ogr
 
 from fiat.container import (
@@ -39,6 +40,7 @@ def initialize_pool(
 
 def feature_worker(
     ft: ogr.Feature,
+    out_array: np.ndarray,
     run_meta: RunMeta,
     hazard: NetcdfDriver,
     hazard_meta: HazardMeta,
@@ -46,13 +48,15 @@ def feature_worker(
     exposure_meta: ExposureGeomMeta,
     fn_hazard: Callable,
     fn_impact: Callable,
-) -> list[float]:
+) -> None:
     """Calculate the impact per feature.
 
     Parameters
     ----------
     ft : ogr.Feature
         The feature.
+    out_array : np.ndarray
+        The array in which to place the runtime values.
     run_meta : RunMeta
         Configurations runtime metadata.
     hazard : NetcdfDriver
@@ -74,7 +78,6 @@ def feature_worker(
         Array containing the impact values for a feature.
     """
     # The output array
-    out_array = [0.0] * exposure_meta.new_length
     haz_args = [ft.GetField(idx) for idx in exposure_meta.indices_spec]
 
     # Mask and window for this feature
@@ -104,7 +107,7 @@ def feature_worker(
                     out = fn_impact(
                         hazard=haz,
                         exposure=exposure,
-                        fn_curve=vulnerability_meta.fn[curve_id],
+                        fn_curve=vulnerability_meta.fn[curve_id],  # type: ignore
                         fact=fact,
                     )
                     out = 0 if math.isnan(out) else out
@@ -115,16 +118,12 @@ def feature_worker(
 
     # Process the results to ead when risk mode
     if run_meta.risk:
-        i = 0
         for ti, indices in exposure_meta.indices_total.items():
             ead = fn_ead(
                 hazard_meta.density,
-                out_array[indices[-1] - i :: -exposure_meta.type_length],
+                out_array[indices],
             )
             out_array[-1] = ead  # TODO fix single index
-            i += 1
-
-    return out_array
 
 
 def worker(
@@ -178,9 +177,11 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     )
 
     # Loop over all the geometries in a reduced manner
+    out_array = np.zeros(exposure_meta.new_length, dtype=np.float32)
     for ft in exposure.layer.reduced_iter(*chunk):
-        out_array = feature_worker(
+        feature_worker(
             ft=ft,
+            out_array=out_array,
             run_meta=run_meta,
             hazard=hazard,
             hazard_meta=hazard_meta,
@@ -195,9 +196,11 @@ of the [GeomModel](/api/GeomModel.qmd) object.
             ft,
             zip(
                 exposure_meta.indices_new,
-                out_array,
+                out_array.tolist(),
             ),
         )
+        # Reset the values
+        out_array *= 0
 
     writer.close()
     writer = None
