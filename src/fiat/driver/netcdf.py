@@ -46,6 +46,8 @@ class NetcdfDriver(BaseDriver):
         self._crs: str | None = crs
         self._origin: tuple[float, float] | None = None
         self._res: tuple[float, float] | None = None
+        self._shape: tuple[int, int] | None = None
+        self._shape_xy: tuple[int, int] | None = None
         self._transform: tuple[float, ...] | None = None
         self._variables: list[NetcdfVariable] = []
         self._xvals: np.ndarray | None = None
@@ -184,13 +186,17 @@ class NetcdfDriver(BaseDriver):
     @BaseDriver.check_state
     def shape(self) -> tuple[int, int]:
         """Return the shape of the raster (y, x)."""
-        return self.ydim.size, self.xdim.size
+        if self._shape is None:
+            self._shape = (self.ydim.size, self.xdim.size)
+        return self._shape
 
     @property
     @BaseDriver.check_state
     def shape_xy(self) -> tuple[int, int]:
         """Return the shape of the raster (x, y)."""
-        return self.xdim.size, self.ydim.size
+        if self._shape_xy is None:
+            self._shape_xy = (self.xdim.size, self.ydim.size)
+        return self._shape_xy
 
     @property
     def size(self) -> int:
