@@ -1,2 +1,3 @@
 prune src/*.egg-info
 recursive-exclude test *
+recursive-include src/fiat/_core *.pyx

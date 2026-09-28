@@ -5,9 +5,57 @@ from itertools import product
 import numpy as np
 from osgeo import ogr
 
+from fiat._core import cell_mask, clip_masked
 from fiat.driver.netcdf import NetcdfVariable
 from fiat.gis.geom import point_in_geom
 from fiat.gis.util import pixel2world, world2pixel
+
+
+def _flatten_geom(
+    geom: ogr.Geometry,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, int]:
+    """Flatten a geometry into contiguous ring/line coordinate arrays.
+
+    Recursively collects the coordinates of all simple components (linear rings
+    of polygons, vertices of (multi)lines) into flat ``x``/``y`` arrays with a
+    per-ring offset array, so the footprint can be rasterised in C.
+
+    Parameters
+    ----------
+    geom : ogr.Geometry
+        The (possibly multi-part) geometry.
+
+    Returns
+    -------
+    tuple
+        ``(xs, ys, ring_starts, is_areal)`` where ``ring_starts`` has length
+        ``n_rings + 1`` and ``is_areal`` is 1 for polygonal geometries.
+    """
+    xs: list[float] = []
+    ys: list[float] = []
+    ring_starts: list[int] = [0]
+
+    def _walk(g: ogr.Geometry) -> None:
+        if g.GetGeometryCount() > 0:
+            for k in range(g.GetGeometryCount()):
+                _walk(g.GetGeometryRef(k))
+            return
+        pts = g.GetPoints()
+        if not pts:
+            return
+        for x, y in pts:
+            xs.append(x)
+            ys.append(y)
+        ring_starts.append(len(xs))
+
+    _walk(geom)
+    is_areal = 1 if geom.GetDimension() == 2 else 0
+    return (
+        np.asarray(xs, dtype=np.float64),
+        np.asarray(ys, dtype=np.float64),
+        np.asarray(ring_starts, dtype=np.int32),
+        is_areal,
+    )
 
 
 def intersect_cell(
@@ -87,12 +135,21 @@ def area_mask(
     px_h = max(int(lry - uly) + 1 - abs(lryn - lry) - abs(ulyn - uly), 0)
 
     window = slice(ulyn, ulyn + px_h), slice(ulxn, ulxn + px_w)
-    mask = np.ones((px_h, px_w))
 
-    # Loop trough the cells
-    for i, j in product(range(px_w), range(px_h)):
-        if not intersect_cell(geom, plx + (dx * i), ply + (dy * j), dx, dy):
-            mask[j, i] = 0
+    # Rasterise the footprint of the geometry over the window in C.
+    xs, ys, ring_starts, is_areal = _flatten_geom(geom)
+    mask = cell_mask(
+        xs,
+        ys,
+        ring_starts,
+        is_areal,
+        plx,
+        ply,
+        dx,
+        dy,
+        px_w,
+        px_h,
+    )
 
     return mask, window
 
@@ -192,9 +249,17 @@ def clip(
     - [clip_weighted](/api/overlay/clip_weighted.qmd)
     """
     # Use the window and mask to extract the data
-    arr = var[*window][mask == 1]
-    arr[arr == var.nodata] = np.nan
-    return arr
+    arr = var[*window]
+    if np.issubdtype(arr.dtype, np.floating):
+        has_nodata = var.nodata is not None
+        return clip_masked(
+            arr,
+            mask,
+            float(var.nodata) if has_nodata else 0.0,
+            1 if has_nodata else 0,
+        )
+    # Fallback for non-floating (e.g. integer) grids: keep numpy semantics.
+    return arr[mask == 1]
 
 
 def clip_weighted(

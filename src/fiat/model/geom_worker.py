@@ -77,8 +77,9 @@ def feature_worker(
     list[float]
         Array containing the impact values for a feature.
     """
-    # The output array
-    haz_args = [ft.GetField(idx) for idx in exposure_meta.indices_spec]
+    # The output array (numeric spec fields via the typed getter to skip the
+    # generic GetField type introspection).
+    haz_args = [ft.GetFieldAsDouble(idx) for idx in exposure_meta.indices_spec]
 
     # Mask and window for this feature
     mask, window = AREA_METHODS[exposure_meta.area_method](
@@ -90,7 +91,7 @@ def feature_worker(
     # Loop through the hazard band combo's
     n = 0
     for idxs in hazard_meta.indices_run:
-        haz = [overlay.clip(hazard[idx], mask, window).tolist() for idx in idxs]
+        haz = [overlay.clip(hazard[idx], mask, window) for idx in idxs]
         haz, fact = fn_hazard(
             *haz,
             *haz_args,
@@ -101,7 +102,7 @@ def feature_worker(
             tot = 0.0
             for i, (f, m) in enumerate(value):
                 curve_id = ft.GetField(f)
-                exposure = ft.GetField(m)
+                exposure = ft.GetFieldAsDouble(m)
                 out = 0
                 if curve_id and exposure:
                     out = fn_impact(

@@ -5,8 +5,8 @@ from itertools import product
 from typing import Callable, Generator
 
 import numpy as np
-from scipy.interpolate import make_interp_spline
 
+from fiat._core import Interp1D
 from fiat.check import (
     check_hazard_identifier,
     check_hazard_rp,
@@ -238,8 +238,7 @@ def get_vulnerability_meta(
     imax = max(vulnerability.index)
     fn_list = vulnerability.columns
     fn = {
-        item: make_interp_spline(vulnerability.index, vulnerability[:, item], k=1)
-        for item in fn_list
+        item: Interp1D(vulnerability.index, vulnerability[:, item]) for item in fn_list
     }
     meta = VulnerabilityMeta(
         fn=fn,

@@ -25,6 +25,10 @@ whl/
 # C extensions
 *.so
 
+# Compiled Cython extensions (generated from the .pyx sources in src/fiat/_core)
+*.pyd
+src/fiat/_core/*.c
+
 # Pyinstaller
 bin/
 
