@@ -7,12 +7,11 @@ from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
-from osgeo import osr
 from pyproj.crs import CRS
 from pytest_mock import MockerFixture
 
 from fiat.cfg import Configurations
-from fiat.driver import GeomDriver, NetcdfDriver, Table
+from fiat.driver import FlatGeobufDriver, NetcdfDriver, Table
 from fiat.log import Logger
 from fiat.open import open_csv, open_geom, open_grid
 
@@ -41,14 +40,14 @@ def testdata_dir() -> Path:
 ## Path to key files
 @pytest.fixture(scope="session")
 def exposure_geom_path(testdata_dir: Path) -> Path:
-    p = Path(testdata_dir, "exposure", "spatial.geojson")
+    p = Path(testdata_dir, "exposure", "spatial.fgb")
     assert p.is_file()
     return p
 
 
 @pytest.fixture
 def exposure_geom_tmp_path(tmp_path: Path, exposure_geom_path: Path) -> Path:
-    p = Path(tmp_path, "tmp.geojson")
+    p = Path(tmp_path, "tmp.fgb")
     shutil.copy2(exposure_geom_path, p)
     assert p.is_file()
     return p
@@ -120,9 +119,9 @@ def exposure_cols() -> dict:
 
 
 @pytest.fixture(scope="session")
-def exposure_geom_data(exposure_geom_path: Path) -> GeomDriver:
+def exposure_geom_data(exposure_geom_path: Path) -> FlatGeobufDriver:
     ds = open_geom(exposure_geom_path)  # Read only
-    assert isinstance(ds, GeomDriver)
+    assert isinstance(ds, FlatGeobufDriver)
     return ds
 
 
@@ -164,7 +163,7 @@ def hazard_risk_data_subsets(hazard_risk_path: Path) -> NetcdfDriver:
 @pytest.fixture
 def mocked_exp_grid(
     mocker: MockerFixture,
-    crs_4326: osr.SpatialReference,
+    crs_4326: CRS,
 ) -> MagicMock:
     grid = mocker.create_autospec(NetcdfDriver)
     # Set attributes for practical use
@@ -179,7 +178,7 @@ def mocked_exp_grid(
 @pytest.fixture
 def mocked_hazard_grid(
     mocker: MockerFixture,
-    crs_4326: osr.SpatialReference,
+    crs_4326: CRS,
 ) -> MagicMock:
     grid = mocker.create_autospec(NetcdfDriver)
     # Set attributes for practical use

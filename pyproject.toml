@@ -31,7 +31,6 @@ readme = "README.md"
 
 requires-python = ">=3.12"
 dependencies = [
-    "gdal>=3.5",
     "netcdf4",
     "numpy",
     "pyproj",
@@ -290,7 +289,7 @@ test-system = { cmd = [
 
 ## Dependencies
 [tool.pixi.dependencies]
-libgdal-core = ">=3.5"
+flatbuffers = "==24.12.23"
 pip = "*"
 uv = "*"
 
@@ -298,9 +297,9 @@ uv = "*"
 [tool.pixi.pypi-dependencies]
 delft_fiat = { path = ".", editable = true }
 
-# Specific environment dependencies and definitions
-[tool.pixi.feature.gdal]
-dependencies = { gdal = ">=3.5" }
+# C/C++ tooling used by the pocc pre-commit hooks.
+[tool.pixi.feature.dev.dependencies]
+clang-format = "19.*"
 
 # Docs builder framework
 [tool.pixi.feature.docs]
@@ -308,6 +307,7 @@ dependencies = { quarto = "==1.9.38" }
 
 # Wheel building env
 [tool.pixi.feature.wheel.dependencies]
+flatbuffers = "==24.12.23"
 pip = "*"
 uv = "*"
 
@@ -331,10 +331,10 @@ dependencies = { python = "3.12.*" }
 ## Workspace environments
 [tool.pixi.environments]
 build = { features = ["py314", "all", "build"] }
-default = { features = ["py314", "all", "dev", "docs", "gdal", "test"] }
-docs = { features = ["py314", "all", "docs", "gdal"] }
-slim = { features = ["py314", "all", "gdal"] }
-test-py314 = { features = ["py314", "all", "gdal", "test"] }
-test-py313 = { features = ["py313", "all", "gdal", "test"] }
-test-py312 = { features = ["py312", "all", "gdal", "test"] }
-wheel = { features = ["py313", "gdal", "test", "wheel"], no-default-feature=true }
+default = { features = ["py314", "all", "dev", "docs", "test"] }
+docs = { features = ["py314", "all", "docs"] }
+slim = { features = ["py314", "all"] }
+test-py314 = { features = ["py314", "all", "test"] }
+test-py313 = { features = ["py313", "all", "test"] }
+test-py312 = { features = ["py312", "all", "test"] }
+wheel = { features = ["py313", "test", "wheel"], no-default-feature=true }

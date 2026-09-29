@@ -11,14 +11,31 @@ repos:
       - id: check-json
       - id: debug-statements
       - id: mixed-line-ending
-  - repo: https://github.com/MarcoGorelli/cython-lint
-    rev: v0.21.1
-    hooks:
-    -   id: cython-lint
-    -   id: double-quote-cython-strings
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.9
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
+  - repo: https://github.com/MarcoGorelli/cython-lint
+    rev: v0.21.1
+    hooks:
+    -   id: cython-lint
+    -   id: double-quote-cython-strings
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.4.0
+    hooks:
+      - id: clang-format
+        files: ^src/fiat/driver/_fgb/fgb_c\.(h|cpp)$
+        args: [-i, --style=file]
+      - id: cppcheck
+        files: ^src/fiat/driver/_fgb/fgb_c\.(h|cpp)$
+        args:
+          - --enable=warning,performance,portability
+          - --std=c++17
+          - --language=c++
+          - --inline-suppr
+          - --suppress=missingInclude
+          - --suppress=missingIncludeSystem
+          - --suppress=normalCheckLevelMaxBranches
+          - --error-exitcode=1

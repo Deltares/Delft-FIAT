@@ -3,25 +3,26 @@
 from itertools import product
 
 import numpy as np
-from osgeo import ogr
 
+from fiat.driver.fgb import Feature, Geometry
 from fiat.driver.netcdf import NetcdfVariable
+from fiat.gis import _geom_ops
 from fiat.gis.geom import point_in_geom
 from fiat.gis.util import pixel2world, world2pixel
 
 
 def intersect_cell(
-    geom: ogr.Geometry,
+    geom: Geometry,
     x: float | int,
     y: float | int,
     dx: float | int,
     dy: float | int,
-):
+) -> bool:
     """Return where a geometry intersects with a cell.
 
     Parameters
     ----------
-    geom : ogr.Geometry
+    geom : Geometry
         The geometry.
     x : float | int
         Left side of the cell.
@@ -32,31 +33,20 @@ def intersect_cell(
     dy : float | int
         Height of the cell.
     """
-    x = float(x)
-    y = float(y)
-    cell = ogr.Geometry(ogr.wkbPolygon)
-    ring = ogr.Geometry(ogr.wkbLinearRing)
-    ring.AddPoint(x, y)
-    ring.AddPoint(x + dx, y)
-    ring.AddPoint(x + dx, y + dy)
-    ring.AddPoint(x, y + dy)
-    ring.AddPoint(x, y)
-    cell.AddGeometry(ring)
-    return geom.Intersects(cell)
+    return _geom_ops.intersect_cell(geom, float(x), float(y), float(dx), float(dy))
 
 
 def area_mask(
-    geom: ogr.Geometry,
+    geom: Geometry,
     gtf: tuple[float, ...],
     shape: tuple[int, int],
-) -> tuple[np.ndarray[int], tuple[int, ...]]:
+) -> tuple[np.ndarray, tuple[int, ...]]:
     """Mask a grid based on a geometry (vector).
 
     Parameters
     ----------
-    geom : ogr.Geometry
-        The Geometry according to the \
-[ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
+    geom : Geometry
+        The geometry.
     gtf : tuple
         The geotransform of a grid dataset.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
@@ -75,7 +65,7 @@ def area_mask(
     # Extract information
     dx = gtf[1]
     dy = gtf[5]
-    minx, maxx, miny, maxy = geom.GetEnvelope()
+    minx, miny, maxx, maxy = geom.envelope()
     ulx, uly = world2pixel(gtf, minx, maxy)
     ulxn = min(max(0, ulx), ow - 1)
     ulyn = min(max(0, uly), oh - 1)
@@ -101,7 +91,7 @@ def point_mask(
     point: tuple,
     gtf: tuple[float, ...],
     shape: tuple[int, int],
-) -> tuple[tuple[int], np.ndarray[int]]:
+) -> tuple[tuple[int], np.ndarray]:
     """Create a mask of a point on a grid.
 
     Parameters
@@ -136,17 +126,16 @@ def point_mask(
 
 
 def centroid_mask(
-    geom: ogr.Geometry,
+    geom: Geometry,
     gtf: tuple[float, ...],
     shape: tuple[int, int],
-) -> tuple[tuple[int], np.ndarray[int]]:
+) -> tuple[tuple[int], np.ndarray]:
     """Get point mask based on centroid of e.g. a polygon geometry.
 
     Parameters
     ----------
-    geom : ogr.Geometry
-        The Geometry according to the \
-[ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
+    geom : Geometry
+        The geometry.
     gtf : tuple
         The geotransform of a grid dataset.
         Has the following shape: (left, xres, xrot, upper, yrot, yres).
@@ -166,7 +155,7 @@ def centroid_mask(
 
 def clip(
     var: NetcdfVariable,
-    mask: np.ndarray[int],
+    mask: np.ndarray,
     window: tuple[int, ...],
 ) -> np.ndarray:
     """Clip a grid based on a mask.
@@ -198,7 +187,7 @@ def clip(
 
 
 def clip_weighted(
-    ft: ogr.Feature,
+    ft: Feature,
     var: NetcdfVariable,
     gtf: tuple,
     upscale: int = 3,
@@ -215,11 +204,8 @@ cells that are touched by the feature.
 
     Parameters
     ----------
-    ft : ogr.Feature
-        A Feature according to the \
-[ogr module](https://gdal.org/api/python/osgeo.ogr.html) of osgeo.
-        Can be optained by indexing a \
-[GeomDriver](/api/GeomDriver.qmd).
+    ft : Feature
+        A feature from a [GeomDriver](/api/GeomDriver.qmd).
     var : NetcdfVariable
         An object that contains a connection the variable within the dataset.
         For further information, see [NetcdfVariable](/api/NetcdfVariable.qmd)!
@@ -239,12 +225,12 @@ cells that are touched by the feature.
     --------
     - [clip](/api/overlay/clip.qmd)
     """
-    geom = ft.GetGeometryRef()
+    geom = ft.geometry
 
     # Extract information
     dx = gtf[1]
     dy = gtf[5]
-    minx, maxx, miny, maxy = geom.GetEnvelope()
+    minx, miny, maxx, maxy = geom.envelope()
     ulx, uly = world2pixel(gtf, minx, maxy)
     lrx, lry = world2pixel(gtf, maxx, miny)
     plx, ply = pixel2world(gtf, ulx, uly)

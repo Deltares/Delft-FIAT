@@ -1,17 +1,10 @@
 """Build hook for FIAT."""
 
-import glob
 import os
 import sys
-from pathlib import Path
 
-from osgeo.gdal import __version__ as gdal_version
-from packaging.version import Version
-from PyInstaller.compat import is_conda, is_win
+from PyInstaller.compat import is_win
 from PyInstaller.utils.hooks import logger
-from PyInstaller.utils.hooks.conda import (
-    distribution,
-)
 
 datas = []
 
@@ -20,20 +13,7 @@ if hasattr(sys, "real_prefix"):  # check if in a virtual environment
 else:
     root_path = sys.prefix
 
-if is_conda and Version(gdal_version) >= Version("3.9.1"):
-    try:
-        plugin = distribution("libgdal-netcdf")
-
-        # Look for all the plugins
-        plugin_dir = Path(root_path, plugin.files[0].parent)
-        all_plugins = glob.glob(Path(plugin_dir, "*").as_posix())
-
-        # Append the data
-        datas += list(map(lambda path: (path, "./gdalplugins"), all_plugins))
-    except BaseException:
-        logger.warning("NetCDF plugin for gdal not found.")
-
-# Sort out the proj database
+# Sort out the proj database (needed by pyproj)
 src_proj = None
 if "PROJ_DATA" in os.environ:
     src_proj = os.environ["PROJ_DATA"]

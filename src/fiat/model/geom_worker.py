@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Callable
 
 import numpy as np
-from osgeo import ogr
 
 from fiat.container import (
     ExposureGeomMeta,
@@ -16,11 +15,11 @@ from fiat.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import GeomDriver, NetcdfDriver
+from fiat.driver import FlatGeobufDriver, NetcdfDriver, fgb
+from fiat.driver.fgb import Feature, FlatGeobufWriter
 from fiat.gis import overlay
 from fiat.method.ead import fn_ead
 from fiat.model.geom_util import AREA_METHODS
-from fiat.model.geom_writer import GeomWriter
 from fiat.typing import MethodType
 from fiat.util import FIAT_METHOD
 
@@ -39,7 +38,7 @@ def initialize_pool(
 
 
 def feature_worker(
-    ft: ogr.Feature,
+    ft: Feature,
     out_array: np.ndarray,
     run_meta: RunMeta,
     hazard: NetcdfDriver,
@@ -53,7 +52,7 @@ def feature_worker(
 
     Parameters
     ----------
-    ft : ogr.Feature
+    ft : Feature
         The feature.
     out_array : np.ndarray
         The array in which to place the runtime values.
@@ -78,11 +77,11 @@ def feature_worker(
         Array containing the impact values for a feature.
     """
     # The output array
-    haz_args = [ft.GetField(idx) for idx in exposure_meta.indices_spec]
+    haz_args = [ft.get_field(idx) for idx in exposure_meta.indices_spec]
 
     # Mask and window for this feature
     mask, window = AREA_METHODS[exposure_meta.area_method](
-        geom=ft.GetGeometryRef(),
+        geom=ft.geometry,
         gtf=hazard.transform,
         shape=hazard.shape_xy,
     )
@@ -100,8 +99,8 @@ def feature_worker(
         for key, value in exposure_meta.indices_type.items():
             tot = 0.0
             for i, (f, m) in enumerate(value):
-                curve_id = ft.GetField(f)
-                exposure = ft.GetField(m)
+                curve_id = ft.get_field(f)
+                exposure = ft.get_field(m)
                 out = 0
                 if curve_id and exposure:
                     out = fn_impact(
@@ -132,7 +131,7 @@ def worker(
     hazard: NetcdfDriver,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
-    exposure: GeomDriver,
+    exposure: FlatGeobufDriver,
     exposure_meta: ExposureGeomMeta,
     chunk: tuple | list,
 ):
@@ -153,7 +152,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         Metadata specific to the hazard data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
-    exposure : GeomDriver
+    exposure : FlatGeobufDriver
         The exposure geometries.
     exposure_meta : ExposureGeomMeta
         Metadata specific to the exposure data.
@@ -165,20 +164,27 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     fn_hazard = method.fn_hazard
     fn_impact = method.fn_impact
 
-    # Setup the dataset buffer writer
-    writer = GeomWriter(
-        output_path,
+    # Setup the buffered FlatGeobuf writer (shared body file + finalize by parent)
+    layer = exposure.layer
+    col_names = list(layer.fields) + list(exposure_meta.new)
+    col_types = list(layer.dtypes) + [fgb.CT_DOUBLE] * len(exposure_meta.new)
+    reader = layer._reader
+    out_key = Path(output_path).as_posix()
+    writer = FlatGeobufWriter(
+        out_key,
+        col_names=col_names,
+        col_types=col_types,
+        geom_type=layer.geom_type,
+        name=Path(output_path).stem,
+        crs_wkt=reader.crs_wkt,
+        crs_org=reader.crs_org,
+        crs_code=reader.crs_code,
         lock=process_lock,
-    )
-    writer.setup(
-        defn=exposure.layer.defn,
-        crs=exposure.crs,
-        extra_fields=zip(exposure_meta.new, [ogr.OFTReal] * len(exposure_meta.new)),
     )
 
     # Loop over all the geometries in a reduced manner
     out_array = np.zeros(exposure_meta.new_length, dtype=np.float32)
-    for ft in exposure.layer.reduced_iter(*chunk):
+    for ft in layer.reduced_iter(*chunk):
         feature_worker(
             ft=ft,
             out_array=out_array,
@@ -191,16 +197,18 @@ of the [GeomModel](/api/GeomModel.qmd) object.
             fn_impact=fn_impact,
         )
 
-        # Write the feature to the in memory dataset
-        writer.add_feature_with_map(
-            ft,
-            zip(
-                exposure_meta.indices_new,
-                out_array.tolist(),
-            ),
+        # Write the feature (existing attributes + new impact values)
+        geom = ft.geometry
+        writer.add_feature(
+            geom.xy,
+            geom.ends,
+            geom.parts,
+            list(ft.values) + out_array.tolist(),
         )
         # Reset the values
         out_array *= 0
 
     writer.close()
+    # Hand the index records (envelope + body offset) to the parent for finalize.
+    pipeline.put((out_key, writer.records))
     writer = None

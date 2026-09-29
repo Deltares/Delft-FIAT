@@ -1,8 +1,9 @@
-"""The csv driver."""
+# cython: language_level=3, boundscheck=False, wraparound=False, cdivision=True
+"""The csv driver (Cython-accelerated reading)."""
 
 from math import floor, log10
 
-from numpy import arange, delete, empty, float64, interp, ndarray
+from numpy import arange, delete, empty, float64, interp, loadtxt, ndarray
 
 from fiat.driver.base import TableBase
 from fiat.driver.handler import FileBufferHandler
@@ -282,28 +283,49 @@ class Table(TableBase):
         index : list | tuple, optional
             The index column.
         """
-        # Set up the pattern for parsing the data over multiple lines
-        _pat_multi = regex_pattern(
-            parser.delimiter,
-            multi=True,
-            nchar=parser.data.nchar,
-        )
-        # Split all the data into separate entries (row + column values)
-        with parser.data as h:
-            _d = _pat_multi.split(h.read().strip())
+        # Fast path: unquoted, all-float data is parsed by numpy's C reader, which is
+        # substantially faster than tokenizing + per-cell casting. numpy.loadtxt raises
+        # on empty or quoted fields, so any such case falls back to the generic parser
+        # (which maps empty -> NaN and handles quoting), preserving behaviour exactly.
+        data = None
+        all_float = len(set(parser.dtypes)) == 1 and parser.dtypes[0] is float
+        if all_float and len(parser.delimiter) == 1:
+            try:
+                parser.data.stream.seek(parser.data.skip)
+                arr = loadtxt(
+                    parser.data.stream,
+                    delimiter=parser.delimiter,
+                    dtype=float64,
+                    ndmin=2,
+                )
+                if arr.shape == (parser.nrow, parser.ncol):
+                    data = arr
+            except Exception:
+                data = None
 
-        # Determine the dtype of the underlying dataset
-        dtype = convert_to_numpy_dtype(parser.dtypes)
+        if data is None:
+            # Generic path: quoting-aware regex tokenization + per-column casting.
+            with parser.data as h:
+                raw = h.read().strip()
+            _pat_multi = regex_pattern(
+                parser.delimiter,
+                multi=True,
+                nchar=parser.data.nchar,
+            )
+            _d = _pat_multi.split(raw)
 
-        # Create an empty numpy array to set the data in
-        data = empty((parser.nrow, parser.ncol), dtype=dtype)
+            # Determine the dtype of the underlying dataset
+            dtype = convert_to_numpy_dtype(parser.dtypes)
 
-        # Fill the array with the column parsed to their dtype
-        for idx in range(parser.ncol):
-            data[:, idx] = [
-                parser.dtypes[idx](item)
-                for item in replace_empty(_d[idx :: parser.ncol])
-            ]
+            # Create an empty numpy array to set the data in
+            data = empty((parser.nrow, parser.ncol), dtype=dtype)
+
+            # Fill the array with the column parsed to their dtype
+            for idx in range(parser.ncol):
+                data[:, idx] = [
+                    parser.dtypes[idx](item)
+                    for item in replace_empty(_d[idx :: parser.ncol])
+                ]
 
         # Return the object
         return cls(

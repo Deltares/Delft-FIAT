@@ -3,7 +3,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
-from osgeo import osr
 from pyproj import CRS
 
 from fiat import Configurations
@@ -498,8 +497,8 @@ def test_check_internal_crs_pass():
 
 
 def test_check_vs_crs_fail(
-    crs_4326: osr.SpatialReference,
-    crs_3857: osr.SpatialReference,
+    crs_4326: CRS,
+    crs_3857: CRS,
 ):
     # Call the function with the different crs
     b = check_vs_crs(crs_4326, crs_3857)
@@ -508,7 +507,7 @@ def test_check_vs_crs_fail(
     assert not b
 
 
-def test_check_vs_crs_pass(crs_4326: osr.SpatialReference):
+def test_check_vs_crs_pass(crs_4326: CRS):
     # Call the function with the different crs
     b = check_vs_crs(crs_4326, crs_4326)
 

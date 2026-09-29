@@ -84,7 +84,7 @@ def test_geommodel_read_exposure_reproj(
     m.read_exposure(path=exposure_geom_path)
 
     # Assert the logging
-    assert "Reprojecting 'spatial.geojson' to 'EPSG:3857'" in caplog.text
+    assert "Reprojecting 'spatial.fgb' to 'EPSG:3857'" in caplog.text
     # Assert the dataset
     assert len(m.exposure) == 1
     assert m.exposure.ds1.data.layer.size == 4

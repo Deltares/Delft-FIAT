@@ -15,7 +15,7 @@ from fiat.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import GeomDriver, NetcdfDriver, Table
+from fiat.driver import FlatGeobufDriver, NetcdfDriver, Table
 from fiat.method.ead import fn_density
 
 
@@ -73,8 +73,8 @@ def config_read_geom(
     config.set(
         "exposure.geom",
         [
-            {"file": "exposure/spatial.geojson"},
-            {"file": "exposure/spatial2.geojson"},
+            {"file": "exposure/spatial.fgb"},
+            {"file": "exposure/spatial2.fgb"},
         ],
     )
     return config
@@ -106,7 +106,7 @@ def density():
 
 @pytest.fixture(scope="session")
 def exposure_geom_data_run(
-    exposure_geom_data: GeomDriver,
+    exposure_geom_data: FlatGeobufDriver,
 ) -> ExposureGeomData:
     data = ExposureGeomData(
         area_method="area",

@@ -116,7 +116,7 @@ def generate_output_filepaths(
     # Supplement if missing
     outfiles += infiles[len(outfiles) :]
     # Yes
-    outfiles = [Path(output_dir, item.name).with_suffix(".gpkg") for item in outfiles]
+    outfiles = [Path(output_dir, item.name).with_suffix(".fgb") for item in outfiles]
     return outfiles
 
 
