@@ -86,7 +86,7 @@ def create_exposure_geoms(epsg=None):
             dmc = "struct_2"
         # Set the field values and geometry
         ft.SetField(0, idx + 1)
-        ft.SetField(1, f"fp_{idx+1}")
+        ft.SetField(1, f"fp_{idx + 1}")
         ft.SetField(2, 0)
         ft.SetField(3, dmc)
         ft.SetField(4, (idx + 1) * 1000)
@@ -192,7 +192,7 @@ def create_exposure_geoms_outside():
             dmc = "struct_2"
         # Set the field values and geometry
         ft.SetField(0, idx + 1)
-        ft.SetField(1, f"fp_{idx+1}")
+        ft.SetField(1, f"fp_{idx + 1}")
         ft.SetField(2, 0)
         ft.SetField(3, dmc)
         ft.SetField(4, (idx + 1) * 1000)

@@ -1,6 +1,6 @@
 ## Build system related stuff
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["cython", "numpy", "setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -122,6 +122,10 @@ testpaths = [
 [tool.coverage.run]
 branch = true
 source = ["./src"]
+plugins = ["Cython.Coverage"]
+
+[tool.coverage.cython]
+annotate = true
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
