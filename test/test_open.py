@@ -2,12 +2,12 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from fiat.driver.csv import Table
 
 from fiat.driver import (
     FlatGeobufDriver,
     NetcdfDriver,
 )
+from fiat.driver.csv import Table
 from fiat.open import open_csv, open_geom, open_grid
 
 

@@ -4,8 +4,8 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from fiat.driver.csv import CSVParser
 
+from fiat.driver.csv import CSVParser
 from fiat.driver.handler import BufferHandler, FileBufferHandler
 
 
