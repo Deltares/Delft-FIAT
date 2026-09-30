@@ -22,27 +22,30 @@
 
 namespace fiatfgb {
 
+// Plain result struct filled by parse_header (mirrors the FlatGeobuf Header).
 struct HeaderResult {
-    std::string name;
-    uint8_t geometry_type = 0;
-    uint64_t features_count = 0;
-    uint16_t index_node_size = 16;
-    std::vector<std::string> col_names;
-    std::vector<uint8_t> col_types;
-    std::string crs_wkt;
-    std::string crs_org;
-    int32_t crs_code = 0;
-    uint8_t has_envelope = 0;
+    std::string name;                    // Layer name.
+    uint8_t geometry_type = 0;           // FlatGeobuf GeometryType code.
+    uint64_t features_count = 0;         // Number of features in the file.
+    uint16_t index_node_size = 16;       // R-tree node size (0 = no index).
+    std::vector<std::string> col_names;  // Attribute column names.
+    std::vector<uint8_t> col_types;      // Attribute column type codes.
+    std::string crs_wkt;                 // CRS as WKT (optional).
+    std::string crs_org;                 // CRS authority name, e.g. "EPSG".
+    int32_t crs_code = 0;                // CRS authority code, e.g. 4326.
+    uint8_t has_envelope = 0;            // 1 if a layer envelope is present.
+    // Layer envelope (bounding box) when has_envelope == 1.
     double env_minx = 0, env_miny = 0, env_maxx = 0, env_maxy = 0;
 };
 
+// Flat geometry produced by parse_feature (see the layout notes at the top).
 struct GeometryResult {
-    uint8_t geometry_type = 0;
-    std::vector<double> xy;
-    std::vector<uint32_t> ends;
-    std::vector<uint32_t> parts;
-    double minx = 0, miny = 0, maxx = 0, maxy = 0;
-    uint8_t empty = 1;
+    uint8_t geometry_type = 0;    // FlatGeobuf GeometryType code.
+    std::vector<double> xy;       // Interleaved x, y coordinates.
+    std::vector<uint32_t> ends;   // Cumulative coordinate-pair count per ring.
+    std::vector<uint32_t> parts;  // Cumulative ring count per polygon.
+    double minx = 0, miny = 0, maxx = 0, maxy = 0;  // Bounding box.
+    uint8_t empty = 1;  // 1 if the geometry has no coordinates.
 };
 
 // --- Header ---------------------------------------------------------------

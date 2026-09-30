@@ -124,19 +124,30 @@ cdef bytes _bytes_from_ptr(const uint8_t* p, size_t n):
 
 
 cdef object _decode_properties(const uint8_t* p, size_t n, list col_types):
-    """Decode a FlatGeobuf property blob into a list aligned with columns."""
+    """Decode a FlatGeobuf property blob into a list aligned with columns.
+
+    The blob is a tight little-endian stream of ``(uint16 column index, value)``
+    records, where the value width depends on the column's type. Fixed-width
+    numbers are read directly; strings/binary are length-prefixed (uint32).
+    """
     cdef Py_ssize_t ncol = len(col_types)
+    # Pre-fill with None so columns absent from the blob stay null.
     cdef list values = [None] * ncol
     cdef size_t off = 0
     cdef uint16_t col
     cdef int ctype
     cdef uint32_t slen
+    # A bytes view so we can use struct.unpack_from for the fixed-width types.
     py = _bytes_from_ptr(p, n)
+    # Walk record by record until the blob is exhausted.
     while off + 2 <= n:
+        # Each record starts with the little-endian column index.
         col = <uint16_t>(p[off] | (p[off + 1] << 8))
         off += 2
+        # Defensive: stop on an out-of-range column index.
         if col >= ncol:
             break
+        # Dispatch on the column's FlatGeobuf type and advance past its value.
         ctype = <int>(<object>col_types[col])
         if ctype == CT_BYTE:
             values[col] = _struct.unpack_from("<b", py, off)[0]
@@ -172,6 +183,7 @@ cdef object _decode_properties(const uint8_t* p, size_t n, list col_types):
             values[col] = _struct.unpack_from("<d", py, off)[0]
             off += 8
         elif ctype == CT_STRING or ctype == CT_JSON or ctype == CT_DATETIME:
+            # Length-prefixed UTF-8 text.
             slen = _struct.unpack_from("<I", py, off)[0]
             off += 4
             values[col] = py[off:off + slen].decode("utf-8")
@@ -187,14 +199,21 @@ cdef object _decode_properties(const uint8_t* p, size_t n, list col_types):
 
 
 cdef bytes _encode_properties(list values, list col_types):
-    """Encode a list of column values into a FlatGeobuf property blob."""
+    """Encode a list of column values into a FlatGeobuf property blob.
+
+    The inverse of :func:`_decode_properties`: each non-null value is written as
+    ``(uint16 column index, little-endian value)``. Null values are skipped
+    entirely (their column index simply never appears in the blob).
+    """
     cdef list out = []
     cdef Py_ssize_t i
     cdef int ctype
     for i in range(len(values)):
         v = values[i]
+        # Skip nulls; the decoder defaults missing columns back to None.
         if v is None:
             continue
+        # Write the column index, then the value in the column's native width.
         ctype = <int>(<object>col_types[i])
         out.append(_struct.pack("<H", i))
         if ctype == CT_BOOL:
@@ -220,6 +239,7 @@ cdef bytes _encode_properties(list values, list col_types):
         elif ctype == CT_DOUBLE:
             out.append(_struct.pack("<d", float(v)))
         elif ctype == CT_STRING or ctype == CT_JSON or ctype == CT_DATETIME:
+            # Length-prefixed UTF-8 text.
             enc = str(v).encode("utf-8")
             out.append(_struct.pack("<I", len(enc)))
             out.append(enc)
@@ -227,6 +247,7 @@ cdef bytes _encode_properties(list values, list col_types):
             enc = bytes(v)
             out.append(_struct.pack("<I", len(enc)))
             out.append(enc)
+    # Concatenate all the little chunks into one contiguous blob.
     return b"".join(out)
 
 
@@ -269,13 +290,20 @@ cdef class Geometry:
 
 
 cdef Geometry _make_geometry(GeometryResult* g):
+    """Copy a C++ ``GeometryResult`` into a Python :class:`Geometry`.
+
+    The flat C++ vectors are copied element-wise into fresh numpy arrays so the
+    Python object owns its own memory (the C++ struct is transient).
+    """
     cdef Geometry geom = Geometry.__new__(Geometry)
     cdef Py_ssize_t n = g.xy.size()
     cdef Py_ssize_t ne = g.ends.size()
     cdef Py_ssize_t npart = g.parts.size()
+    # Allocate the destination numpy arrays.
     cdef object xy = np.empty(n, dtype=np.float64)
     cdef object ends = np.empty(ne, dtype=np.uint32)
     cdef object parts = np.empty(npart, dtype=np.uint32)
+    # Typed memoryviews for the fast element-wise copy (None when empty).
     cdef double[::1] xy_v = xy if n else None
     cdef uint32_t[::1] ends_v = ends if ne else None
     cdef uint32_t[::1] parts_v = parts if npart else None
@@ -286,6 +314,7 @@ cdef Geometry _make_geometry(GeometryResult* g):
         ends_v[i] = g.ends[i]
     for i in range(npart):
         parts_v[i] = g.parts[i]
+    # Transfer the scalar metadata (type, bounding box, emptiness).
     geom.type = g.geometry_type
     geom.xy = xy
     geom.ends = ends
@@ -387,17 +416,22 @@ cdef class FlatGeobufReader:
         cdef HeaderResult hr
         cdef size_t consumed
         cdef size_t off
+        # Read the whole file into memory once; parsing is all zero-copy views
+        # over this buffer (features are seeked into by byte offset).
         with open(path, "rb") as fh:
             self._data = fh.read()
         self._len = len(self._data)
         self._ptr = <const uint8_t*><char*>self._data
+        # Validate the FlatGeobuf magic bytes (first 3 bytes spell "fgb").
         if self._len < _MAGIC_LEN or self._data[:3] != _MAGIC[:3]:
             raise ValueError(f"{path} is not a FlatGeobuf file")
 
+        # Parse the header (skipping the 8 magic bytes) via the C++ layer.
         consumed = parse_header(self._ptr + _MAGIC_LEN, self._len - _MAGIC_LEN, hr)
         if consumed == 0:
             raise ValueError(f"Could not parse FlatGeobuf header in {path}")
 
+        # Copy the header metadata into readonly Python attributes.
         self.name = hr.name.decode("utf-8") if hr.name.size() else ""
         self.geometry_type = hr.geometry_type
         self.features_count = hr.features_count
@@ -408,32 +442,41 @@ cdef class FlatGeobufReader:
         self.crs_wkt = hr.crs_wkt.decode("utf-8") if hr.crs_wkt.size() else ""
         self.crs_org = hr.crs_org.decode("utf-8") if hr.crs_org.size() else ""
         self.crs_code = hr.crs_code
+        # name -> index lookup for attribute access by column name.
         self.columns = {n: i for i, n in enumerate(self.col_names)}
         if hr.has_envelope:
             self.envelope = (hr.env_minx, hr.env_miny, hr.env_maxx, hr.env_maxy)
         else:
             self.envelope = None
 
+        # Locate the sections: magic + header, then the optional R-tree index,
+        # then the feature data. index_node_size == 0 means no index is present.
         off = _MAGIC_LEN + consumed
         self._index_start = off
         self._index_len = 0
         if self.index_node_size > 0 and self.features_count > 0:
+            # The index byte size is a pure function of count and node size,
+            # so we can skip past it without parsing it.
             self._index_len = index_size(self.features_count, self.index_node_size)
             off += self._index_len
         self._feature_start = off
 
     cdef Feature _feature_from(self, GeometryResult* g, string* props):
+        """Build a :class:`Feature` from a parsed geometry + raw property blob."""
         cdef Feature ft = Feature.__new__(Feature)
         ft.geometry = _make_geometry(g)
+        # Decode the attribute values, or fill with None when there are none.
         if props.size() > 0:
             ft.values = _decode_properties(<const uint8_t*>props.data(),
                                            props.size(), self.col_types)
         else:
             ft.values = [None] * len(self.col_types)
+        # Share the column lookup so features can be indexed by name.
         ft._columns = self.columns
         return ft
 
     cdef Feature _read_feature_at(self, size_t off):
+        """Parse a single feature at byte ``off`` (used by the R-tree search)."""
         cdef GeometryResult g
         cdef string props
         cdef size_t consumed = parse_feature(self._ptr + off, self._len - off,
@@ -446,11 +489,14 @@ cdef class FlatGeobufReader:
         return int(self.features_count)
 
     def __iter__(self):
+        # Sequentially walk the feature section: parse one feature, advance by
+        # its byte length, repeat. The C++ struct is reused (cleared) each time.
         cdef size_t off = self._feature_start
         cdef GeometryResult g
         cdef string props
         cdef size_t consumed
         while off < self._len:
+            # Reset the reused result struct before the next parse.
             g.xy.clear()
             g.ends.clear()
             g.parts.clear()
@@ -469,6 +515,7 @@ cdef class FlatGeobufReader:
             if si <= c <= ei:
                 yield ft
             elif c > ei:
+                # Past the requested range; no need to parse the rest.
                 break
             c += 1
 
@@ -481,6 +528,8 @@ cdef class FlatGeobufReader:
         cdef Feature ft
         cdef size_t i
         if self._index_len > 0:
+            # Fast path: ask the packed R-tree for the matching feature offsets,
+            # then seek/parse just those features.
             offsets = search_index(self._ptr + self._index_start,
                                    self._index_len, self.features_count,
                                    self.index_node_size, minx, miny, maxx, maxy)
@@ -489,6 +538,7 @@ cdef class FlatGeobufReader:
                 if ft is not None:
                     yield ft
         else:
+            # No index: scan everything and reject by bounding-box overlap.
             for ft in self:
                 g = ft.geometry
                 if not (g.maxx < minx or g.minx > maxx or
@@ -503,24 +553,33 @@ cdef class FlatGeobufReader:
 # --- Writer ---------------------------------------------------------------
 cdef bytes _feature_bytes(int geom_type, object xy, object ends, object parts,
                           bytes props):
+    """Serialize one feature to a size-prefixed FlatBuffer (bytes).
+
+    Marshals the numpy geometry arrays + encoded property blob into C++ vectors
+    and hands them to ``build_feature``.
+    """
     cdef vector[double] cxy
     cdef vector[uint32_t] cends
     cdef vector[uint32_t] cparts
     cdef vector[uint8_t] cprops
     cdef Py_ssize_t i
+    # Copy the interleaved coordinates into a C++ vector.
     cdef double[::1] xy_v = np.ascontiguousarray(xy, dtype=np.float64).ravel()
     cdef uint32_t[::1] ends_v
     cdef uint32_t[::1] parts_v
     for i in range(xy_v.shape[0]):
         cxy.push_back(xy_v[i])
+    # Ring ends (optional, e.g. absent for a single point).
     if ends is not None and len(ends):
         ends_v = np.ascontiguousarray(ends, dtype=np.uint32).ravel()
         for i in range(ends_v.shape[0]):
             cends.push_back(ends_v[i])
+    # Part boundaries (only MultiPolygon).
     if parts is not None and len(parts):
         parts_v = np.ascontiguousarray(parts, dtype=np.uint32).ravel()
         for i in range(parts_v.shape[0]):
             cparts.push_back(parts_v[i])
+    # The already-encoded attribute blob.
     for i in range(len(props)):
         cprops.push_back(<uint8_t>props[i])
     cdef string out = build_feature(<uint8_t>geom_type, cxy, cends, cparts, cprops)
@@ -528,6 +587,7 @@ cdef bytes _feature_bytes(int geom_type, object xy, object ends, object parts,
 
 
 cdef tuple _xy_envelope(object xy):
+    """Return the ``(minx, miny, maxx, maxy)`` bbox of interleaved xy coords."""
     arr = np.asarray(xy, dtype=np.float64).reshape(-1, 2)
     if arr.shape[0] == 0:
         return (0.0, 0.0, 0.0, 0.0)
@@ -577,10 +637,17 @@ class FlatGeobufWriter:
         self._body = open(self.body_path, "ab")
 
     def add_feature(self, xy, ends=None, parts=None, values=None):
-        """Append one feature."""
+        """Append one feature to the shared body file.
+
+        The feature is serialized, then appended to the (unindexed) body file
+        under the optional multiprocessing lock. We record its envelope + byte
+        offset + length so the finalize pass can build the R-tree and reorder.
+        """
+        # Encode the attributes, then serialize the whole feature.
         props = _encode_properties(list(values), self.col_types) if values else b""
         buf = _feature_bytes(self.geom_type, xy, ends, parts, props)
         env = _xy_envelope(xy)
+        # Serialize appends across processes with the lock (if provided).
         if self.lock is not None:
             self.lock.acquire()
         try:
@@ -591,6 +658,7 @@ class FlatGeobufWriter:
         finally:
             if self.lock is not None:
                 self.lock.release()
+        # Remember where the feature landed and its bbox for the index build.
         self.records.append((env[0], env[1], env[2], env[3], offset, len(buf)))
 
     def close(self):
@@ -602,6 +670,7 @@ class FlatGeobufWriter:
 
     def finalize(self):
         """Finalize a single-writer file (build index + write output)."""
+        # Flush the body, then hand our own records to the finalize routine.
         self.close()
         finalize(self.path, self.body_path, self.name, self.geom_type,
                  self.col_names, self.col_types, self.records, self.crs_wkt,
@@ -644,10 +713,12 @@ def finalize(path, body_path, name, geom_type, col_names, col_types, records,
     cdef string index
     cdef string header
 
+    # Encode the layer name and CRS strings once.
     cdef string cname = name.encode("utf-8")
     cdef string cwkt = crs_wkt.encode("utf-8")
     cdef string corg = crs_org.encode("utf-8")
 
+    # Marshal the column metadata into C++ vectors.
     cdef vector[string] cnames
     cdef vector[uint8_t] ctypes
     for nm in col_names:
@@ -656,6 +727,7 @@ def finalize(path, body_path, name, geom_type, col_names, col_types, records,
         ctypes.push_back(<uint8_t>int(ct))
 
     if n == 0:
+        # Empty layer: write a header with no index and delete the body file.
         header = build_header(cname, <uint8_t>geom_type, cnames, ctypes, 0,
                               <uint16_t>node_size, 0, 0, 0, 0, 0, corg,
                               <int32_t>crs_code, cwkt)
@@ -666,6 +738,7 @@ def finalize(path, body_path, name, geom_type, col_names, col_types, records,
             os.remove(body_path)
         return
 
+    # Gather every feature's envelope (4 doubles each) for the Hilbert sort.
     for i in range(n):
         rec = records[i]
         env_all.push_back(rec[0])
@@ -673,8 +746,11 @@ def finalize(path, body_path, name, geom_type, col_names, col_types, records,
         env_all.push_back(rec[2])
         env_all.push_back(rec[3])
 
+    # Sort feature indices along the Hilbert curve and get the total extent.
     order = hilbert_order(env_all, &extent[0])
 
+    # Walk features in Hilbert order, computing each one's NEW byte offset in
+    # the reordered output and collecting the ordered envelopes for the index.
     ordered_records = [None] * n
     for i in range(n):
         idx = order[i]
@@ -685,22 +761,27 @@ def finalize(path, body_path, name, geom_type, col_names, col_types, records,
         env_ordered.push_back(rec[3])
         new_offsets.push_back(running)
         ordered_records[i] = rec
-        running += rec[5]
+        running += rec[5]  # rec[5] == feature byte length
 
+    # Build the packed R-tree over the ordered envelopes + new offsets, and a
+    # header that advertises the index and the total layer envelope.
     index = build_index(env_ordered, new_offsets, &extent[0], <uint16_t>node_size)
     header = build_header(cname, <uint8_t>geom_type, cnames, ctypes,
                           <uint64_t>n, <uint16_t>node_size, 1, extent[0],
                           extent[1], extent[2], extent[3], corg,
                           <int32_t>crs_code, cwkt)
 
+    # Write the final file: magic + header + index + Hilbert-ordered features
+    # (each copied back from the body file by its original offset/length).
     with open(body_path, "rb") as body, open(path, "wb") as out:
         out.write(_MAGIC)
         out.write(_bytes_from_ptr(<const uint8_t*>header.data(), header.size()))
         out.write(_bytes_from_ptr(<const uint8_t*>index.data(), index.size()))
         for i in range(n):
             rec = ordered_records[i]
-            body.seek(rec[4])
+            body.seek(rec[4])          # rec[4] == body offset
             out.write(body.read(rec[5]))
 
+    # The temporary body file is no longer needed.
     if os.path.exists(body_path):
         os.remove(body_path)

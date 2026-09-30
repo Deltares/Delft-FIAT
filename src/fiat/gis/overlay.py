@@ -4,9 +4,10 @@ from itertools import product
 
 import numpy as np
 
-from fiat.driver.fgb import Feature, Geometry
+from fiat._core import cell_mask, clip_masked
+from fiat.driver.fgb import GT_MULTIPOLYGON, GT_POLYGON, Feature, Geometry
 from fiat.driver.netcdf import NetcdfVariable
-from fiat.gis import _geom_ops
+from fiat.gis import _geom
 from fiat.gis.geom import point_in_geom
 from fiat.gis.util import pixel2world, world2pixel
 
@@ -33,7 +34,7 @@ def intersect_cell(
     dy : float | int
         Height of the cell.
     """
-    return _geom_ops.intersect_cell(geom, float(x), float(y), float(dx), float(dy))
+    return _geom.intersect_cell(geom, float(x), float(y), float(dx), float(dy))
 
 
 def area_mask(
@@ -77,12 +78,15 @@ def area_mask(
     px_h = max(int(lry - uly) + 1 - abs(lryn - lry) - abs(ulyn - uly), 0)
 
     window = slice(ulyn, ulyn + px_h), slice(ulxn, ulxn + px_w)
-    mask = np.ones((px_h, px_w))
 
-    # Loop trough the cells
-    for i, j in product(range(px_w), range(px_h)):
-        if not intersect_cell(geom, plx + (dx * i), ply + (dy * j), dx, dy):
-            mask[j, i] = 0
+    # Rasterise the footprint of the geometry over the window in C.
+    xy = np.ascontiguousarray(geom.xy, dtype=np.float64)
+    ends = np.ascontiguousarray(geom.ends, dtype=np.uint32)
+    if ends.shape[0] == 0:
+        # Single implicit ring/line spanning all coordinate pairs.
+        ends = np.array([xy.shape[0] // 2], dtype=np.uint32)
+    is_areal = 1 if geom.type in (GT_POLYGON, GT_MULTIPOLYGON) else 0
+    mask = cell_mask(xy, ends, is_areal, plx, ply, dx, dy, px_w, px_h)
 
     return mask, window
 
@@ -180,10 +184,18 @@ def clip(
     --------
     - [clip_weighted](/api/overlay/clip_weighted.qmd)
     """
-    # Use the window and mask to extract the data
-    arr = var[*window][mask == 1]
-    arr[arr == var.nodata] = np.nan
-    return arr
+    # Gather the masked cells and map nodata -> nan in one compiled pass.
+    arr = var[*window]
+    if np.issubdtype(arr.dtype, np.floating):
+        has_nodata = var.nodata is not None
+        return clip_masked(
+            arr,
+            mask,
+            float(var.nodata) if has_nodata else 0.0,
+            1 if has_nodata else 0,
+        )
+    # Fallback for non-floating (e.g. integer) grids: keep numpy semantics.
+    return arr[mask == 1]
 
 
 def clip_weighted(

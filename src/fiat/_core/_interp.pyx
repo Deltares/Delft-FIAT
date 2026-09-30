@@ -79,9 +79,26 @@ cdef class Interp1D:
         y1 = self._y[lo + 1]
         return y0 + (y1 - y0) * (xq - x0) / (x1 - x0)
 
-    def __call__(self, double xq) -> float:
-        """Evaluate the interpolation at ``xq``."""
-        return self._eval(xq)
+    def __call__(self, xq):
+        """Evaluate the interpolation at ``xq``.
+
+        Accepts a Python scalar (returns a ``float``) or an array-like (returns
+        a ``float64`` ``numpy.ndarray`` of the same shape). This mirrors the
+        ``scipy`` spline it replaces, so it is a drop-in for both the geometry
+        model (scalar calls) and the grid model (array calls).
+        """
+        if isinstance(xq, (int, float)):
+            return self._eval(xq)
+
+        cdef cnp.ndarray xa = np.ascontiguousarray(xq, dtype=np.float64)
+        cdef cnp.ndarray out = np.empty_like(xa)
+        cdef double[::1] iv = xa.reshape(-1)
+        cdef double[::1] ov = out.reshape(-1)
+        cdef Py_ssize_t k, n = iv.shape[0]
+        with nogil:
+            for k in range(n):
+                ov[k] = self._eval(iv[k])
+        return out
 
     def __reduce__(self):
         # Enable pickling for multiprocessing (e.g. Windows spawn start method).

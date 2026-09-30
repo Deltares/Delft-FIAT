@@ -1,9 +1,8 @@
-# cython: language_level=3, boundscheck=False, wraparound=False, cdivision=True
-"""The csv driver (Cython-accelerated reading)."""
+"""The csv driver."""
 
 from math import floor, log10
 
-from numpy import arange, delete, empty, float64, interp, loadtxt, ndarray
+from numpy import arange, delete, empty, float64, interp, ndarray
 
 from fiat.driver.base import TableBase
 from fiat.driver.handler import FileBufferHandler
@@ -133,10 +132,8 @@ class CSVParser:
         # Check if the index has been provided
         if index is not None and self.columns is not None:
             if index not in self.columns:
-                raise ValueError(
-                    f"Given index column ({index}) not found \
-in the columns ({self.columns})"
-                )
+                raise ValueError(f"Given index column ({index}) not found \
+in the columns ({self.columns})")
             idcol = self.columns.index(index)
             self.index_col = idcol
             index_list = []
@@ -146,10 +143,8 @@ in the columns ({self.columns})"
         if "dtypes" in self.meta:
             dtypes = self.meta.pop("dtypes")
             if len(dtypes) != self.ncol:
-                raise ValueError(
-                    f"Length of dtypes ({len(dtypes)}) in meta does not \
-match the amount of columns in the dataset ({len(self.columns)})"
-                )
+                raise ValueError(f"Length of dtypes ({len(dtypes)}) in meta does not \
+match the amount of columns in the dataset ({len(self.columns)})")
 
             dtypes = [_dtypes_from_string[item] for item in dtypes]
 
@@ -195,7 +190,7 @@ match the amount of columns in the dataset ({len(self.columns)})"
                 count[item] += 1
 
         # Solve unnamed column headers
-        cols = [col if col else f"Unnamed_{idx + 1}" for idx, col in enumerate(cols)]
+        cols = [col if col else f"Unnamed_{idx+1}" for idx, col in enumerate(cols)]
         self.columns = cols
 
 
@@ -283,49 +278,28 @@ class Table(TableBase):
         index : list | tuple, optional
             The index column.
         """
-        # Fast path: unquoted, all-float data is parsed by numpy's C reader, which is
-        # substantially faster than tokenizing + per-cell casting. numpy.loadtxt raises
-        # on empty or quoted fields, so any such case falls back to the generic parser
-        # (which maps empty -> NaN and handles quoting), preserving behaviour exactly.
-        data = None
-        all_float = len(set(parser.dtypes)) == 1 and parser.dtypes[0] is float
-        if all_float and len(parser.delimiter) == 1:
-            try:
-                parser.data.stream.seek(parser.data.skip)
-                arr = loadtxt(
-                    parser.data.stream,
-                    delimiter=parser.delimiter,
-                    dtype=float64,
-                    ndmin=2,
-                )
-                if arr.shape == (parser.nrow, parser.ncol):
-                    data = arr
-            except Exception:
-                data = None
+        # Set up the pattern for parsing the data over multiple lines
+        _pat_multi = regex_pattern(
+            parser.delimiter,
+            multi=True,
+            nchar=parser.data.nchar,
+        )
+        # Split all the data into separate entries (row + column values)
+        with parser.data as h:
+            _d = _pat_multi.split(h.read().strip())
 
-        if data is None:
-            # Generic path: quoting-aware regex tokenization + per-column casting.
-            with parser.data as h:
-                raw = h.read().strip()
-            _pat_multi = regex_pattern(
-                parser.delimiter,
-                multi=True,
-                nchar=parser.data.nchar,
-            )
-            _d = _pat_multi.split(raw)
+        # Determine the dtype of the underlying dataset
+        dtype = convert_to_numpy_dtype(parser.dtypes)
 
-            # Determine the dtype of the underlying dataset
-            dtype = convert_to_numpy_dtype(parser.dtypes)
+        # Create an empty numpy array to set the data in
+        data = empty((parser.nrow, parser.ncol), dtype=dtype)
 
-            # Create an empty numpy array to set the data in
-            data = empty((parser.nrow, parser.ncol), dtype=dtype)
-
-            # Fill the array with the column parsed to their dtype
-            for idx in range(parser.ncol):
-                data[:, idx] = [
-                    parser.dtypes[idx](item)
-                    for item in replace_empty(_d[idx :: parser.ncol])
-                ]
+        # Fill the array with the column parsed to their dtype
+        for idx in range(parser.ncol):
+            data[:, idx] = [
+                parser.dtypes[idx](item)
+                for item in replace_empty(_d[idx :: parser.ncol])
+            ]
 
         # Return the object
         return cls(

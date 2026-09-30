@@ -21,14 +21,30 @@ directives_fiat = {
     "wraparound": False,
 }
 
-# Vendored FlatGeobuf / FlatBuffers C++ sources for the custom vector driver.
+# Set some global variables
+# Set all extensions
+EXTENSIONS = glob.glob("src/fiat/**/*.pyx", recursive=True)
+# The flatgeobuf source directory
 FGB_DIR = os.path.join("src", "fiat", "driver", "_fgb")
-# The C++ Cython module(s) that bind the vendored FlatGeobuf sources.
-CPP_MODULES = {
-    os.path.normpath(os.path.join(FGB_DIR, "fgb.pyx")),
-}
-
+# Set the numpy macros
 NUMPY_MACROS = [("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
+
+
+def _cpp_flags() -> list:
+    """Return the C++17 selection flag for the active compiler."""
+    if sys.platform == "win32":
+        return ["/std:c++17", "/EHsc"]
+    return ["-std=c++17"]
+
+
+def _include_directories() -> list:
+    """Return the environment include dir holding header files."""
+    prefix = os.environ.get("CONDA_PREFIX") or os.environ.get("PREFIX") or sys.prefix
+    candidates = [
+        os.path.join(prefix, "Library", "include"),  # Windows (conda)
+        os.path.join(prefix, "include"),  # Linux / macOS
+    ]
+    return [path for path in candidates if os.path.isdir(path)]
 
 
 def _module_name(pyx_path: str) -> str:
@@ -38,64 +54,47 @@ def _module_name(pyx_path: str) -> str:
     return rel.replace(os.sep, ".")
 
 
-def _cpp_std_args() -> list:
-    """Return the C++17 selection flag for the active compiler."""
-    if sys.platform == "win32":
-        return ["/std:c++17", "/EHsc"]
-    return ["-std=c++17"]
-
-
-def _conda_include_dirs() -> list:
-    """Return the conda environment include dir holding the FlatBuffers headers.
-
-    FlatBuffers is a build-time (host) conda dependency; its C++ headers live under
-    the environment prefix. ``CONDA_PREFIX`` is preferred so the correct env is used
-    even under build isolation, falling back to ``PREFIX`` and ``sys.prefix``.
-    """
-    prefix = os.environ.get("CONDA_PREFIX") or os.environ.get("PREFIX") or sys.prefix
-    candidates = [
-        os.path.join(prefix, "Library", "include"),  # Windows (conda)
-        os.path.join(prefix, "include"),  # Linux / macOS
+def _fgb_ext() -> list:
+    """Set the flatgeobuf extension."""
+    ext = os.path.join(FGB_DIR, "fgb.pyx")
+    global EXTENSIONS
+    EXTENSIONS.remove(ext)
+    name = _module_name(os.path.normpath(ext))
+    return [
+        Extension(
+            name=name,
+            sources=[
+                ext,
+                os.path.join(FGB_DIR, "packedrtree.cpp"),
+                os.path.join(FGB_DIR, "fgb_c.cpp"),
+            ],
+            include_dirs=[numpy.get_include(), FGB_DIR, *_include_directories()],
+            define_macros=NUMPY_MACROS,
+            language="c++",
+            extra_compile_args=_cpp_flags(),
+        )
     ]
-    return [path for path in candidates if os.path.isdir(path)]
 
 
-def _make_extensions() -> list:
+def _pure_cython_ext() -> list:
+    """Set all pure cython extensions, no dependency on a c/ c++ module."""
     exts = []
-    fb_include = _conda_include_dirs()
-    for pyx in glob.glob("src/fiat/**/*.pyx", recursive=True):
-        norm = os.path.normpath(pyx)
-        name = _module_name(norm)
-        if norm in CPP_MODULES:
-            exts.append(
-                Extension(
-                    name=name,
-                    sources=[
-                        pyx,
-                        os.path.join(FGB_DIR, "packedrtree.cpp"),
-                        os.path.join(FGB_DIR, "fgb_c.cpp"),
-                    ],
-                    include_dirs=[numpy.get_include(), FGB_DIR, *fb_include],
-                    define_macros=NUMPY_MACROS,
-                    language="c++",
-                    extra_compile_args=_cpp_std_args(),
-                )
+    for ext in EXTENSIONS:
+        name = _module_name(os.path.normpath(ext))
+        exts.append(
+            Extension(
+                name=name,
+                sources=[ext],
+                include_dirs=[numpy.get_include()],
+                define_macros=NUMPY_MACROS,
             )
-        else:
-            exts.append(
-                Extension(
-                    name=name,
-                    sources=[pyx],
-                    include_dirs=[numpy.get_include()],
-                    define_macros=NUMPY_MACROS,
-                )
-            )
+        )
     return exts
 
 
 setup(
     ext_modules=cythonize(
-        _make_extensions(),
+        _fgb_ext() + _pure_cython_ext(),
         annotate=False,
         build_dir=build_dir,
         force=True,

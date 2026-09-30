@@ -71,10 +71,8 @@ classifiers = [
 
 [project.optional-dependencies] # Optional
 all = [
-    "tomlkit",
-]
-build = [
     "pyinstaller>=6.0.0",
+    "tomlkit",
 ]
 dev = [
     "build",
@@ -188,6 +186,16 @@ preview = ["pixi-build"]
 ## The different tasks of this workspace
 # First general tasks
 [tool.pixi.tasks]
+# Build fiat
+build = { cmd = [
+    "pyinstaller",
+    "$PIXI_PROJECT_ROOT/pyi/build.spec",
+    "--distpath",
+    "$PIXI_PROJECT_ROOT/bin",
+    "--workpath",
+    "$PIXI_PROJECT_ROOT/bin/intermediates",
+] }
+
 # Clean up (some of) the temporary files
 clean = { depends-on = [
     "clean-bin",
@@ -212,17 +220,6 @@ docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 
 # Testdata
 testdata = { cmd = ["python", "data/generate.py"] }
-
-# Build specific tasks
-[tool.pixi.feature.build.tasks]
-build = { cmd = [
-    "pyinstaller",
-    "$PIXI_PROJECT_ROOT/pyi/build.spec",
-    "--distpath",
-    "$PIXI_PROJECT_ROOT/bin",
-    "--workpath",
-    "$PIXI_PROJECT_ROOT/bin/intermediates",
-] }
 
 # Dev specific taskss
 [tool.pixi.feature.dev.tasks]
@@ -311,13 +308,6 @@ flatbuffers = "==24.12.23"
 pip = "*"
 uv = "*"
 
-# Extra information when activating
-[tool.pixi.feature.build.activation]
-scripts = ["pyi/activate.sh"]
-
-[tool.pixi.feature.build.target.win-64.activation]
-scripts = ["pyi/activate.bat"]
-
 ## Python environments
 [tool.pixi.feature.py314]
 dependencies = { python = "3.14.*" }
@@ -330,7 +320,6 @@ dependencies = { python = "3.12.*" }
 
 ## Workspace environments
 [tool.pixi.environments]
-build = { features = ["py314", "all", "build"] }
 default = { features = ["py314", "all", "dev", "docs", "test"] }
 docs = { features = ["py314", "all", "docs"] }
 slim = { features = ["py314", "all"] }

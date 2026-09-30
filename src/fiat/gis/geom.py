@@ -7,7 +7,7 @@ import numpy as np
 from pyproj import CRS, Transformer
 
 from fiat.driver.fgb import FlatGeobufWriter, Geometry
-from fiat.gis import _geom_ops
+from fiat.gis import _geom
 
 
 def point_in_geom(
@@ -28,7 +28,7 @@ def point_in_geom(
     tuple
         The x and y coordinate of the created point.
     """
-    return _geom_ops.point_on_surface(geometry)
+    return _geom.point_on_surface(geometry)
 
 
 def _transform_xy(

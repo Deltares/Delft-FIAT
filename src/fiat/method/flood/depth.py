@@ -3,7 +3,10 @@
 import math
 from typing import Callable
 
-from fiat.method.util import ZONAL_METHODS
+import numpy as np
+
+from fiat._core import zonal_reduce
+from fiat.method.util import ZONAL_CODES
 from fiat.util import DEPTH, FLOOD_DEPTH
 
 __all__ = ["fn_hazard", "fn_impact"]
@@ -16,7 +19,7 @@ TYPES = [f"water_{DEPTH}"]
 
 
 def fn_hazard(
-    hazard: list[float],
+    hazard: np.ndarray | list[float],
     elevation: float,
     method: str = "mean",
 ) -> tuple[float]:
@@ -24,7 +27,7 @@ def fn_hazard(
 
     Parameters
     ----------
-    hazard : list
+    hazard : np.ndarray | list
         Raw hazard values.
     elevation : float
         Elevation of the object relative to the surface.
@@ -37,14 +40,15 @@ def fn_hazard(
     float
         A representative hazard value.
     """
-    # Remove the negative hazard values to 0.
-    raw_l = len(hazard)
-    hazard = [n for n in hazard if n > 0]
-    if not hazard:
+    # Filter to positive values and reduce in one compiled pass.
+    value, redf = zonal_reduce(
+        np.ascontiguousarray(hazard, dtype=np.float64),
+        ZONAL_CODES[method],
+        0.0,
+    )
+    if math.isnan(value):
         return math.nan, math.nan
-    redf = len(hazard) / raw_l
-    hazard = ZONAL_METHODS[method](hazard) - elevation
-    return hazard, redf
+    return value - elevation, redf
 
 
 def fn_impact(

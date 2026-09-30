@@ -89,7 +89,7 @@ def feature_worker(
     # Loop through the hazard band combo's
     n = 0
     for idxs in hazard_meta.indices_run:
-        haz = [overlay.clip(hazard[idx], mask, window).tolist() for idx in idxs]
+        haz = [overlay.clip(hazard[idx], mask, window) for idx in idxs]
         haz, fact = fn_hazard(
             *haz,
             *haz_args,
