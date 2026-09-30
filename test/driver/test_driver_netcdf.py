@@ -44,12 +44,12 @@ def test_dataset_read_crs(
     # Assert some simple stuff
     assert ds.size == 1
     assert ds.reference is None  # Verify that there is no crs
-    assert ds.crs is None  # Cant induce from src and not set at GeomDriver level
+    assert ds.crs is None  # Cant induce from src and not set at FlatGeobufDriver level
 
     # Close the dataset
     ds.close()
 
-    # Open with crs as input argument to set the crs at GeomDriver level
+    # Open with crs as input argument to set the crs at FlatGeobufDriver level
     ds = NetcdfDriver(hazard_event_no_crs_path, crs="EPSG:4326")
 
     # Assert the crs

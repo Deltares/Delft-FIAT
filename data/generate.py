@@ -9,8 +9,7 @@ from pathlib import Path
 
 import numpy as np
 import tomlkit
-from generate_helpers import netcdf_handle, netcdf_variable
-from osgeo import ogr, osr
+from generate_helpers import fgb_writer, netcdf_handle, netcdf_variable
 
 p = Path(__file__).parent
 
@@ -18,14 +17,6 @@ directories = (
     "exposure",
     "vulnerability",
 )
-fields = {
-    "object_id": {"type": ogr.OFTInteger},
-    "object_name": {"type": ogr.OFTString},
-    "elevation": {"type": ogr.OFTReal},
-    "fn_damage_structure": {"type": ogr.OFTString},
-    "max_damage_structure": {"type": ogr.OFTReal},
-}
-osr.UseExceptions()
 
 
 def create_dbase_stucture():
@@ -43,113 +34,24 @@ def create_exposure_geoms(epsg=None):
         "POLYGON ((1.5 1.05, 2.5 3.95, 3.5 1.05, 1.5 1.05))",
         "POLYGON ((6.05 7.95, 8.95 7.95, 8.5 6.05, 6.5 6.05, 6.05 7.95))",
     )
-    driver = "FlatGeoBuf"
-    add = "_no_crs"
-    suffix = ".fgb"
-    srs = None
-    # In all honesty, this seems stupid
-    if epsg is not None:
-        driver = "GeoJSON"
-        suffix = ".geojson"
-        add = ""
-        srs = osr.SpatialReference()
-        srs.ImportFromEPSG(epsg)
-
-    # Set up the datasource
-    dr = ogr.GetDriverByName(driver)
-    src = dr.CreateDataSource(str(Path(p, "exposure", f"spatial{add}{suffix}")))
-    layer = src.CreateLayer(
+    add = "" if epsg is not None else "_no_crs"
+    fgb_writer(
+        Path(p, "exposure", f"spatial{add}.fgb"),
         f"spatial{add}",
-        srs=srs,
-        geom_type=3,
+        geoms,
+        epsg=epsg,
     )
-
-    # Create the fields
-    for key, item in fields.items():
-        field = ogr.FieldDefn(
-            key,
-            item["type"],
-        )
-        if item["type"] == ogr.OFTString:
-            field.SetWidth(20)
-        layer.CreateField(field)
-
-    # Set the geometries and the field values
-    for idx, geom in enumerate(geoms):
-        # Create the geometry and the feature
-        geom = ogr.CreateGeometryFromWkt(geom)
-        ft = ogr.Feature(layer.GetLayerDefn())
-        # Alternate damage curve
-        if (idx + 1) % 2 != 0:
-            dmc = "struct_1"
-        else:
-            dmc = "struct_2"
-        # Set the field values and geometry
-        ft.SetField(0, idx + 1)
-        ft.SetField(1, f"fp_{idx+1}")
-        ft.SetField(2, 0)
-        ft.SetField(3, dmc)
-        ft.SetField(4, (idx + 1) * 1000)
-        ft.SetGeometry(geom)
-        # Add the feature to the layer
-        layer.CreateFeature(ft)
-
-    # Dereference everything
-    srs = None
-    field = None
-    geom = None
-    ft = None
-    layer = None
-    src = None
-    dr = None
 
 
 def create_exposure_geoms_5th():
     """Create vector file with fifth geometry for calculation."""
     geoms = ("POLYGON ((2.5 7.5, 3.5 7.5, 3.5 6.5, 2.5 6.5, 2.5 7.5))",)
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(4326)
-
-    # Set up the data source
-    dr = ogr.GetDriverByName("GeoJSON")
-    src = dr.CreateDataSource(str(Path(p, "exposure", "spatial2.geojson")))
-    layer = src.CreateLayer(
+    fgb_writer(
+        Path(p, "exposure", "spatial2.fgb"),
         "spatial2",
-        srs,
-        3,
+        geoms,
+        epsg=4326,
     )
-
-    # Create the fields
-    for key, item in fields.items():
-        field = ogr.FieldDefn(
-            key,
-            item["type"],
-        )
-        if item["type"] == ogr.OFTString:
-            field.SetWidth(20)
-        layer.CreateField(field)
-
-    # Create the geometry and feature
-    geom = ogr.CreateGeometryFromWkt(geoms[0])
-    ft = ogr.Feature(layer.GetLayerDefn())
-    # Set the fields and geometry
-    ft.SetField(0, 5)
-    ft.SetField(1, f"fp_{5}")
-    ft.SetField(2, 0)
-    ft.SetField(3, "struct_1")
-    ft.SetField(4, (5 + 1) * 1000)
-    ft.SetGeometry(geom)
-    # Add the feature to the layer
-    layer.CreateFeature(ft)
-
-    # Dereference everything
-    srs = None
-    field = None
-    geom = None
-    ft = None
-    layer = None
-    src = None
-    dr = None
 
 
 def create_exposure_geoms_outside():
@@ -159,55 +61,12 @@ def create_exposure_geoms_outside():
         "POLYGON ((4.5 10.5, 4.5 9.5, 5.5 9.5, 5.5 10.5, 4.5 10.5))",
         "POLYGON ((8.5 9.5, 8.5 8.5, 9.5 8.5, 9.5 9.5, 8.5 9.5))",
     )
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(4326)
-
-    # Set up the data source
-    dr = ogr.GetDriverByName("GeoJSON")
-    src = dr.CreateDataSource(str(Path(p, "exposure", "spatial_outside.geojson")))
-    layer = src.CreateLayer(
+    fgb_writer(
+        Path(p, "exposure", "spatial_outside.fgb"),
         "spatial",
-        srs,
-        3,
+        geoms,
+        epsg=4326,
     )
-
-    # Create the fields
-    for key, item in fields.items():
-        field = ogr.FieldDefn(
-            key,
-            item["type"],
-        )
-        if item["type"] == ogr.OFTString:
-            field.SetWidth(20)
-        layer.CreateField(field)
-
-    for idx, geom in enumerate(geoms):
-        # Create the geometry and the feature
-        geom = ogr.CreateGeometryFromWkt(geom)
-        ft = ogr.Feature(layer.GetLayerDefn())
-        # Alternate damage curve
-        if (idx + 1) % 2 != 0:
-            dmc = "struct_1"
-        else:
-            dmc = "struct_2"
-        # Set the field values and geometry
-        ft.SetField(0, idx + 1)
-        ft.SetField(1, f"fp_{idx+1}")
-        ft.SetField(2, 0)
-        ft.SetField(3, dmc)
-        ft.SetField(4, (idx + 1) * 1000)
-        ft.SetGeometry(geom)
-        # Add the feature to the layer
-        layer.CreateFeature(ft)
-
-    # Dereference everything
-    srs = None
-    field = None
-    geom = None
-    ft = None
-    layer = None
-    src = None
-    dr = None
 
 
 def create_exposure_grid():
@@ -369,7 +228,7 @@ def create_settings_geom():
         },
         "output": {
             "path": "output/geom_event",
-            "geom": [{"file": "spatial.gpkg"}],
+            "geom": [{"file": "spatial.fgb"}],
         },
         "vulnerability": {
             "file": "vulnerability/curves.csv",
@@ -383,7 +242,7 @@ def create_settings_geom():
         "exposure": {
             "geom": [
                 {
-                    "file": "exposure/spatial.geojson",
+                    "file": "exposure/spatial.fgb",
                     "area_method": "area",
                     "settings": {
                         "crs": "EPSG:4326",
@@ -400,15 +259,15 @@ def create_settings_geom():
     # Setup toml with two geometry files
     doc2g = copy.deepcopy(doc)
     doc2g["output"]["path"] = "output/geom_event_2g"
-    doc2g["output"]["geom"].append({"file": "spatial2.gpkg"})
-    doc2g["exposure"]["geom"].append({"file": "exposure/spatial2.geojson"})
+    doc2g["output"]["geom"].append({"file": "spatial2.fgb"})
+    doc2g["exposure"]["geom"].append({"file": "exposure/spatial2.fgb"})
 
     with open(Path(p, "geom_event_2g.toml"), "w") as f:
         tomlkit.dump(doc2g, f)
 
     # Setup toml with geometries lying outside hazard are
     doc_o = copy.deepcopy(doc)
-    doc_o["exposure"]["geom"][0]["file"] = "exposure/spatial_outside.geojson"
+    doc_o["exposure"]["geom"][0]["file"] = "exposure/spatial_outside.fgb"
 
     with open(Path(p, "geom_event_outside.toml"), "w") as f:
         tomlkit.dump(doc_o, f)
@@ -426,8 +285,8 @@ def create_settings_geom():
     # Setup toml for risk calculation with 2 geometries
     doc_r2g = copy.deepcopy(doc_r)
     doc_r2g["output"]["path"] = "output/geom_risk_2g"
-    doc_r2g["output"]["geom"].append({"file": "spatial2.gpkg"})
-    doc_r2g["exposure"]["geom"].append({"file": "exposure/spatial2.geojson"})
+    doc_r2g["output"]["geom"].append({"file": "spatial2.fgb"})
+    doc_r2g["exposure"]["geom"].append({"file": "exposure/spatial2.fgb"})
 
     with open(Path(p, "geom_risk_2g.toml"), "w") as f:
         tomlkit.dump(doc_r2g, f)

@@ -15,7 +15,6 @@ from typing import Any, Callable, Generator
 
 import numpy as np
 import regex
-from osgeo import gdal, ogr, osr
 from pyproj.crs import CRS
 
 ## Config entries
@@ -153,9 +152,9 @@ _dtypes_from_string = {
 }
 
 _fields_type_map = {
-    "int": ogr.OFTInteger64,
-    "float": ogr.OFTReal,
-    "str": ogr.OFTString,
+    "int": 7,  # FlatGeobuf ColumnType.Long
+    "float": 10,  # FlatGeobuf ColumnType.Double
+    "str": 11,  # FlatGeobuf ColumnType.String
 }
 
 
@@ -387,93 +386,10 @@ def get_crs_repr(
     return ":".join(auth)
 
 
-def get_srs_repr(
-    srs: osr.SpatialReference,
-) -> str:
-    """Get a representation of a spatial reference system object.
-
-    Parameters
-    ----------
-    srs : osr.SpatialReference
-        Spatial reference system.
-
-    Returns
-    -------
-    str
-        Representing string.
-    """
-    if srs is None:
-        raise ValueError("'srs' can not be None.")
-    _auth_c = srs.GetAuthorityCode(None)
-    _auth_n = srs.GetAuthorityName(None)
-
-    if _auth_c is None or _auth_n is None:
-        return srs.ExportToProj4()
-
-    return f"{_auth_n}:{_auth_c}"
-
-
-def _check_driver_capabilities(
-    idx: int,
-    type: str,
-) -> tuple[gdal.Driver, str] | tuple[None, None]:
-    """Return driver when it has the necessary capabilities."""
-    driver = gdal.GetDriver(idx)
-    # Check the create capability
-    if not driver.GetMetadataItem(gdal.DCAP_CREATE):
-        return None, None
-    # Check on vector driver
-    if type == gdal.DCAP_VECTOR and (
-        not driver.GetMetadataItem(gdal.DCAP_VECTOR)
-        or not driver.GetMetadataItem(gdal.DCAP_CREATE_LAYER)
-        # or not driver.GetMetadataItem(gdal.DCAP_UPDATE)
-    ):
-        return None, None
-    # Check on Raster driver
-    if type == gdal.DCAP_RASTER and (
-        not driver.GetMetadataItem(gdal.DCAP_RASTER)
-        or not driver.GetMetadataItem(gdal.DCAP_CREATECOPY)
-    ):
-        return None, None
-    # Get the extension
-    ext = driver.GetMetadataItem(gdal.DMD_EXTENSION) or driver.GetMetadataItem(
-        gdal.DMD_EXTENSIONS
-    )
-    # If None, cant do anything
-    if ext is None:
-        return None, None
-    # Get the extension from the returned str or list
-    if len(ext.split(" ")) > 1:
-        exts = ext.split(" ")
-        if driver.ShortName.lower() in exts:
-            ext = driver.ShortName.lower()
-        else:
-            ext = ext.split(" ")[-1]
-    return driver, ext
-
-
-def _create_driver_map(
-    type: str,
-) -> dict[str, str]:
-    """Create a map of geometry drivers."""
-    drivers = {}
-    count = gdal.GetDriverCount()
-
-    for idx in range(count):
-        driver, ext = _check_driver_capabilities(idx, type=type)
-        if driver is None:
-            continue
-        if ext is not None and len(ext) > 0:
-            ext = "." + ext
-            drivers[ext] = driver.ShortName
-
-    return drivers
-
-
-GEOM_DRIVER_MAP = _create_driver_map(type=gdal.DCAP_VECTOR)
-GEOM_DRIVER_MAP[""] = "MEM"
-GRID_DRIVER_MAP = _create_driver_map(type=gdal.DCAP_RASTER)
-GRID_DRIVER_MAP[""] = "MEM"
+# Supported vector extensions and their FIAT driver (FlatGeobuf only).
+GEOM_DRIVER_MAP = {
+    ".fgb": "FlatGeobuf",
+}
 
 
 # I/O stuff

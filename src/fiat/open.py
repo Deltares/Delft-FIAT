@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from fiat.driver.csv import CSVParser, Table
-from fiat.driver.geom import GeomDriver
+from fiat.driver.fgb import FlatGeobufDriver
 from fiat.driver.handler import FileBufferHandler
 from fiat.driver.netcdf import NetcdfDriver
 
@@ -56,7 +56,7 @@ def open_geom(
     mode: str = "r",
     overwrite: bool = False,
     crs: str | None = None,
-) -> GeomDriver:
+) -> FlatGeobufDriver:
     """Open a geometry source file.
 
     This source file is lazily read.
@@ -74,10 +74,10 @@ def open_geom(
 
     Returns
     -------
-    GeomDriver
+    FlatGeobufDriver
         Object that holds a connection to the source file.
     """
-    return GeomDriver(
+    return FlatGeobufDriver(
         file,
         mode,
         overwrite,

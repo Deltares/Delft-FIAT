@@ -3,70 +3,73 @@
 import gc
 from pathlib import Path
 
-from osgeo import ogr, osr
+import numpy as np
+from pyproj import CRS, Transformer
 
-from fiat.driver import GeomDriver
-from fiat.model.geom_writer import GeomWriter
-from fiat.open import open_geom
+from fiat.driver.fgb import FlatGeobufWriter, Geometry
+from fiat.gis import _geom
 
 
 def point_in_geom(
-    geometry: ogr.Geometry,
+    geometry: Geometry,
 ) -> tuple:
-    """Create a point within a polygon.
+    """Create a representative interior point within a geometry.
 
-    This is in essence a very lazy centroid. Keep in mind though, it can differ quite
-    a bit from the actual centroid.
+    A GDAL-free replacement for ``OGRGeometry::PointOnSurface``. Keep in mind it can
+    differ a bit from the true centroid for concave shapes.
 
     Parameters
     ----------
-    ft : ogr.Geometry
-        The feature geometry (polygon or linestring) in which to create the point.
+    geometry : Geometry
+        The geometry (polygon) in which to create the point.
 
     Returns
     -------
     tuple
         The x and y coordinate of the created point.
     """
-    p = geometry.PointOnSurface()
-    return p.GetX(), p.GetY()
+    return _geom.point_on_surface(geometry)
+
+
+def _transform_xy(
+    xy: np.ndarray,
+    transformer: Transformer,
+) -> np.ndarray:
+    """Transform a flat interleaved x, y array to another CRS."""
+    coords = np.asarray(xy, dtype=np.float64).reshape(-1, 2)
+    if coords.shape[0] == 0:
+        return coords.ravel()
+    xt, yt = transformer.transform(coords[:, 0], coords[:, 1])
+    out = np.empty(coords.shape, dtype=np.float64)
+    out[:, 0] = xt
+    out[:, 1] = yt
+    return out.ravel()
 
 
 def reproject_feature(
-    geometry: ogr.Geometry,
-    src_crs: str,
-    dst_crs: str,
-) -> ogr.Feature:
-    """Transform geometry/ geometries of a feature.
+    geometry: Geometry,
+    transformer: Transformer,
+) -> tuple:
+    """Transform the coordinates of a geometry.
 
     Parameters
     ----------
-    geometry : ogr.Geometry
+    geometry : Geometry
         The geometry.
-    src_crs : str
-        Coordinate reference system of the feature.
-    dst_crs : str
-        Coordinate reference system to which the feature is transformed.
+    transformer : Transformer
+        A pyproj coordinate transformer.
+
+    Returns
+    -------
+    tuple
+        The transformed ``(xy, ends, parts)`` arrays.
     """
-    src = osr.SpatialReference()
-    src.SetFromUserInput(src_crs)
-    src.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
-    dst = osr.SpatialReference()
-    dst.SetFromUserInput(dst_crs)
-    dst.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
-
-    transform = osr.CoordinateTransformation(src, dst)
-    geometry.Transform(transform)
-
-    src = None
-    dst = None
-    transform = None
-
-    return geometry
+    xy = _transform_xy(geometry.xy, transformer)
+    return xy, geometry.ends, geometry.parts
 
 
 def reproject(
-    ds: GeomDriver,
+    ds,
     dst_crs: str,
     chunk: int = 200000,
     output_dir: Path | str = None,
@@ -75,71 +78,59 @@ def reproject(
 
     Parameters
     ----------
-    ds : GeomDriver
+    ds : FlatGeobufDriver
         Input object.
     dst_crs : str
         Spatial reference system (projection). An accepted format is: `EPSG:3857`.
     chunk : int, optional
-        The size of the chunks used during reprojecting.
+        Unused (kept for API compatibility).
     output_dir : Path | str, optional
-        Output directory. If not defined, if will be inferred from the input object.
+        Output directory. If not defined, it is inferred from the input object.
 
     Returns
     -------
-    GeomDriver
-        Output object. A lazy reading of the just creating geometry file.
+    FlatGeobufDriver
+        Output object. A lazy reading of the just created geometry file.
     """
+    from fiat.open import open_geom
+
     output_dir = output_dir or ds.path.parent
+    output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     fname = Path(output_dir, f"{ds.path.stem}_repr.fgb")
 
-    src_crs = osr.SpatialReference()
-    src_crs.SetFromUserInput(ds.layer.crs.to_wkt())
-    src_crs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
-    out_crs = osr.SpatialReference()
-    out_crs.SetFromUserInput(dst_crs)
-    out_crs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
-    layer_defn = ds.layer.defn
+    layer = ds.layer
+    src_crs = layer.crs
+    dst = CRS.from_user_input(dst_crs)
+    transformer = Transformer.from_crs(src_crs, dst, always_xy=True)
 
-    transform = osr.CoordinateTransformation(
-        src_crs,
-        out_crs,
+    # Destination CRS metadata.
+    dst_wkt = dst.to_wkt()
+    auth = dst.to_authority()
+    dst_org, dst_code = ("", 0)
+    if auth is not None:
+        dst_org, dst_code = auth[0], int(auth[1])
+
+    writer = FlatGeobufWriter(
+        fname.as_posix(),
+        col_names=list(layer.fields),
+        col_types=list(layer.dtypes),
+        geom_type=layer.geom_type,
+        name=fname.stem,
+        crs_wkt=dst_wkt,
+        crs_org=dst_org,
+        crs_code=dst_code,
     )
 
-    with open_geom(fname, mode="w", overwrite=True) as new_gs:
-        new_gs.create_layer(out_crs.ExportToWkt(), ds.layer.geom_type)
-        new_gs.layer.set_from_defn(layer_defn)
+    for ft in layer:
+        geom = ft.geometry
+        xy = _transform_xy(geom.xy, transformer)
+        writer.add_feature(xy, geom.ends, geom.parts, ft.values)
 
-    mem_gs = GeomWriter(
-        fname,
-        buffer_size=chunk,
-    )
-    mem_gs.setup(
-        defn=layer_defn,
-        crs=out_crs.ExportToWkt(),
-    )
+    writer.finalize()
 
-    for ft in ds.layer:
-        geom = ft.GetGeometryRef()
-        geom.Transform(transform)
-
-        new_ft = ogr.Feature(mem_gs.buffer.layer.defn)
-        new_ft.SetFrom(ft)
-        new_ft.SetGeometry(geom)
-        mem_gs.add_feature(new_ft)
-
-    geom = None
-    ft = None
-    new_ft = None
-    out_crs = None
-    transform = None
-    layer_defn = None
-
-    mem_gs.close()
-    mem_gs = None
     ds.close()
-    ds = None
     gc.collect()
 
-    return open_geom(fname)
+    return open_geom(fname.as_posix())

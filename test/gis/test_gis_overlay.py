@@ -1,5 +1,4 @@
 import numpy as np
-from osgeo import ogr
 
 from fiat.driver import NetcdfDriver
 from fiat.gis.overlay import (
@@ -13,12 +12,12 @@ from fiat.gis.overlay import (
 
 
 def test_area_mask_linestring(
-    feature_linestring: ogr.Feature,
+    feature_linestring,
     hazard_event_data: NetcdfDriver,
 ):
     # Call the function
     m, w = area_mask(
-        geom=feature_linestring.GetGeometryRef(),
+        geom=feature_linestring.geometry,
         gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
@@ -33,12 +32,12 @@ def test_area_mask_linestring(
 
 
 def test_area_mask_polygon(
-    feature_polygon: ogr.Feature,
+    feature_polygon,
     hazard_event_data: NetcdfDriver,
 ):
     # Call the function
     m, w = area_mask(
-        geom=feature_polygon.GetGeometryRef(),
+        geom=feature_polygon.geometry,
         gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
@@ -51,12 +50,12 @@ def test_area_mask_polygon(
 
 
 def test_area_mask_polygon_complex(
-    feature_polygon_complex: ogr.Feature,
+    feature_polygon_complex,
     hazard_event_data: NetcdfDriver,
 ):
     # Call the function
     m, w = area_mask(
-        geom=feature_polygon_complex.GetGeometryRef(),
+        geom=feature_polygon_complex.geometry,
         gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
@@ -71,13 +70,13 @@ def test_area_mask_polygon_complex(
 
 
 def test_point_mask(
-    feature_point: ogr.Feature,
+    feature_point,
     hazard_event_data: NetcdfDriver,
 ):
     # Call the function
-    geom = feature_point.GetGeometryRef()
+    geom = feature_point.geometry
     m, w = point_mask(
-        point=geom.GetPoint_2D(),
+        point=tuple(geom.coords[0]),
         gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
@@ -88,11 +87,11 @@ def test_point_mask(
 
 
 def test_centroid_mask(
-    feature_polygon: ogr.Feature,
+    feature_polygon,
     hazard_event_data: NetcdfDriver,
 ):
     # Call the function
-    geom = feature_polygon.GetGeometryRef()
+    geom = feature_polygon.geometry
     m, w = centroid_mask(
         geom=geom,
         gtf=hazard_event_data.transform,
@@ -105,12 +104,12 @@ def test_centroid_mask(
 
 
 def test_clip_linestring(
-    feature_linestring: ogr.Feature,
+    feature_linestring,
     hazard_event_data: NetcdfDriver,
 ):
     # Mask first
     m, w = area_mask(
-        geom=feature_linestring.GetGeometryRef(),
+        geom=feature_linestring.geometry,
         gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
@@ -130,12 +129,12 @@ def test_clip_linestring(
 
 
 def test_clip_polygon(
-    feature_polygon: ogr.Feature,
+    feature_polygon,
     hazard_event_data: NetcdfDriver,
 ):
     # Mask first
     m, w = area_mask(
-        geom=feature_polygon.GetGeometryRef(),
+        geom=feature_polygon.geometry,
         gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
@@ -155,12 +154,12 @@ def test_clip_polygon(
 
 
 def test_clip_polygon_complex(
-    feature_polygon_complex: ogr.Feature,
+    feature_polygon_complex,
     hazard_event_data: NetcdfDriver,
 ):
     # Mask first
     m, w = area_mask(
-        geom=feature_polygon_complex.GetGeometryRef(),
+        geom=feature_polygon_complex.geometry,
         gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
@@ -180,13 +179,13 @@ def test_clip_polygon_complex(
 
 
 def test_clip_point(
-    feature_point: ogr.Feature,
+    feature_point,
     hazard_event_data: NetcdfDriver,
 ):
     # Mask First
-    geom = feature_point.GetGeometryRef()
+    geom = feature_point.geometry
     m, w = point_mask(
-        point=geom.GetPoint_2D(),
+        point=tuple(geom.coords[0]),
         gtf=hazard_event_data.transform,
         shape=hazard_event_data.shape_xy,
     )
@@ -203,7 +202,7 @@ def test_clip_point(
 
 
 def test_clip_weighted_3(
-    feature_polygon: ogr.Feature,
+    feature_polygon,
     hazard_event_data: NetcdfDriver,
 ):
     # Call the function
@@ -228,10 +227,10 @@ def test_clip_weighted_3(
     )
 
 
-def test_intersect_cell_true(feature_polygon: ogr.Feature):
+def test_intersect_cell_true(feature_polygon):
     # Call the function
     b = intersect_cell(
-        geom=feature_polygon.GetGeometryRef(),
+        geom=feature_polygon.geometry,
         x=1,
         y=2,
         dx=1,
@@ -242,10 +241,10 @@ def test_intersect_cell_true(feature_polygon: ogr.Feature):
     assert b
 
 
-def test_intersect_cell_false(feature_polygon: ogr.Feature):
+def test_intersect_cell_false(feature_polygon):
     # Call the function
     b = intersect_cell(
-        geom=feature_polygon.GetGeometryRef(),
+        geom=feature_polygon.geometry,
         x=1,
         y=4,  # End just above the polygon this way
         dx=1,

@@ -1,3 +1,4 @@
+from multiprocessing import get_context
 from pathlib import Path
 
 import numpy as np
@@ -8,10 +9,18 @@ from fiat.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import GeomDriver, NetcdfDriver
+from fiat.driver import FlatGeobufDriver, NetcdfDriver, fgb
 from fiat.method.flood.depth import fn_hazard, fn_impact
-from fiat.model.geom_worker import feature_worker, worker
+from fiat.model.geom_worker import feature_worker, initialize_pool, worker
 from fiat.open import open_geom
+
+
+def _feature_by_id(layer, object_id):
+    """Return the feature with a given object_id (order-independent)."""
+    for ft in layer:
+        if ft.get_field("object_id") == object_id:
+            return ft
+    raise AssertionError(f"No feature with object_id={object_id}")
 
 
 def test_feature_worker(
@@ -19,7 +28,7 @@ def test_feature_worker(
     hazard_event_data: NetcdfDriver,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_geom_data: GeomDriver,
+    exposure_geom_data: FlatGeobufDriver,
     exposure_geom_meta_run: ExposureGeomMeta,
 ):
     # Create the array
@@ -27,7 +36,7 @@ def test_feature_worker(
 
     # Call the function
     feature_worker(
-        ft=exposure_geom_data.layer[0],
+        ft=_feature_by_id(exposure_geom_data.layer, 1),
         out_array=out_array,
         run_meta=run_meta,
         hazard=hazard_event_data,
@@ -47,7 +56,7 @@ def test_feature_worker_risk(
     hazard_risk_data: NetcdfDriver,
     hazard_risk_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_geom_data: GeomDriver,
+    exposure_geom_data: FlatGeobufDriver,
     exposure_geom_risk_meta_run: ExposureGeomMeta,
 ):
     # Create the array
@@ -55,7 +64,7 @@ def test_feature_worker_risk(
 
     # Call the function
     feature_worker(
-        ft=exposure_geom_data.layer[2],
+        ft=_feature_by_id(exposure_geom_data.layer, 3),
         out_array=out_array,
         run_meta=run_risk_meta,
         hazard=hazard_risk_data,
@@ -83,12 +92,19 @@ def test_worker(
     hazard_event_data: NetcdfDriver,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
-    exposure_geom_data: GeomDriver,
+    exposure_geom_data: FlatGeobufDriver,
     exposure_geom_meta_run: ExposureGeomMeta,
 ):
+    # Setup the worker globals (lock + pipeline queue)
+    ctx = get_context("spawn")
+    queue = ctx.Queue(maxsize=100)
+    initialize_pool(None, queue)
+
+    output_path = Path(tmp_path, "spatial.fgb")
+
     # Call the function
     worker(
-        output_path=Path(tmp_path, "spatial.gpkg"),
+        output_path=output_path,
         run_meta=run_meta,
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
@@ -98,9 +114,25 @@ def test_worker(
         chunk=(1, 4),
     )
 
+    # Drain the index records and finalize (as the parent model would)
+    key, records = queue.get(timeout=10)
+    layer = exposure_geom_data.layer
+    reader = layer._reader
+    fgb.finalize(
+        key,
+        f"{key}.body",
+        "spatial",
+        layer.geom_type,
+        list(layer.fields) + list(exposure_geom_meta_run.new),
+        list(layer.dtypes) + [fgb.CT_DOUBLE] * len(exposure_geom_meta_run.new),
+        records,
+        crs_wkt=reader.crs_wkt,
+        crs_org=reader.crs_org,
+        crs_code=reader.crs_code,
+    )
+
     # Assert the output
-    p = Path(tmp_path, "spatial.gpkg")
-    assert p.is_file()
+    assert output_path.is_file()
     # Assert the content
-    g = open_geom(p)
+    g = open_geom(output_path)
     assert g.layer.size == 4

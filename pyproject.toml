@@ -1,6 +1,6 @@
 ## Build system related stuff
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["cython", "numpy", "setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -31,7 +31,6 @@ readme = "README.md"
 
 requires-python = ">=3.12"
 dependencies = [
-    "gdal>=3.5",
     "netcdf4",
     "numpy",
     "pyproj",
@@ -72,10 +71,8 @@ classifiers = [
 
 [project.optional-dependencies] # Optional
 all = [
-    "tomlkit",
-]
-build = [
     "pyinstaller>=6.0.0",
+    "tomlkit",
 ]
 dev = [
     "build",
@@ -122,6 +119,10 @@ testpaths = [
 [tool.coverage.run]
 branch = true
 source = ["./src"]
+plugins = ["Cython.Coverage"]
+
+[tool.coverage.cython]
+annotate = true
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
@@ -185,6 +186,16 @@ preview = ["pixi-build"]
 ## The different tasks of this workspace
 # First general tasks
 [tool.pixi.tasks]
+# Build fiat
+build = { cmd = [
+    "pyinstaller",
+    "$PIXI_PROJECT_ROOT/pyi/build.spec",
+    "--distpath",
+    "$PIXI_PROJECT_ROOT/bin",
+    "--workpath",
+    "$PIXI_PROJECT_ROOT/bin/intermediates",
+] }
+
 # Clean up (some of) the temporary files
 clean = { depends-on = [
     "clean-bin",
@@ -209,17 +220,6 @@ docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 
 # Testdata
 testdata = { cmd = ["python", "data/generate.py"] }
-
-# Build specific tasks
-[tool.pixi.feature.build.tasks]
-build = { cmd = [
-    "pyinstaller",
-    "$PIXI_PROJECT_ROOT/pyi/build.spec",
-    "--distpath",
-    "$PIXI_PROJECT_ROOT/bin",
-    "--workpath",
-    "$PIXI_PROJECT_ROOT/bin/intermediates",
-] }
 
 # Dev specific taskss
 [tool.pixi.feature.dev.tasks]
@@ -286,7 +286,7 @@ test-system = { cmd = [
 
 ## Dependencies
 [tool.pixi.dependencies]
-libgdal-core = ">=3.5"
+flatbuffers = "==24.12.23"
 pip = "*"
 uv = "*"
 
@@ -294,9 +294,9 @@ uv = "*"
 [tool.pixi.pypi-dependencies]
 delft_fiat = { path = ".", editable = true }
 
-# Specific environment dependencies and definitions
-[tool.pixi.feature.gdal]
-dependencies = { gdal = ">=3.5" }
+# C/C++ tooling used by the pocc pre-commit hooks.
+[tool.pixi.feature.dev.dependencies]
+clang-format = "19.*"
 
 # Docs builder framework
 [tool.pixi.feature.docs]
@@ -304,15 +304,9 @@ dependencies = { quarto = "==1.9.38" }
 
 # Wheel building env
 [tool.pixi.feature.wheel.dependencies]
+flatbuffers = "==24.12.23"
 pip = "*"
 uv = "*"
-
-# Extra information when activating
-[tool.pixi.feature.build.activation]
-scripts = ["pyi/activate.sh"]
-
-[tool.pixi.feature.build.target.win-64.activation]
-scripts = ["pyi/activate.bat"]
 
 ## Python environments
 [tool.pixi.feature.py314]
@@ -326,11 +320,10 @@ dependencies = { python = "3.12.*" }
 
 ## Workspace environments
 [tool.pixi.environments]
-build = { features = ["py314", "all", "build"] }
-default = { features = ["py314", "all", "dev", "docs", "gdal", "test"] }
-docs = { features = ["py314", "all", "docs", "gdal"] }
-slim = { features = ["py314", "all", "gdal"] }
-test-py314 = { features = ["py314", "all", "gdal", "test"] }
-test-py313 = { features = ["py313", "all", "gdal", "test"] }
-test-py312 = { features = ["py312", "all", "gdal", "test"] }
-wheel = { features = ["py313", "gdal", "test", "wheel"], no-default-feature=true }
+default = { features = ["py314", "all", "dev", "docs", "test"] }
+docs = { features = ["py314", "all", "docs"] }
+slim = { features = ["py314", "all"] }
+test-py314 = { features = ["py314", "all", "test"] }
+test-py313 = { features = ["py313", "all", "test"] }
+test-py312 = { features = ["py312", "all", "test"] }
+wheel = { features = ["py313", "test", "wheel"], no-default-feature=true }

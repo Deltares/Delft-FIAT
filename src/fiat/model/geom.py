@@ -15,14 +15,13 @@ from fiat.check import (
     check_vs_crs,
 )
 from fiat.container import Container, ExposureGeomData
-from fiat.driver import NetcdfDriver, Table
+from fiat.driver import NetcdfDriver, Table, fgb
 from fiat.gis import geom
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.geom_util import generate_output_filepaths, get_exposure_meta
 from fiat.model.geom_worker import initialize_pool, worker
-from fiat.model.geom_writer import ensure_writable_filepath
 from fiat.model.util import (
     create_1d_chunks,
     get_hazard_meta,
@@ -57,6 +56,16 @@ from fiat.util import (
 )
 
 logger = spawn_logger(__name__)
+
+
+def ensure_writable_filepath(filepath) -> None:
+    """Remove any pre-existing output (and its FlatGeobuf body) at a path."""
+    filepath = Path(filepath)
+    if filepath.exists():
+        filepath.unlink()
+    body = Path(f"{filepath.as_posix()}.body")
+    if body.exists():
+        body.unlink()
 
 
 class GeomModel(BaseModel):
@@ -118,6 +127,9 @@ class GeomModel(BaseModel):
             return
         if not isinstance(settings, list):
             settings = [settings]  # Legacy
+
+        # Reset the exposure container so repeated calls are idempotent
+        self.exposure = Container()
 
         # To set the config afterwards
         cfg = []
@@ -226,6 +238,7 @@ class GeomModel(BaseModel):
 
         # Setup the jobs
         jobs_list = []
+        finalize_params = {}
         for exposure, count, output_path in zip(self.exposure, threads, output_paths):
             # Check the extent
             check_geom_extent(
@@ -241,6 +254,19 @@ class GeomModel(BaseModel):
             )
             # Check the output file path
             ensure_writable_filepath(output_path)
+            # Store the header parameters for the finalize pass
+            layer = exposure.data.layer
+            reader = layer._reader
+            finalize_params[Path(output_path).as_posix()] = {
+                "name": Path(output_path).stem,
+                "geom_type": layer.geom_type,
+                "col_names": list(layer.fields) + list(exposure_meta.new),
+                "col_types": list(layer.dtypes)
+                + [fgb.CT_DOUBLE] * len(exposure_meta.new),
+                "crs_wkt": reader.crs_wkt,
+                "crs_org": reader.crs_org,
+                "crs_code": reader.crs_code,
+            }
             # Get the chunks based on the load distribution
             chunks = create_1d_chunks(exposure.data.layer.size, count)
             # Generate the jobs
@@ -281,5 +307,34 @@ class GeomModel(BaseModel):
             exc_info = None
 
         else:
+            # Finalize the output: build the packed R-tree and write indexed .fgb
+            logger.info("Building spatial index and writing output...")
+            self._finalize_outputs(finalize_params)
             logger.info(f"Output generated in: '{self.cfg.get(OUTPUT_PATH)}'")
             logger.info("Model run is done!")
+
+    def _finalize_outputs(self, finalize_params: dict) -> None:
+        """Drain worker index records and write the final indexed FlatGeobuf files."""
+        import queue as _queue
+
+        records_by_path: dict[str, list] = {key: [] for key in finalize_params}
+        while True:
+            try:
+                out_path, records = self.queue.get(timeout=2.0)
+            except _queue.Empty:
+                break
+            records_by_path.setdefault(out_path, []).extend(records)
+
+        for out_path, params in finalize_params.items():
+            fgb.finalize(
+                out_path,
+                f"{out_path}.body",
+                params["name"],
+                params["geom_type"],
+                params["col_names"],
+                params["col_types"],
+                records_by_path.get(out_path, []),
+                crs_wkt=params["crs_wkt"],
+                crs_org=params["crs_org"],
+                crs_code=params["crs_code"],
+            )

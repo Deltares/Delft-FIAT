@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from fiat.driver import (
-    GeomDriver,
+    FlatGeobufDriver,
     NetcdfDriver,
 )
 from fiat.driver.csv import Table
@@ -72,42 +72,35 @@ def test_open_geom_context(exposure_geom_path: Path):
     # Open the dataset with context manager
     with open_geom(exposure_geom_path) as reader:
         # Assert some simple stuff
-        assert isinstance(reader, GeomDriver)
-        assert reader.mode == 0  # Read only
+        assert isinstance(reader, FlatGeobufDriver)
+        assert reader.mode_str == "r"  # Read only
         assert reader.layer is not None
 
     # Now it's closed but not deleted
-    assert reader.closed == True
-    assert reader.src is None
-
-    with pytest.raises(
-        ValueError,
-        match="Invalid operation on a closed file",
-    ):
-        # Get the layer
-        _ = reader.layer
+    assert reader.closed is True
+    assert reader.layer is None
 
 
 def test_open_geom_read_only(exposure_geom_path: Path):
     # Open the dataset
     ds = open_geom(exposure_geom_path)
 
-    # Assert simple stufValueErrorf
-    assert isinstance(ds, GeomDriver)
-    assert ds.mode == 0  # Read only
+    # Assert simple stuff
+    assert isinstance(ds, FlatGeobufDriver)
+    assert ds.mode_str == "r"  # Read only
     assert ds.layer is not None
 
     ds.close()
 
 
 def test_open_geom_append(exposure_geom_tmp_path: Path):
-    # Open a dataset in write mode
+    # Open a dataset in append mode (reads the existing source)
     ds = open_geom(exposure_geom_tmp_path, mode="a")
 
     # Assert some simple stuff
-    assert isinstance(ds, GeomDriver)
-    assert ds.mode == 1  # Write/ update mode
-    assert ds.layer is not None  # Hasn't been created yet
+    assert isinstance(ds, FlatGeobufDriver)
+    assert ds.mode_str == "a"
+    assert ds.layer is not None
     assert ds.layer.size == 4
 
     ds.close()
@@ -115,11 +108,11 @@ def test_open_geom_append(exposure_geom_tmp_path: Path):
 
 def test_open_geom_write_new(tmp_path: Path):
     # Open a dataset in write mode
-    ds = open_geom(Path(tmp_path, "tmp.geojson"), mode="w")
+    ds = open_geom(Path(tmp_path, "tmp.fgb"), mode="w")
 
     # Assert some simple stuff
-    assert isinstance(ds, GeomDriver)
-    assert ds.mode == 2  # Write/ update mode
+    assert isinstance(ds, FlatGeobufDriver)
+    assert ds.mode_str == "w"
     assert ds.layer is None  # Hasn't been created yet
 
     ds.close()
@@ -130,9 +123,9 @@ def test_open_geom_write_overwrite(exposure_geom_tmp_path: Path):
     ds = open_geom(exposure_geom_tmp_path, mode="w", overwrite=True)
 
     # Assert some simple stuff
-    assert isinstance(ds, GeomDriver)
-    assert ds.mode == 2  # Write/ update mode
-    assert ds.layer is None  # Overwritten source, so has to be newly created
+    assert isinstance(ds, FlatGeobufDriver)
+    assert ds.mode_str == "w"
+    assert ds.layer is None  # Write mode, nothing read
 
     ds.close()
 

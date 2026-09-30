@@ -9,7 +9,6 @@ from fiat.model.util import (
     get_hazard_meta,
     get_run_meta,
     get_vulnerability_meta,
-    vectorize_function,
 )
 
 
@@ -120,19 +119,3 @@ def test_get_vulnerability_meta(vulnerability_data_run: Table):
     # Assert the output
     assert meta.min == 0
     assert meta.max == 5
-
-
-# Create a dummy function
-def foo(x, c_a, c_b):
-    return x * c_a + c_b
-
-
-def test_vectorize_function():
-    # Call the function
-    foo_vec = vectorize_function(fn=foo, skip=1)
-
-    # Call the vectorized function
-    out = foo_vec(np.array([1, 2]), 10, 12)
-
-    # Assert the output
-    np.testing.assert_array_equal(out, [22, 32])

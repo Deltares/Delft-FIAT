@@ -1,18 +1,18 @@
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
-from osgeo import gdal, ogr, osr
 
-from fiat.driver import GeomDriver, NetcdfDriver
+from fiat.driver import FlatGeobufDriver, NetcdfDriver, fgb
 from fiat.open import open_geom, open_grid
 
 
 ## Datasets
 # Made for testing in this module, copy exists in main conftest
 @pytest.fixture
-def exposure_geom_repr(exposure_geom_path: Path) -> GeomDriver:
+def exposure_geom_repr(exposure_geom_path: Path) -> FlatGeobufDriver:
     ds = open_geom(exposure_geom_path)  # Read only
-    assert isinstance(ds, GeomDriver)
+    assert isinstance(ds, FlatGeobufDriver)
     return ds
 
 
@@ -23,16 +23,6 @@ def hazard_event_repr(hazard_event_path: Path) -> NetcdfDriver:
     return ds
 
 
-@pytest.fixture
-def hazard_ds(tmp_path: Path, crs_4326: osr.SpatialReference) -> NetcdfDriver:
-    ds = open_grid(Path(tmp_path, "tmp.tif"), "w")
-    ds.create(shape=(10, 10), nb=1, dtype=gdal.GDT_Float32)
-    ds.set_source_crs(crs_4326)
-    ds.geotransform = (0.0, 1.0, 0.0, 10.0, 0.0, -1.0)
-    ds.close()
-    return ds.reopen()
-
-
 ## GIS related objects
 # Other
 @pytest.fixture(scope="session")
@@ -41,64 +31,33 @@ def geotransform() -> tuple:
     return gtf
 
 
-# Layers
+def _feature(geom) -> SimpleNamespace:
+    """Wrap a geometry in a minimal feature-like object."""
+    return SimpleNamespace(geometry=geom)
+
+
+# Features (as GDAL-free geometries / feature-likes)
 @pytest.fixture(scope="session")
-def linestring_defn() -> ogr.FeatureDefn:
-    defn = ogr.FeatureDefn()
-    defn.SetGeomType(ogr.wkbLineString)
-    return defn
-
-
-@pytest.fixture(scope="session")
-def point_defn() -> ogr.FeatureDefn:
-    defn = ogr.FeatureDefn()
-    defn.SetGeomType(ogr.wkbPoint)
-    return defn
-
-
-@pytest.fixture(scope="session")
-def polygon_defn() -> ogr.FeatureDefn:
-    defn = ogr.FeatureDefn()
-    defn.SetGeomType(ogr.wkbPolygon)
-    return defn
-
-
-# Features
-@pytest.fixture(scope="session")
-def feature_linestring(linestring_defn: ogr.FeatureDefn) -> ogr.Feature:
-    wkt = "LINESTRING (1.5 1.5, 2.5 1.5, 3.5 2.5, 4.5 2.5)"
-    geom = ogr.CreateGeometryFromWkt(wkt)
-    ft = ogr.Feature(linestring_defn)
-    ft.SetFID(1)
-    ft.SetGeometry(geom)
-    return ft
+def feature_linestring() -> SimpleNamespace:
+    # LINESTRING (1.5 1.5, 2.5 1.5, 3.5 2.5, 4.5 2.5)
+    xy = [1.5, 1.5, 2.5, 1.5, 3.5, 2.5, 4.5, 2.5]
+    return _feature(fgb.make_geometry(fgb.GT_LINESTRING, xy))
 
 
 @pytest.fixture
-def feature_point(point_defn: ogr.FeatureDefn) -> ogr.Feature:
-    ft = ogr.Feature(point_defn)
-    geom = ogr.Geometry(ogr.wkbPoint)
-    geom.AddPoint_2D(1.5, 1.5)
-    ft.SetFID(1)
-    ft.SetGeometry(geom)
-    return ft
+def feature_point() -> SimpleNamespace:
+    return _feature(fgb.make_geometry(fgb.GT_POINT, [1.5, 1.5]))
 
 
 @pytest.fixture
-def feature_polygon(polygon_defn: ogr.FeatureDefn) -> ogr.Feature:
-    wkt = "POLYGON ((1.5 2.5, 2.5 2.5, 2.5 1.5, 1.5 1.5, 1.5 2.5))"
-    geom = ogr.CreateGeometryFromWkt(wkt)
-    ft = ogr.Feature(polygon_defn)
-    ft.SetFID(1)
-    ft.SetGeometry(geom)
-    return ft
+def feature_polygon() -> SimpleNamespace:
+    # POLYGON ((1.5 2.5, 2.5 2.5, 2.5 1.5, 1.5 1.5, 1.5 2.5))
+    xy = [1.5, 2.5, 2.5, 2.5, 2.5, 1.5, 1.5, 1.5, 1.5, 2.5]
+    return _feature(fgb.make_geometry(fgb.GT_POLYGON, xy, ends=[5]))
 
 
 @pytest.fixture(scope="session")
-def feature_polygon_complex(polygon_defn: ogr.FeatureDefn) -> ogr.Feature:
-    wkt = "POLYGON ((4.5 5.5, 4.5 2.5, 6.5 2.5, 6.5 3.5, 5.5 3.5, 5.5 5.5, 4.5 5.5))"
-    geom = ogr.CreateGeometryFromWkt(wkt)
-    ft = ogr.Feature(polygon_defn)
-    ft.SetFID(1)
-    ft.SetGeometry(geom)
-    return ft
+def feature_polygon_complex() -> SimpleNamespace:
+    # POLYGON ((4.5 5.5, 4.5 2.5, 6.5 2.5, 6.5 3.5, 5.5 3.5, 5.5 5.5, 4.5 5.5))
+    xy = [4.5, 5.5, 4.5, 2.5, 6.5, 2.5, 6.5, 3.5, 5.5, 3.5, 5.5, 5.5, 4.5, 5.5]
+    return _feature(fgb.make_geometry(fgb.GT_POLYGON, xy, ends=[7]))

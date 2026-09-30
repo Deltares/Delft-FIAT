@@ -132,8 +132,10 @@ class CSVParser:
         # Check if the index has been provided
         if index is not None and self.columns is not None:
             if index not in self.columns:
-                raise ValueError(f"Given index column ({index}) not found \
-in the columns ({self.columns})")
+                raise ValueError(
+                    f"Given index column ({index}) not found \
+in the columns ({self.columns})"
+                )
             idcol = self.columns.index(index)
             self.index_col = idcol
             index_list = []
@@ -143,8 +145,10 @@ in the columns ({self.columns})")
         if "dtypes" in self.meta:
             dtypes = self.meta.pop("dtypes")
             if len(dtypes) != self.ncol:
-                raise ValueError(f"Length of dtypes ({len(dtypes)}) in meta does not \
-match the amount of columns in the dataset ({len(self.columns)})")
+                raise ValueError(
+                    f"Length of dtypes ({len(dtypes)}) in meta does not \
+match the amount of columns in the dataset ({len(self.columns)})"
+                )
 
             dtypes = [_dtypes_from_string[item] for item in dtypes]
 
@@ -190,7 +194,7 @@ match the amount of columns in the dataset ({len(self.columns)})")
                 count[item] += 1
 
         # Solve unnamed column headers
-        cols = [col if col else f"Unnamed_{idx+1}" for idx, col in enumerate(cols)]
+        cols = [col if col else f"Unnamed_{idx + 1}" for idx, col in enumerate(cols)]
         self.columns = cols
 
 

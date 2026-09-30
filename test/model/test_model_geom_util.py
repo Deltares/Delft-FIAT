@@ -91,7 +91,7 @@ def test_generate_output_filepaths(
 
     # Assert the output
     assert len(out) == 2
-    assert out[0] == Path(tmp_path, "foo.gpkg")
+    assert out[0] == Path(tmp_path, "foo.fgb")
 
 
 def test_generate_output_filepaths_none(
@@ -106,7 +106,7 @@ def test_generate_output_filepaths_none(
 
     # Assert the output
     assert len(out) == 1
-    assert out[0] == Path(tmp_path, "foo.gpkg")
+    assert out[0] == Path(tmp_path, "foo.fgb")
 
 
 def test_generate_output_filepaths_add(
@@ -121,8 +121,8 @@ def test_generate_output_filepaths_add(
 
     # Assert the output
     assert len(out) == 2
-    assert out[0] == Path(tmp_path, "foo.gpkg")
-    assert out[1] == Path(tmp_path, "bar.gpkg")
+    assert out[0] == Path(tmp_path, "foo.fgb")
+    assert out[1] == Path(tmp_path, "bar.fgb")
 
 
 def test_get_exposure_meta(

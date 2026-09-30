@@ -8,7 +8,6 @@ from pyproj.crs import CRS
 
 from fiat.util import (
     GEOM_DRIVER_MAP,
-    GRID_DRIVER_MAP,
     DummyLock,
     DummyWriter,
     _diff_table,
@@ -146,10 +145,10 @@ def test_distribute_threads_fill():
 
 
 def test_driver_maps():
-    # Simply assert some key drivers
-    assert ".gpkg" in GEOM_DRIVER_MAP
+    # FlatGeobuf is the only supported vector format.
+    assert ".fgb" in GEOM_DRIVER_MAP
+    assert ".gpkg" not in GEOM_DRIVER_MAP
     assert ".tif" not in GEOM_DRIVER_MAP
-    assert ".fgb" not in GRID_DRIVER_MAP
 
 
 def test_dummy_lock():

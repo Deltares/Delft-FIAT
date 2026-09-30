@@ -244,8 +244,10 @@ class TableBase(BaseStruct, metaclass=ABCMeta):
         if columns is None:
             columns = [f"col_{num}" for num in range(self.ncol)]
         if len(columns) != self.ncol:
-            raise ValueError(f"Size of columns ({len(columns)}) not the same \
-as the data ({self.ncol})")
+            raise ValueError(
+                f"Size of columns ({len(columns)}) not the same \
+as the data ({self.ncol})"
+            )
 
         # Create the column indexing
         self._columns = dict(zip(columns, range(self.ncol)))
