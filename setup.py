@@ -22,8 +22,13 @@ directives_fiat = {
 }
 
 # Set some global variables
+# CURRENT Location
+HERE = os.path.dirname(__file__)
 # Set all extensions
-EXTENSIONS = glob.glob("src/fiat/**/*.pyx", recursive=True)
+EXTENSIONS = glob.glob(
+    os.path.join("src", "fiat", "**", "*.pyx"),
+    recursive=True,
+)
 # The flatgeobuf source directory
 FGB_DIR = os.path.join("src", "fiat", "driver", "_fgb")
 # Set the numpy macros

@@ -2,7 +2,7 @@
 prune **/*.egg-info
 
 # Include extra in the sdist
-recursive-include tests *
+recursive-include test *
 
 # Include the extensions
 recursive-include src *.pyx *.c *.cpp *.h
