@@ -1,2 +1,8 @@
-prune src/*.egg-info
-recursive-exclude test *
+# No egg-info pls, except for sources.txt
+prune **/*.egg-info
+
+# Include extra in the sdist
+recursive-include tests *
+
+# Include the extensions
+recursive-include src *.pyx *.c *.cpp *.h

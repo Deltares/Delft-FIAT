@@ -71,12 +71,12 @@ classifiers = [
 
 [project.optional-dependencies] # Optional
 all = [
+    "cython",
     "pyinstaller>=6.0.0",
     "tomlkit",
 ]
 dev = [
     "build",
-    "cython",
     "mypy",
     "pre-commit",
     "ruff",
