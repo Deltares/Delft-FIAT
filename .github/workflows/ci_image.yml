@@ -42,7 +42,7 @@ jobs:
 
       - name: Build image
         run: |
-          podman build -f Dockerfile \
+          podman build -f Containerfile \
           --build-arg="PIXIENV=default" --build-arg="UID=$(id -u)" \
           -t fiat .
 
