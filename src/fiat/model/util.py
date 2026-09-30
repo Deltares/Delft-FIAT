@@ -2,9 +2,7 @@
 
 import math
 from itertools import product
-from typing import Callable, Generator
-
-import numpy as np
+from typing import Generator
 
 from fiat._core import Interp1D
 from fiat.check import (
@@ -247,15 +245,3 @@ def get_vulnerability_meta(
         max=imax,
     )
     return meta
-
-
-def vectorize_function(
-    fn: Callable,
-    skip: int,
-    dtype: type = np.float32,
-) -> Callable:
-    """Vectorize a function simply."""
-    na = fn.__code__.co_argcount
-    excluced = set(fn.__code__.co_varnames[skip:na])
-    fn_vec = np.vectorize(fn, otypes=[dtype], excluded=excluced)
-    return fn_vec
