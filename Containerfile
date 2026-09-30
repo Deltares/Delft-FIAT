@@ -1,18 +1,26 @@
-FROM debian:bookworm-slim AS base
+FROM fedora:44 AS base
+
+# Input arguments
 ARG PIXIENV
 ARG UID=1000
-RUN apt-get update && apt-get install -y curl && apt-get install -y vim && apt-get install -y binutils
 
+# Install some handy packages and build dependencies
+RUN dnf check-update && dnf -y update \
+  && dnf -y install curl gcc g++ vim
+
+# Set the user and the home directory
 RUN useradd deltares
 RUN usermod -u ${UID} deltares
 USER deltares
 WORKDIR /home/deltares
 
+# Install pixi and copy the project meta and code
 RUN curl -fsSL https://pixi.sh/install.sh | bash
 ENV PATH=/home/deltares/.pixi/bin:$PATH
 COPY pixi.lock pyproject.toml README.md ./
 COPY --chown=deltares:deltares src/fiat ./src/fiat
 
+# Install pixi environment
 RUN chmod u+x src/ \
   && pixi install -e ${PIXIENV} \
   && rm -rf .cache \

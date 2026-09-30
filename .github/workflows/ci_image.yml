@@ -1,11 +1,11 @@
 ---
-name: Build Docker
+name: Build Image
 on:
   push:
     branches:
       - master
     paths:
-      - Dockerfile
+      - Containerfile
       - pyproject.toml
       - pixi.lock
       - .github/workflows/ci_docker.yml
@@ -13,13 +13,13 @@ on:
     branches:
       - master
     paths:
-      - Dockerfile
+      - Containerfile
       - pyproject.toml
       - pixi.lock
       - .github/workflows/ci_docker.yml
 
 jobs:
-  docker:
+  image:
     defaults:
       run:
         shell: bash -l {0}
@@ -40,18 +40,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Build docker image
+      - name: Build image
         run: |
-          docker build -f Dockerfile --build-arg="PIXIENV=default" --build-arg="UID=1001" -t fiat .
+          podman build -f Dockerfile \
+          --build-arg="PIXIENV=default" --build-arg="UID=$(id -u)" \
+          -t fiat .
 
-      - name: Execute docker container
-        uses: addnab/docker-run-action@v3
-        with:
-          username: deltares
-          options: -v ${{ github.workspace }}/data:/home/deltares/data
-          shell: bash
-          image: fiat:latest
-          run: |
-            pixi run testdata
-            pixi run fiat run data/geom_event.toml
-            exit
+      - name: Execute container
+        run: |
+          podman run --rm -v "${{ github.workspace }}/data:/home/deltares/data:U" \
+          --entrypoint bash fiat:latest -lc \
+          'pixi run testdata && pixi run fiat run data/geom_event.toml'
