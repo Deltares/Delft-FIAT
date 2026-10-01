@@ -10,7 +10,7 @@ from fiat.cfg import Configurations
 from fiat.container import Container
 from fiat.error import FIATDataError
 from fiat.log import spawn_logger
-from fiat.util import EXPOSURE_GRID_FILE, deter_type, get_crs_repr
+from fiat.util import EXPOSURE_GRID_FILE, get_crs_repr
 
 logger = spawn_logger(__name__)
 
@@ -193,10 +193,11 @@ def check_hazard_rp(
 
     Applies to risk calculations.
     """
-    bn_str = "\n".join(rp).encode()
-    if deter_type(bn_str, len(rp) - 1) == 3:
+    try:
+        out = [float(n) for n in rp]
+    except BaseException:
         raise FIATDataError(f"Wrong type in return periods: {rp}")
-    return [float(n) for n in rp]
+    return out
 
 
 def check_hazard_subsets(
