@@ -602,6 +602,12 @@ class FlatGeobufWriter:
     envelopes and byte offsets are recorded. A separate :func:`finalize` pass
     builds the packed Hilbert R-tree and writes the final indexed ``.fgb``.
 
+    To benefit from multiprocessing, serialized features are first accumulated in
+    an in-memory buffer and only flushed to the shared body file once the buffer
+    exceeds ``buffer_size`` bytes (or on :meth:`close`). Each flush takes the
+    optional lock once for a whole block of features instead of once per feature,
+    which greatly reduces lock contention between worker processes.
+
     Parameters
     ----------
     path : str
@@ -618,10 +624,15 @@ class FlatGeobufWriter:
         R-tree node size (default 16).
     lock : optional
         A multiprocessing lock guarding appends to the shared body file.
+    buffer_size : int, optional
+        In-memory buffer threshold in bytes. The buffer is flushed to the body
+        file once the accumulated serialized features reach this size. Defaults
+        to 50 MiB.
     """
 
     def __init__(self, path, col_names, col_types, geom_type, name="",
-                 crs_wkt="", crs_org="", crs_code=0, node_size=16, lock=None):
+                 crs_wkt="", crs_org="", crs_code=0, node_size=16, lock=None,
+                 buffer_size=50 * 1024 * 1024):
         self.path = os.fspath(path)
         self.body_path = self.path + ".body"
         self.name = name or ""
@@ -633,37 +644,68 @@ class FlatGeobufWriter:
         self.crs_code = int(crs_code or 0)
         self.node_size = int(node_size)
         self.lock = lock
+        self.buffer_size = int(buffer_size)
         self.records = []  # (minx, miny, maxx, maxy, offset, length)
+        self._buffer = bytearray()  # accumulated serialized features
+        # Pending records for buffered features: (minx, miny, maxx, maxy,
+        # local_offset, length). local_offset is relative to the buffer start
+        # and resolved to an absolute body offset on flush.
+        self._pending = []
         self._body = open(self.body_path, "ab")
 
     def add_feature(self, xy, ends=None, parts=None, values=None):
-        """Append one feature to the shared body file.
+        """Append one feature to the in-memory buffer.
 
-        The feature is serialized, then appended to the (unindexed) body file
-        under the optional multiprocessing lock. We record its envelope + byte
-        offset + length so the finalize pass can build the R-tree and reorder.
+        The feature is serialized and appended to the in-memory buffer (no lock,
+        no file I/O). Its envelope + buffer-local offset + length are recorded so
+        the pending records can be resolved to absolute body offsets when the
+        buffer is flushed. The buffer is flushed to the shared body file once it
+        exceeds ``buffer_size`` bytes.
         """
         # Encode the attributes, then serialize the whole feature.
         props = _encode_properties(list(values), self.col_types) if values else b""
         buf = _feature_bytes(self.geom_type, xy, ends, parts, props)
         env = _xy_envelope(xy)
+        # Append to the in-memory buffer, remembering the buffer-local offset.
+        local_offset = len(self._buffer)
+        self._buffer += buf
+        self._pending.append((env[0], env[1], env[2], env[3], local_offset,
+                              len(buf)))
+        # Flush once the buffer grows past the configured threshold.
+        if len(self._buffer) >= self.buffer_size:
+            self._flush()
+
+    def _flush(self):
+        """Flush the in-memory buffer to the shared body file.
+
+        Takes the optional lock once for the whole block, appends the buffer to
+        the body file and resolves every pending feature's buffer-local offset to
+        an absolute body offset for the finalize pass.
+        """
+        if not self._pending:
+            return
         # Serialize appends across processes with the lock (if provided).
         if self.lock is not None:
             self.lock.acquire()
         try:
             self._body.seek(0, os.SEEK_END)
-            offset = self._body.tell()
-            self._body.write(buf)
+            base = self._body.tell()
+            self._body.write(self._buffer)
             self._body.flush()
         finally:
             if self.lock is not None:
                 self.lock.release()
-        # Remember where the feature landed and its bbox for the index build.
-        self.records.append((env[0], env[1], env[2], env[3], offset, len(buf)))
+        # Resolve buffer-local offsets to absolute body offsets.
+        for minx, miny, maxx, maxy, local_offset, length in self._pending:
+            self.records.append((minx, miny, maxx, maxy, base + local_offset,
+                                 length))
+        self._buffer = bytearray()
+        self._pending = []
 
     def close(self):
-        """Close the body file handle (does not finalize)."""
+        """Flush any buffered features and close the body file handle."""
         if self._body is not None:
+            self._flush()
             self._body.flush()
             self._body.close()
             self._body = None
