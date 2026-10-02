@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Generator
 
 import pytest
 from pytest_mock import MockerFixture
@@ -6,7 +7,10 @@ from pytest_mock import MockerFixture
 from fiat.cli.util import file_path_check, run_log, run_profiler
 
 
-def test_file_path_check(tmp_path: Path, monkeypatch):
+def test_file_path_check(
+    monkeypatch: Generator[pytest.MonkeyPatch, None, None],
+    tmp_path: Path,
+):
     # Set a file and a directory to find
     config = tmp_path / "settings.toml"
     config.write_text("[model]\n", encoding="utf-8")
@@ -19,12 +23,17 @@ def test_file_path_check(tmp_path: Path, monkeypatch):
     assert file_path_check(output) == output
 
 
-def test_file_path_check_error(tmp_path: Path, monkeypatch):
+def test_file_path_check_error(
+    monkeypatch: Generator[pytest.MonkeyPatch, None, None],
+    tmp_path: Path,
+):
     monkeypatch.chdir(tmp_path)
-    missing = tmp_path / "missing.toml"
 
     # A non existing path raises
-    with pytest.raises(FileNotFoundError, match=f"{missing} is not a valid path"):
+    with pytest.raises(
+        FileNotFoundError,
+        match="missing.toml is not a valid path",
+    ):
         file_path_check("missing.toml")
 
 

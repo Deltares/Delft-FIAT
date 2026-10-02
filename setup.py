@@ -72,25 +72,34 @@ def _module_name(pyx_path: str) -> str:
 
 
 def _fgb_ext() -> list:
-    """Set the flatgeobuf extension."""
-    ext = os.path.join(FGB_DIR, "fgb.pyx")
+    """Set the flatgeobuf extensions (bindings, reader, writer)."""
     global EXTENSIONS
-    EXTENSIONS.remove(ext)
-    name = _module_name(os.path.normpath(ext))
-    return [
-        Extension(
-            name=name,
-            sources=[
-                ext,
-                os.path.join(FGB_DIR, "packedrtree.cpp"),
-                os.path.join(FGB_DIR, "fgb_c.cpp"),
-            ],
-            include_dirs=[numpy.get_include(), FGB_DIR, *_include_directories()],
-            define_macros=MACROS,
-            language="c++",
-            extra_compile_args=_cpp_flags(),
-        )
+    cpp_sources = [
+        os.path.join(FGB_DIR, "fgb_c.cpp"),
+        os.path.join(FGB_DIR, "packedrtree.cpp"),
     ]
+    include_dirs = [numpy.get_include(), FGB_DIR, *_include_directories()]
+    # Each compiled module and the extra C++ sources it needs to link.
+    modules = {
+        "_reader": cpp_sources,
+        "_serialize": [],
+        "_writer": cpp_sources,
+    }
+    exts = []
+    for stem, extra in modules.items():
+        pyx = os.path.join(FGB_DIR, stem + ".pyx")
+        EXTENSIONS.remove(pyx)
+        exts.append(
+            Extension(
+                name=_module_name(os.path.normpath(pyx)),
+                sources=[pyx, *extra],
+                include_dirs=include_dirs,
+                define_macros=MACROS,
+                language="c++",
+                extra_compile_args=_cpp_flags(),
+            )
+        )
+    return exts
 
 
 def _pure_cython_ext() -> list:

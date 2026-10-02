@@ -1,16 +1,23 @@
 """GDAL-free vector I/O for FIAT, backed by the custom Cython FlatGeobuf driver.
 
 Only the FlatGeobuf (``.fgb``) format is supported. The low-level engine lives in the
-compiled :mod:`fiat.driver._fgb.fgb` module; this module is the single public entry
-point and re-exports everything (reader/writer, geometry helpers and enum constants)
-so the rest of FIAT only needs to import from ``fiat.driver.fgb``.
+compiled :mod:`fiat.driver._fgb` package, split across the ``_bindings`` (declarations
+and attribute codec), ``_reader`` and ``_writer`` modules; this module is the single
+public entry point and re-exports everything (reader/writer, geometry helpers and enum
+constants) so the rest of FIAT only needs to import from ``fiat.driver.fgb``.
 """
 
 from pathlib import Path
 
 from pyproj import CRS
 
-from fiat.driver._fgb.fgb import (  # noqa: F401
+from fiat.driver._fgb._reader import (  # noqa: F401
+    Feature,
+    FlatGeobufReader,
+    Geometry,
+    make_geometry,
+)
+from fiat.driver._fgb._serialize import (  # noqa: F401
     CT_BINARY,
     CT_BOOL,
     CT_BYTE,
@@ -34,12 +41,10 @@ from fiat.driver._fgb.fgb import (  # noqa: F401
     GT_POLYGON,
     GT_UNKNOWN,
     MAGIC,
-    Feature,
-    FlatGeobufReader,
+)
+from fiat.driver._fgb._writer import (  # noqa: F401
     FlatGeobufWriter,
-    Geometry,
     finalize,
-    make_geometry,
 )
 from fiat.error import DriverNotFoundError
 
@@ -92,7 +97,7 @@ def _crs_from_reader(reader) -> CRS | None:
 class FlatLayer:
     """A read-only view of a FlatGeobuf layer.
 
-    Wraps a :class:`fiat.driver._fgb.fgb.FlatGeobufReader` and exposes the subset of
+    Wraps a :class:`fiat.driver._fgb._reader.FlatGeobufReader` and exposes the subset of
     the former OGR-layer interface FIAT relies on.
     """
 

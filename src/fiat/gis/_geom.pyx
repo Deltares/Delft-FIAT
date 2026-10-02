@@ -2,7 +2,7 @@
 """From-scratch 2D geometry predicates for FIAT (no GEOS / GDAL).
 
 Operates directly on the flat coordinate representation produced by the
-FlatGeobuf driver (:class:`fiat.driver._fgb.fgb.Geometry`):
+FlatGeobuf driver (:class:`fiat.driver._fgb._reader.Geometry`):
 
 * ``xy``    - flat interleaved x, y coordinates (float64),
 * ``ends``  - cumulative coordinate-pair counts per ring/line (uint32),
