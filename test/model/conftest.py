@@ -1,4 +1,5 @@
 from itertools import product
+from math import floor, log10
 from pathlib import Path
 
 import numpy as np
@@ -234,7 +235,17 @@ def run_risk_meta() -> RunMeta:
 
 @pytest.fixture(scope="session")
 def vulnerability_data_run(vulnerability_data: Table) -> Table:
-    new = vulnerability_data.upscale(delta=0.01)
+    # Upscale the vulnerability data to a finer index for the risk run.
+    delta = 0.01
+    index = vulnerability_data.index
+    rnd = abs(floor(log10(delta)))
+    x = np.arange(min(index), max(index) + delta / 2, delta).round(rnd).tolist()
+    x = sorted(set(x + list(index)))
+    data = np.empty((len(x), vulnerability_data.ncol), dtype=np.float64)
+    for idx, col in enumerate(vulnerability_data.columns):
+        data[:, idx] = np.interp(x, index, vulnerability_data[:, col])
+    new = Table(data, index=x, columns=vulnerability_data.columns)
+    new.index_name = vulnerability_data.index_name
     return new
 
 

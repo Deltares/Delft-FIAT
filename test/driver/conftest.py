@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from fiat.driver.csv import CSVParser
+from fiat.driver.csv import parse_csv
 from fiat.driver.handler import BufferHandler, FileBufferHandler
 
 
@@ -76,7 +76,6 @@ def table_array() -> np.ndarray:
 
 
 @pytest.fixture
-def vulnerability_parsed(vulnerability_path: Path) -> CSVParser:
+def vulnerability_table(vulnerability_path: Path):
     bh = FileBufferHandler(vulnerability_path)
-    p = CSVParser(bh, delimiter=",", header=True)
-    return p
+    return parse_csv(bh, delimiter=",", header=True)

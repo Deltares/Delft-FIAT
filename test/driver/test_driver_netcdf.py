@@ -97,9 +97,12 @@ def test_dataset_state_error(hazard_event_path: Path):
         _ = ds.shape
 
 
-def test_dataset_append(hazard_event_path: Path):
-    # Open the dataset
-    ds = NetcdfDriver(hazard_event_path, mode="a")
+def test_dataset_append(hazard_event_tmp_path: Path):
+    # Open a temporary copy in append mode. A copy is used (instead of the
+    # shared read-only asset) because append mode needs write access, and HDF5
+    # refuses to open a file for writing while the session-scoped read handle
+    # (hazard_event_data) still holds the original open.
+    ds = NetcdfDriver(hazard_event_tmp_path, mode="a")
 
     # Assert some simple stuff
     assert ds.mode == 1

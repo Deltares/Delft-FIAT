@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from fiat.driver.csv import CSVParser, Table
+from fiat.driver.csv import Table, parse_csv
 from fiat.driver.fgb import FlatGeobufDriver
 from fiat.driver.handler import FileBufferHandler
 from fiat.driver.netcdf import NetcdfDriver
@@ -39,15 +39,11 @@ def open_csv(
     """
     handler = FileBufferHandler(file)
 
-    parser = CSVParser(
+    return parse_csv(
         handler,
         delimiter,
         header,
         index,
-    )
-
-    return Table.from_parser(
-        parser=parser,
     )
 
 

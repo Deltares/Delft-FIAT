@@ -16,11 +16,11 @@ vendored C++ sources; this module only marshals data to/from Python. The public
 """
 
 import os
-import struct as _struct
 
 import numpy as np
 
 from libc.stdint cimport int32_t, uint8_t, uint16_t, uint32_t, uint64_t
+from libc.string cimport memcpy
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 
@@ -123,12 +123,78 @@ cdef bytes _bytes_from_ptr(const uint8_t* p, size_t n):
     return (<char*>p)[:n]
 
 
+# Little-endian readers: pull a fixed-width value out of a (possibly unaligned)
+# byte pointer. The bytes are assembled explicitly so the result is independent
+# of the host's endianness, and floats go through a bit-preserving ``memcpy``.
+cdef inline uint16_t _get_u16(const uint8_t* p) noexcept nogil:
+    return <uint16_t>(p[0] | ((<uint16_t>p[1]) << 8))
+
+
+cdef inline uint32_t _get_u32(const uint8_t* p) noexcept nogil:
+    return ((<uint32_t>p[0]) | ((<uint32_t>p[1]) << 8) |
+            ((<uint32_t>p[2]) << 16) | ((<uint32_t>p[3]) << 24))
+
+
+cdef inline uint64_t _get_u64(const uint8_t* p) noexcept nogil:
+    cdef uint64_t v = 0
+    cdef int b
+    for b in range(8):
+        v |= (<uint64_t>p[b]) << (8 * b)
+    return v
+
+
+cdef inline float _get_f32(const uint8_t* p) noexcept nogil:
+    cdef uint32_t u = _get_u32(p)
+    cdef float f
+    memcpy(&f, &u, 4)
+    return f
+
+
+cdef inline double _get_f64(const uint8_t* p) noexcept nogil:
+    cdef uint64_t u = _get_u64(p)
+    cdef double d
+    memcpy(&d, &u, 8)
+    return d
+
+
+# Little-endian writers: append a fixed-width value to a growing byte vector,
+# mirroring the readers above (explicit byte order, ``memcpy`` for floats).
+cdef inline void _put_u16(vector[uint8_t]& buf, uint16_t v) noexcept nogil:
+    buf.push_back(<uint8_t>v)
+    buf.push_back(<uint8_t>(v >> 8))
+
+
+cdef inline void _put_u32(vector[uint8_t]& buf, uint32_t v) noexcept nogil:
+    cdef int s
+    for s in range(0, 32, 8):
+        buf.push_back(<uint8_t>(v >> s))
+
+
+cdef inline void _put_u64(vector[uint8_t]& buf, uint64_t v) noexcept nogil:
+    cdef int s
+    for s in range(0, 64, 8):
+        buf.push_back(<uint8_t>(v >> s))
+
+
+cdef inline void _put_f32(vector[uint8_t]& buf, float v) noexcept nogil:
+    cdef uint32_t u
+    memcpy(&u, &v, 4)
+    _put_u32(buf, u)
+
+
+cdef inline void _put_f64(vector[uint8_t]& buf, double v) noexcept nogil:
+    cdef uint64_t u
+    memcpy(&u, &v, 8)
+    _put_u64(buf, u)
+
+
 cdef object _decode_properties(const uint8_t* p, size_t n, list col_types):
     """Decode a FlatGeobuf property blob into a list aligned with columns.
 
     The blob is a tight little-endian stream of ``(uint16 column index, value)``
     records, where the value width depends on the column's type. Fixed-width
-    numbers are read directly; strings/binary are length-prefixed (uint32).
+    numbers are read straight off the byte pointer; strings/binary are
+    length-prefixed (uint32).
     """
     cdef Py_ssize_t ncol = len(col_types)
     # Pre-fill with None so columns absent from the blob stay null.
@@ -137,20 +203,19 @@ cdef object _decode_properties(const uint8_t* p, size_t n, list col_types):
     cdef uint16_t col
     cdef int ctype
     cdef uint32_t slen
-    # A bytes view so we can use struct.unpack_from for the fixed-width types.
-    py = _bytes_from_ptr(p, n)
     # Walk record by record until the blob is exhausted.
     while off + 2 <= n:
         # Each record starts with the little-endian column index.
-        col = <uint16_t>(p[off] | (p[off + 1] << 8))
+        col = _get_u16(p + off)
         off += 2
         # Defensive: stop on an out-of-range column index.
         if col >= ncol:
             break
         # Dispatch on the column's FlatGeobuf type and advance past its value.
+        # Signed/float values are reinterpreted from their little-endian bits.
         ctype = <int>(<object>col_types[col])
         if ctype == CT_BYTE:
-            values[col] = _struct.unpack_from("<b", py, off)[0]
+            values[col] = <signed char>p[off]
             off += 1
         elif ctype == CT_UBYTE:
             values[col] = p[off]
@@ -159,39 +224,39 @@ cdef object _decode_properties(const uint8_t* p, size_t n, list col_types):
             values[col] = bool(p[off])
             off += 1
         elif ctype == CT_SHORT:
-            values[col] = _struct.unpack_from("<h", py, off)[0]
+            values[col] = <short>_get_u16(p + off)
             off += 2
         elif ctype == CT_USHORT:
-            values[col] = _struct.unpack_from("<H", py, off)[0]
+            values[col] = _get_u16(p + off)
             off += 2
         elif ctype == CT_INT:
-            values[col] = _struct.unpack_from("<i", py, off)[0]
+            values[col] = <int>_get_u32(p + off)
             off += 4
         elif ctype == CT_UINT:
-            values[col] = _struct.unpack_from("<I", py, off)[0]
+            values[col] = _get_u32(p + off)
             off += 4
         elif ctype == CT_LONG:
-            values[col] = _struct.unpack_from("<q", py, off)[0]
+            values[col] = <long long>_get_u64(p + off)
             off += 8
         elif ctype == CT_ULONG:
-            values[col] = _struct.unpack_from("<Q", py, off)[0]
+            values[col] = _get_u64(p + off)
             off += 8
         elif ctype == CT_FLOAT:
-            values[col] = _struct.unpack_from("<f", py, off)[0]
+            values[col] = _get_f32(p + off)
             off += 4
         elif ctype == CT_DOUBLE:
-            values[col] = _struct.unpack_from("<d", py, off)[0]
+            values[col] = _get_f64(p + off)
             off += 8
         elif ctype == CT_STRING or ctype == CT_JSON or ctype == CT_DATETIME:
             # Length-prefixed UTF-8 text.
-            slen = _struct.unpack_from("<I", py, off)[0]
+            slen = _get_u32(p + off)
             off += 4
-            values[col] = py[off:off + slen].decode("utf-8")
+            values[col] = (<char*>(p + off))[:slen].decode("utf-8")
             off += slen
         elif ctype == CT_BINARY:
-            slen = _struct.unpack_from("<I", py, off)[0]
+            slen = _get_u32(p + off)
             off += 4
-            values[col] = bytes(py[off:off + slen])
+            values[col] = (<char*>(p + off))[:slen]
             off += slen
         else:
             break
@@ -205,50 +270,60 @@ cdef bytes _encode_properties(list values, list col_types):
     ``(uint16 column index, little-endian value)``. Null values are skipped
     entirely (their column index simply never appears in the blob).
     """
-    cdef list out = []
-    cdef Py_ssize_t i
+    cdef vector[uint8_t] buf
+    cdef Py_ssize_t i, n = len(values)
     cdef int ctype
-    for i in range(len(values)):
+    cdef bytes enc
+    cdef const uint8_t* ep
+    cdef uint8_t bval = 0
+    for i in range(n):
         v = values[i]
         # Skip nulls; the decoder defaults missing columns back to None.
         if v is None:
             continue
         # Write the column index, then the value in the column's native width.
+        # Each value is cast through its matching C type so signed/unsigned and
+        # overflow semantics line up with the FlatGeobuf column type.
         ctype = <int>(<object>col_types[i])
-        out.append(_struct.pack("<H", i))
+        _put_u16(buf, <uint16_t>i)
         if ctype == CT_BOOL:
-            out.append(_struct.pack("<B", 1 if v else 0))
+            bval = 1 if v else 0
+            buf.push_back(bval)
         elif ctype == CT_BYTE:
-            out.append(_struct.pack("<b", int(v)))
+            buf.push_back(<uint8_t><signed char>(<int>v))
         elif ctype == CT_UBYTE:
-            out.append(_struct.pack("<B", int(v)))
+            buf.push_back(<uint8_t>(<unsigned int>v))
         elif ctype == CT_SHORT:
-            out.append(_struct.pack("<h", int(v)))
+            _put_u16(buf, <uint16_t>(<int>v))
         elif ctype == CT_USHORT:
-            out.append(_struct.pack("<H", int(v)))
+            _put_u16(buf, <uint16_t>(<unsigned int>v))
         elif ctype == CT_INT:
-            out.append(_struct.pack("<i", int(v)))
+            _put_u32(buf, <uint32_t>(<int>v))
         elif ctype == CT_UINT:
-            out.append(_struct.pack("<I", int(v)))
+            _put_u32(buf, <uint32_t>(<unsigned int>v))
         elif ctype == CT_LONG:
-            out.append(_struct.pack("<q", int(v)))
+            _put_u64(buf, <uint64_t>(<long long>v))
         elif ctype == CT_ULONG:
-            out.append(_struct.pack("<Q", int(v)))
+            _put_u64(buf, <uint64_t>(<unsigned long long>v))
         elif ctype == CT_FLOAT:
-            out.append(_struct.pack("<f", float(v)))
+            _put_f32(buf, <float>v)
         elif ctype == CT_DOUBLE:
-            out.append(_struct.pack("<d", float(v)))
+            _put_f64(buf, <double>v)
         elif ctype == CT_STRING or ctype == CT_JSON or ctype == CT_DATETIME:
             # Length-prefixed UTF-8 text.
             enc = str(v).encode("utf-8")
-            out.append(_struct.pack("<I", len(enc)))
-            out.append(enc)
+            _put_u32(buf, <uint32_t>len(enc))
+            ep = <const uint8_t*><char*>enc
+            buf.insert(buf.end(), ep, ep + len(enc))
         elif ctype == CT_BINARY:
             enc = bytes(v)
-            out.append(_struct.pack("<I", len(enc)))
-            out.append(enc)
-    # Concatenate all the little chunks into one contiguous blob.
-    return b"".join(out)
+            _put_u32(buf, <uint32_t>len(enc))
+            ep = <const uint8_t*><char*>enc
+            buf.insert(buf.end(), ep, ep + len(enc))
+    # Hand back the contiguous blob (empty bytes when nothing was written).
+    if buf.size() == 0:
+        return b""
+    return _bytes_from_ptr(buf.data(), buf.size())
 
 
 # --- Geometry / Feature ---------------------------------------------------
@@ -292,8 +367,8 @@ cdef class Geometry:
 cdef Geometry _make_geometry(GeometryResult* g):
     """Copy a C++ ``GeometryResult`` into a Python :class:`Geometry`.
 
-    The flat C++ vectors are copied element-wise into fresh numpy arrays so the
-    Python object owns its own memory (the C++ struct is transient).
+    The flat C++ vectors are bulk-copied into fresh numpy arrays so the Python
+    object owns its own memory (the C++ struct is transient and reused).
     """
     cdef Geometry geom = Geometry.__new__(Geometry)
     cdef Py_ssize_t n = g.xy.size()
@@ -303,17 +378,17 @@ cdef Geometry _make_geometry(GeometryResult* g):
     cdef object xy = np.empty(n, dtype=np.float64)
     cdef object ends = np.empty(ne, dtype=np.uint32)
     cdef object parts = np.empty(npart, dtype=np.uint32)
-    # Typed memoryviews for the fast element-wise copy (None when empty).
+    # Typed memoryviews over the destinations (None when empty).
     cdef double[::1] xy_v = xy if n else None
     cdef uint32_t[::1] ends_v = ends if ne else None
     cdef uint32_t[::1] parts_v = parts if npart else None
-    cdef Py_ssize_t i
-    for i in range(n):
-        xy_v[i] = g.xy[i]
-    for i in range(ne):
-        ends_v[i] = g.ends[i]
-    for i in range(npart):
-        parts_v[i] = g.parts[i]
+    # Bulk-copy each vector straight into its contiguous numpy buffer.
+    if n:
+        memcpy(&xy_v[0], g.xy.data(), n * sizeof(double))
+    if ne:
+        memcpy(&ends_v[0], g.ends.data(), ne * sizeof(uint32_t))
+    if npart:
+        memcpy(&parts_v[0], g.parts.data(), npart * sizeof(uint32_t))
     # Transfer the scalar metadata (type, bounding box, emptiness).
     geom.type = g.geometry_type
     geom.xy = xy
@@ -373,14 +448,12 @@ cdef class Feature:
 
     def get_field(self, key):
         """Return an attribute value by column index or name."""
-        cdef Py_ssize_t idx
+        # Integer index is the hot path; only strings need the name lookup.
         if isinstance(key, str):
             if self._columns is None:
                 raise KeyError(key)
-            idx = self._columns[key]
-        else:
-            idx = key
-        return self.values[idx]
+            return self.values[self._columns[key]]
+        return self.values[key]
 
     def __getitem__(self, key):
         return self.get_field(key)
@@ -551,48 +624,67 @@ cdef class FlatGeobufReader:
 
 
 # --- Writer ---------------------------------------------------------------
-cdef bytes _feature_bytes(int geom_type, object xy, object ends, object parts,
+cdef tuple _feature_bytes(int geom_type, object xy, object ends, object parts,
                           bytes props):
-    """Serialize one feature to a size-prefixed FlatBuffer (bytes).
+    """Serialize one feature and report its envelope in a single pass.
 
     Marshals the numpy geometry arrays + encoded property blob into C++ vectors
-    and hands them to ``build_feature``.
+    and hands them to ``build_feature``. While copying the interleaved
+    coordinates it also accumulates the bounding box, so the writer does not
+    need a separate numpy pass over ``xy`` to record the feature envelope.
+
+    Returns ``(buf, minx, miny, maxx, maxy)``.
     """
     cdef vector[double] cxy
     cdef vector[uint32_t] cends
     cdef vector[uint32_t] cparts
     cdef vector[uint8_t] cprops
-    cdef Py_ssize_t i
-    # Copy the interleaved coordinates into a C++ vector.
+    cdef Py_ssize_t n, ne, npart, nprops
     cdef double[::1] xy_v = np.ascontiguousarray(xy, dtype=np.float64).ravel()
     cdef uint32_t[::1] ends_v
     cdef uint32_t[::1] parts_v
-    for i in range(xy_v.shape[0]):
-        cxy.push_back(xy_v[i])
+    cdef double minx = 0.0, miny = 0.0, maxx = 0.0, maxy = 0.0
+    cdef double x, y
+    cdef Py_ssize_t i
+
+    # Bulk-copy the interleaved coordinates and fold in the bounding box.
+    n = xy_v.shape[0]
+    if n:
+        cxy.resize(n)
+        memcpy(cxy.data(), &xy_v[0], n * sizeof(double))
+        minx = maxx = xy_v[0]
+        miny = maxy = xy_v[1]
+        for i in range(2, n, 2):
+            x = xy_v[i]
+            y = xy_v[i + 1]
+            if x < minx:
+                minx = x
+            elif x > maxx:
+                maxx = x
+            if y < miny:
+                miny = y
+            elif y > maxy:
+                maxy = y
     # Ring ends (optional, e.g. absent for a single point).
     if ends is not None and len(ends):
         ends_v = np.ascontiguousarray(ends, dtype=np.uint32).ravel()
-        for i in range(ends_v.shape[0]):
-            cends.push_back(ends_v[i])
+        ne = ends_v.shape[0]
+        cends.resize(ne)
+        memcpy(cends.data(), &ends_v[0], ne * sizeof(uint32_t))
     # Part boundaries (only MultiPolygon).
     if parts is not None and len(parts):
         parts_v = np.ascontiguousarray(parts, dtype=np.uint32).ravel()
-        for i in range(parts_v.shape[0]):
-            cparts.push_back(parts_v[i])
+        npart = parts_v.shape[0]
+        cparts.resize(npart)
+        memcpy(cparts.data(), &parts_v[0], npart * sizeof(uint32_t))
     # The already-encoded attribute blob.
-    for i in range(len(props)):
-        cprops.push_back(<uint8_t>props[i])
+    nprops = len(props)
+    if nprops:
+        cprops.resize(nprops)
+        memcpy(cprops.data(), <const uint8_t*><char*>props, nprops)
     cdef string out = build_feature(<uint8_t>geom_type, cxy, cends, cparts, cprops)
-    return _bytes_from_ptr(<const uint8_t*>out.data(), out.size())
-
-
-cdef tuple _xy_envelope(object xy):
-    """Return the ``(minx, miny, maxx, maxy)`` bbox of interleaved xy coords."""
-    arr = np.asarray(xy, dtype=np.float64).reshape(-1, 2)
-    if arr.shape[0] == 0:
-        return (0.0, 0.0, 0.0, 0.0)
-    return (float(arr[:, 0].min()), float(arr[:, 1].min()),
-            float(arr[:, 0].max()), float(arr[:, 1].max()))
+    return (_bytes_from_ptr(<const uint8_t*>out.data(), out.size()),
+            minx, miny, maxx, maxy)
 
 
 class FlatGeobufWriter:
@@ -662,15 +754,15 @@ class FlatGeobufWriter:
         buffer is flushed. The buffer is flushed to the shared body file once it
         exceeds ``buffer_size`` bytes.
         """
-        # Encode the attributes, then serialize the whole feature.
+        # Encode the attributes, then serialize the whole feature. Serialization
+        # also returns the geometry envelope, computed in the same pass.
         props = _encode_properties(list(values), self.col_types) if values else b""
-        buf = _feature_bytes(self.geom_type, xy, ends, parts, props)
-        env = _xy_envelope(xy)
+        buf, minx, miny, maxx, maxy = _feature_bytes(
+            self.geom_type, xy, ends, parts, props)
         # Append to the in-memory buffer, remembering the buffer-local offset.
         local_offset = len(self._buffer)
         self._buffer += buf
-        self._pending.append((env[0], env[1], env[2], env[3], local_offset,
-                              len(buf)))
+        self._pending.append((minx, miny, maxx, maxy, local_offset, len(buf)))
         # Flush once the buffer grows past the configured threshold.
         if len(self._buffer) >= self.buffer_size:
             self._flush()

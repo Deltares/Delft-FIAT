@@ -93,6 +93,8 @@ size_t parse_header(const uint8_t* buf, size_t len, HeaderResult& out) {
     // Pull the attribute column names and types (aligned by index).
     if (h->columns()) {
         const auto* cols = h->columns();
+        out.col_names.reserve(cols->size());
+        out.col_types.reserve(cols->size());
         for (uint32_t i = 0; i < cols->size(); ++i) {
             const Column* c = cols->Get(i);
             out.col_names.push_back(c->name() ? c->name()->str()
@@ -146,12 +148,14 @@ static void collect_simple(const Geometry* geo, GeometryResult& out) {
     // Copy the interleaved x, y coordinates.
     const auto* xy = geo->xy();
     if (xy) {
+        out.xy.reserve(out.xy.size() + xy->size());
         for (uint32_t i = 0; i < xy->size(); ++i) out.xy.push_back(xy->Get(i));
     }
     // Copy the ring ends, shifting them by the component's base offset so they
     // stay global (cumulative over all previously collected components).
     const auto* ends = geo->ends();
     if (ends && ends->size() > 0) {
+        out.ends.reserve(out.ends.size() + ends->size());
         for (uint32_t i = 0; i < ends->size(); ++i)
             out.ends.push_back(base_pairs + ends->Get(i));
     } else if (xy) {
@@ -183,14 +187,12 @@ static flatbuffers::Offset<Geometry> build_polygon(
     size_t pair_start, size_t pair_end, const std::vector<uint32_t>& ends,
     size_t end_start, size_t end_end, uint8_t geom_type) {
     // Copy this polygon's coordinate pairs into a local, zero-based array.
-    std::vector<double> xy;
-    for (size_t p = pair_start; p < pair_end; ++p) {
-        xy.push_back(xy_ptr[2 * p]);
-        xy.push_back(xy_ptr[2 * p + 1]);
-    }
+    // ``xy_ptr`` is contiguous interleaved x, y, so the slice copies directly.
+    std::vector<double> xy(xy_ptr + 2 * pair_start, xy_ptr + 2 * pair_end);
     // Re-base the ring ends so they are relative to this polygon's first pair.
     std::vector<uint32_t> local_ends;
     if (end_end > end_start) {
+        local_ends.reserve(end_end - end_start);
         for (size_t e = end_start; e < end_end; ++e)
             local_ends.push_back(ends[e] - static_cast<uint32_t>(pair_start));
     }
@@ -212,6 +214,7 @@ std::string build_feature(uint8_t geom_type, const std::vector<double>& xy,
         !parts.empty()) {
         // MultiPolygon: emit each polygon as a child geometry under `parts`.
         std::vector<flatbuffers::Offset<Geometry>> part_offsets;
+        part_offsets.reserve(parts.size());
         size_t end_start = 0, pair_start = 0;
         for (size_t p = 0; p < parts.size(); ++p) {
             // `parts[p]` is the cumulative ring count at the end of polygon p;
