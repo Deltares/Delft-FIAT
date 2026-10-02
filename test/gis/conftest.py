@@ -61,3 +61,57 @@ def feature_polygon_complex() -> SimpleNamespace:
     # POLYGON ((4.5 5.5, 4.5 2.5, 6.5 2.5, 6.5 3.5, 5.5 3.5, 5.5 5.5, 4.5 5.5))
     xy = [4.5, 5.5, 4.5, 2.5, 6.5, 2.5, 6.5, 3.5, 5.5, 3.5, 5.5, 5.5, 4.5, 5.5]
     return _feature(fgb.make_geometry(fgb.GT_POLYGON, xy, ends=[7]))
+
+
+@pytest.fixture(scope="session")
+def feature_multipoint() -> SimpleNamespace:
+    # MULTIPOINT (0 0, 2 2)
+    xy = [0.0, 0.0, 2.0, 2.0]
+    return _feature(fgb.make_geometry(fgb.GT_MULTIPOINT, xy))
+
+
+@pytest.fixture(scope="session")
+def feature_multilinestring() -> SimpleNamespace:
+    # MULTILINESTRING ((0 0, 1 0), (3 0, 4 0))
+    xy = [0.0, 0.0, 1.0, 0.0, 3.0, 0.0, 4.0, 0.0]
+    return _feature(fgb.make_geometry(fgb.GT_MULTILINESTRING, xy, ends=[2, 4]))
+
+
+@pytest.fixture(scope="session")
+def feature_polygon_hole() -> SimpleNamespace:
+    # POLYGON ((0 0, 4 0, 4 4, 0 4, 0 0), (1 1, 3 1, 3 3, 1 3, 1 1))
+    xy = [
+        0.0, 0.0, 4.0, 0.0, 4.0, 4.0, 0.0, 4.0, 0.0, 0.0,
+        1.0, 1.0, 3.0, 1.0, 3.0, 3.0, 1.0, 3.0, 1.0, 1.0,
+    ]  # fmt: skip
+    return _feature(fgb.make_geometry(fgb.GT_POLYGON, xy, ends=[5, 10]))
+
+
+@pytest.fixture(scope="session")
+def feature_multipolygon() -> SimpleNamespace:
+    # MULTIPOLYGON (((0 0, 1 0, 1 1, 0 1, 0 0)), ((2 2, 3 2, 3 3, 2 3, 2 2)))
+    xy = [
+        0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
+        2.0, 2.0, 3.0, 2.0, 3.0, 3.0, 2.0, 3.0, 2.0, 2.0,
+    ]  # fmt: skip
+    geom = fgb.make_geometry(fgb.GT_MULTIPOLYGON, xy, ends=[5, 10], parts=[1, 2])
+    return _feature(geom)
+
+
+@pytest.fixture(scope="session")
+def feature_polygon_concave() -> SimpleNamespace:
+    # POLYGON ((0 0, 4 0, 4 1, 1 1, 1 3, 4 3, 4 4, 0 4, 0 0)); centroid outside
+    xy = [
+        0.0, 0.0, 4.0, 0.0, 4.0, 1.0, 1.0, 1.0, 1.0, 3.0,
+        4.0, 3.0, 4.0, 4.0, 0.0, 4.0, 0.0, 0.0,
+    ]  # fmt: skip
+    return _feature(fgb.make_geometry(fgb.GT_POLYGON, xy, ends=[9]))
+
+
+@pytest.fixture(scope="session")
+def exposure_feature_geom(exposure_geom_data: FlatGeobufDriver):
+    """Return the geometry of exposure feature with object_id 1."""
+    for ft in exposure_geom_data.layer:
+        if ft.get_field("object_id") == 1:
+            return ft.geometry
+    raise AssertionError("No feature with object_id=1")

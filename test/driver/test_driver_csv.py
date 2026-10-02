@@ -1,8 +1,11 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
 
 from fiat.driver.csv import Table, parse_csv
 from fiat.driver.handler import BufferHandler, FileBufferHandler
+from fiat.open import open_csv
 
 
 def test_parse_csv_default(file_buffer_handler: FileBufferHandler):
@@ -68,6 +71,64 @@ def test_parse_csv_errors(file_buffer_handler: FileBufferHandler):
         match=r"^Given index column \(some_var\) not found in the columns \(.*\)$",
     ):
         _ = parse_csv(file_buffer_handler, delimiter=",", header=True, index="some_var")
+
+
+def test_parse_csv_mixed(mixed_buffer_handler: BufferHandler):
+    # Parse a buffer with mixed column dtypes
+    t = parse_csv(mixed_buffer_handler, delimiter=",", header=True)
+
+    # Assert the inferred structure
+    assert isinstance(t, Table)
+    assert t.columns == ("id", "count", "ratio", "label")
+    assert t.dtypes == [str, int, float, str]
+    assert t.data.dtype == object  # Mixed columns fall back to object
+    assert t.shape == (3, 4)
+
+
+def test_parse_csv_mixed_values(mixed_buffer_handler: BufferHandler):
+    # Parse the mixed buffer
+    t = parse_csv(mixed_buffer_handler, delimiter=",", header=True)
+
+    # Assert individual cells, including an empty float cell
+    assert t[0, "count"] == 1
+    assert t[2, "label"] == "gamma"
+    assert np.isnan(t[1, "ratio"])  # Empty cell becomes nan
+
+
+def test_parse_csv_string_index(mixed_buffer_handler: BufferHandler):
+    # Promote the string 'id' column to the index
+    t = parse_csv(mixed_buffer_handler, delimiter=",", header=True, index="id")
+
+    # Assert label based access
+    assert t.index_name == "id"
+    assert t.index == ("row-a", "row-b", "row-c")
+    assert t.columns == ("count", "ratio", "label")
+    assert t["row-a", "count"] == 1
+    assert t["row-c", "ratio"] == 3.25
+
+
+def test_parse_csv_numeric_no_header(numeric_buffer_handler: BufferHandler):
+    # Parse numeric data without a header
+    t = parse_csv(numeric_buffer_handler, delimiter=",", header=False)
+
+    # Assert the generated columns and float backing
+    assert t.columns == ("col_0", "col_1")
+    assert t.dtypes == [int, float]
+    assert t.data.dtype == np.float64  # Numeric columns share a float frame
+    assert t[0, "col_0"] == 1.0
+    assert t[1, "col_1"] == 4.0
+
+
+def test_open_csv(vulnerability_path: Path):
+    # Open a real curve file through the public entry point
+    t = open_csv(vulnerability_path, index="depth")
+
+    # Assert it returns the compiled Table
+    assert isinstance(t, Table)
+    assert t.index_name == "depth"
+    assert t.columns == ("struct_1", "struct_2")
+    assert t.index[:3] == (0.0, 0.25, 0.5)
+    assert t[0.0, "struct_1"] == 0.0
 
 
 def test_table(table_array: np.ndarray):

@@ -1,10 +1,11 @@
 # cython: language_level=3, boundscheck=False, wraparound=False, cdivision=True
-"""Fast 1D linear interpolation"""
+"""Fast 1D linear interpolation."""
+
+from libc.math cimport NAN, isnan
 
 import numpy as np
 
 cimport numpy as cnp
-from libc.math cimport NAN, isnan
 
 cnp.import_array()
 
@@ -38,6 +39,50 @@ cdef class Interp1D:
         self._x = xa
         self._y = ya
         self._n = xa.shape[0]
+
+    def __call__(self, xq):
+        """Evaluate the interpolation at ``xq``.
+
+        Accepts a Python scalar (returns a ``float``) or an array-like (returns
+        a ``float64`` ``numpy.ndarray`` of the same shape). This mirrors the
+        ``scipy`` spline it replaces, so it is a drop-in for both the geometry
+        model (scalar calls) and the grid model (array calls).
+
+        Parameters
+        ----------
+        xq : float or array_like
+            Query locations.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Interpolated values at ``xq``.
+        """
+        if isinstance(xq, (int, float)):
+            return self._eval(xq)
+
+        cdef cnp.ndarray xa = np.ascontiguousarray(xq, dtype=np.float64)
+        cdef cnp.ndarray out = np.empty_like(xa)
+        cdef double[::1] iv = xa.reshape(-1)
+        cdef double[::1] ov = out.reshape(-1)
+        cdef Py_ssize_t k, n = iv.shape[0]
+        with nogil:
+            for k in range(n):
+                ov[k] = self._eval(iv[k])
+        return out
+
+    def __reduce__(self):
+        """Return the reconstruction tuple used by ``pickle``.
+
+        Returns
+        -------
+        tuple
+            Callable and arguments needed to reconstruct the interpolation.
+        """
+        return (
+            Interp1D,
+            (np.asarray(self._x), np.asarray(self._y)),
+        )
 
     cdef double _eval(self, double xq) noexcept nogil:
         cdef Py_ssize_t n = self._n
@@ -78,31 +123,3 @@ cdef class Interp1D:
         y0 = self._y[lo]
         y1 = self._y[lo + 1]
         return y0 + (y1 - y0) * (xq - x0) / (x1 - x0)
-
-    def __call__(self, xq):
-        """Evaluate the interpolation at ``xq``.
-
-        Accepts a Python scalar (returns a ``float``) or an array-like (returns
-        a ``float64`` ``numpy.ndarray`` of the same shape). This mirrors the
-        ``scipy`` spline it replaces, so it is a drop-in for both the geometry
-        model (scalar calls) and the grid model (array calls).
-        """
-        if isinstance(xq, (int, float)):
-            return self._eval(xq)
-
-        cdef cnp.ndarray xa = np.ascontiguousarray(xq, dtype=np.float64)
-        cdef cnp.ndarray out = np.empty_like(xa)
-        cdef double[::1] iv = xa.reshape(-1)
-        cdef double[::1] ov = out.reshape(-1)
-        cdef Py_ssize_t k, n = iv.shape[0]
-        with nogil:
-            for k in range(n):
-                ov[k] = self._eval(iv[k])
-        return out
-
-    def __reduce__(self):
-        # Enable pickling for multiprocessing (e.g. Windows spawn start method).
-        return (
-            Interp1D,
-            (np.asarray(self._x), np.asarray(self._y)),
-        )

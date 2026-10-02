@@ -1,6 +1,6 @@
 # distutils: language = c++
 # cython: language_level=3
-"""Cython FlatGeobuf reader/writer bound to the vendored FlatGeobuf C++ sources.
+"""Cython FlatGeobuf reader/writer backed by vendored FlatGeobuf C++ sources.
 
 This module provides the low-level building blocks used by the drop-in
 ``FlatGeobufDriver`` / ``FlatLayer`` API:
@@ -10,16 +10,16 @@ This module provides the low-level building blocks used by the drop-in
 * :class:`FlatGeobufWriter` - buffered append to a shared body file.
 * :func:`finalize` - build the packed Hilbert R-tree and write the final ``.fgb``.
 
-The heavy lifting (FlatBuffer (de)serialization and the packed R-tree) lives in the
-vendored C++ sources; this module only marshals data to/from Python. The public
-``FlatGeobufDriver`` / ``FlatLayer`` API is exposed from :mod:`fiat.driver.fgb`.
+The vendored C++ sources handle FlatBuffer (de)serialization and the packed
+R-tree; this module marshals data to/from Python. The public
+``FlatGeobufDriver`` / ``FlatLayer`` API is exposed by :mod:`fiat.driver.fgb`.
 """
 
 import os
 
 import numpy as np
 
-from libc.stdint cimport int32_t, uint8_t, uint16_t, uint32_t, uint64_t
+from libc.stdint cimport int32_t, uint16_t, uint32_t, uint64_t, uint8_t
 from libc.string cimport memcpy
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -330,6 +330,9 @@ cdef bytes _encode_properties(list values, list col_types):
 cdef class Geometry:
     """A 2D geometry as flat coordinate arrays plus ring/part boundaries.
 
+    Instances are created by :func:`make_geometry` or by
+    :class:`FlatGeobufReader`.
+
     Attributes
     ----------
     type : int
@@ -355,12 +358,24 @@ cdef class Geometry:
     cdef public bint is_empty
 
     def envelope(self):
-        """Return ``(minx, miny, maxx, maxy)``."""
+        """Return the geometry envelope.
+
+        Returns
+        -------
+        tuple
+            ``(minx, miny, maxx, maxy)``.
+        """
         return (self.minx, self.miny, self.maxx, self.maxy)
 
     @property
     def coords(self):
-        """Return the coordinates reshaped to ``(n, 2)``."""
+        """Return the coordinates reshaped to ``(n, 2)``.
+
+        Returns
+        -------
+        np.ndarray
+            Coordinate array with one x, y pair per row.
+        """
         return np.asarray(self.xy, dtype=np.float64).reshape(-1, 2)
 
 
@@ -415,6 +430,11 @@ def make_geometry(int geom_type, xy, ends=None, parts=None):
         Cumulative coordinate-pair counts per ring/line.
     parts : array-like, optional
         Cumulative ring counts per polygon (MultiPolygon).
+
+    Returns
+    -------
+    Geometry
+        Geometry populated with contiguous numpy coordinate arrays.
     """
     cdef Geometry geom = Geometry.__new__(Geometry)
     xy_arr = np.ascontiguousarray(xy, dtype=np.float64).ravel()
@@ -440,14 +460,47 @@ def make_geometry(int geom_type, xy, ends=None, parts=None):
 
 
 cdef class Feature:
-    """A single feature: a :class:`Geometry` and a list of attribute values."""
+    """A single feature containing geometry and aligned attribute values.
+
+    Attributes
+    ----------
+    geometry : Geometry
+        Feature geometry.
+    values : list
+        Attribute values aligned with the reader's column order.
+    """
 
     cdef public Geometry geometry
     cdef public list values
     cdef public object _columns  # dict name -> index (shared, may be None)
 
-    def get_field(self, key):
+    def __getitem__(self, key):
         """Return an attribute value by column index or name."""
+        return self.get_field(key)
+
+    def geometry_ref(self):
+        """Return the feature geometry.
+
+        Returns
+        -------
+        Geometry
+            Feature geometry (OGR-compat alias).
+        """
+        return self.geometry
+
+    def get_field(self, key):
+        """Return an attribute value by column index or name.
+
+        Parameters
+        ----------
+        key : int | str
+            Attribute position or column name.
+
+        Returns
+        -------
+        object
+            Attribute value.
+        """
         # Integer index is the hot path; only strings need the name lookup.
         if isinstance(key, str):
             if self._columns is None:
@@ -455,17 +508,16 @@ cdef class Feature:
             return self.values[self._columns[key]]
         return self.values[key]
 
-    def __getitem__(self, key):
-        return self.get_field(key)
-
-    def geometry_ref(self):
-        """Return the feature geometry (OGR-compat alias)."""
-        return self.geometry
-
 
 # --- Reader ---------------------------------------------------------------
 cdef class FlatGeobufReader:
-    """Read a FlatGeobuf file: header metadata, iteration and bbox selection."""
+    """Read FlatGeobuf metadata, features and indexed bbox selections.
+
+    Parameters
+    ----------
+    path : str | path-like
+        FlatGeobuf file path.
+    """
 
     cdef bytes _data
     cdef const uint8_t* _ptr
@@ -534,6 +586,106 @@ cdef class FlatGeobufReader:
             off += self._index_len
         self._feature_start = off
 
+    def __iter__(self):
+        """Yield all features in file order."""
+        # Sequentially walk the feature section: parse one feature, advance by
+        # its byte length, repeat. The C++ struct is reused (cleared) each time.
+        cdef size_t off = self._feature_start
+        cdef GeometryResult g
+        cdef string props
+        cdef size_t consumed
+        while off < self._len:
+            # Reset the reused result struct before the next parse.
+            g.xy.clear()
+            g.ends.clear()
+            g.parts.clear()
+            g.empty = 1
+            props.clear()
+            consumed = parse_feature(self._ptr + off, self._len - off, g, props)
+            if consumed == 0:
+                break
+            off += consumed
+            yield self._feature_from(&g, &props)
+
+    def __len__(self):
+        """Return the number of features advertised by the header."""
+        return int(self.features_count)
+
+    def bbox_iter(self, bbox):
+        """Select features intersecting a bounding box tuple.
+
+        Parameters
+        ----------
+        bbox : tuple
+            ``(minx, miny, maxx, maxy)`` selection bounds.
+
+        Returns
+        -------
+        iterator
+            Iterator returned by :meth:`select`.
+        """
+        return self.select(bbox[0], bbox[1], bbox[2], bbox[3])
+
+    def reduced_iter(self, long si, long ei):
+        """Yield features whose 1-based position lies in ``[si, ei]``.
+
+        Parameters
+        ----------
+        si : int
+            First 1-based feature position to yield.
+        ei : int
+            Last 1-based feature position to yield.
+
+        Yields
+        ------
+        Feature
+            Feature in the requested inclusive range.
+        """
+        cdef long c = 1
+        for ft in self:
+            if si <= c <= ei:
+                yield ft
+            elif c > ei:
+                # Past the requested range; no need to parse the rest.
+                break
+            c += 1
+
+    def select(self, double minx, double miny, double maxx, double maxy):
+        """Yield features intersecting a bounding box using the R-tree.
+
+        Falls back to a full scan with an envelope test if the file has no index.
+
+        Parameters
+        ----------
+        minx, miny, maxx, maxy : float
+            Selection bounds.
+
+        Yields
+        ------
+        Feature
+            Feature whose envelope intersects the selection bounds.
+        """
+        cdef vector[uint64_t] offsets
+        cdef Feature ft
+        cdef size_t i
+        if self._index_len > 0:
+            # Fast path: ask the packed R-tree for the matching feature offsets,
+            # then seek/parse just those features.
+            offsets = search_index(self._ptr + self._index_start,
+                                   self._index_len, self.features_count,
+                                   self.index_node_size, minx, miny, maxx, maxy)
+            for i in range(offsets.size()):
+                ft = self._read_feature_at(self._feature_start + offsets[i])
+                if ft is not None:
+                    yield ft
+        else:
+            # No index: scan everything and reject by bounding-box overlap.
+            for ft in self:
+                g = ft.geometry
+                if not (g.maxx < minx or g.minx > maxx or
+                        g.maxy < miny or g.miny > maxy):
+                    yield ft
+
     cdef Feature _feature_from(self, GeometryResult* g, string* props):
         """Build a :class:`Feature` from a parsed geometry + raw property blob."""
         cdef Feature ft = Feature.__new__(Feature)
@@ -557,70 +709,6 @@ cdef class FlatGeobufReader:
         if consumed == 0:
             return None
         return self._feature_from(&g, &props)
-
-    def __len__(self):
-        return int(self.features_count)
-
-    def __iter__(self):
-        # Sequentially walk the feature section: parse one feature, advance by
-        # its byte length, repeat. The C++ struct is reused (cleared) each time.
-        cdef size_t off = self._feature_start
-        cdef GeometryResult g
-        cdef string props
-        cdef size_t consumed
-        while off < self._len:
-            # Reset the reused result struct before the next parse.
-            g.xy.clear()
-            g.ends.clear()
-            g.parts.clear()
-            g.empty = 1
-            props.clear()
-            consumed = parse_feature(self._ptr + off, self._len - off, g, props)
-            if consumed == 0:
-                break
-            off += consumed
-            yield self._feature_from(&g, &props)
-
-    def reduced_iter(self, long si, long ei):
-        """Yield features whose 1-based position lies in ``[si, ei]``."""
-        cdef long c = 1
-        for ft in self:
-            if si <= c <= ei:
-                yield ft
-            elif c > ei:
-                # Past the requested range; no need to parse the rest.
-                break
-            c += 1
-
-    def select(self, double minx, double miny, double maxx, double maxy):
-        """Yield features intersecting a bounding box using the R-tree.
-
-        Falls back to a full scan with an envelope test if the file has no index.
-        """
-        cdef vector[uint64_t] offsets
-        cdef Feature ft
-        cdef size_t i
-        if self._index_len > 0:
-            # Fast path: ask the packed R-tree for the matching feature offsets,
-            # then seek/parse just those features.
-            offsets = search_index(self._ptr + self._index_start,
-                                   self._index_len, self.features_count,
-                                   self.index_node_size, minx, miny, maxx, maxy)
-            for i in range(offsets.size()):
-                ft = self._read_feature_at(self._feature_start + offsets[i])
-                if ft is not None:
-                    yield ft
-        else:
-            # No index: scan everything and reject by bounding-box overlap.
-            for ft in self:
-                g = ft.geometry
-                if not (g.maxx < minx or g.minx > maxx or
-                        g.maxy < miny or g.miny > maxy):
-                    yield ft
-
-    def bbox_iter(self, bbox):
-        """Alias for :meth:`select` taking a ``(minx, miny, maxx, maxy)`` tuple."""
-        return self.select(bbox[0], bbox[1], bbox[2], bbox[3])
 
 
 # --- Writer ---------------------------------------------------------------
@@ -753,6 +841,17 @@ class FlatGeobufWriter:
         the pending records can be resolved to absolute body offsets when the
         buffer is flushed. The buffer is flushed to the shared body file once it
         exceeds ``buffer_size`` bytes.
+
+        Parameters
+        ----------
+        xy : array-like
+            Flat interleaved x, y coordinates.
+        ends : array-like, optional
+            Cumulative coordinate-pair counts per ring/line.
+        parts : array-like, optional
+            Cumulative ring counts per polygon (MultiPolygon).
+        values : list, optional
+            Attribute values aligned with ``col_names``.
         """
         # Encode the attributes, then serialize the whole feature. Serialization
         # also returns the geometry envelope, computed in the same pass.
@@ -766,6 +865,34 @@ class FlatGeobufWriter:
         # Flush once the buffer grows past the configured threshold.
         if len(self._buffer) >= self.buffer_size:
             self._flush()
+
+    def close(self):
+        """Flush buffered features and close the body file handle.
+
+        Returns
+        -------
+        None
+            The writer is left closed.
+        """
+        if self._body is not None:
+            self._flush()
+            self._body.flush()
+            self._body.close()
+            self._body = None
+
+    def finalize(self):
+        """Finalize a single-writer file.
+
+        Returns
+        -------
+        None
+            The packed index and final FlatGeobuf file are written to disk.
+        """
+        # Flush the body, then hand our own records to the finalize routine.
+        self.close()
+        finalize(self.path, self.body_path, self.name, self.geom_type,
+                 self.col_names, self.col_types, self.records, self.crs_wkt,
+                 self.crs_org, self.crs_code, self.node_size)
 
     def _flush(self):
         """Flush the in-memory buffer to the shared body file.
@@ -794,22 +921,6 @@ class FlatGeobufWriter:
         self._buffer = bytearray()
         self._pending = []
 
-    def close(self):
-        """Flush any buffered features and close the body file handle."""
-        if self._body is not None:
-            self._flush()
-            self._body.flush()
-            self._body.close()
-            self._body = None
-
-    def finalize(self):
-        """Finalize a single-writer file (build index + write output)."""
-        # Flush the body, then hand our own records to the finalize routine.
-        self.close()
-        finalize(self.path, self.body_path, self.name, self.geom_type,
-                 self.col_names, self.col_types, self.records, self.crs_wkt,
-                 self.crs_org, self.crs_code, self.node_size)
-
 
 def finalize(path, body_path, name, geom_type, col_names, col_types, records,
              crs_wkt="", crs_org="", crs_code=0, node_size=16):
@@ -833,6 +944,11 @@ def finalize(path, body_path, name, geom_type, col_names, col_types, records,
         CRS metadata.
     node_size : int
         R-tree node size.
+
+    Returns
+    -------
+    None
+        The final ``.fgb`` file is written and the body file is removed.
     """
     cdef Py_ssize_t n = len(records)
     cdef vector[double] env_all

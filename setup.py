@@ -17,6 +17,7 @@ directives_fiat = {
     "boundscheck": False,
     "cdivision": True,
     "language_level": "3",
+    "linetrace": False,
     "nonecheck": False,
     "wraparound": False,
 }
@@ -31,8 +32,19 @@ EXTENSIONS = glob.glob(
 )
 # The flatgeobuf source directory
 FGB_DIR = os.path.join("src", "fiat", "driver", "_fgb")
-# Set the numpy macros
-NUMPY_MACROS = [("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
+# Set the macros
+MACROS = [("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
+
+# Optionally enable line tracing so coverage can collect ``.pyx`` line data
+COVERAGE = os.environ.get("FIAT_CYTHON_COVERAGE", "").lower() in (
+    "1",
+    "on",
+    "true",
+    "yes",
+)
+if COVERAGE:
+    directives_fiat["linetrace"] = True
+    MACROS.append((("CYTHON_TRACE", "1")))
 
 
 def _cpp_flags() -> list:
@@ -74,7 +86,7 @@ def _fgb_ext() -> list:
                 os.path.join(FGB_DIR, "fgb_c.cpp"),
             ],
             include_dirs=[numpy.get_include(), FGB_DIR, *_include_directories()],
-            define_macros=NUMPY_MACROS,
+            define_macros=MACROS,
             language="c++",
             extra_compile_args=_cpp_flags(),
         )
@@ -91,7 +103,7 @@ def _pure_cython_ext() -> list:
                 name=name,
                 sources=[ext],
                 include_dirs=[numpy.get_include()],
-                define_macros=NUMPY_MACROS,
+                define_macros=MACROS,
             )
         )
     return exts

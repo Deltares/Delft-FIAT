@@ -1,6 +1,7 @@
 /* FIAT-authored C++ helper layer over the vendored FlatGeobuf sources.
  *
- * Provides a small, Cython-friendly API for:
+ * Provides the small Cython-friendly API used by the FlatGeobuf reader/writer
+ * in fgb.pyx:
  *   - building / parsing the FlatGeobuf Header flatbuffer,
  *   - building / parsing per-feature Geometry + raw property bytes,
  *   - packed Hilbert R-tree ordering, index building and bbox search.
@@ -8,10 +9,11 @@
  * Geometry is exchanged in a flat representation:
  *   xy    : interleaved x,y coordinates (2 doubles per point)
  *   ends  : cumulative coordinate-PAIR counts at the end of each ring/line
- *   parts : cumulative ring counts at the end of each polygon (MultiPolygon
- * only) For Point / MultiPoint / LineString: ends and parts are empty. For
- * Polygon / MultiLineString: ends set, parts empty. For MultiPolygon: both ends
- * (global over all rings) and parts set.
+ *   parts : cumulative ring counts at the end of each polygon
+ *
+ * For Point / MultiPoint / LineString: ends and parts are empty. For Polygon /
+ * MultiLineString: ends set, parts empty. For MultiPolygon: both ends (global
+ * over all rings) and parts set.
  */
 #ifndef FIAT_FGB_C_H_
 #define FIAT_FGB_C_H_
@@ -49,7 +51,8 @@ struct GeometryResult {
 };
 
 // --- Header ---------------------------------------------------------------
-// Build a size-prefixed Header flatbuffer (without magic bytes).
+// Build a size-prefixed Header flatbuffer for the layer metadata (without magic
+// bytes).
 std::string build_header(const std::string& name, uint8_t geometry_type,
                          const std::vector<std::string>& col_names,
                          const std::vector<uint8_t>& col_types,
@@ -63,7 +66,8 @@ std::string build_header(const std::string& name, uint8_t geometry_type,
 size_t parse_header(const uint8_t* buf, size_t len, HeaderResult& out);
 
 // --- Feature --------------------------------------------------------------
-// Build a size-prefixed Feature flatbuffer from a flat geometry + raw props.
+// Build a size-prefixed Feature flatbuffer from a flat geometry and raw
+// property bytes.
 std::string build_feature(uint8_t geom_type, const std::vector<double>& xy,
                           const std::vector<uint32_t>& ends,
                           const std::vector<uint32_t>& parts,

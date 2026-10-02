@@ -115,9 +115,18 @@ markers = [
 testpaths = [
     "test",
 ]
+filterwarnings = [
+    # Upstream coverage.py (ctrace core) + Cython generators on Python 3.14:
+    # partially-consumed fgb.pyx generators throw GeneratorExit during GC, which
+    # the C trace handler turns into a SystemError. FIAT's iteration is correct.
+    "ignore:Exception ignored in:pytest.PytestUnraisableExceptionWarning",
+    # Upstream netCDF4 sets ndarray.shape internally (NumPy 2.5 deprecation).
+    "ignore:Setting the shape on a NumPy array has been deprecated:DeprecationWarning",
+]
 
 [tool.coverage.run]
 branch = true
+core = "ctrace"
 source = ["./src"]
 plugins = ["Cython.Coverage"]
 

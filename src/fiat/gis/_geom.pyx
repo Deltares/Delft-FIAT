@@ -205,7 +205,22 @@ cdef inline object _as_parts(object geom):
 
 # --- Public API -----------------------------------------------------------
 def point_in_geometry(object geom, double x, double y):
-    """Return whether point ``(x, y)`` lies inside a (multi)polygon geometry."""
+    """Return whether point ``(x, y)`` lies inside a (multi)polygon geometry.
+
+    Parameters
+    ----------
+    geom : Geometry
+        Geometry with flat coordinate arrays.
+    x : float
+        The x-coordinate of the point.
+    y : float
+        The y-coordinate of the point.
+
+    Returns
+    -------
+    bool
+        Whether the point lies inside the geometry.
+    """
     # Materialise the geometry arrays and hand pointers to the C routine.
     cdef double[::1] xy = _as_xy(geom)
     cdef unsigned int[::1] ends = _as_ends(geom)
@@ -220,7 +235,26 @@ def point_in_geometry(object geom, double x, double y):
 
 
 def intersect_cell(object geom, double x, double y, double dx, double dy):
-    """Return whether ``geom`` intersects the cell at ``(x, y)`` of size ``dx, dy``."""
+    """Return whether ``geom`` intersects a cell.
+
+    Parameters
+    ----------
+    geom : Geometry
+        Geometry with flat coordinate arrays.
+    x : float
+        The x-coordinate of the cell origin.
+    y : float
+        The y-coordinate of the cell origin.
+    dx : float
+        The cell width.
+    dy : float
+        The cell height.
+
+    Returns
+    -------
+    bool
+        Whether the geometry intersects the cell.
+    """
     # Normalise to min/max (dx, dy may be negative, e.g. a north-up raster).
     cdef double minx = min(x, x + dx)
     cdef double maxx = max(x, x + dx)
@@ -251,6 +285,16 @@ def point_on_surface(object geom):
     Mirrors ``OGRGeometry::PointOnSurface``: tries the exterior-ring centroid and,
     if that falls outside (e.g. concave shapes or holes), falls back to the
     midpoint of the widest interior span of a horizontal scanline.
+
+    Parameters
+    ----------
+    geom : Geometry
+        Geometry with flat coordinate arrays.
+
+    Returns
+    -------
+    tuple[float, float]
+        The representative x- and y-coordinate.
     """
     cdef double[::1] xy = _as_xy(geom)
     cdef unsigned int[::1] ends = _as_ends(geom)

@@ -1,6 +1,8 @@
 # cython: language_level=3, boundscheck=False, wraparound=False, cdivision=True
 """Fast rasterisation of a geometry footprint onto a grid window.
 
+Notes
+-----
 ``cell_mask`` reproduces the per-cell ``geom.Intersects(cell)`` loop that used
 to build one geometry per cell. The geometry is passed once in FIAT's native
 FlatGeobuf layout (interleaved ``xy`` coordinates plus per-ring ``ends``) and
@@ -18,10 +20,11 @@ used by FIAT while removing the geometry-allocation overhead.
 mapping the nodata value to ``nan`` in the same typed pass.
 """
 
+from libc.math cimport NAN
+
 import numpy as np
 
 cimport numpy as cnp
-from libc.math cimport NAN
 
 cnp.import_array()
 

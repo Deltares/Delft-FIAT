@@ -1,4 +1,9 @@
-/* FIAT-authored C++ helper layer over the vendored FlatGeobuf sources. */
+/* FIAT-authored C++ helper layer over the vendored FlatGeobuf sources.
+ *
+ * This file contains the FlatBuffer and packed Hilbert R-tree marshaling used
+ * by the Cython FlatGeobuf reader/writer in fgb.pyx.
+ */
+
 #include "fgb_c.h"
 
 #include <algorithm>

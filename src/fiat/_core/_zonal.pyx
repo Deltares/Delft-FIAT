@@ -1,6 +1,8 @@
 # cython: language_level=3, boundscheck=False, wraparound=False, cdivision=True
 """Fast zonal reduction of clipped hazard values.
 
+Notes
+-----
 ``zonal_reduce`` fuses the "filter positive values, then reduce" step used by
 the flood hazard functions into a single typed pass over the clipped array
 (``nan`` values are treated as non-positive and skipped, matching the previous
@@ -32,7 +34,7 @@ def zonal_reduce(double[::1] arr, int method, double sub):
 
     Returns
     -------
-    tuple
+    tuple[float, float]
         ``(value, redf)`` where ``value`` is the reduced hazard and ``redf`` is
         the fraction of positive cells. Returns ``(nan, nan)`` when no positive
         cell is found.
