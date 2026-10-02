@@ -13,7 +13,7 @@ This band just simply contains the hazard values per cell. Let's have a quick pe
 ::: {style="height: 400px; overflow: auto;"}
 ```{python}
 #| echo: false
-!gdalinfo ../../../.testdata/hazard/event_map.nc
+!gdalinfo ../../../data/hazard/event_map.nc
 ```
 :::
 ::::
@@ -40,7 +40,7 @@ Lets take a look quick look at the data (again with `gdalinfo`):
 ::: {style="height: 400px; overflow: auto;"}
 ```{python}
 #| echo: false
-!gdalinfo ../../../.testdata/hazard/risk_map.nc
+!gdalinfo ../../../data/hazard/risk_map.nc
 ```
 :::
 ::::
@@ -90,7 +90,7 @@ Let's have a quick peek at the data using [gdalinfo](https://gdal.org/programs/g
 ::: {style="height: 400px; overflow: auto;"}
 ```{python}
 #| echo: false
-!gdalinfo -sd 1 -norat -nogcp ../../../.testdata/hazard/risk_map.nc
+!gdalinfo -sd 1 -norat -nogcp ../../../data/hazard/risk_map.nc
 ```
 :::
 ::::

@@ -1,0 +1,11 @@
+---
+# Style for FIAT-authored C++ (the FlatGeobuf Cython helper layer).
+# Vendored third-party sources under src/fiat/driver/_fgb/ are excluded from
+# formatting via the pre-commit hook file filter.
+Language: Cpp
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 80
+DerivePointerAlignment: false
+PointerAlignment: Left
+LineEnding: LF

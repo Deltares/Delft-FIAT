@@ -5,6 +5,7 @@ from pathlib import Path
 from quartodoc import convert_inventory
 from quartodoc.interlinks import inventory_from_url
 
+# WTF did I do here...
 
 @click.group()
 def cli():

@@ -14,8 +14,11 @@ Although the package is called `Delft-FIAT`, the package name in Python is `fiat
 
 ```
 # A minimalistic example
-import fiat
-from fiat.fio import *
+from fiat import Configurations, GeomModel
+
+cfg = Configurations.from_file(< file >)
+model = GeomModel(cfg)
+model.run()
 ```
 
 ## License

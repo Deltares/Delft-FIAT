@@ -16,8 +16,8 @@ Here a quick overview is given of the required data:
 
 These are the types of data that FIAT needs in order to run properly.
 
-## Folder structure
-It is recommended to set up a folder structure as shown below to ensure that FIAT can find each data file and run smoothly. The files inside the folders are example files and do not need to be of those data types or named as such.
+## Directory structure
+It is recommended to set up a directory structure as shown below to ensure that FIAT can find each data file and run smoothly. The files inside the directories are example files and do not need to be of those data types or named as such.
 
 ```
 
