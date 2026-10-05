@@ -1,5 +1,5 @@
-# distutils: language = c++
 # cython: language_level=3
+# distutils: language = c++
 """Cython FlatGeobuf reader backed by the vendored FlatGeobuf C++ sources."""
 
 import numpy as np
@@ -310,25 +310,12 @@ cdef class FlatGeobufReader:
             size=int(self.features_count),
         )
 
-    def __reduce__(self):
-        """Support pickling by reopening the file by path."""
-        return (self.__class__, (self.path, self.crs_override))
-
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
         return False
-
-    @property
-    def closed(self):
-        """Return whether the reader has been closed."""
-        return self._closed
-
-    def close(self):
-        """Close the reader."""
-        self._closed = True
 
     def __iter__(self):
         """Yield all features in file order."""
@@ -355,14 +342,20 @@ cdef class FlatGeobufReader:
         """Return the number of features advertised by the header."""
         return int(self.features_count)
 
+    def __reduce__(self):
+        """Support pickling by reopening the file by path."""
+        return (self.__class__, (self.path, self.crs_override))
+
+    # Internals
     cdef Feature _feature_from(self, GeometryResult* g, string* props):
         """Build a :class:`Feature` from a parsed geometry + raw property blob."""
         cdef Feature ft = Feature.__new__(Feature)
         ft.geometry = _make_geometry(g)
         # Decode the attribute values, or fill with None when there are none.
         if props.size() > 0:
-            ft.values = _decode_properties(<const uint8_t*>props.data(),
-                                           props.size(), self.col_types)
+            ft.values = _decode_properties(
+                <const uint8_t*>props.data(), props.size(), self.col_types,
+            )
         else:
             ft.values = [None] * len(self.col_types)
         # Share the column lookup so features can be indexed by name.
@@ -373,11 +366,22 @@ cdef class FlatGeobufReader:
         """Parse a single feature at byte ``off`` (used by the R-tree search)."""
         cdef GeometryResult g
         cdef string props
-        cdef size_t consumed = parse_feature(self._ptr + off, self._len - off,
-                                             g, props)
+        cdef size_t consumed = parse_feature(
+            self._ptr + off, self._len - off, g, props,
+        )
         if consumed == 0:
             return None
         return self._feature_from(&g, &props)
+
+    # I/O related
+    @property
+    def closed(self):
+        """Return whether the reader has been closed."""
+        return self._closed
+
+    def close(self):
+        """Close the reader."""
+        self._closed = True
 
     def bbox_iter(self, bbox):
         """Select features intersecting a bounding box tuple.

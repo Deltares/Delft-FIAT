@@ -1,13 +1,4 @@
-"""NetCDF reader driver.
-
-A read-only driver for NetCDF grids built on top of the ``netCDF4`` Python API. The
-geospatial metadata lives in a shared :class:`fiat.driver.raster.GridProfile`, attached
-as the ``profile`` attribute, so it can be reused by other raster drivers.
-
-Data variables are read lazily: no array is materialised on open. A window is only read
-from disk when it is requested, and :meth:`NetcdfVariable.read_window` can hold a window
-in memory for repeated access.
-"""
+"""NetCDF reader."""
 
 import weakref
 from pathlib import Path
@@ -297,4 +288,7 @@ class NetcdfVariable:
     ):
         """Set data in the variable."""
         shape = data.shape
-        self._obj[origin[1] : shape[0], origin[0] : shape[1]] = data
+        self._obj[
+            origin[1] : origin[1] + shape[0],
+            origin[0] : origin[0] + shape[1],
+        ] = data

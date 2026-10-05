@@ -101,6 +101,9 @@ def test_netcdf_writer_setup(
     assert "test-block" in w.piperecv
     assert "test-block" in w.pipesend
 
+    # Cleanup
+    w.close()
+
 
 def test_netcdf_writer_close(
     dummy_queue: type,

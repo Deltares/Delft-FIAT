@@ -86,8 +86,8 @@ def array_worker(
         The calculated impact.
     """
     bn = 0
-    w = window[0].stop - window[0].start
-    h = window[1].stop - window[1].start
+    h = window[0].stop - window[0].start
+    w = window[1].stop - window[1].start
     # Loop through the combinations
     for exp, haz_indices in product(
         exposure.variables.values(),
@@ -172,8 +172,10 @@ of the [NetcdfReader](/api/GeomDriver.qmd) object.
         The exposure data.
     exposure_meta : ExposureGridMeta
         Metadata specific to the exposure data.
+    window : tuple
+        The region (x_origin, y_origin, width, height) assigned to this worker.
     chunk : tuple
-        The specific chunk to process.
+        The tile (processing window) size.
     """
     # Setup the hazard type module
     method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{run_meta.type}")
@@ -186,6 +188,7 @@ of the [NetcdfReader](/api/GeomDriver.qmd) object.
         dtype=np.float32,
         buffer=exshm.buf,
     )
+    # Setup the sender
     sender = Sender(queue=signalqueue)
 
     # Loop through the windows
@@ -207,11 +210,17 @@ of the [NetcdfReader](/api/GeomDriver.qmd) object.
             window=window2d,
         )
 
-        # Report back that it's done for this window
+        # Report back the tile geometry so the parent can write it.
+        # out_array axes are (band, axis0, axis1) matching the data arrays;
+        # the writer consumes record.shape as (w, h) -> block[idx, :h, :w].
+        row_slice, col_slice = window2d
         record = GridItem(
             mem_id=mem_id,
-            origin=window[0],
-            shape=window[1],
+            origin=(col_slice.start, row_slice.start),
+            shape=(
+                col_slice.stop - col_slice.start,
+                row_slice.stop - row_slice.start,
+            ),
         )
         sender.emit(record=record)
 

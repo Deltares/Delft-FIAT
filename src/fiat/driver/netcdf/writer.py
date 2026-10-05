@@ -1,10 +1,4 @@
-"""NetCDF writer driver.
-
-A write driver for NetCDF grids built on top of the ``netCDF4`` Python API. Mirrors the
-former ``NetcdfDriver`` write side: create (spatial) dimensions and variables, set the
-spatial reference, and write windowed data. The geospatial metadata is exposed through a
-shared :class:`fiat.driver.raster.GridProfile` attached as the ``profile`` attribute.
-"""
+"""NetCDF writer."""
 
 from pathlib import Path
 

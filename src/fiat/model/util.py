@@ -119,10 +119,10 @@ def create_2d_chunks(
     cur = [0, 0]
     for row in zip(*setup):
         for coord in product(*row):
-            yield (*cur, coord[1], coord[0])
-            cur[1 - s1_idx] += coord[s1_idx]
-        cur[s1_idx] += coord[1 - s1_idx]
-        cur[1 - s1_idx] = 0
+            yield (*cur, *coord)
+            cur[s1_idx] += coord[s1_idx]
+        cur[1 - s1_idx] += coord[1 - s1_idx]
+        cur[s1_idx] = 0
 
 
 def create_2d_windows(
@@ -144,10 +144,10 @@ def create_2d_windows(
     Returns
     -------
     tuple
-        Tuple containing the upperleft x and y corner and the width and height
+        Tuple containing the upperleft y and x corner and the height and width
     """
-    ox, oy = origin
-    x, y = shape
+    oy, ox = origin
+    y, x = shape
     lu = tuple(
         product(
             range(ox, ox + x, window_size[1]),
@@ -155,11 +155,11 @@ def create_2d_windows(
         ),
     )
     for l, u in lu:
-        w = min(window_size[1], ox + x - l)
         h = min(window_size[0], oy + y - u)
+        w = min(window_size[1], ox + x - l)
         yield (
-            slice(l, l + w),
             slice(u, u + h),
+            slice(l, l + w),
         )
 
 

@@ -188,12 +188,13 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             ds_like=self.exposure,
         )
         writer = GridOutputWriter(handle=handle, queue=self.queue, ctx=self.ctx)
-        # Get the chunks and the window(s)
-        chunks = list(create_2d_chunks(self.hazard.profile.shape, parts=self.threads))
-        window = self.cfg.get(MODEL_GRID_CHUNK, fallback=self.exposure.profile.shape)
-        mem_ids = [f"grid_worker{idx}" for idx, _ in enumerate(chunks)]
-        for mem_id, chunk in zip(mem_ids, chunks):
-            writer.setup_block(mem_id=mem_id, shape=window)
+        # Get the regions (one per worker) and the tile (processing) size
+        windows = list(create_2d_chunks(self.hazard.profile.shape, parts=self.threads))
+        chunk = self.cfg.get(MODEL_GRID_CHUNK, fallback=self.exposure.profile.shape)
+        # Setup a dedicated block of shared memory per worker
+        mem_ids = [f"grid_worker{idx}" for idx, _ in enumerate(windows)]
+        for mem_id in mem_ids:
+            writer.setup_block(mem_id=mem_id, shape=chunk)
         writer.start()
 
         # Setup the jobs
@@ -206,10 +207,10 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
                 VULNERABILITY__META: vulnerability_meta,
                 EXPOSURE: self.exposure,
                 EXPOSURE__META: exposure_meta,
-                CHUNK: chunks,
-                WINDOW: [window],
+                WINDOW: windows,
+                CHUNK: [chunk],
             },
-            tied=["mem_id", CHUNK],
+            tied=["mem_id", WINDOW],
         )
 
         # Execute the jobs in a multiprocessing pool
