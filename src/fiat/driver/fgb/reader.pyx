@@ -9,7 +9,7 @@ from libc.string cimport memcpy
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 
-from fiat.driver._fgb._bindings cimport (
+from fiat.driver.fgb.bindings cimport (
     GeometryResult,
     HeaderResult,
     index_size,
@@ -17,8 +17,9 @@ from fiat.driver._fgb._bindings cimport (
     parse_header,
     search_index,
 )
-from fiat.driver._fgb._serialize cimport _decode_properties
-from fiat.driver._fgb._serialize import MAGIC
+from fiat.driver.fgb.serialize cimport _decode_properties
+from fiat.driver.fgb.serialize import MAGIC
+from fiat.driver.vector cimport VectorProfile
 
 # FlatGeobuf magic bytes (8-byte prefix validated on open).
 cdef bytes _MAGIC = MAGIC
@@ -216,6 +217,8 @@ cdef class FlatGeobufReader:
     ----------
     path : str | path-like
         FlatGeobuf file path.
+    crs : str, optional
+        A user-provided CRS used only when the layer carries no CRS of its own.
     """
 
     cdef bytes _data
@@ -235,8 +238,12 @@ cdef class FlatGeobufReader:
     cdef readonly int crs_code
     cdef readonly object envelope
     cdef readonly dict columns
+    cdef readonly str path
+    cdef readonly object crs_override
+    cdef public VectorProfile profile
+    cdef bint _closed
 
-    def __cinit__(self, path):
+    def __cinit__(self, path, crs=None):
         cdef HeaderResult hr
         cdef size_t consumed
         cdef size_t off
@@ -284,6 +291,44 @@ cdef class FlatGeobufReader:
             self._index_len = index_size(self.features_count, self.index_node_size)
             off += self._index_len
         self._feature_start = off
+
+        # Store the source path and build the shared vector profile.
+        self.path = str(path)
+        self.crs_override = crs
+        self._closed = False
+        self.profile = VectorProfile(
+            crs_wkt=self.crs_wkt,
+            crs_org=self.crs_org,
+            crs_code=self.crs_code,
+            crs_override=crs,
+            bounds=self.envelope,
+            geom_type=self.geometry_type,
+            name=self.name,
+            fields=self.col_names,
+            dtypes=self.col_types,
+            columns=self.columns,
+            size=int(self.features_count),
+        )
+
+    def __reduce__(self):
+        """Support pickling by reopening the file by path."""
+        return (self.__class__, (self.path, self.crs_override))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
+    @property
+    def closed(self):
+        """Return whether the reader has been closed."""
+        return self._closed
+
+    def close(self):
+        """Close the reader."""
+        self._closed = True
 
     def __iter__(self):
         """Yield all features in file order."""

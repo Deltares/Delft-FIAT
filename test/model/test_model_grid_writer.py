@@ -5,14 +5,14 @@ from pathlib import Path
 
 import numpy as np
 
-from fiat.driver import NetcdfDriver
+from fiat.driver import NetcdfReader, NetcdfWriter
 from fiat.util import NODATA_VALUE
-from fiat.writer import GridItem, NetcdfWriter, create_netcdf_handle
+from fiat.writer import GridItem, GridOutputWriter, create_netcdf_handle
 
 
 def test_create_netcdf_handle(
     tmp_path: Path,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Creat the handle
     h = create_netcdf_handle(
@@ -23,13 +23,13 @@ def test_create_netcdf_handle(
 
     # Assert the output
     assert Path(tmp_path, "foo.nc").is_file()
-    assert h.shape == (10, 10)
+    assert h.profile.shape == (10, 10)
     assert h.size == 1
 
 
 def test_create_netcdf_handle_overwrite(
     tmp_path: Path,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     p = Path(tmp_path, "foo.nc")
     # Assert current state
@@ -51,7 +51,7 @@ def test_create_netcdf_handle_overwrite(
     # Assert the output
     assert Path(tmp_path, "foo.nc").is_file()
     assert os.stat(p).st_size > 0
-    assert h.shape == (10, 10)
+    assert h.profile.shape == (10, 10)
     assert h.size == 1
 
 
@@ -59,7 +59,7 @@ def test_netcdf_writer(
     dummy_queue: type,
 ):
     # Create the writer
-    w = NetcdfWriter(
+    w = GridOutputWriter(
         queue=dummy_queue,
         handle=None,
         ctx=None,
@@ -78,10 +78,10 @@ def test_netcdf_writer(
 
 def test_netcdf_writer_setup(
     dummy_queue: type,
-    grid_handle: NetcdfDriver,
+    grid_handle: NetcdfWriter,
 ):
     # Create the writer
-    w = NetcdfWriter(
+    w = GridOutputWriter(
         queue=dummy_queue,
         handle=grid_handle,
         ctx=get_context("spawn"),
@@ -104,10 +104,10 @@ def test_netcdf_writer_setup(
 
 def test_netcdf_writer_close(
     dummy_queue: type,
-    grid_handle: NetcdfDriver,
+    grid_handle: NetcdfWriter,
 ):
     # Create the writer
-    w = NetcdfWriter(
+    w = GridOutputWriter(
         queue=dummy_queue,
         handle=grid_handle,
         ctx=get_context("spawn"),
@@ -137,10 +137,10 @@ def test_netcdf_writer_close(
 
 def test_netcdf_writer_fn(
     dummy_queue: type,
-    grid_handle: NetcdfDriver,
+    grid_handle: NetcdfWriter,
 ):
     # Create the writer
-    w = NetcdfWriter(
+    w = GridOutputWriter(
         queue=dummy_queue,
         handle=grid_handle,
         ctx=get_context("spawn"),
@@ -164,7 +164,7 @@ def test_netcdf_writer_fn(
     w.close()
 
     # Assert the output
-    ds = NetcdfDriver(w.handle.path)
+    ds = NetcdfReader(w.handle.path)
     np.testing.assert_array_equal(
         ds[0][slice(0, 2), slice(0, 2)],
         np.array([[2, 2], [2, 2]]),
@@ -184,7 +184,7 @@ def test_grid_item():
 
 def test_create_netcdf_handle_multiple(
     tmp_path: Path,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Creat the handle with two variables
     h = create_netcdf_handle(
@@ -195,17 +195,17 @@ def test_create_netcdf_handle_multiple(
 
     # Assert the output
     assert Path(tmp_path, "foo.nc").is_file()
-    assert h.shape == (10, 10)
+    assert h.profile.shape == (10, 10)
     assert h.size == 2
     assert h.names == ["depth", "damage"]
 
 
 def test_netcdf_writer_fn_nodata(
     dummy_queue: type,
-    grid_handle: NetcdfDriver,
+    grid_handle: NetcdfWriter,
 ):
     # Create the writer
-    w = NetcdfWriter(
+    w = GridOutputWriter(
         queue=dummy_queue,
         handle=grid_handle,
         ctx=get_context("spawn"),
@@ -232,7 +232,7 @@ def test_netcdf_writer_fn_nodata(
     w.close()
 
     # Assert nan was written as the nodata value
-    ds = NetcdfDriver(w.handle.path)
+    ds = NetcdfReader(w.handle.path)
     np.testing.assert_array_equal(
         ds[0][slice(0, 2), slice(0, 2)],
         np.array([[1, NODATA_VALUE], [3, 4]], dtype=np.float32),

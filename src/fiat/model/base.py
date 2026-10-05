@@ -15,7 +15,7 @@ from fiat.check import (
     check_internal_crs,
     check_vs_crs,
 )
-from fiat.driver import NetcdfDriver, Table
+from fiat.driver import NetcdfReader, Table
 from fiat.gis import grid
 from fiat.log import spawn_logger
 from fiat.open import open_csv, open_grid
@@ -63,7 +63,7 @@ class BaseModel(metaclass=ABCMeta):
         ## Declarations
         # Model data
         self._crs: CRS | None = None
-        self.hazard: NetcdfDriver | None = None
+        self.hazard: NetcdfReader | None = None
         self.vulnerability: Table | None = None
 
         # Type of calculations
@@ -179,7 +179,7 @@ exceeds machine thread count ('{max_threads}')"
             Path to the hazard gridded dataset, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_grid]\
-(/api/driver/open_grid.qmd) after which into [NetcdfDriver](/api/NetcdfDriver.qmd)/
+(/api/driver/open_grid.qmd) after which into [NetcdfReader](/api/NetcdfReader.qmd)/
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations
@@ -204,19 +204,19 @@ exceeds machine thread count ('{max_threads}')"
 
         # check the internal crs of the file
         check_internal_crs(
-            data.crs,
+            data.profile.crs,
             path.name,
         )
 
         if not self.cfg.get(MODEL_PROJECTION_FORCE, False):
             logger.warning("Setting the model crs from the hazard data.")
-            self.crs = data.crs.to_wkt()
+            self.crs = data.profile.crs.to_wkt()
 
         # check if file crs is the same as the model crs
-        if not check_vs_crs(self.crs, data.crs):
+        if not check_vs_crs(self.crs, data.profile.crs):
             logger.warning(
                 f"Spatial reference of '{path.name}' \
-('{get_crs_repr(data.crs)}') does not match the \
+('{get_crs_repr(data.profile.crs)}') does not match the \
 model spatial reference ('{get_crs_repr(self.crs)}')"
             )
             logger.info(f"Reprojecting '{path.name}' to '{get_crs_repr(self.crs)}'")

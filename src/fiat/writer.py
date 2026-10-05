@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-from fiat.driver.netcdf import NetcdfDriver
+from fiat.driver.netcdf import NetcdfReader, NetcdfWriter
 from fiat.thread import Receiver
 from fiat.util import NODATA_VALUE
 
@@ -27,8 +27,8 @@ class GridItem:
 def create_netcdf_handle(
     path: Path | str,
     variables: list[str],
-    ds_like: NetcdfDriver,
-) -> NetcdfDriver:
+    ds_like: NetcdfReader,
+) -> NetcdfWriter:
     """Create a NetCDF handle.
 
     Parameters
@@ -37,39 +37,39 @@ def create_netcdf_handle(
         The path to the NetCDF file.
     variables : list[str]
         The variables to create in the NetCDF file.
-    ds_like : NetcdfDriver
+    ds_like : NetcdfReader
         A dataset to use as a template for creating the new NetCDF file.
 
     Returns
     -------
-    NetcdfDriver
+    NetcdfWriter
         The created NetCDF dataset.
     """
     # Open the dataset
-    ds = NetcdfDriver(file=path, mode="w")
+    ds = NetcdfWriter(file=path)
     # Get meta data from ds_like
-    gtf = ds_like.transform
-    ny, nx = ds_like.shape
+    gtf = ds_like.profile.transform
+    ny, nx = ds_like.profile.shape
     # Set the spatial dimensions
     ds.create_spatial_dims(
         lats=np.arange(gtf[3] + gtf[5] * 0.5, gtf[3] + gtf[5] * ny, gtf[5]),
         lons=np.arange(gtf[0] + gtf[1] * 0.5, gtf[0] + gtf[1] * nx, gtf[1]),
     )
-    ds.set_spatial_ref(ds_like.crs)
+    ds.set_spatial_ref(ds_like.profile.crs)
     for var in variables:
         ds.create_spatial_variable(var=var)
 
     return ds
 
 
-class NetcdfWriter(Receiver):
+class GridOutputWriter(Receiver):
     """A writer for the grid model.
 
     Parameters
     ----------
     queue : Queue
         The queue through which to signal the parent process.
-    handle : NetcdfDriver
+    handle : NetcdfWriter
         A handle to the file to be written.
     ctx : SpawnContext
         The multiprocessing context currenly in use.
@@ -77,7 +77,7 @@ class NetcdfWriter(Receiver):
 
     def __init__(
         self,
-        handle: NetcdfDriver,
+        handle: NetcdfWriter,
         queue: Queue,
         ctx: SpawnContext,
     ):

@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from unittest.mock import MagicMock, PropertyMock
+from unittest.mock import MagicMock
 
 import pytest
 from pyproj import CRS
@@ -238,7 +238,7 @@ def test_check_grid_exact_fail_crs(
 ):
     # Set a different crs
     crs = CRS.from_epsg(3857)
-    type(mocked_exp_grid).crs = PropertyMock(side_effect=lambda: crs)
+    mocked_exp_grid.profile.crs = crs
 
     # Call the method should produce a warning and a False return
     b = check_grid_exact(mocked_hazard_grid, mocked_exp_grid)
@@ -258,9 +258,7 @@ def test_check_grid_exact_fail_gtf(
     caplog: Logger,
 ):
     # Set a different geo transform
-    type(mocked_exp_grid).transform = PropertyMock(
-        side_effect=lambda: (0, 0.5, 0, 10, 0, -0.5),
-    )
+    mocked_exp_grid.profile.transform = (0, 0.5, 0, 10, 0, -0.5)
 
     # Call the method should produce a warning and a False return
     b = check_grid_exact(mocked_hazard_grid, mocked_exp_grid)
@@ -280,7 +278,7 @@ def test_check_grid_exact_fail_shape(
     caplog: Logger,
 ):
     # Set a different shape
-    type(mocked_exp_grid).shape = PropertyMock(side_effect=lambda: (5, 5))
+    mocked_exp_grid.profile.shape = (5, 5)
 
     # Call the method should produce a warning and a False return
     b = check_grid_exact(mocked_hazard_grid, mocked_exp_grid)

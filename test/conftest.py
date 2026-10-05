@@ -4,14 +4,13 @@ import shutil
 from multiprocessing import get_context
 from multiprocessing.queues import Queue
 from pathlib import Path
-from unittest.mock import MagicMock, PropertyMock
+from unittest.mock import MagicMock
 
 import pytest
 from pyproj.crs import CRS
-from pytest_mock import MockerFixture
 
 from fiat.cfg import Configurations
-from fiat.driver import FlatGeobufDriver, NetcdfDriver, Table
+from fiat.driver import FlatGeobufReader, NetcdfReader, Table
 from fiat.log import Logger
 from fiat.open import open_csv, open_geom, open_grid
 
@@ -119,74 +118,70 @@ def exposure_cols() -> dict:
 
 
 @pytest.fixture(scope="session")
-def exposure_geom_data(exposure_geom_path: Path) -> FlatGeobufDriver:
+def exposure_geom_data(exposure_geom_path: Path) -> FlatGeobufReader:
     ds = open_geom(exposure_geom_path)  # Read only
-    assert isinstance(ds, FlatGeobufDriver)
+    assert isinstance(ds, FlatGeobufReader)
     return ds
 
 
 @pytest.fixture
-def exposure_grid_data(exposure_grid_path: Path) -> NetcdfDriver:
+def exposure_grid_data(exposure_grid_path: Path) -> NetcdfReader:
     ds = open_grid(exposure_grid_path)  # Read only
-    assert isinstance(ds, NetcdfDriver)
+    assert isinstance(ds, NetcdfReader)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_event_data(hazard_event_path: Path) -> NetcdfDriver:
+def hazard_event_data(hazard_event_path: Path) -> NetcdfReader:
     ds = open_grid(hazard_event_path)  # Read only
-    assert isinstance(ds, NetcdfDriver)
+    assert isinstance(ds, NetcdfReader)
     return ds
 
 
 @pytest.fixture
-def hazard_event_highres_data(hazard_event_highres_path: Path) -> NetcdfDriver:
+def hazard_event_highres_data(hazard_event_highres_path: Path) -> NetcdfReader:
     ds = open_grid(hazard_event_highres_path)  # Read only
-    assert isinstance(ds, NetcdfDriver)
+    assert isinstance(ds, NetcdfReader)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_risk_data(hazard_risk_path: Path) -> NetcdfDriver:
+def hazard_risk_data(hazard_risk_path: Path) -> NetcdfReader:
     ds = open_grid(hazard_risk_path)  # Read only
-    assert isinstance(ds, NetcdfDriver)
+    assert isinstance(ds, NetcdfReader)
     return ds
 
 
 @pytest.fixture(scope="session")
-def hazard_risk_data_subsets(hazard_risk_path: Path) -> NetcdfDriver:
+def hazard_risk_data_subsets(hazard_risk_path: Path) -> NetcdfReader:
     ds = open_grid(hazard_risk_path)  # Read only
-    assert isinstance(ds, NetcdfDriver)
+    assert isinstance(ds, NetcdfReader)
     return ds
 
 
 @pytest.fixture
 def mocked_exp_grid(
-    mocker: MockerFixture,
     crs_4326: CRS,
 ) -> MagicMock:
-    grid = mocker.create_autospec(NetcdfDriver)
-    # Set attributes for practical use
-    type(grid).transform = PropertyMock(
-        side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
-    )
-    type(grid).crs = PropertyMock(side_effect=lambda: crs_4326)
-    type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
+    grid = MagicMock()
+    # Set attributes for practical use on the shared profile
+    grid.profile = MagicMock()
+    grid.profile.transform = (0, 1.0, 0.0, 10.0, 0.0, -1.0)
+    grid.profile.crs = crs_4326
+    grid.profile.shape = (10, 10)
     return grid
 
 
 @pytest.fixture
 def mocked_hazard_grid(
-    mocker: MockerFixture,
     crs_4326: CRS,
 ) -> MagicMock:
-    grid = mocker.create_autospec(NetcdfDriver)
-    # Set attributes for practical use
-    type(grid).transform = PropertyMock(
-        side_effect=lambda: (0, 1.0, 0.0, 10.0, 0.0, -1.0),
-    )
-    type(grid).crs = PropertyMock(side_effect=lambda: crs_4326)
-    type(grid).shape = PropertyMock(side_effect=lambda: (10, 10))
+    grid = MagicMock()
+    # Set attributes for practical use on the shared profile
+    grid.profile = MagicMock()
+    grid.profile.transform = (0, 1.0, 0.0, 10.0, 0.0, -1.0)
+    grid.profile.crs = crs_4326
+    grid.profile.shape = (10, 10)
     return grid
 
 

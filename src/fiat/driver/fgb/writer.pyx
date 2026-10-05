@@ -11,17 +11,18 @@ from libc.string cimport memcpy
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 
-from fiat.driver._fgb._bindings cimport (
+from fiat.driver.fgb.bindings cimport (
     build_feature,
     build_header,
     build_index,
     hilbert_order,
 )
-from fiat.driver._fgb._serialize cimport (
+from fiat.driver.fgb.serialize cimport (
     _bytes_from_ptr,
     _encode_properties,
 )
-from fiat.driver._fgb._serialize import MAGIC
+from fiat.driver.fgb.serialize import MAGIC
+from fiat.driver.vector cimport VectorProfile
 
 # FlatGeobuf magic bytes written at the head of every output file.
 cdef bytes _MAGIC = MAGIC
@@ -153,6 +154,7 @@ cdef class FlatGeobufWriter:
     # offsets on flush; finalized records carry absolute offsets.
     cdef vector[_Record] _pending
     cdef vector[_Record] _records
+    cdef public VectorProfile profile
 
     def __init__(self, path, col_names, col_types, geom_type, name="",
                  crs_wkt="", crs_org="", crs_code=0, node_size=16, lock=None,
@@ -170,6 +172,18 @@ cdef class FlatGeobufWriter:
         self.lock = lock
         self.buffer_size = int(buffer_size)
         self._body = open(self.body_path, "ab")
+        self.profile = VectorProfile(
+            crs_wkt=self.crs_wkt,
+            crs_org=self.crs_org,
+            crs_code=self.crs_code,
+            bounds=None,
+            geom_type=self.geom_type,
+            name=self.name,
+            fields=self.col_names,
+            dtypes=self.col_types,
+            columns={n: i for i, n in enumerate(self.col_names)},
+            size=None,
+        )
 
     @property
     def records(self):

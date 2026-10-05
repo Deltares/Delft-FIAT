@@ -141,7 +141,7 @@ def get_exposure_meta(
     )
 
     # Check the columns validity
-    columns = exposure.data.layer._columns
+    columns = exposure.data.profile.columns
     mandatory_columns = method.COLUMNS
     # Check the exposure column headers
     check_exp_columns(

@@ -2,7 +2,7 @@
 # cython: language_level=3
 """Shared FlatGeobuf constants and the low-level attribute codec.
 
-Backed by the vendored FlatGeobuf C++ sources (declared in ``_bindings.pxd``).
+Backed by the vendored FlatGeobuf C++ sources (declared in ``bindings.pxd``).
 The reader and writer modules ``cimport`` the codec helpers from here.
 """
 

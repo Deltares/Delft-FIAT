@@ -31,7 +31,7 @@ EXTENSIONS = glob.glob(
     recursive=True,
 )
 # The flatgeobuf source directory
-FGB_DIR = os.path.join("src", "fiat", "driver", "_fgb")
+FGB_DIR = os.path.join("src", "fiat", "driver", "fgb")
 # Set the macros
 MACROS = [("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
 
@@ -81,9 +81,9 @@ def _fgb_ext() -> list:
     include_dirs = [numpy.get_include(), FGB_DIR, *_include_directories()]
     # Each compiled module and the extra C++ sources it needs to link.
     modules = {
-        "_reader": cpp_sources,
-        "_serialize": [],
-        "_writer": cpp_sources,
+        "reader": cpp_sources,
+        "serialize": [],
+        "writer": cpp_sources,
     }
     exts = []
     for stem, extra in modules.items():

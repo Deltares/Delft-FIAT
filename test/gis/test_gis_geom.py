@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 from pyproj import Transformer
 
-from fiat.driver import FlatGeobufDriver
+from fiat.driver import FlatGeobufReader
 from fiat.gis.geom import point_in_geom, reproject, reproject_feature
 from fiat.util import get_crs_repr
 
@@ -74,11 +74,11 @@ def _feature_by_id(layer, object_id):
 
 def test_reproject(
     tmp_path: Path,
-    exposure_geom_repr: FlatGeobufDriver,
+    exposure_geom_repr: FlatGeobufReader,
 ):
     # Assert the current state
-    assert get_crs_repr(exposure_geom_repr.crs) == "EPSG:4326"
-    ft = _feature_by_id(exposure_geom_repr.layer, 1)
+    assert get_crs_repr(exposure_geom_repr.profile.crs) == "EPSG:4326"
+    ft = _feature_by_id(exposure_geom_repr, 1)
     assert tuple(ft.geometry.coords[0]) == (0.5, 9.5)
 
     # Call the function
@@ -86,8 +86,8 @@ def test_reproject(
 
     # Assert the output
     assert Path(tmp_path, "spatial_repr.fgb").is_file()
-    assert get_crs_repr(ds.crs) == "EPSG:3857"
-    ft = _feature_by_id(ds.layer, 1)
+    assert get_crs_repr(ds.profile.crs) == "EPSG:3857"
+    ft = _feature_by_id(ds, 1)
     np.testing.assert_array_almost_equal(
         tuple(ft.geometry.coords[0]),
         (55659.74539663678, 1062414.3112675361),

@@ -10,7 +10,7 @@ from fiat.check import (
     check_internal_crs,
     check_vs_crs,
 )
-from fiat.driver import NetcdfDriver, Table
+from fiat.driver import NetcdfReader, Table
 from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
@@ -43,7 +43,7 @@ from fiat.util import (
     generic_path_check,
     get_crs_repr,
 )
-from fiat.writer import NetcdfWriter, create_netcdf_handle
+from fiat.writer import GridOutputWriter, create_netcdf_handle
 
 logger = spawn_logger(__name__)
 
@@ -68,7 +68,7 @@ class GridModel(BaseModel):
         super().__init__(cfg)
 
         # Declare
-        self.exposure: NetcdfDriver | None = None
+        self.exposure: NetcdfReader | None = None
 
         # Setup the model
         self.read_exposure()
@@ -92,7 +92,7 @@ class GridModel(BaseModel):
             Path to an exposure grid, by default None
         kwargs : dict, optional
             Keyword arguments for reading. These are passed into [open_grid]\
-(/api/driver/open_grid.qmd) after which into [GridSouce](/api/NetcdfDriver.qmd)/
+(/api/driver/open_grid.qmd) after which into [GridSouce](/api/NetcdfReader.qmd)/
         """
         # Sort the pathing
         # Hierarchy: 1) signature, 2) configurations
@@ -117,14 +117,14 @@ class GridModel(BaseModel):
 
         # Check if there is a crs present
         check_internal_crs(
-            data.crs,
+            data.profile.crs,
             path.name,
         )
 
-        if not check_vs_crs(self.crs, data.crs):
+        if not check_vs_crs(self.crs, data.profile.crs):
             logger.warning(
                 f"Spatial reference of '{path.name}' \
-('{get_crs_repr(data.crs)}') does not match the \
+('{get_crs_repr(data.profile.crs)}') does not match the \
 model spatial reference ('{get_crs_repr(self.crs)}')"
             )
             logger.info(f"Reprojecting '{path.name}' to '{get_crs_repr(self.crs)}'")
@@ -144,9 +144,9 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         logger.info("Running the model")
         # Quick check if all cdata is set
         check_input_data(
-            [HAZARD, self.hazard, NetcdfDriver],
+            [HAZARD, self.hazard, NetcdfReader],
             [VULNERABILITY, self.vulnerability, Table],
-            [EXPOSURE, self.exposure, NetcdfDriver],
+            [EXPOSURE, self.exposure, NetcdfReader],
         )
 
         # Setup the basic metadata
@@ -187,10 +187,10 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             variables=exposure_meta.new,
             ds_like=self.exposure,
         )
-        writer = NetcdfWriter(handle=handle, queue=self.queue, ctx=self.ctx)
+        writer = GridOutputWriter(handle=handle, queue=self.queue, ctx=self.ctx)
         # Get the chunks and the window(s)
-        chunks = list(create_2d_chunks(self.hazard.shape, parts=self.threads))
-        window = self.cfg.get(MODEL_GRID_CHUNK, fallback=self.exposure.shape)
+        chunks = list(create_2d_chunks(self.hazard.profile.shape, parts=self.threads))
+        window = self.cfg.get(MODEL_GRID_CHUNK, fallback=self.exposure.profile.shape)
         mem_ids = [f"grid_worker{idx}" for idx, _ in enumerate(chunks)]
         for mem_id, chunk in zip(mem_ids, chunks):
             writer.setup_block(mem_id=mem_id, shape=window)

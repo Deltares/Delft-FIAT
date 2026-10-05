@@ -15,7 +15,7 @@ from fiat.check import (
     check_vs_crs,
 )
 from fiat.container import Container, ExposureGeomData
-from fiat.driver import NetcdfDriver, Table, fgb
+from fiat.driver import NetcdfReader, Table, fgb
 from fiat.gis import geom
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
@@ -156,15 +156,15 @@ class GeomModel(BaseModel):
 
             # check the internal crs of the file
             check_internal_crs(
-                data.layer.crs,
+                data.profile.crs,
                 path.name,
             )
 
             # check if file crs is the same as the model crs
-            if not check_vs_crs(self.crs, data.layer.crs):
+            if not check_vs_crs(self.crs, data.profile.crs):
                 logger.warning(
                     f"Spatial reference of '{path.name}' \
-    ('{get_crs_repr(data.layer.crs)}') does not match \
+    ('{get_crs_repr(data.profile.crs)}') does not match \
     the model spatial reference ('{get_crs_repr(self.crs)}')"
                 )
                 logger.info(f"Reprojecting '{path.name}' to '{get_crs_repr(self.crs)}'")
@@ -199,7 +199,7 @@ class GeomModel(BaseModel):
         logger.info("Running the model")
         # Quick check if all data is set
         check_input_data(
-            [HAZARD, self.hazard, NetcdfDriver],
+            [HAZARD, self.hazard, NetcdfReader],
             [VULNERABILITY, self.vulnerability, Table],
             [EXPOSURE, self.exposure, ExposureGeomData],
         )
@@ -229,7 +229,7 @@ class GeomModel(BaseModel):
         # Get the thread loads
         logger.info("Distributing work load")
         threads = distribute_threads(
-            size=[item.data.layer.size for item in self.exposure],
+            size=[item.data.profile.size for item in self.exposure],
             threads=self.threads,
         )
 
@@ -242,8 +242,8 @@ class GeomModel(BaseModel):
         for exposure, count, output_path in zip(self.exposure, threads, output_paths):
             # Check the extent
             check_geom_extent(
-                exposure.data.layer.bounds,
-                self.hazard.bounds,
+                exposure.data.profile.bounds,
+                self.hazard.profile.bounds,
             )
             # Get the exposure field meta
             exposure_meta = get_exposure_meta(
@@ -255,20 +255,19 @@ class GeomModel(BaseModel):
             # Check the output file path
             ensure_writable_filepath(output_path)
             # Store the header parameters for the finalize pass
-            layer = exposure.data.layer
-            reader = layer._reader
+            profile = exposure.data.profile
             finalize_params[Path(output_path).as_posix()] = {
                 "name": Path(output_path).stem,
-                "geom_type": layer.geom_type,
-                "col_names": list(layer.fields) + list(exposure_meta.new),
-                "col_types": list(layer.dtypes)
+                "geom_type": profile.geom_type,
+                "col_names": list(profile.fields) + list(exposure_meta.new),
+                "col_types": list(profile.dtypes)
                 + [fgb.CT_DOUBLE] * len(exposure_meta.new),
-                "crs_wkt": reader.crs_wkt,
-                "crs_org": reader.crs_org,
-                "crs_code": reader.crs_code,
+                "crs_wkt": profile.crs_wkt,
+                "crs_org": profile.crs_org,
+                "crs_code": profile.crs_code,
             }
             # Get the chunks based on the load distribution
-            chunks = create_1d_chunks(exposure.data.layer.size, count)
+            chunks = create_1d_chunks(exposure.data.profile.size, count)
             # Generate the jobs
             jobs = generate_jobs(
                 {

@@ -4,10 +4,11 @@ import numpy as np
 import pytest
 
 from fiat.driver import (
-    FlatGeobufDriver,
-    NetcdfDriver,
+    FlatGeobufReader,
+    NetcdfReader,
 )
 from fiat.driver.csv import Table
+from fiat.error import DriverNotFoundError
 from fiat.open import open_csv, open_geom, open_grid
 
 
@@ -72,13 +73,12 @@ def test_open_geom_context(exposure_geom_path: Path):
     # Open the dataset with context manager
     with open_geom(exposure_geom_path) as reader:
         # Assert some simple stuff
-        assert isinstance(reader, FlatGeobufDriver)
-        assert reader.mode_str == "r"  # Read only
-        assert reader.layer is not None
+        assert isinstance(reader, FlatGeobufReader)
+        assert reader.closed is False
+        assert reader.profile.size == 4
 
-    # Now it's closed but not deleted
+    # Now it's closed
     assert reader.closed is True
-    assert reader.layer is None
 
 
 def test_open_geom_read_only(exposure_geom_path: Path):
@@ -86,55 +86,45 @@ def test_open_geom_read_only(exposure_geom_path: Path):
     ds = open_geom(exposure_geom_path)
 
     # Assert simple stuff
-    assert isinstance(ds, FlatGeobufDriver)
-    assert ds.mode_str == "r"  # Read only
-    assert ds.layer is not None
+    assert isinstance(ds, FlatGeobufReader)
+    assert ds.profile.size == 4
 
     ds.close()
 
 
 def test_open_geom_append(exposure_geom_tmp_path: Path):
-    # Open a dataset in append mode (reads the existing source)
+    # Append mode still returns a reader over the existing source
     ds = open_geom(exposure_geom_tmp_path, mode="a")
 
     # Assert some simple stuff
-    assert isinstance(ds, FlatGeobufDriver)
-    assert ds.mode_str == "a"
-    assert ds.layer is not None
-    assert ds.layer.size == 4
+    assert isinstance(ds, FlatGeobufReader)
+    assert ds.profile.size == 4
 
     ds.close()
 
 
-def test_open_geom_write_new(tmp_path: Path):
-    # Open a dataset in write mode
-    ds = open_geom(Path(tmp_path, "tmp.fgb"), mode="w")
-
-    # Assert some simple stuff
-    assert isinstance(ds, FlatGeobufDriver)
-    assert ds.mode_str == "w"
-    assert ds.layer is None  # Hasn't been created yet
-
-    ds.close()
+def test_open_geom_missing_file(tmp_path: Path):
+    # A missing file raises a FileNotFoundError
+    p = Path(tmp_path, "tmp.fgb")
+    with pytest.raises(FileNotFoundError):
+        _ = open_geom(p)
 
 
-def test_open_geom_write_overwrite(exposure_geom_tmp_path: Path):
-    # Open a dataset in write mode
-    ds = open_geom(exposure_geom_tmp_path, mode="w", overwrite=True)
-
-    # Assert some simple stuff
-    assert isinstance(ds, FlatGeobufDriver)
-    assert ds.mode_str == "w"
-    assert ds.layer is None  # Write mode, nothing read
-
-    ds.close()
+def test_open_geom_bad_extension(tmp_path: Path):
+    # An unsupported extension raises a DriverNotFoundError
+    with pytest.raises(
+        DriverNotFoundError,
+        match="Geometry data -> \
+Extension of file: tmp.unknown not recoqnized",
+    ):
+        _ = open_geom(Path(tmp_path, "tmp.unknown"))
 
 
 def test_open_grid_context(hazard_event_path: Path):
     # Open the dataset with context managesubsetr
     with open_grid(hazard_event_path) as reader:
         # Assert some simple stuff
-        assert isinstance(reader, NetcdfDriver)
+        assert isinstance(reader, NetcdfReader)
         assert reader.size == 1  # One variable
 
     # Now it's closed but not deleted
@@ -146,7 +136,7 @@ def test_open_grid_context(hazard_event_path: Path):
         match="Invalid operation on a closed file",
     ):
         # Requent the size
-        _ = reader.shape
+        _ = reader.size
 
 
 def test_open_grid_read_only(hazard_event_path: Path):
@@ -154,20 +144,19 @@ def test_open_grid_read_only(hazard_event_path: Path):
     ds = open_grid(hazard_event_path)
 
     # Assert some simple stuff
-    assert isinstance(ds, NetcdfDriver)
+    assert isinstance(ds, NetcdfReader)
     assert ds.size == 1  # One band
 
     ds.close()
 
 
 def test_open_grid_append(hazard_event_tmp_path: Path):
-    # Open a dataset in write mode
+    # Append mode still returns a reader over the existing source
     ds = open_grid(hazard_event_tmp_path, mode="a")
 
     # Assert some simple stuff
-    assert isinstance(ds, NetcdfDriver)
-    assert ds.mode == 1  # Write/ update mode
-    assert ds.src is not None  # Hasn't been created yet
+    assert isinstance(ds, NetcdfReader)
+    assert ds.src is not None
     assert ds.size == 1
 
     ds.close()
@@ -179,5 +168,5 @@ def test_open_grid_write(tmp_path: Path):
     ds = open_grid(p, mode="w")
 
     # Assert some simple stuff
-    assert ds.mode == 2
+    assert ds.closed is False
     assert ds.src is not None

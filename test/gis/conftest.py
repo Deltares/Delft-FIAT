@@ -3,23 +3,23 @@ from types import SimpleNamespace
 
 import pytest
 
-from fiat.driver import FlatGeobufDriver, NetcdfDriver, fgb
+from fiat.driver import FlatGeobufReader, NetcdfReader, fgb
 from fiat.open import open_geom, open_grid
 
 
 ## Datasets
 # Made for testing in this module, copy exists in main conftest
 @pytest.fixture
-def exposure_geom_repr(exposure_geom_path: Path) -> FlatGeobufDriver:
+def exposure_geom_repr(exposure_geom_path: Path) -> FlatGeobufReader:
     ds = open_geom(exposure_geom_path)  # Read only
-    assert isinstance(ds, FlatGeobufDriver)
+    assert isinstance(ds, FlatGeobufReader)
     return ds
 
 
 @pytest.fixture
-def hazard_event_repr(hazard_event_path: Path) -> NetcdfDriver:
+def hazard_event_repr(hazard_event_path: Path) -> NetcdfReader:
     ds = open_grid(hazard_event_path)  # Read only
-    assert isinstance(ds, NetcdfDriver)
+    assert isinstance(ds, NetcdfReader)
     return ds
 
 
@@ -109,9 +109,9 @@ def feature_polygon_concave() -> SimpleNamespace:
 
 
 @pytest.fixture(scope="session")
-def exposure_feature_geom(exposure_geom_data: FlatGeobufDriver):
+def exposure_feature_geom(exposure_geom_data: FlatGeobufReader):
     """Return the geometry of exposure feature with object_id 1."""
-    for ft in exposure_geom_data.layer:
+    for ft in exposure_geom_data:
         if ft.get_field("object_id") == 1:
             return ft.geometry
     raise AssertionError("No feature with object_id=1")

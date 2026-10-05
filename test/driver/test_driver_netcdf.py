@@ -5,119 +5,120 @@ import numpy as np
 import pytest
 from pyproj.crs import CRS
 
-from fiat.driver.netcdf import NetcdfDriver
+from fiat.driver.netcdf import NetcdfReader, NetcdfWriter
 from fiat.util import get_crs_repr
 
 
 def test_dataset(tmp_path: Path):
     # Open the dataset
-    ds = NetcdfDriver(Path(tmp_path, "foo.nc"), "w")
+    ds = NetcdfWriter(Path(tmp_path, "foo.nc"))
 
     # Assert some simple stuff
-    assert ds.mode == 2
+    assert ds.closed is False
     assert ds.size == 0
 
 
 def test_dataset_read(hazard_event_path: Path):
     # Open the dataset
-    ds = NetcdfDriver(hazard_event_path)
+    ds = NetcdfReader(hazard_event_path)
 
     # Assert that the properties return info and assert that the info is correct
-    # assert ds.variables == [None]
     np.testing.assert_array_almost_equal(
-        ds.bounds,
+        ds.profile.bounds,
         [0.0, 0.0, 10.0, 10.0],
     )
     assert ds.variables["data"].dtype == np.float32
-    assert ds.shape == (10, 10)
-    assert ds.shape_xy == (10, 10)  # Shocker
-    assert get_crs_repr(ds.crs) == "EPSG:4326"
+    assert ds.profile.shape == (10, 10)
+    assert ds.profile.shape_xy == (10, 10)  # Shocker
+    assert get_crs_repr(ds.profile.crs) == "EPSG:4326"
 
 
 def test_dataset_read_crs(
     hazard_event_no_crs_path: Path,
     crs_4326: CRS,
 ):
-    # Open a NetcdfDriver
-    ds = NetcdfDriver(hazard_event_no_crs_path)
+    # Open a NetcdfReader
+    ds = NetcdfReader(hazard_event_no_crs_path)
 
     # Assert some simple stuff
     assert ds.size == 1
     assert ds.reference is None  # Verify that there is no crs
-    assert ds.crs is None  # Cant induce from src and not set at FlatGeobufDriver level
+    assert ds.profile.crs is None  # Cant induce from src and not set at reader level
 
     # Close the dataset
     ds.close()
 
-    # Open with crs as input argument to set the crs at FlatGeobufDriver level
-    ds = NetcdfDriver(hazard_event_no_crs_path, crs="EPSG:4326")
+    # Open with crs as input argument to set the crs at reader level
+    ds = NetcdfReader(hazard_event_no_crs_path, crs="EPSG:4326")
 
     # Assert the crs
-    assert isinstance(ds.crs, CRS)
-    assert get_crs_repr(ds.crs) == "EPSG:4326"
+    assert isinstance(ds.profile.crs, CRS)
+    assert get_crs_repr(ds.profile.crs) == "EPSG:4326"
     assert ds.reference is None  # Induces from layer still returns None
 
-    # Or set directly
-    ds._crs = None
-    assert ds.crs is None
-    ds._crs = crs_4326.to_wkt()
+    # Or set directly on the profile
+    ds.profile.crs_wkt = None
+    assert ds.profile.crs is None
+    ds.profile.crs_wkt = crs_4326.to_wkt()
 
     # Assert the crs
-    assert get_crs_repr(ds.crs) == "EPSG:4326"
+    assert get_crs_repr(ds.profile.crs) == "EPSG:4326"
 
 
 def test_dataset_read_transform(hazard_event_path: Path):
     # Open the dataset
-    ds = NetcdfDriver(hazard_event_path, mode="r")
+    ds = NetcdfReader(hazard_event_path)
 
     # Assert default geotransform
     np.testing.assert_array_almost_equal(
-        ds.transform,
+        ds.profile.transform,
         (0.0, 1.0, 0.0, 10.0, 0.0, -1.0),
     )
 
 
+def test_dataset_lazy_window(hazard_event_path: Path):
+    # Open the dataset
+    ds = NetcdfReader(hazard_event_path)
+    band = ds.variables["data"]
+
+    # A windowed read returns only that window
+    window = (slice(0, 5), slice(0, 5))
+    data = band.read_window(window)
+    assert data.shape == (5, 5)
+
+    # Hold a window in memory and have it served from the cache
+    held = band.read_window(window, hold=True)
+    np.testing.assert_array_equal(band[window], held)
+
+    # Clearing the held window falls back to reading from disk
+    band.clear_window()
+    np.testing.assert_array_equal(band[window], held)
+
+
 def test_dataset_state_error(hazard_event_path: Path):
     # Open the dataset
-    ds = NetcdfDriver(hazard_event_path)
+    ds = NetcdfReader(hazard_event_path)
 
-    # Should error when using a write only method
-    with pytest.raises(ValueError, match="Invalid operation on a read-only file"):
-        # Nonsense arguments are allowed, as this error kicks in before that
-        # becomes a problem
-        ds.create_spatial_dims(None, None)
+    # The read driver has no write methods (reader/writer are now separate)
+    assert not hasattr(ds, "create_spatial_dims")
 
     # Get e.g. the geotransform
-    assert len(ds.transform) == 6  # Affine
+    assert len(ds.profile.transform) == 6  # Affine
     # Now close the dataset
     ds.close()
 
-    # Assert that asking for the shape now errors
+    # Assert that asking for the size now errors
     with pytest.raises(ValueError, match="Invalid operation on a closed file"):
-        _ = ds.shape
-
-
-def test_dataset_append(hazard_event_tmp_path: Path):
-    # Open a temporary copy in append mode. A copy is used (instead of the
-    # shared read-only asset) because append mode needs write access, and HDF5
-    # refuses to open a file for writing while the session-scoped read handle
-    # (hazard_event_data) still holds the original open.
-    ds = NetcdfDriver(hazard_event_tmp_path, mode="a")
-
-    # Assert some simple stuff
-    assert ds.mode == 1
-    # Even though we can write, there is data present due to append mode.
-    assert len(ds.variables) == 1
+        _ = ds.size
 
 
 def test_dataset_write(tmp_path: Path, crs_4326: CRS):
     p = Path(tmp_path, "foo.nc")  # Make a path
     # Open the dataset
-    ds = NetcdfDriver(p, mode="w")
+    ds = NetcdfWriter(p)
 
-    # Assert the mode
-    assert ds.mode == 2
-    # assert ds.src is None
+    # Assert the state
+    assert ds.closed is False
 
     # Create the dimensions
     ds.create_spatial_dims(
@@ -126,16 +127,16 @@ def test_dataset_write(tmp_path: Path, crs_4326: CRS):
     )
 
     # Assert the information
-    assert ds.shape == (5, 7)
-    assert ds.shape_xy == (7, 5)  # har
+    assert ds.profile.shape == (5, 7)
+    assert ds.profile.shape_xy == (7, 5)  # har
     assert ds.size == 0
 
     # Source crs is None
-    assert ds.crs is None
+    assert ds.profile.crs is None
     ds.set_spatial_ref(crs_4326)
 
     # Assert the crs
-    assert get_crs_repr(ds.crs) == "EPSG:4326"
+    assert get_crs_repr(ds.profile.crs) == "EPSG:4326"
     # Close and assert the file is present
     ds.close()
     assert p.is_file()
@@ -143,7 +144,7 @@ def test_dataset_write(tmp_path: Path, crs_4326: CRS):
 
 def test_dataset_reduce(hazard_event_path: Path):
     # Open the dataset
-    ds = NetcdfDriver(hazard_event_path)
+    ds = NetcdfReader(hazard_event_path)
 
     # Assert some simple stuff
     assert ds.size == 1

@@ -1,6 +1,6 @@
 import numpy as np
 
-from fiat.driver import NetcdfDriver, Table
+from fiat.driver import NetcdfReader, Table
 from fiat.method import flood
 from fiat.model.util import (
     create_1d_chunks,
@@ -84,7 +84,7 @@ def test_get_run_meta():
     assert meta.type_length == 1
 
 
-def test_get_hazard_meta(hazard_event_data: NetcdfDriver):
+def test_get_hazard_meta(hazard_event_data: NetcdfReader):
     # Call the function
     meta = get_hazard_meta(hazard_event_data, risk=False, method_types=["water_depth"])
 
@@ -96,7 +96,7 @@ def test_get_hazard_meta(hazard_event_data: NetcdfDriver):
     assert meta.rp is None
 
 
-def test_get_hazard_meta_risk(hazard_risk_data: NetcdfDriver):
+def test_get_hazard_meta_risk(hazard_risk_data: NetcdfReader):
     # Call the function
     meta = get_hazard_meta(hazard_risk_data, risk=True, method_types=["water_depth"])
 

@@ -78,7 +78,7 @@ def reproject(
 
     Parameters
     ----------
-    ds : FlatGeobufDriver
+    ds : FlatGeobufReader
         Input object.
     dst_crs : str
         Spatial reference system (projection). An accepted format is: `EPSG:3857`.
@@ -89,19 +89,19 @@ def reproject(
 
     Returns
     -------
-    FlatGeobufDriver
+    FlatGeobufReader
         Output object. A lazy reading of the just created geometry file.
     """
     from fiat.open import open_geom
 
-    output_dir = output_dir or ds.path.parent
+    src_path = Path(ds.path)
+    output_dir = output_dir or src_path.parent
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    fname = Path(output_dir, f"{ds.path.stem}_repr.fgb")
+    fname = Path(output_dir, f"{src_path.stem}_repr.fgb")
 
-    layer = ds.layer
-    src_crs = layer.crs
+    src_crs = ds.profile.crs
     dst = CRS.from_user_input(dst_crs)
     transformer = Transformer.from_crs(src_crs, dst, always_xy=True)
 
@@ -114,16 +114,16 @@ def reproject(
 
     writer = FlatGeobufWriter(
         fname.as_posix(),
-        col_names=list(layer.fields),
-        col_types=list(layer.dtypes),
-        geom_type=layer.geom_type,
+        col_names=list(ds.profile.fields),
+        col_types=list(ds.profile.dtypes),
+        geom_type=ds.profile.geom_type,
         name=fname.stem,
         crs_wkt=dst_wkt,
         crs_org=dst_org,
         crs_code=dst_code,
     )
 
-    for ft in layer:
+    for ft in ds:
         geom = ft.geometry
         xy = _transform_xy(geom.xy, transformer)
         writer.add_feature(xy, geom.ends, geom.parts, ft.values)

@@ -1,6 +1,6 @@
 import numpy as np
 
-from fiat.driver import NetcdfDriver
+from fiat.driver import NetcdfReader
 from fiat.gis.overlay import (
     area_mask,
     centroid_mask,
@@ -13,13 +13,13 @@ from fiat.gis.overlay import (
 
 def test_area_mask_linestring(
     feature_linestring,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Call the function
     m, w = area_mask(
         geom=feature_linestring.geometry,
-        gtf=hazard_event_data.transform,
-        shape=hazard_event_data.shape_xy,
+        gtf=hazard_event_data.profile.transform,
+        shape=hazard_event_data.profile.shape_xy,
     )
 
     # Assert the output
@@ -33,13 +33,13 @@ def test_area_mask_linestring(
 
 def test_area_mask_polygon(
     feature_polygon,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Call the function
     m, w = area_mask(
         geom=feature_polygon.geometry,
-        gtf=hazard_event_data.transform,
-        shape=hazard_event_data.shape_xy,
+        gtf=hazard_event_data.profile.transform,
+        shape=hazard_event_data.profile.shape_xy,
     )
 
     # Assert the output
@@ -51,13 +51,13 @@ def test_area_mask_polygon(
 
 def test_area_mask_polygon_complex(
     feature_polygon_complex,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Call the function
     m, w = area_mask(
         geom=feature_polygon_complex.geometry,
-        gtf=hazard_event_data.transform,
-        shape=hazard_event_data.shape_xy,
+        gtf=hazard_event_data.profile.transform,
+        shape=hazard_event_data.profile.shape_xy,
     )
 
     # Assert the output
@@ -71,14 +71,14 @@ def test_area_mask_polygon_complex(
 
 def test_point_mask(
     feature_point,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Call the function
     geom = feature_point.geometry
     m, w = point_mask(
         point=tuple(geom.coords[0]),
-        gtf=hazard_event_data.transform,
-        shape=hazard_event_data.shape_xy,
+        gtf=hazard_event_data.profile.transform,
+        shape=hazard_event_data.profile.shape_xy,
     )
 
     # Assert the output
@@ -88,14 +88,14 @@ def test_point_mask(
 
 def test_centroid_mask(
     feature_polygon,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Call the function
     geom = feature_polygon.geometry
     m, w = centroid_mask(
         geom=geom,
-        gtf=hazard_event_data.transform,
-        shape=hazard_event_data.shape_xy,
+        gtf=hazard_event_data.profile.transform,
+        shape=hazard_event_data.profile.shape_xy,
     )
 
     # Assert the output
@@ -105,13 +105,13 @@ def test_centroid_mask(
 
 def test_clip_linestring(
     feature_linestring,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Mask first
     m, w = area_mask(
         geom=feature_linestring.geometry,
-        gtf=hazard_event_data.transform,
-        shape=hazard_event_data.shape_xy,
+        gtf=hazard_event_data.profile.transform,
+        shape=hazard_event_data.profile.shape_xy,
     )
 
     # Call the function
@@ -130,13 +130,13 @@ def test_clip_linestring(
 
 def test_clip_polygon(
     feature_polygon,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Mask first
     m, w = area_mask(
         geom=feature_polygon.geometry,
-        gtf=hazard_event_data.transform,
-        shape=hazard_event_data.shape_xy,
+        gtf=hazard_event_data.profile.transform,
+        shape=hazard_event_data.profile.shape_xy,
     )
 
     # Call the function
@@ -155,13 +155,13 @@ def test_clip_polygon(
 
 def test_clip_polygon_complex(
     feature_polygon_complex,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Mask first
     m, w = area_mask(
         geom=feature_polygon_complex.geometry,
-        gtf=hazard_event_data.transform,
-        shape=hazard_event_data.shape_xy,
+        gtf=hazard_event_data.profile.transform,
+        shape=hazard_event_data.profile.shape_xy,
     )
 
     # Call the function
@@ -180,14 +180,14 @@ def test_clip_polygon_complex(
 
 def test_clip_point(
     feature_point,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Mask First
     geom = feature_point.geometry
     m, w = point_mask(
         point=tuple(geom.coords[0]),
-        gtf=hazard_event_data.transform,
-        shape=hazard_event_data.shape_xy,
+        gtf=hazard_event_data.profile.transform,
+        shape=hazard_event_data.profile.shape_xy,
     )
 
     # Call the function
@@ -203,13 +203,13 @@ def test_clip_point(
 
 def test_clip_weighted_3(
     feature_polygon,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
 ):
     # Call the function
     c, m = clip_weighted(
         ft=feature_polygon,
         var=hazard_event_data[0],
-        gtf=hazard_event_data.transform,
+        gtf=hazard_event_data.profile.transform,
         upscale=3,
     )
 

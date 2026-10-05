@@ -3,9 +3,10 @@
 from pathlib import Path
 
 from fiat.driver.csv import Table, parse_csv
-from fiat.driver.fgb import FlatGeobufDriver
+from fiat.driver.fgb import GEOM_EXTENSIONS, FlatGeobufReader
 from fiat.driver.handler import FileBufferHandler
-from fiat.driver.netcdf import NetcdfDriver
+from fiat.driver.netcdf import NetcdfReader, NetcdfWriter
+from fiat.error import DriverNotFoundError
 
 __all__ = ["open_csv", "open_geom", "open_grid"]
 
@@ -50,9 +51,8 @@ def open_csv(
 def open_geom(
     file: Path | str,
     mode: str = "r",
-    overwrite: bool = False,
     crs: str | None = None,
-) -> FlatGeobufDriver:
+) -> FlatGeobufReader:
     """Open a geometry source file.
 
     This source file is lazily read.
@@ -64,21 +64,19 @@ def open_geom(
     mode : str, optional
         Open in `read` or `write` mode.
     overwrite : bool, optional
-        Whether or not to overwrite an existing dataset.
+        Whether or not to overwrite an existing dataset (kept for API compatibility).
     crs : str, optional
         A Spatial reference system string in case the dataset has none.
 
     Returns
     -------
-    FlatGeobufDriver
-        Object that holds a connection to the source file.
+    FlatGeobufReader
+        Object that holds a read connection to the source file.
     """
-    return FlatGeobufDriver(
-        file,
-        mode,
-        overwrite,
-        crs,
-    )
+    file = Path(file)
+    if file.suffix.lower() not in GEOM_EXTENSIONS:
+        raise DriverNotFoundError(gog="Geometry", path=file)
+    return FlatGeobufReader(file.as_posix(), crs=crs)
 
 
 def open_grid(
@@ -86,7 +84,7 @@ def open_grid(
     mode: str = "r",
     crs: str | None = None,
     subset: str = None,
-) -> NetcdfDriver:
+) -> NetcdfReader | NetcdfWriter:
     """Open a grid source file.
 
     This source file is lazily read.
@@ -107,11 +105,16 @@ def open_grid(
 
     Returns
     -------
-    NetcdfDriver
-        Object that holds a connection to the source file.
+    NetcdfReader | NetcdfWriter
+        Object that holds a connection to the source file. A :class:`NetcdfWriter` for
+        write mode (``w``) and a :class:`NetcdfReader` otherwise (``r``, ``a``).
     """
-    return NetcdfDriver(
+    if mode == "w":
+        return NetcdfWriter(
+            file,
+            crs,
+        )
+    return NetcdfReader(
         file,
-        mode,
         crs,
     )

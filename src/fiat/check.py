@@ -74,16 +74,16 @@ def check_grid_exact(
 ) -> bool:
     """Check whether the hazard and exposure grid align."""
     if not check_vs_crs(
-        haz.crs,
-        exp.crs,
+        haz.profile.crs,
+        exp.profile.crs,
     ):
-        msg = f"CRS of hazard data ({get_crs_repr(haz.crs)}) does not match the \
-CRS of the exposure data ({get_crs_repr(exp.crs)})"
+        msg = f"CRS of hazard data ({get_crs_repr(haz.profile.crs)}) does not \
+match the CRS of the exposure data ({get_crs_repr(exp.profile.crs)})"
         logger.warning(msg)
         return False
 
-    gtf1 = [round(_n, 2) for _n in haz.transform]
-    gtf2 = [round(_n, 2) for _n in exp.transform]
+    gtf1 = [round(_n, 2) for _n in haz.profile.transform]
+    gtf2 = [round(_n, 2) for _n in exp.profile.transform]
 
     if gtf1 != gtf2:
         msg = f"Geotransform of hazard data ({gtf1}) does not match geotransform of \
@@ -91,9 +91,9 @@ exposure data ({gtf2})"
         logger.warning(msg)
         return False
 
-    if haz.shape != exp.shape:
-        msg = f"Shape of hazard ({haz.shape}) does not match shape of \
-exposure data ({exp.shape})"
+    if haz.profile.shape != exp.profile.shape:
+        msg = f"Shape of hazard ({haz.profile.shape}) does not match shape of \
+exposure data ({exp.profile.shape})"
         logger.warning(msg)
         return False
 

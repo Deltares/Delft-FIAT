@@ -8,7 +8,7 @@ from pyproj import Transformer
 from pyproj.crs import CRS
 from scipy.interpolate import RegularGridInterpolator
 
-from fiat.driver import NetcdfDriver
+from fiat.driver import NetcdfReader, NetcdfWriter
 
 
 def transform_bounds(
@@ -124,19 +124,19 @@ def default_transform(
 
 
 def reproject(
-    ds: NetcdfDriver,
+    ds: NetcdfReader,
     dst_crs: CRS | str,
     dst_gtf: list | tuple = None,
     dst_width: int = None,
     dst_height: int = None,
     method: str = "nearest",
     output_dir: Path | str = None,
-) -> NetcdfDriver:
+) -> NetcdfReader:
     """Reproject (warp) a grid.
 
     Parameters
     ----------
-    ds : NetcdfDriver
+    ds : NetcdfReader
         Input object.
     dst_crs : CRS | str
         Coodinates reference system (projection). An accepted format is: `EPSG:3857`.
@@ -155,7 +155,7 @@ def reproject(
 
     Returns
     -------
-    NetcdfDriver
+    NetcdfReader
         Output object. A lazy reading of the just creating raster file.
     """
     # Set the output path
@@ -163,14 +163,14 @@ def reproject(
     write_path = Path(output_dir, f"{ds.path.stem}_repr.nc")
 
     # Setup the transformer
-    transformer = Transformer.from_crs(ds.crs, dst_crs, always_xy=True)
-    inverse_transformer = Transformer.from_crs(dst_crs, ds.crs, always_xy=True)
+    transformer = Transformer.from_crs(ds.profile.crs, dst_crs, always_xy=True)
+    inverse_transformer = Transformer.from_crs(dst_crs, ds.profile.crs, always_xy=True)
 
     # Calculate default transform if info is missing
     if any(item is None for item in [dst_gtf, dst_width, dst_height]):
         dst_gtf, dst_width, dst_height = default_transform(
-            ds.transform,
-            *ds.shape_xy,
+            ds.profile.transform,
+            *ds.profile.shape_xy,
             transformer,
             n_samples=21,
         )
@@ -189,11 +189,11 @@ def reproject(
     lons_grid, lats_grid = np.meshgrid(lons, lats)
     # Transform the cell coordinates back the source projection
     lons_src, lats_src = inverse_transformer.transform(lons_grid, lats_grid)
-    lons_src = lons_src.clip(min=min(ds.xvals), max=max(ds.xvals))
-    lats_src = lats_src.clip(min=min(ds.yvals), max=max(ds.yvals))
+    lons_src = lons_src.clip(min=min(ds.profile.xvals), max=max(ds.profile.xvals))
+    lats_src = lats_src.clip(min=min(ds.profile.yvals), max=max(ds.profile.yvals))
 
     # Setup the output dataset
-    write_ds = NetcdfDriver(write_path, mode="w")
+    write_ds = NetcdfWriter(write_path)
     write_ds.create_spatial_dims(lats=lats, lons=lons)
     write_ds.set_spatial_ref(CRS.from_user_input(dst_crs))
 
@@ -207,7 +207,7 @@ def reproject(
 
         # Set up the interpolator
         interpolator = RegularGridInterpolator(
-            (ds.yvals, ds.xvals),  # NOTE: order = (lats, lons)
+            (ds.profile.yvals, ds.profile.xvals),  # NOTE: order = (lats, lons)
             data,
             method=method,
             bounds_error=False,
@@ -226,4 +226,4 @@ def reproject(
     write_ds.close()
     write_ds = None
 
-    return NetcdfDriver(write_path)
+    return NetcdfReader(write_path)

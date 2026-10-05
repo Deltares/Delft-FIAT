@@ -16,7 +16,7 @@ from fiat.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import FlatGeobufDriver, NetcdfDriver, Table
+from fiat.driver import FlatGeobufReader, NetcdfWriter, Table
 from fiat.method.ead import fn_density
 
 
@@ -43,10 +43,9 @@ def dummy_pipeline() -> DummyPipeline:
 def grid_handle(
     tmp_path: Path,
     crs_4326: CRS,
-) -> NetcdfDriver:
-    ds = NetcdfDriver(
+) -> NetcdfWriter:
+    ds = NetcdfWriter(
         file=Path(tmp_path, "foo.nc"),
-        mode="w",
     )
     gtf = (0.0, 1.0, 0.0, 10.0, 0.0, -1.0)
     ny, nx = (10, 10)
@@ -107,7 +106,7 @@ def density():
 
 @pytest.fixture(scope="session")
 def exposure_geom_data_run(
-    exposure_geom_data: FlatGeobufDriver,
+    exposure_geom_data: FlatGeobufReader,
 ) -> ExposureGeomData:
     data = ExposureGeomData(
         area_method="area",

@@ -1,11 +1,11 @@
 from fiat.container import HazardMeta, RunMeta, VulnerabilityMeta
-from fiat.driver import NetcdfDriver
+from fiat.driver import NetcdfReader
 from fiat.model.grid_util import equal_grid, get_exposure_meta
 from fiat.util import EXPOSURE
 
 
 def test_get_exposure_meta(
-    exposure_grid_data: NetcdfDriver,
+    exposure_grid_data: NetcdfReader,
     run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -28,7 +28,7 @@ def test_get_exposure_meta(
 
 
 def test_get_exposure_meta_risk(
-    exposure_grid_data: NetcdfDriver,
+    exposure_grid_data: NetcdfReader,
     run_risk_meta: RunMeta,
     hazard_risk_meta_run: HazardMeta,
     vulnerability_meta_run: VulnerabilityMeta,
@@ -54,12 +54,12 @@ def test_get_exposure_meta_risk(
 
 
 def test_equal_grid(
-    hazard_event_data: NetcdfDriver,
-    exposure_grid_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
+    exposure_grid_data: NetcdfReader,
 ):
     # Assert the current state
-    assert hazard_event_data.shape == (10, 10)
-    assert exposure_grid_data.shape == (10, 10)
+    assert hazard_event_data.profile.shape == (10, 10)
+    assert exposure_grid_data.profile.shape == (10, 10)
 
     # Call the function
     ds1, ds2 = equal_grid(
@@ -68,17 +68,17 @@ def test_equal_grid(
     )
 
     # Assert same
-    assert ds1.shape == (10, 10)
-    assert ds2.shape == (10, 10)
+    assert ds1.profile.shape == (10, 10)
+    assert ds2.profile.shape == (10, 10)
 
 
 def test_equal_grid_unequal(
-    hazard_event_highres_data: NetcdfDriver,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_highres_data: NetcdfReader,
+    hazard_event_data: NetcdfReader,
 ):
     # Assert the current state
-    assert hazard_event_highres_data.shape == (100, 100)
-    assert hazard_event_data.shape == (10, 10)
+    assert hazard_event_highres_data.profile.shape == (100, 100)
+    assert hazard_event_data.profile.shape == (10, 10)
 
     # Call the function
     ds1, ds2 = equal_grid(
@@ -87,17 +87,17 @@ def test_equal_grid_unequal(
     )
 
     # Assert exposure data is resampled to 100, 100
-    assert ds1.shape == (100, 100)
-    assert ds2.shape == (100, 100)
+    assert ds1.profile.shape == (100, 100)
+    assert ds2.profile.shape == (100, 100)
 
 
 def test_equal_grid_unequal_second(
-    hazard_event_highres_data: NetcdfDriver,
-    exposure_grid_data: NetcdfDriver,
+    hazard_event_highres_data: NetcdfReader,
+    exposure_grid_data: NetcdfReader,
 ):
     # Assert the current state
-    assert hazard_event_highres_data.shape == (100, 100)
-    assert exposure_grid_data.shape == (10, 10)
+    assert hazard_event_highres_data.profile.shape == (100, 100)
+    assert exposure_grid_data.profile.shape == (10, 10)
 
     # Call the function
     ds1, ds2 = equal_grid(
@@ -107,5 +107,5 @@ def test_equal_grid_unequal_second(
     )
 
     # Assert hazard data is resampled to 10, 10
-    assert ds1.shape == (10, 10)
-    assert ds2.shape == (10, 10)
+    assert ds1.profile.shape == (10, 10)
+    assert ds2.profile.shape == (10, 10)

@@ -240,9 +240,13 @@ quartodoc:
     #   desc: Objects constructed from data
     #   package: fiat.driver
     #   contents:
-    #     - name: GeomDriver
+    #     - name: FlatGeobufReader
     #       children: separate
-    #     - name: NetcdfDriver
+    #     - name: FlatGeobufWriter
+    #       children: separate
+    #     - name: NetcdfReader
+    #       children: separate
+    #     - name: NetcdfWriter
     #       children: separate
     #     - name: Grid
     #       children: separate

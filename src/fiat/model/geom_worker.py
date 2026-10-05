@@ -15,7 +15,7 @@ from fiat.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import FlatGeobufDriver, NetcdfDriver, fgb
+from fiat.driver import FlatGeobufReader, NetcdfReader, fgb
 from fiat.driver.fgb import Feature, FlatGeobufWriter
 from fiat.gis import overlay
 from fiat.method.ead import fn_ead
@@ -41,7 +41,7 @@ def feature_worker(
     ft: Feature,
     out_array: np.ndarray,
     run_meta: RunMeta,
-    hazard: NetcdfDriver,
+    hazard: NetcdfReader,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
     exposure_meta: ExposureGeomMeta,
@@ -58,7 +58,7 @@ def feature_worker(
         The array in which to place the runtime values.
     run_meta : RunMeta
         Configurations runtime metadata.
-    hazard : NetcdfDriver
+    hazard : NetcdfReader
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
@@ -82,8 +82,8 @@ def feature_worker(
     # Mask and window for this feature
     mask, window = AREA_METHODS[exposure_meta.area_method](
         geom=ft.geometry,
-        gtf=hazard.transform,
-        shape=hazard.shape_xy,
+        gtf=hazard.profile.transform,
+        shape=hazard.profile.shape_xy,
     )
 
     # Loop through the hazard band combo's
@@ -128,10 +128,10 @@ def feature_worker(
 def worker(
     output_path: Path,
     run_meta: RunMeta,
-    hazard: NetcdfDriver,
+    hazard: NetcdfReader,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
-    exposure: FlatGeobufDriver,
+    exposure: FlatGeobufReader,
     exposure_meta: ExposureGeomMeta,
     chunk: tuple | list,
 ):
@@ -146,13 +146,13 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The path to file to be written.
     run_meta : RunMeta
         The configurations runtime meta.
-    hazard : NetcdfDriver
+    hazard : NetcdfReader
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
     vulnerability_meta : VulnerabilityMeta
         Metadata specific to the vulnerability data.
-    exposure : FlatGeobufDriver
+    exposure : FlatGeobufReader
         The exposure geometries.
     exposure_meta : ExposureGeomMeta
         Metadata specific to the exposure data.
@@ -165,26 +165,25 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     fn_impact = method.fn_impact
 
     # Setup the buffered FlatGeobuf writer (shared body file + finalize by parent)
-    layer = exposure.layer
-    col_names = list(layer.fields) + list(exposure_meta.new)
-    col_types = list(layer.dtypes) + [fgb.CT_DOUBLE] * len(exposure_meta.new)
-    reader = layer._reader
+    profile = exposure.profile
+    col_names = list(profile.fields) + list(exposure_meta.new)
+    col_types = list(profile.dtypes) + [fgb.CT_DOUBLE] * len(exposure_meta.new)
     out_key = Path(output_path).as_posix()
     writer = FlatGeobufWriter(
         out_key,
         col_names=col_names,
         col_types=col_types,
-        geom_type=layer.geom_type,
+        geom_type=profile.geom_type,
         name=Path(output_path).stem,
-        crs_wkt=reader.crs_wkt,
-        crs_org=reader.crs_org,
-        crs_code=reader.crs_code,
+        crs_wkt=profile.crs_wkt,
+        crs_org=profile.crs_org,
+        crs_code=profile.crs_code,
         lock=process_lock,
     )
 
     # Loop over all the geometries in a reduced manner
     out_array = np.zeros(exposure_meta.new_length, dtype=np.float32)
-    for ft in layer.reduced_iter(*chunk):
+    for ft in exposure.reduced_iter(*chunk):
         feature_worker(
             ft=ft,
             out_array=out_array,

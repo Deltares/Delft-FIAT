@@ -6,7 +6,7 @@ from pyproj.crs import CRS
 
 from fiat.cfg import Configurations
 from fiat.container import Container, ExposureGeomData
-from fiat.driver import NetcdfDriver, Table
+from fiat.driver import NetcdfReader, Table
 from fiat.log import Logger
 from fiat.model import GeomModel
 from fiat.util import get_crs_repr
@@ -51,8 +51,8 @@ def test_geommodel_read_exposure_config(
 
     # Assert the presense of a dataset
     assert len(m.exposure) == 2
-    assert m.exposure.ds1.data.layer.size == 4
-    assert m.exposure.ds2.data.layer.size == 1
+    assert m.exposure.ds1.data.profile.size == 4
+    assert m.exposure.ds2.data.profile.size == 1
 
 
 def test_geommodel_read_exposure_sig(
@@ -67,7 +67,7 @@ def test_geommodel_read_exposure_sig(
 
     # Assert the presense of a dataset
     assert len(m.exposure) == 1
-    assert m.exposure.ds1.data.layer.size == 4
+    assert m.exposure.ds1.data.profile.size == 4
 
 
 def test_geommodel_read_exposure_reproj(
@@ -87,8 +87,8 @@ def test_geommodel_read_exposure_reproj(
     assert "Reprojecting 'spatial.fgb' to 'EPSG:3857'" in caplog.text
     # Assert the dataset
     assert len(m.exposure) == 1
-    assert m.exposure.ds1.data.layer.size == 4
-    assert get_crs_repr(m.exposure.ds1.data.crs) == "EPSG:3857"
+    assert m.exposure.ds1.data.profile.size == 4
+    assert get_crs_repr(m.exposure.ds1.data.profile.crs) == "EPSG:3857"
 
 
 def mockworker(*args, **kwargs):
@@ -104,7 +104,7 @@ def test_geommodel_run(
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
     exposure_geom_data_run: ExposureGeomData,
 ):
     # Monkeypatch the worker
@@ -132,7 +132,7 @@ def test_geommodel_run_fail(
     caplog: Logger,
     config_empty: Configurations,
     vulnerability_data_run: Table,
-    hazard_event_data: NetcdfDriver,
+    hazard_event_data: NetcdfReader,
     exposure_geom_data_run: ExposureGeomData,
 ):
     # Monkeypatch the worker
