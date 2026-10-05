@@ -2,9 +2,6 @@
 
 import importlib
 from itertools import product
-from multiprocessing.connection import Connection
-from multiprocessing.queues import Queue
-from multiprocessing.shared_memory import SharedMemory
 from typing import Callable
 
 import numpy as np
@@ -16,19 +13,15 @@ from fiat.container import (
     VulnerabilityMeta,
 )
 from fiat.driver import NetcdfReader, NetcdfVariable
-from fiat.model.util import create_2d_windows
-from fiat.thread import Sender
+from fiat.driver.geotiff.writer import TileSink
 from fiat.typing import MethodType
-from fiat.util import FIAT_METHOD, FN
-from fiat.writer import GridItem
+from fiat.util import FIAT_METHOD, FN, NODATA_VALUE
 
 
-def initialize_pool(q: Queue, p: dict[str, Connection]):
-    """Small initializer for the multiprocessing pool."""
-    global signalqueue
-    signalqueue = q
-    global pipelines
-    pipelines = p
+def initialize_geotiff_pool(desc: dict, lock):
+    """Initialise a worker with a :class:`TileSink` bound to the shared output."""
+    global tilesink
+    tilesink = TileSink(desc, lock)
 
 
 def process_hazard(
@@ -109,7 +102,7 @@ def array_worker(
             *hazard_data,
             exposure_data,
             fact=1,
-            fn_curve=vulnerability_meta.fn[exp._obj.getncattr(FN)],
+            fn_curve=vulnerability_meta.fn[exp.get_attr(FN)],
         )
         bn += 1
 
@@ -141,7 +134,6 @@ def array_worker(
 
 
 def worker(
-    mem_id: str,
     run_meta: RunMeta,
     hazard: NetcdfReader,
     hazard_meta: HazardMeta,
@@ -151,15 +143,16 @@ def worker(
     window: tuple,
     chunk: tuple,
 ):
-    """Run the grid model.
+    """Compute one output tile and write it directly to the shared GeoTIFF.
 
-    This is the worker function corresponding to the run method \
-of the [NetcdfReader](/api/GeomDriver.qmd) object.
+    Each job owns exactly one tile-aligned ``window``; the worker computes all
+    output bands for that tile and appends the compressed tile to the shared
+    output file through its :class:`TileSink` (set up by
+    :func:`initialize_geotiff_pool`). Returns the written tile's index records so
+    the parent can rebuild the tile index.
 
     Parameters
     ----------
-    mem_id : Path
-        The identifier/ name of the shared memory.
     run_meta : RunMeta
         The configurations runtime meta.
     hazard : NetcdfReader
@@ -172,61 +165,34 @@ of the [NetcdfReader](/api/GeomDriver.qmd) object.
         The exposure data.
     exposure_meta : ExposureGridMeta
         Metadata specific to the exposure data.
-    window : tuple
-        The region (x_origin, y_origin, width, height) assigned to this worker.
+    window : tuple[slice, slice]
+        The tile-aligned ``(row_slice, col_slice)`` for this job.
     chunk : tuple
-        The tile (processing window) size.
+        The tile size as ``(height, width)``.
     """
     # Setup the hazard type module
     method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{run_meta.type}")
     fn_impact = method.fn_impact
 
-    # Setup the existing block of memory
-    exshm = SharedMemory(name=mem_id)
-    out_array = np.ndarray(
-        shape=(exposure_meta.nb, *chunk),
-        dtype=np.float32,
-        buffer=exshm.buf,
+    row_slice, col_slice = window
+    h = row_slice.stop - row_slice.start
+    w = col_slice.stop - col_slice.start
+
+    # A fresh (padded) output block for this tile.
+    out_array = np.full((exposure_meta.nb, *chunk), np.nan, dtype=np.float32)
+    array_worker(
+        out_array=out_array,
+        run_meta=run_meta,
+        hazard=hazard,
+        hazard_meta=hazard_meta,
+        vulnerability_meta=vulnerability_meta,
+        exposure=exposure,
+        exposure_meta=exposure_meta,
+        fn_impact=fn_impact,
+        window=window,
     )
-    # Setup the sender
-    sender = Sender(queue=signalqueue)
 
-    # Loop through the windows
-    for window2d in create_2d_windows(
-        shape=window[2:],
-        origin=window[0:2],
-        window_size=chunk,
-    ):
-        # Do the calculations
-        array_worker(
-            out_array=out_array,
-            run_meta=run_meta,
-            hazard=hazard,
-            hazard_meta=hazard_meta,
-            vulnerability_meta=vulnerability_meta,
-            exposure=exposure,
-            exposure_meta=exposure_meta,
-            fn_impact=fn_impact,
-            window=window2d,
-        )
-
-        # Report back the tile geometry so the parent can write it.
-        # out_array axes are (band, axis0, axis1) matching the data arrays;
-        # the writer consumes record.shape as (w, h) -> block[idx, :h, :w].
-        row_slice, col_slice = window2d
-        record = GridItem(
-            mem_id=mem_id,
-            origin=(col_slice.start, row_slice.start),
-            shape=(
-                col_slice.stop - col_slice.start,
-                row_slice.stop - row_slice.start,
-            ),
-        )
-        sender.emit(record=record)
-
-        # Wait for the parent to get back
-        _ = pipelines[mem_id].recv()
-
-    # Close the memory block
-    out_array = None
-    exshm.close()
+    # Fill nodata and write the tile directly to the shared output file.
+    tile = out_array[:, :h, :w].copy()
+    tile[np.isnan(tile)] = NODATA_VALUE
+    return tilesink.write_block((col_slice.start, row_slice.start), tile)

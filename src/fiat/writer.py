@@ -1,183 +1,56 @@
-"""Writer classes."""
+"""Output grid writer helpers."""
 
-from dataclasses import dataclass
-from multiprocessing.connection import Connection
-from multiprocessing.context import SpawnContext
-from multiprocessing.queues import Queue
-from multiprocessing.shared_memory import SharedMemory
-from multiprocessing.synchronize import Lock
 from pathlib import Path
 
 import numpy as np
 
-from fiat.driver.netcdf import NetcdfReader, NetcdfWriter
-from fiat.thread import Receiver
-from fiat.util import NODATA_VALUE
+from fiat.driver.geotiff import GeotiffWriter
+
+__all__ = ["create_geotiff_handle"]
 
 
-@dataclass
-class GridItem:
-    """Small struct for signalling."""
-
-    mem_id: str
-    origin: tuple
-    shape: tuple
-
-
-def create_netcdf_handle(
+def create_geotiff_handle(
     path: Path | str,
     variables: list[str],
-    ds_like: NetcdfReader,
-) -> NetcdfWriter:
-    """Create a NetCDF handle.
+    ds_like,
+    crs=None,
+    tile: tuple[int, int] | None = None,
+) -> GeotiffWriter:
+    """Create a GeoTIFF/COG output handle shaped like a template dataset.
 
     Parameters
     ----------
     path : Path | str
-        The path to the NetCDF file.
+        The path to the output GeoTIFF.
     variables : list[str]
-        The variables to create in the NetCDF file.
-    ds_like : NetcdfReader
-        A dataset to use as a template for creating the new NetCDF file.
+        The band (variable) names to create.
+    ds_like : NetcdfReader | GeotiffReader
+        A dataset to use as a spatial template (grid, transform, CRS).
+    crs : CRS, optional
+        The coordinate reference system; falls back to ``ds_like``'s CRS.
+    tile : tuple[int, int], optional
+        The ``(height, width)`` COG tile size, which is also the parallel write
+        granularity. Defaults to the writer's 512 x 512 tile.
 
     Returns
     -------
-    NetcdfWriter
-        The created NetCDF dataset.
+    GeotiffWriter
+        The configured writer (call :meth:`GeotiffWriter.start_parallel` before
+        writing from worker processes).
     """
-    # Open the dataset
-    ds = NetcdfWriter(file=path)
-    # Get meta data from ds_like
+    ds = GeotiffWriter(file=path)
+
+    # Derive the cell-centre coordinates from the template geotransform.
     gtf = ds_like.profile.transform
     ny, nx = ds_like.profile.shape
-    # Set the spatial dimensions
-    ds.create_spatial_dims(
-        lats=np.arange(gtf[3] + gtf[5] * 0.5, gtf[3] + gtf[5] * ny, gtf[5]),
-        lons=np.arange(gtf[0] + gtf[1] * 0.5, gtf[0] + gtf[1] * nx, gtf[1]),
-    )
-    ds.set_spatial_ref(ds_like.profile.crs)
+    lons = gtf[0] + gtf[1] * (np.arange(nx) + 0.5)
+    lats = gtf[3] + gtf[5] * (np.arange(ny) + 0.5)
+
+    if tile is not None:
+        ds.set_block_size(tile_width=tile[1], tile_height=tile[0])
+    ds.create_spatial_dims(lats=lats, lons=lons)
+    ds.set_spatial_ref(crs if crs is not None else ds_like.profile.crs)
     for var in variables:
         ds.create_spatial_variable(var=var)
 
     return ds
-
-
-class GridOutputWriter(Receiver):
-    """A writer for the grid model.
-
-    Parameters
-    ----------
-    queue : Queue
-        The queue through which to signal the parent process.
-    handle : NetcdfWriter
-        A handle to the file to be written.
-    ctx : SpawnContext
-        The multiprocessing context currenly in use.
-    """
-
-    def __init__(
-        self,
-        handle: NetcdfWriter,
-        queue: Queue,
-        ctx: SpawnContext,
-    ):
-        # Inherit and set the handle
-        super().__init__(queue=queue)
-        self.handle = handle
-        self.ctx = ctx
-
-        # Components needed for the run
-        self.locks: dict[str, Lock] = {}
-        self.mem_locs: dict[str, SharedMemory] = {}
-        self.mem_blocks: dict[str, np.ndarray] = {}
-        self.piperecv: dict[str, Connection] = {}
-        self.pipesend: dict[str, Connection] = {}
-
-    ## I/O methods
-    def _close(self):
-        """Close method specific for this class."""
-        # self.handle.close()
-        # Close all memory blocks
-        mem_ids = list(self.mem_locs.keys())
-        for mem_id in mem_ids:
-            _ = self.locks.pop(mem_id)
-            _ = self.mem_blocks.pop(mem_id)
-            mem_loc = self.mem_locs.pop(mem_id)
-            mem_loc.close()
-            mem_loc.unlink()
-            pipe = self.piperecv.pop(mem_id)
-            pipe.close()
-            pipe = self.pipesend.pop(mem_id)
-            pipe.close()
-
-    def close(self):
-        """Close the grid writer."""
-        super().close()
-        self._close()
-
-    ## Setup method
-    def setup_block(
-        self,
-        mem_id: str,
-        shape: tuple[int],
-    ):
-        """Create a block of shared memory.
-
-        This also creates other necessary components, which are:
-        lock, numpy.ndarray, pipeline.
-
-        Parameters
-        ----------
-        mem_ids : list[str]
-            Identifiers of the memory blocks.
-        shape : tuple[int]
-            The shape of the memory block.
-        """
-        # Calculate the size of the mem blocks based on the shape of the block
-        size = self.handle.size * shape[0] * shape[1] * 4  # 4 bytes for Float32
-        # Loop through the id's to create the components
-        self.locks[mem_id] = self.ctx.Lock()
-        self.mem_locs[mem_id] = SharedMemory(
-            name=mem_id,
-            create=True,
-            size=size,
-        )
-        self.mem_blocks[mem_id] = np.ndarray(
-            shape=(self.handle.size, *shape),
-            dtype=np.float32,
-            buffer=self.mem_locs[mem_id].buf,
-        )
-        self.mem_blocks[mem_id][:] = np.nan
-        self.piperecv[mem_id], self.pipesend[mem_id] = self.ctx.Pipe(duplex=False)
-
-    ## Worker method
-    def fn(
-        self,
-        record: GridItem,
-    ) -> None:
-        """Write data from a shared memory block."""
-        # Get the id
-        mem_id = record.mem_id
-        w, h = record.shape
-
-        # Acquire the lock
-        self.locks[mem_id].acquire()
-        # Get the block of memory in the form of a numpy array
-        block = self.mem_blocks[mem_id]
-        block[np.isnan(block)] = NODATA_VALUE
-        # Write from the block
-        for idx, band in enumerate(self.handle.variables.values()):
-            band.set(
-                block[idx, :h, :w],
-                record.origin,
-            )
-        # Reset everything to nan
-        block[:] = np.nan
-        block = None
-
-        # Flush the handle
-        # self.handle.flush()
-
-        # Release the lock back for the worker to use
-        self.locks[mem_id].release()
-        self.pipesend[mem_id].send(None)

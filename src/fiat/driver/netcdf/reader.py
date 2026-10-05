@@ -277,10 +277,6 @@ class NetcdfVariable:
         self._cache_sel = None
 
     ## Mutating methods
-    def mask_nodata(self):
-        """_summary_."""
-        ...
-
     def set(
         self,
         data: np.ndarray,

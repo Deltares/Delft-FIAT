@@ -4,11 +4,15 @@ from pathlib import Path
 
 from fiat.driver.csv import Table, parse_csv
 from fiat.driver.fgb import GEOM_EXTENSIONS, FlatGeobufReader
+from fiat.driver.geotiff import GeotiffReader, GeotiffWriter
 from fiat.driver.handler import FileBufferHandler
 from fiat.driver.netcdf import NetcdfReader, NetcdfWriter
 from fiat.error import DriverNotFoundError
 
 __all__ = ["open_csv", "open_geom", "open_grid"]
+
+# File extensions handled by the hand-rolled GeoTIFF driver.
+GEOTIFF_EXTENSIONS = (".tif", ".tiff")
 
 
 ## Open
@@ -84,10 +88,13 @@ def open_grid(
     mode: str = "r",
     crs: str | None = None,
     subset: str = None,
-) -> NetcdfReader | NetcdfWriter:
+) -> NetcdfReader | NetcdfWriter | GeotiffReader | GeotiffWriter:
     """Open a grid source file.
 
     This source file is lazily read.
+
+    The driver is selected from the file extension: ``.tif`` / ``.tiff`` use the
+    hand-rolled GeoTIFF/COG driver, everything else uses the netCDF driver.
 
     Parameters
     ----------
@@ -105,10 +112,14 @@ def open_grid(
 
     Returns
     -------
-    NetcdfReader | NetcdfWriter
-        Object that holds a connection to the source file. A :class:`NetcdfWriter` for
-        write mode (``w``) and a :class:`NetcdfReader` otherwise (``r``, ``a``).
+    NetcdfReader | NetcdfWriter | GeotiffReader | GeotiffWriter
+        Object that holds a connection to the source file. A writer for write mode
+        (``w``) and a reader otherwise (``r``, ``a``).
     """
+    if Path(file).suffix.lower() in GEOTIFF_EXTENSIONS:
+        if mode == "w":
+            return GeotiffWriter(file, crs)
+        return GeotiffReader(file, crs)
     if mode == "w":
         return NetcdfWriter(
             file,

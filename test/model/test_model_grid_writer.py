@@ -1,242 +1,174 @@
-import os
 from multiprocessing import get_context
-from multiprocessing.shared_memory import SharedMemory
 from pathlib import Path
 
 import numpy as np
+from fiat.driver.geotiff.writer import TileSink
 
-from fiat.driver import NetcdfReader, NetcdfWriter
+from fiat.driver import NetcdfReader
+from fiat.driver.geotiff import GeotiffReader
 from fiat.util import NODATA_VALUE
-from fiat.writer import GridItem, GridOutputWriter, create_netcdf_handle
+from fiat.writer import create_geotiff_handle
 
 
-def test_create_netcdf_handle(
+## Handle creation
+def test_create_geotiff_handle(
     tmp_path: Path,
     hazard_event_data: NetcdfReader,
 ):
-    # Creat the handle
-    h = create_netcdf_handle(
-        path=Path(tmp_path, "foo.nc"),
+    # Create the handle (the COG itself is only written on close)
+    h = create_geotiff_handle(
+        path=Path(tmp_path, "foo.tif"),
         variables=["data"],
         ds_like=hazard_event_data,
+        crs=hazard_event_data.profile.crs,
     )
 
-    # Assert the output
-    assert Path(tmp_path, "foo.nc").is_file()
+    # Assert the configured state
     assert h.profile.shape == (10, 10)
     assert h.size == 1
+    assert h.names == ["data"]
 
 
-def test_create_netcdf_handle_overwrite(
+def test_create_geotiff_handle_multiple(
     tmp_path: Path,
     hazard_event_data: NetcdfReader,
 ):
-    p = Path(tmp_path, "foo.nc")
-    # Assert current state
-    assert not p.is_file()
-
-    # Touch the file
-    p.touch()
-    # Assert it's there
-    assert p.is_file()
-    assert os.stat(p).st_size == 0
-
-    # Creat the handle
-    h = create_netcdf_handle(
-        path=Path(tmp_path, "foo.nc"),
-        variables=["data"],
-        ds_like=hazard_event_data,
-    )
-
-    # Assert the output
-    assert Path(tmp_path, "foo.nc").is_file()
-    assert os.stat(p).st_size > 0
-    assert h.profile.shape == (10, 10)
-    assert h.size == 1
-
-
-def test_netcdf_writer(
-    dummy_queue: type,
-):
-    # Create the writer
-    w = GridOutputWriter(
-        queue=dummy_queue,
-        handle=None,
-        ctx=None,
-    )
-
-    # Assert some basic stuff
-    assert not w.closed
-    assert w.count == 0
-    assert w.thread is None
-    assert w.locks == {}
-    assert w.mem_blocks == {}
-    assert w.mem_locs == {}
-    assert w.piperecv == {}
-    assert w.pipesend == {}
-
-
-def test_netcdf_writer_setup(
-    dummy_queue: type,
-    grid_handle: NetcdfWriter,
-):
-    # Create the writer
-    w = GridOutputWriter(
-        queue=dummy_queue,
-        handle=grid_handle,
-        ctx=get_context("spawn"),
-    )
-
-    # Call the method to setup a block of memory
-    w.setup_block(
-        mem_id="test-block",
-        shape=(10, 10),
-    )
-
-    # Assert the state
-    assert "test-block" in w.locks
-    assert "test-block" in w.mem_blocks
-    assert w.mem_blocks["test-block"].shape == (1, 10, 10)
-    assert "test-block" in w.mem_locs
-    assert "test-block" in w.piperecv
-    assert "test-block" in w.pipesend
-
-    # Cleanup
-    w.close()
-
-
-def test_netcdf_writer_close(
-    dummy_queue: type,
-    grid_handle: NetcdfWriter,
-):
-    # Create the writer
-    w = GridOutputWriter(
-        queue=dummy_queue,
-        handle=grid_handle,
-        ctx=get_context("spawn"),
-    )
-
-    # Set data like a dummy
-    w.locks["foo"] = w.ctx.Lock()
-    w.mem_locs["foo"] = SharedMemory("foo", create=True, size=16)
-    w.mem_blocks["foo"] = np.ndarray(
-        shape=(1, 2, 2),
-        dtype=np.float32,
-        buffer=w.mem_locs["foo"].buf,
-    )
-    w.piperecv["foo"], w.pipesend["foo"] = w.ctx.Pipe(duplex=False)
-
-    # Shut it down
-    w.close()
-
-    # Assert the state
-    assert w.closed == True
-    assert "foo" not in w.locks
-    assert "foo" not in w.mem_blocks
-    assert "foo" not in w.mem_locs
-    assert "foo" not in w.piperecv
-    assert "foo" not in w.pipesend
-
-
-def test_netcdf_writer_fn(
-    dummy_queue: type,
-    grid_handle: NetcdfWriter,
-):
-    # Create the writer
-    w = GridOutputWriter(
-        queue=dummy_queue,
-        handle=grid_handle,
-        ctx=get_context("spawn"),
-    )
-
-    # Set data like a dummy
-    w.locks["foo"] = w.ctx.Lock()
-    w.mem_locs["foo"] = SharedMemory("foo", create=True, size=16)
-    w.mem_blocks["foo"] = np.ndarray(
-        shape=(1, 2, 2),
-        dtype=np.float32,
-        buffer=w.mem_locs["foo"].buf,
-    )
-    w.mem_blocks["foo"][:] = 2
-    w.piperecv["foo"], w.pipesend["foo"] = w.ctx.Pipe(duplex=False)
-
-    # Execute the main method
-    w.fn(
-        record=GridItem(mem_id="foo", origin=(0, 0), shape=(10, 10)),
-    )
-    w.close()
-
-    # Assert the output
-    ds = NetcdfReader(w.handle.path)
-    np.testing.assert_array_equal(
-        ds[0][slice(0, 2), slice(0, 2)],
-        np.array([[2, 2], [2, 2]]),
-    )
-
-
-def test_grid_item():
-    # Set the signalling struct
-    item = GridItem(mem_id="block-1", origin=(1, 2), shape=(3, 4))
-
-    # Assert the fields and equality
-    assert item.mem_id == "block-1"
-    assert item.origin == (1, 2)
-    assert item.shape == (3, 4)
-    assert item == GridItem(mem_id="block-1", origin=(1, 2), shape=(3, 4))
-
-
-def test_create_netcdf_handle_multiple(
-    tmp_path: Path,
-    hazard_event_data: NetcdfReader,
-):
-    # Creat the handle with two variables
-    h = create_netcdf_handle(
-        path=Path(tmp_path, "foo.nc"),
+    # Create the handle with two bands
+    h = create_geotiff_handle(
+        path=Path(tmp_path, "foo.tif"),
         variables=["depth", "damage"],
         ds_like=hazard_event_data,
+        crs=hazard_event_data.profile.crs,
     )
 
-    # Assert the output
-    assert Path(tmp_path, "foo.nc").is_file()
+    # Assert both bands are registered in order
     assert h.profile.shape == (10, 10)
     assert h.size == 2
     assert h.names == ["depth", "damage"]
 
 
-def test_netcdf_writer_fn_nodata(
-    dummy_queue: type,
-    grid_handle: NetcdfWriter,
+## Serial writing
+def test_geotiff_writer_serial_roundtrip(
+    tmp_path: Path,
+    hazard_event_data: NetcdfReader,
 ):
-    # Create the writer
-    w = GridOutputWriter(
-        queue=dummy_queue,
-        handle=grid_handle,
-        ctx=get_context("spawn"),
+    # Create the handle and set two bands of data
+    p = Path(tmp_path, "serial.tif")
+    h = create_geotiff_handle(
+        path=p,
+        variables=["a", "b"],
+        ds_like=hazard_event_data,
+        crs=hazard_event_data.profile.crs,
     )
+    d0 = np.arange(100, dtype="float32").reshape(10, 10)
+    d1 = d0 * 2
+    h.variables["a"].set(d0, origin=(0, 0))
+    h.variables["b"].set(d1, origin=(0, 0))
+    h.close()
 
-    # Set data like a dummy, with a nan in it
-    w.locks["foo"] = w.ctx.Lock()
-    w.mem_locs["foo"] = SharedMemory("foo", create=True, size=16)
-    w.mem_blocks["foo"] = np.ndarray(
-        shape=(1, 2, 2),
-        dtype=np.float32,
-        buffer=w.mem_locs["foo"].buf,
+    # The COG is written and reads back exactly
+    assert p.is_file()
+    r = GeotiffReader(str(p))
+    assert r.size == 2
+    assert r.names == ["a", "b"]
+    assert r.profile.crs.to_epsg() == hazard_event_data.profile.crs.to_epsg()
+    np.testing.assert_array_equal(r[0].read_window(), d0)
+    np.testing.assert_array_equal(r[1].read_window(), d1)
+    r.close()
+
+
+## Parallel writing
+def test_geotiff_writer_parallel(
+    tmp_path: Path,
+    hazard_event_data: NetcdfReader,
+):
+    # Open the handle for parallel writes with a 5x5 tile (4 tiles total)
+    p = Path(tmp_path, "parallel.tif")
+    h = create_geotiff_handle(
+        path=p,
+        variables=["v"],
+        ds_like=hazard_event_data,
+        crs=hazard_event_data.profile.crs,
+        tile=(5, 5),
     )
-    w.mem_blocks["foo"][:] = np.array([[[1, np.nan], [3, 4]]], dtype=np.float32)
-    w.piperecv["foo"], w.pipesend["foo"] = w.ctx.Pipe(duplex=False)
+    lock = h.start_parallel(get_context("spawn"))
+    desc = h.sink_descriptor()
+    sink = TileSink(desc, lock)
 
-    # Execute the main method
-    w.fn(
-        record=GridItem(mem_id="foo", origin=(0, 0), shape=(10, 10)),
+    # Write each tile and collect the returned index records
+    ref = np.arange(100, dtype="float32").reshape(10, 10)
+    records = []
+    for row in (0, 5):
+        for col in (0, 5):
+            block = ref[np.newaxis, row : row + 5, col : col + 5]
+            records.append(sink.write_block((col, row), block))
+    sink.close()
+
+    # Finalize and assert the reassembled grid matches the reference
+    h.collect_records(records)
+    h.close()
+    assert p.is_file()
+    r = GeotiffReader(str(p))
+    np.testing.assert_array_equal(r[0].read_window(), ref)
+    r.close()
+
+
+def test_geotiff_writer_parallel_nodata(
+    tmp_path: Path,
+    hazard_event_data: NetcdfReader,
+):
+    # Write a single tile that contains a nodata cell
+    p = Path(tmp_path, "nodata.tif")
+    h = create_geotiff_handle(
+        path=p,
+        variables=["v"],
+        ds_like=hazard_event_data,
+        crs=hazard_event_data.profile.crs,
+        tile=(10, 10),
     )
+    lock = h.start_parallel(get_context("spawn"))
+    sink = TileSink(h.sink_descriptor(), lock)
+    block = np.full((1, 10, 10), 5.0, dtype="float32")
+    block[0, 0, 0] = NODATA_VALUE
+    records = [sink.write_block((0, 0), block)]
+    sink.close()
 
-    # Assert the block was reset to nan after writing
-    assert np.isnan(w.mem_blocks["foo"]).all()
-    w.close()
+    # The nodata cell and the nodata value survive the round-trip
+    h.collect_records(records)
+    h.close()
+    r = GeotiffReader(str(p))
+    out = r[0].read_window()
+    assert out[0, 0] == NODATA_VALUE
+    assert out[1, 1] == 5.0
+    assert r[0].nodata == NODATA_VALUE
+    r.close()
 
-    # Assert nan was written as the nodata value
-    ds = NetcdfReader(w.handle.path)
-    np.testing.assert_array_equal(
-        ds[0][slice(0, 2), slice(0, 2)],
-        np.array([[1, NODATA_VALUE], [3, 4]], dtype=np.float32),
+
+def test_geotiff_writer_untouched_tiles_are_nodata(
+    tmp_path: Path,
+    hazard_event_data: NetcdfReader,
+):
+    # Write only one of the four tiles
+    p = Path(tmp_path, "partial.tif")
+    h = create_geotiff_handle(
+        path=p,
+        variables=["v"],
+        ds_like=hazard_event_data,
+        crs=hazard_event_data.profile.crs,
+        tile=(5, 5),
     )
+    lock = h.start_parallel(get_context("spawn"))
+    sink = TileSink(h.sink_descriptor(), lock)
+    block = np.full((1, 5, 5), 3.0, dtype="float32")
+    records = [sink.write_block((0, 0), block)]
+    sink.close()
+
+    # The written tile holds its data; the untouched tiles come out as nodata
+    h.collect_records(records)
+    h.close()
+    r = GeotiffReader(str(p))
+    out = r[0].read_window()
+    assert np.all(out[:5, :5] == 3.0)
+    assert np.all(out[5:, :] == NODATA_VALUE)
+    assert np.all(out[:, 5:] == NODATA_VALUE)
+    r.close()

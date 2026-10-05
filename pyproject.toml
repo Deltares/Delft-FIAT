@@ -296,6 +296,7 @@ test-system = { cmd = [
 ## Dependencies
 [tool.pixi.dependencies]
 flatbuffers = "==24.12.23"
+zlib = "*"
 pip = "*"
 uv = "*"
 
@@ -314,6 +315,7 @@ dependencies = { quarto = "==1.9.38" }
 # Wheel building env
 [tool.pixi.feature.wheel.dependencies]
 flatbuffers = "==24.12.23"
+zlib = "*"
 pip = "*"
 uv = "*"
 

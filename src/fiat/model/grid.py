@@ -16,9 +16,9 @@ from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.grid_util import equal_grid, get_exposure_meta
-from fiat.model.grid_worker import initialize_pool, worker
+from fiat.model.grid_worker import initialize_geotiff_pool, worker
 from fiat.model.util import (
-    create_2d_chunks,
+    create_2d_windows,
     get_hazard_meta,
     get_run_meta,
     get_vulnerability_meta,
@@ -43,7 +43,7 @@ from fiat.util import (
     generic_path_check,
     get_crs_repr,
 )
-from fiat.writer import GridOutputWriter, create_netcdf_handle
+from fiat.writer import create_geotiff_handle
 
 logger = spawn_logger(__name__)
 
@@ -176,31 +176,31 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             base=self.cfg.get(MODEL_GRID_BASE, HAZARD),
         )
 
-        # Get the output path
+        # Get the output path. Output is always a Cloud Optimized GeoTIFF.
         output_name = self.cfg.get(OUTPUT_GRID_FILE) or self.exposure.path.name
-        output_filepath = Path(self.cfg.output_dir, output_name)
+        output_filepath = Path(self.cfg.output_dir, output_name).with_suffix(".tif")
 
-        # Setup the queue and the writer
-        self.queue = self.ctx.Queue(maxsize=1000)
-        handle = create_netcdf_handle(
+        # The tile size is also the parallel write granularity.
+        chunk = self.cfg.get(MODEL_GRID_CHUNK, fallback=self.exposure.profile.shape)
+
+        # Create the output handle and open it for direct, parallel tile writes.
+        handle = create_geotiff_handle(
             path=output_filepath,
             variables=exposure_meta.new,
             ds_like=self.exposure,
+            crs=self.crs,
+            tile=chunk,
         )
-        writer = GridOutputWriter(handle=handle, queue=self.queue, ctx=self.ctx)
-        # Get the regions (one per worker) and the tile (processing) size
-        windows = list(create_2d_chunks(self.hazard.profile.shape, parts=self.threads))
-        chunk = self.cfg.get(MODEL_GRID_CHUNK, fallback=self.exposure.profile.shape)
-        # Setup a dedicated block of shared memory per worker
-        mem_ids = [f"grid_worker{idx}" for idx, _ in enumerate(windows)]
-        for mem_id in mem_ids:
-            writer.setup_block(mem_id=mem_id, shape=chunk)
-        writer.start()
+        lock = handle.start_parallel(self.ctx)
+        desc = handle.sink_descriptor()
+
+        # One job per tile-aligned window covering the whole grid.
+        ny, nx = self.exposure.profile.shape
+        windows = list(create_2d_windows((ny, nx), (0, 0), chunk))
 
         # Setup the jobs
         jobs = generate_jobs(
             {
-                "mem_id": mem_ids,
                 RUN__META: run_meta,
                 HAZARD: self.hazard,
                 HAZARD__META: hazard_meta,
@@ -210,22 +210,22 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
                 WINDOW: windows,
                 CHUNK: [chunk],
             },
-            tied=["mem_id", WINDOW],
         )
 
-        # Execute the jobs in a multiprocessing pool
-        # Wrap to prevent weird error propagation with the pipes
+        # Execute the jobs in a multiprocessing pool; workers write tiles
+        # directly to the shared output and return their tile index records.
         try:
             _s = time.time()
             logger.info("Busy...")
-            execute_pool(
+            records = execute_pool(
                 ctx=self.ctx,
                 func=worker,
                 jobs=jobs,
                 threads=self.threads,
-                initializer=initialize_pool,
-                initargs=(self.queue, writer.piperecv),
+                initializer=initialize_geotiff_pool,
+                initargs=(desc, lock),
             )
+            handle.collect_records(records)
             _e = time.time() - _s
             logger.info(f"Elapsed time: {round(_e, 2)} seconds")
 
@@ -239,5 +239,5 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
             logger.info("Model run is done!")
 
-        # Close the writer
-        writer.close()
+        # Finalise and write the COG (overviews + header-first layout).
+        handle.close()

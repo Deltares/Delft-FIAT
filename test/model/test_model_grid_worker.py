@@ -1,4 +1,4 @@
-from multiprocessing.shared_memory import SharedMemory
+from pathlib import Path
 
 import numpy as np
 
@@ -9,13 +9,16 @@ from fiat.container import (
     VulnerabilityMeta,
 )
 from fiat.driver import NetcdfReader
+from fiat.driver.geotiff import GeotiffReader
 from fiat.method import flood
 from fiat.model.grid_worker import (
     array_worker,
-    initialize_pool,
+    initialize_geotiff_pool,
     process_hazard,
     worker,
 )
+from fiat.util import NODATA_VALUE
+from fiat.writer import create_geotiff_handle
 
 
 def test_process_hazard(
@@ -112,8 +115,7 @@ def test_array_worker_risk(
 
 
 def test_worker(
-    dummy_queue: type,
-    dummy_pipeline: type,
+    tmp_path: Path,
     run_meta: RunMeta,
     hazard_event_data: NetcdfReader,
     hazard_meta_run: HazardMeta,
@@ -121,34 +123,48 @@ def test_worker(
     exposure_grid_data: NetcdfReader,
     exposure_grid_meta_run: ExposureGridMeta,
 ):
-    # Create a block of shared memory to work with
-    shm = SharedMemory(name="test-block", create=True, size=300 * 4)
-    arr = np.ndarray(shape=(3, 10, 10), dtype=np.float32, buffer=shm.buf)
-    arr[:] = np.nan
-    initialize_pool(q=dummy_queue, p={"test-block": dummy_pipeline})
+    from multiprocessing import get_context
 
-    # Call the function
-    worker(
-        mem_id="test-block",
+    # Create a GeoTIFF output handle and open it for parallel tile writes.
+    out = Path(tmp_path, "out.tif")
+    handle = create_geotiff_handle(
+        path=out,
+        variables=exposure_grid_meta_run.new,
+        ds_like=exposure_grid_data,
+        crs=exposure_grid_data.profile.crs,
+        tile=(10, 10),
+    )
+    lock = handle.start_parallel(get_context("spawn"))
+    initialize_geotiff_pool(handle.sink_descriptor(), lock)
+
+    # Call the function; it writes the tile directly and returns its records.
+    records = worker(
         run_meta=run_meta,
         hazard=hazard_event_data,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_meta_run,
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_meta_run,
-        window=(0, 0, 10, 10),
+        window=(slice(0, 10), slice(0, 10)),
         chunk=(10, 10),
     )
+    assert records
 
-    # Assert the output, same as the array worker
-    np.testing.assert_almost_equal(np.nanmean(arr[0]), 941, decimal=0)
-    np.testing.assert_almost_equal(np.nanmax(arr[0]), 1897, decimal=0)
-    np.testing.assert_almost_equal(np.nanmean(arr[1]), 2036, decimal=0)
-    np.testing.assert_almost_equal(np.nanmax(arr[1]), 4410, decimal=0)
-    np.testing.assert_almost_equal(np.nanmean(arr[2]), 2487, decimal=0)
-    np.testing.assert_almost_equal(np.nanmax(arr[2]), 4648, decimal=0)
+    handle.collect_records([records])
+    handle.close()
 
-    # Close down
-    arr = None
-    shm.close()
-    shm.unlink()
+    # Read the output back and mask nodata for comparison with array_worker.
+    reader = GeotiffReader(str(out))
+
+    def band(i):
+        a = reader[i].read_window().astype("float64")
+        a[a == NODATA_VALUE] = np.nan
+        return a
+
+    np.testing.assert_almost_equal(np.nanmean(band(0)), 941, decimal=0)
+    np.testing.assert_almost_equal(np.nanmax(band(0)), 1897, decimal=0)
+    np.testing.assert_almost_equal(np.nanmean(band(1)), 2036, decimal=0)
+    np.testing.assert_almost_equal(np.nanmax(band(1)), 4410, decimal=0)
+    np.testing.assert_almost_equal(np.nanmean(band(2)), 2487, decimal=0)
+    np.testing.assert_almost_equal(np.nanmax(band(2)), 4648, decimal=0)
+    reader.close()
