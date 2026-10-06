@@ -67,6 +67,7 @@ _COMPRESSION_CODES = {
     "deflate": 8, "zlib": 8, "gzip": 8,
 }
 
+_OPEN_BINARY = getattr(os, "O_BINARY", 0)
 
 # zlib helpers exposed to the TileSink
 cpdef bytes deflate_tile(bytes data, int level):
@@ -268,7 +269,7 @@ cdef class TileSink:
     cdef int tw
 
     def __init__(self, desc, lock):
-        self._fd = os.open(desc["path"], os.O_RDWR)
+        self._fd = os.open(desc["path"], os.O_RDWR | _OPEN_BINARY)
         self.bits = desc["bits"]
         self.complevel = desc["complevel"]
         self.compression = desc["compression"]
@@ -527,7 +528,11 @@ cdef class GeotiffWriter:
         self._emit_half = self._cog and (self._tw % 2 == 0) and (self._th % 2 == 0)
         if os.environ.get("GEOTIFF_NO_HALF"):
             self._emit_half = False
-        cdef int fd = os.open(self.path, os.O_RDWR | os.O_CREAT | os.O_TRUNC, 0o644)
+        cdef int fd = os.open(
+            self.path,
+            os.O_RDWR | os.O_CREAT | os.O_TRUNC | _OPEN_BINARY,
+            0o644,
+        )
         self._fd = fd
         cdef uint64_t data_start
         if self._cog:

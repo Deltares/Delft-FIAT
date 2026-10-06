@@ -78,12 +78,13 @@ def _library_directories() -> list:
 
 def _zlib_linking() -> dict:
     """Link zlib statically when a static archive is available."""
+    name = "zlibstatic.lib" if sys.platform == "win32" else "libz.a"
     for lib_dir in _library_directories():
-        for name in ("libz.a", "zlibstatic.lib"):
-            candidate = os.path.join(lib_dir, name)
-            if os.path.isfile(candidate):
-                return {"extra_objects": [candidate]}
-    return {"libraries": ["z"], "library_dirs": _library_directories()}
+        candidate = os.path.join(lib_dir, name)
+    if os.path.isfile(candidate):
+        return {"extra_objects": [candidate]}
+    name = "zlib" if sys.platform == "win32" else "z"
+    return {"libraries": [name], "library_dirs": _library_directories()}
 
 
 def _module_name(pyx_path: str) -> str:
