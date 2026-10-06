@@ -1,12 +1,14 @@
 """FlatGeobuf driver."""
 
-from fiat.driver.fgb.reader import (
+from fiat.driver.vector import VectorProfile
+
+from .reader import (
     Feature,
     FlatGeobufReader,
     Geometry,
     make_geometry,
 )
-from fiat.driver.fgb.serialize import (  # noqa: F401
+from .serialize import (  # noqa: F401
     CT_BINARY,
     CT_BOOL,
     CT_BYTE,
@@ -31,27 +33,22 @@ from fiat.driver.fgb.serialize import (  # noqa: F401
     GT_UNKNOWN,
     MAGIC,
 )
-from fiat.driver.fgb.writer import (
+from .writer import (
     FlatGeobufWriter,
     finalize,
 )
-from fiat.driver.vector import VectorProfile
 
 __all__ = [
     "Feature",
     "FIELD_TYPE_MAP",
     "FlatGeobufReader",
     "FlatGeobufWriter",
-    "GEOM_EXTENSIONS",
     "GEOM_TYPE",
     "Geometry",
     "VectorProfile",
     "finalize",
     "make_geometry",
 ]
-
-# Supported vector extensions (FlatGeobuf only).
-GEOM_EXTENSIONS = {".fgb"}
 
 # FIAT field type -> FlatGeobuf ColumnType.
 FIELD_TYPE_MAP = {

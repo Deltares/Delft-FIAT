@@ -164,6 +164,9 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     fn_hazard = method.fn_hazard
     fn_impact = method.fn_impact
 
+    # Load the data
+    hazard.load()
+
     # Setup the buffered FlatGeobuf writer (shared body file + finalize by parent)
     profile = exposure.profile
     col_names = list(profile.fields) + list(exposure_meta.new)

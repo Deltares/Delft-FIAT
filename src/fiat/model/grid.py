@@ -11,12 +11,13 @@ from fiat.check import (
     check_vs_crs,
 )
 from fiat.driver import NetcdfReader, Table
+from fiat.driver.geotiff import create_geotiff_handle
 from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
 from fiat.model.grid_util import equal_grid, get_exposure_meta
-from fiat.model.grid_worker import initialize_geotiff_pool, worker
+from fiat.model.grid_worker import initialize_pool, worker
 from fiat.model.util import (
     create_2d_windows,
     get_hazard_meta,
@@ -43,7 +44,6 @@ from fiat.util import (
     generic_path_check,
     get_crs_repr,
 )
-from fiat.writer import create_geotiff_handle
 
 logger = spawn_logger(__name__)
 
@@ -180,8 +180,15 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         output_name = self.cfg.get(OUTPUT_GRID_FILE) or self.exposure.path.name
         output_filepath = Path(self.cfg.output_dir, output_name).with_suffix(".tif")
 
-        # The tile size is also the parallel write granularity.
-        chunk = self.cfg.get(MODEL_GRID_CHUNK, fallback=self.exposure.profile.shape)
+        # The tile size is also the parallel write granularity. Default to a
+        # bounded 512x512 tile (clamped to the grid) so each worker processes and
+        # writes one tile at a time instead of materialising the whole raster;
+        # override via ``model.grid.chunk``.
+        ny, nx = self.exposure.profile.shape
+        chunk = self.cfg.get(
+            MODEL_GRID_CHUNK,
+            fallback=(min(512, ny), min(512, nx)),
+        )
 
         # Create the output handle and open it for direct, parallel tile writes.
         handle = create_geotiff_handle(
@@ -189,13 +196,13 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             variables=exposure_meta.new,
             ds_like=self.exposure,
             crs=self.crs,
+            cog=False,
             tile=chunk,
         )
         lock = handle.start_parallel(self.ctx)
         desc = handle.sink_descriptor()
 
         # One job per tile-aligned window covering the whole grid.
-        ny, nx = self.exposure.profile.shape
         windows = list(create_2d_windows((ny, nx), (0, 0), chunk))
 
         # Setup the jobs
@@ -222,7 +229,7 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
                 func=worker,
                 jobs=jobs,
                 threads=self.threads,
-                initializer=initialize_geotiff_pool,
+                initializer=initialize_pool,
                 initargs=(desc, lock),
             )
             handle.collect_records(records)

@@ -28,6 +28,8 @@ class NetcdfWriter:
         self,
         file: Path | str,
         crs: str | None = None,
+        compression: str = "zlib",
+        complevel: int = 2,
     ):
         # State and pathing
         self._closed = False
@@ -40,6 +42,9 @@ class NetcdfWriter:
 
         # Attributes
         self._crs: str | None = crs
+        # Compression is a dataset-wide setting (shared by all variables).
+        self._compression: str = compression
+        self._complevel: int = complevel
         self._variables: list[NetcdfVariable] = []
         self.profile: GridProfile | None = None
         self.reference: nc4.Variable | None = None
@@ -66,6 +71,8 @@ class NetcdfWriter:
         return self.__class__, (
             self.path,
             self._crs,
+            self._compression,
+            self._complevel,
         )
 
     # Properties
@@ -157,10 +164,11 @@ class NetcdfWriter:
         var: str,
         dtype: str = "f4",
         nodata: float = NODATA_VALUE,
-        compression: str = "zlib",
-        complevel: int = 5,
     ) -> None:
         """Create a spatial variable.
+
+        Compression is a dataset-wide setting fixed on the writer (see the
+        ``compression`` / ``complevel`` constructor arguments), not per variable.
 
         Parameters
         ----------
@@ -170,23 +178,46 @@ class NetcdfWriter:
             The data type of the variable according to netCDF, by default "f4".
         nodata : float, optional
             The nodata value of the variable, by default -9999.
-        compression : str, optional
-            The compression algorithm, by default "zlib".
-        complevel : int, optional
-            The compression level, by default 5.
         """
         data = self.src.createVariable(
             varname=var,
             datatype=dtype,
             dimensions=(self.ydim.name, self.xdim.name),
             fill_value=nodata,
-            compression=compression,
-            complevel=complevel,
+            compression=self._compression,
+            complevel=self._complevel,
         )
         data.setncattr("grid_mapping", self.reference.name)
         dv = NetcdfVariable._create(var=data, ref=self.src)
         self.variables[var] = dv
         self._variables.append(dv)
+
+    @check_state
+    def write_window(
+        self,
+        origin: tuple[int, int],
+        data: np.ndarray,
+    ) -> None:
+        """Write a multi-band window across all variables.
+
+        Mirrors :meth:`fiat.driver.geotiff.GeotiffWriter.write_window` so the two
+        drivers share a write surface. netCDF variables are stored independently
+        and HDF5 streams chunks straight to disk, so this is a thin fan-out of the
+        window to each variable (no whole-raster buffering).
+
+        Parameters
+        ----------
+        origin : tuple[int, int]
+            The ``(x, y)`` top-left pixel of the window.
+        data : np.ndarray
+            A ``(bands, h, w)`` (or ``(h, w)`` for a single variable) array; the
+            band axis maps to the registered variables in creation order.
+        """
+        data = np.asarray(data)
+        if data.ndim == 2:
+            data = data[np.newaxis, ...]
+        for i, dv in enumerate(self._variables):
+            dv.set(data[i], origin=origin)
 
     @check_state
     def set_spatial_ref(

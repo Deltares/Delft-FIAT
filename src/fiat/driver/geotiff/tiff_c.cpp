@@ -10,6 +10,7 @@
 
 #include <zlib.h>
 
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <map>
@@ -353,9 +354,9 @@ void put_f64(std::string& s, double v) {
 // A field whose value bytes are already serialized little-endian. If the bytes
 // fit in 4 their are stored inline, otherwise in the external pool.
 struct Field {
-    uint16_t tag;
-    uint16_t type;
-    uint32_t count;
+    uint16_t tag = 0;
+    uint16_t type = 0;
+    uint32_t count = 0;
     std::string bytes;  // serialized values (little-endian)
 };
 
@@ -375,26 +376,52 @@ std::string ser_doubles(const std::vector<double>& v) {
     return s;
 }
 
-}  // namespace
+// Round a byte offset up to the next even address (TIFF word alignment).
+inline uint64_t align2(uint64_t v) { return (v + 1) & ~uint64_t(1); }
 
-std::string build_cog_header(
-    const CogSpec& spec, const std::vector<uint32_t>& level_width,
-    const std::vector<uint32_t>& level_height,
-    const std::vector<std::vector<uint64_t>>& level_tile_bytecounts,
-    uint64_t& data_start, std::vector<uint64_t>& tile_offsets_flat) {
-    const size_t nlev = level_width.size();
-    const uint16_t spp = spec.samples_per_pixel;
+// Format a nodata value exactly as GDAL writes the GDAL_NODATA tag (42113):
+// a plain "%.18g" numeric ASCII string. Formatting here (rather than on the
+// Python side) avoids language-specific reprs such as NumPy's
+// "np.float32(-9999.0)", which GDAL / QGIS cannot parse (so the nodata would be
+// silently ignored).
+std::string format_gdal_nodata(double v) {
+    char buf[64];
+    std::snprintf(buf, sizeof(buf), "%.18g", v);
+    return std::string(buf);
+}
 
-    // Build the GeoKeyDirectory + GeoAsciiParams. GDAL stores these on the
-    // full-resolution IFD only, which we follow. Keys are emitted in ascending
-    // KeyID order (GeoTIFF 1.1 requirement).
+// Assemble the GDAL_METADATA (tag 42112) XML from per-band items. A DESCRIPTION
+// item carries role="description" (the GDAL convention for a band's name); all
+// other items are plain per-band key/value pairs.
+std::string build_gdal_metadata_xml(const std::vector<MetaItem>& items) {
+    if (items.empty()) return std::string();
+    std::string xml = "<GDALMetadata>";
+    for (const auto& it : items) {
+        xml += "<Item name=\"";
+        xml += it.name;
+        xml += "\" sample=\"";
+        xml += std::to_string(it.sample);
+        xml += "\"";
+        if (it.name == "DESCRIPTION") xml += " role=\"description\"";
+        xml += ">";
+        xml += it.value;
+        xml += "</Item>";
+    }
+    xml += "</GDALMetadata>";
+    return xml;
+}
+
+// Build the GeoKeyDirectory payload (tag 34735) and fill the GeoAsciiParams
+// pool (tag 34737) for `spec`. GDAL stores these on the full-resolution IFD
+// only. Keys are emitted in ascending KeyID order (GeoTIFF 1.1 requirement).
+std::vector<uint16_t> make_geokeys(const CogSpec& spec,
+                                   std::string& ascii_pool) {
     struct GK {
         uint16_t id, loc, cnt, val;
     };
     std::vector<GK> gks;
     gks.push_back({1024, 0, 1, (uint16_t)spec.model_type});
     gks.push_back({1025, 0, 1, (uint16_t)spec.raster_type});
-    std::string ascii_pool;
     auto add_citation = [&](uint16_t keyid, const std::string& text) {
         uint16_t off = (uint16_t)ascii_pool.size();
         ascii_pool += text;
@@ -410,7 +437,6 @@ std::string build_cog_header(
         gks.push_back({3072, 0, 1, code});
         if (!spec.crs_citation.empty()) add_citation(3073, spec.crs_citation);
     }
-    // GeoKeyDirectory payload: header (4 shorts) + keys.
     std::vector<uint16_t> gkdir;
     gkdir.push_back(1);  // KeyDirectoryVersion
     gkdir.push_back(1);  // KeyRevision
@@ -422,167 +448,173 @@ std::string build_cog_header(
         gkdir.push_back(g.cnt);
         gkdir.push_back(g.val);
     }
+    return gkdir;
+}
 
-    // Precompute tiles-per-level and bits/sample-format arrays.
+// Build the TIFF field list for a single IFD (one resolution level). Tags are
+// emitted in ascending tag order (TIFF 6.0 requirement); TileOffsets (324) is a
+// placeholder patched once offsets are known. The geo / GDAL tags are attached
+// only when `with_geo` is set (the full-resolution IFD).
+std::vector<Field> make_level_fields(const CogSpec& spec, uint32_t w,
+                                     uint32_t h, bool is_overview,
+                                     bool with_geo,
+                                     const std::vector<uint16_t>& gkdir,
+                                     const std::string& ascii_pool,
+                                     const std::vector<uint64_t>& bytecounts) {
+    const uint16_t spp = spec.samples_per_pixel;
     std::vector<uint16_t> bps(spp, spec.bits_per_sample);
     std::vector<uint16_t> sfmt(spp, spec.sample_format);
     std::vector<uint16_t> extrasamples;  // 0 = unspecified
     for (int i = 1; i < spp; ++i) extrasamples.push_back(0);
 
-    // Build the field list for each IFD (TileOffsets filled with placeholders;
-    // sizes are fixed so header layout is known before offsets are assigned).
-    std::vector<std::vector<Field>> ifd_fields(nlev);
-    for (size_t L = 0; L < nlev; ++L) {
-        uint32_t w = level_width[L], h = level_height[L];
-        uint32_t tx = spec.tile_width, ty = spec.tile_height;
-        uint32_t ntx = (w + tx - 1) / tx;
-        uint32_t nty = (h + ty - 1) / ty;
-        uint32_t ntiles = ntx * nty;
-        std::vector<Field>& f = ifd_fields[L];
+    uint32_t tx = spec.tile_width, ty = spec.tile_height;
+    uint32_t ntx = (w + tx - 1) / tx;
+    uint32_t nty = (h + ty - 1) / ty;
+    uint32_t ntiles = ntx * nty;
 
-        auto addS = [&](uint16_t tag, const std::vector<uint16_t>& v) {
-            f.push_back({tag, 3, (uint32_t)v.size(), ser_shorts(v)});
-        };
-        auto addL = [&](uint16_t tag, const std::vector<uint32_t>& v) {
-            f.push_back({tag, 4, (uint32_t)v.size(), ser_longs(v)});
-        };
-        auto addD = [&](uint16_t tag, const std::vector<double>& v) {
-            f.push_back({tag, 12, (uint32_t)v.size(), ser_doubles(v)});
-        };
-        auto addA = [&](uint16_t tag, const std::string& s) {
-            std::string b = s;
-            b.push_back('\0');
-            f.push_back({tag, 2, (uint32_t)b.size(), b});
-        };
-
-        // Tags must be emitted in ascending tag order (TIFF 6.0 requirement).
-        f.push_back(
-            {254, 4, 1, ser_longs({L == 0 ? 0u : 1u})});  // NewSubfileType
-        addL(256, {w});                                   // ImageWidth
-        addL(257, {h});                                   // ImageLength
-        addS(258, bps);                                   // BitsPerSample
-        addS(259, {spec.compression});                    // Compression
-        addS(262, {1});    // Photometric=BlackIsZero
-        addS(277, {spp});  // SamplesPerPixel
-        addS(284, {1});    // PlanarConfig=chunky
-        if (spec.compression == 8 && spec.predictor != 1)
-            addS(317, {spec.predictor});  // Predictor
-        addS(322, {(uint16_t)tx});        // TileWidth
-        addS(323, {(uint16_t)ty});        // TileLength
-        {
-            std::vector<uint32_t> placeholder(ntiles, 0);
-            addL(324, placeholder);  // TileOffsets
-        }
-        {
-            std::vector<uint32_t> bc(ntiles, 0);
-            for (uint32_t t = 0;
-                 t < ntiles && t < level_tile_bytecounts[L].size(); ++t)
-                bc[t] = (uint32_t)level_tile_bytecounts[L][t];
-            addL(325, bc);  // TileByteCounts
-        }
-        if (spp > 1) addS(338, extrasamples);  // ExtraSamples
-        addS(339, sfmt);                       // SampleFormat
-        // Geo + GDAL tags on the full-resolution IFD only.
-        if (L == 0) {
-            if (spec.has_pixel_scale)
-                addD(33550, {spec.pixel_scale[0], spec.pixel_scale[1],
-                             spec.pixel_scale[2]});
-            if (spec.has_tiepoint)
-                addD(33922,
-                     {spec.tiepoint[0], spec.tiepoint[1], spec.tiepoint[2],
-                      spec.tiepoint[3], spec.tiepoint[4], spec.tiepoint[5]});
-            addS(34735, gkdir);  // GeoKeyDirectory
-            if (!ascii_pool.empty()) addA(34737, ascii_pool);  // GeoAsciiParams
-            if (!spec.gdal_metadata_xml.empty())
-                addA(42112, spec.gdal_metadata_xml);  // GDAL_METADATA
-            if (!spec.gdal_nodata_ascii.empty())
-                addA(42113, spec.gdal_nodata_ascii);  // GDAL_NODATA
-        }
-    }
-
-    // --- Pass 1: lay out the header region (all IFDs + external data).
-    // -------- Region order: [TIFF header 8B] then for each IFD: its entry
-    // block followed by that IFD's external data pool. Everything is <
-    // data_start.
-    auto align2 = [](uint64_t v) { return (v + 1) & ~uint64_t(1); };
-    uint64_t cursor = 8;  // after the TIFF header
-    std::vector<uint64_t> ifd_start(nlev);
-    // We need to know each field's external offset. Compute per IFD.
-    struct Layout {
-        uint64_t entry_block;           // offset of IFD entry block
-        std::vector<int> external;      // 1 if field stored externally
-        std::vector<uint64_t> ext_off;  // external offset (if external)
-        uint64_t
-            tile_offsets_field_off;  // external offset of TileOffsets bytes
-        uint32_t ntiles;
+    std::vector<Field> f;
+    auto addS = [&](uint16_t tag, const std::vector<uint16_t>& v) {
+        f.push_back({tag, 3, (uint32_t)v.size(), ser_shorts(v)});
     };
-    std::vector<Layout> lay(nlev);
+    auto addL = [&](uint16_t tag, const std::vector<uint32_t>& v) {
+        f.push_back({tag, 4, (uint32_t)v.size(), ser_longs(v)});
+    };
+    auto addD = [&](uint16_t tag, const std::vector<double>& v) {
+        f.push_back({tag, 12, (uint32_t)v.size(), ser_doubles(v)});
+    };
+    auto addA = [&](uint16_t tag, const std::string& s) {
+        std::string b = s;
+        b.push_back('\0');
+        f.push_back({tag, 2, (uint32_t)b.size(), b});
+    };
+
+    f.push_back(
+        {254, 4, 1, ser_longs({is_overview ? 1u : 0u})});  // NewSubfileType
+    addL(256, {w});                                        // ImageWidth
+    addL(257, {h});                                        // ImageLength
+    addS(258, bps);                                        // BitsPerSample
+    addS(259, {spec.compression});                         // Compression
+    addS(262, {1});    // Photometric=BlackIsZero
+    addS(277, {spp});  // SamplesPerPixel
+    addS(284, {1});    // PlanarConfig=chunky
+    if (spec.compression == 8 && spec.predictor != 1)
+        addS(317, {spec.predictor});  // Predictor
+    addS(322, {(uint16_t)tx});        // TileWidth
+    addS(323, {(uint16_t)ty});        // TileLength
+    {
+        std::vector<uint32_t> placeholder(ntiles, 0);
+        addL(324, placeholder);  // TileOffsets (patched later)
+    }
+    {
+        std::vector<uint32_t> bc(ntiles, 0);
+        for (uint32_t t = 0; t < ntiles && t < bytecounts.size(); ++t)
+            bc[t] = (uint32_t)bytecounts[t];
+        addL(325, bc);  // TileByteCounts
+    }
+    if (spp > 1) addS(338, extrasamples);  // ExtraSamples
+    addS(339, sfmt);                       // SampleFormat
+    if (with_geo) {
+        if (spec.has_pixel_scale)
+            addD(33550, {spec.pixel_scale[0], spec.pixel_scale[1],
+                         spec.pixel_scale[2]});
+        if (spec.has_tiepoint)
+            addD(33922, {spec.tiepoint[0], spec.tiepoint[1], spec.tiepoint[2],
+                         spec.tiepoint[3], spec.tiepoint[4], spec.tiepoint[5]});
+        addS(34735, gkdir);                                // GeoKeyDirectory
+        if (!ascii_pool.empty()) addA(34737, ascii_pool);  // GeoAsciiParams
+        std::string meta = build_gdal_metadata_xml(spec.meta_items);
+        if (!meta.empty()) addA(42112, meta);  // GDAL_METADATA
+        if (spec.has_nodata)
+            addA(42113, format_gdal_nodata(spec.nodata));  // GDAL_NODATA
+    }
+    return f;
+}
+
+// Build the field list for every level (level 0 = full resolution, carrying the
+// geo / GDAL tags; the rest are overview levels).
+std::vector<std::vector<Field>> make_ifd_fields(
+    const CogSpec& spec, const std::vector<uint32_t>& level_width,
+    const std::vector<uint32_t>& level_height,
+    const std::vector<std::vector<uint64_t>>& level_tile_bytecounts) {
+    std::string ascii_pool;
+    std::vector<uint16_t> gkdir = make_geokeys(spec, ascii_pool);
+    const size_t nlev = level_width.size();
+    std::vector<std::vector<Field>> out(nlev);
+    for (size_t L = 0; L < nlev; ++L)
+        out[L] = make_level_fields(spec, level_width[L], level_height[L],
+                                   /*is_overview=*/L != 0, /*with_geo=*/L == 0,
+                                   gkdir, ascii_pool, level_tile_bytecounts[L]);
+    return out;
+}
+
+// Placement of one IFD within the header region.
+struct Layout {
+    uint64_t entry_block = 0;       // offset of the IFD entry block
+    std::vector<int> external;      // 1 if field i is stored externally
+    std::vector<uint64_t> ext_off;  // external offset of field i (if external)
+};
+
+// Lay out the IFD chain starting at `base_offset`. Fills `lay` and `ifd_start`
+// and returns the end cursor (first free byte after the last external pool).
+// Field byte layout is fixed, so the region size is known before tile offsets.
+uint64_t layout_ifds(const std::vector<std::vector<Field>>& ifd_fields,
+                     uint64_t base_offset, std::vector<Layout>& lay,
+                     std::vector<uint64_t>& ifd_start) {
+    const size_t nlev = ifd_fields.size();
+    lay.assign(nlev, Layout{});
+    ifd_start.assign(nlev, 0);
+    uint64_t cursor = base_offset;
     for (size_t L = 0; L < nlev; ++L) {
-        auto& fields = ifd_fields[L];
+        const auto& fields = ifd_fields[L];
         Layout lo;
         lo.entry_block = cursor;
         ifd_start[L] = cursor;
         uint64_t entry_sz = 2 + (uint64_t)fields.size() * 12 + 4;
         uint64_t ext_cursor = cursor + entry_sz;
-        lo.external.resize(fields.size(), 0);
-        lo.ext_off.resize(fields.size(), 0);
-        lo.tile_offsets_field_off = 0;
+        lo.external.assign(fields.size(), 0);
+        lo.ext_off.assign(fields.size(), 0);
         for (size_t i = 0; i < fields.size(); ++i) {
             if (fields[i].bytes.size() > 4) {
                 lo.external[i] = 1;
                 ext_cursor = align2(ext_cursor);
                 lo.ext_off[i] = ext_cursor;
-                if (fields[i].tag == 324)
-                    lo.tile_offsets_field_off = ext_cursor;
                 ext_cursor += fields[i].bytes.size();
-            }
-            if (fields[i].tag == 324) {
-                uint32_t w = level_width[L], h = level_height[L];
-                lo.ntiles = ((w + spec.tile_width - 1) / spec.tile_width) *
-                            ((h + spec.tile_height - 1) / spec.tile_height);
             }
         }
         cursor = ext_cursor;
         lay[L] = lo;
     }
-    data_start = align2(cursor);
+    return cursor;
+}
 
-    // --- Assign tile offsets sequentially from data_start.
-    // --------------------
-    tile_offsets_flat.clear();
-    std::vector<std::vector<uint32_t>> level_tile_offsets(nlev);
-    uint64_t dcur = data_start;
-    for (size_t L = 0; L < nlev; ++L) {
-        for (uint64_t bc : level_tile_bytecounts[L]) {
-            level_tile_offsets[L].push_back((uint32_t)dcur);
-            tile_offsets_flat.push_back(dcur);
-            dcur += bc;
+// Overwrite the serialized bytes of the field with tag `tag` in `fields`.
+void patch_field(std::vector<Field>& fields, uint16_t tag,
+                 const std::string& bytes) {
+    for (auto& fld : fields)
+        if (fld.tag == tag) {
+            fld.bytes = bytes;
+            return;
         }
-    }
-    // Patch the TileOffsets field bytes now that offsets are known.
-    for (size_t L = 0; L < nlev; ++L) {
-        for (auto& fld : ifd_fields[L]) {
-            if (fld.tag == 324) {
-                fld.bytes = ser_longs(level_tile_offsets[L]);
-                break;
-            }
-        }
-    }
+}
 
-    // --- Pass 2: emit the header bytes.
-    // ---------------------------------------
+// Emit the IFD-chain bytes for the region [base_offset, region_end). Output
+// index 0 corresponds to `base_offset`; external pools are padded to their
+// assigned absolute offsets. The caller writes the 8-byte TIFF header (and any
+// leading tile data) separately.
+std::string emit_ifds(const std::vector<std::vector<Field>>& ifd_fields,
+                      const std::vector<Layout>& lay,
+                      const std::vector<uint64_t>& ifd_start,
+                      uint64_t base_offset, uint64_t region_end) {
+    const size_t nlev = ifd_fields.size();
     std::string out;
-    out.reserve(data_start);
-    // TIFF header: "II", 42, offset to first IFD.
-    out += "II";
-    put_u16(out, 42);
-    put_u32(out, (uint32_t)ifd_start[0]);
-
+    out.reserve(region_end - base_offset);
+    auto pad_to = [&](uint64_t abs) {
+        while (out.size() + base_offset < abs) out.push_back('\0');
+    };
     for (size_t L = 0; L < nlev; ++L) {
-        auto& fields = ifd_fields[L];
-        auto& lo = lay[L];
-        // Pad to the IFD entry-block start.
-        while (out.size() < lo.entry_block) out.push_back('\0');
+        const auto& fields = ifd_fields[L];
+        const auto& lo = lay[L];
+        pad_to(lo.entry_block);
         put_u16(out, (uint16_t)fields.size());
         for (size_t i = 0; i < fields.size(); ++i) {
             const Field& fld = fields[i];
@@ -597,18 +629,268 @@ std::string build_cog_header(
                 out.append(v, 0, 4);
             }
         }
-        // Next-IFD pointer.
+        // Next-IFD pointer (0 terminates the chain).
         put_u32(out, (uint32_t)(L + 1 < nlev ? ifd_start[L + 1] : 0));
-        // External data pool for this IFD.
         for (size_t i = 0; i < fields.size(); ++i) {
             if (lo.external[i]) {
-                while (out.size() < lo.ext_off[i]) out.push_back('\0');
+                pad_to(lo.ext_off[i]);
                 out += fields[i].bytes;
             }
         }
     }
+    pad_to(region_end);
+    return out;
+}
+
+}  // namespace
+
+std::string build_cog_header(
+    const CogSpec& spec, const std::vector<uint32_t>& level_width,
+    const std::vector<uint32_t>& level_height,
+    const std::vector<std::vector<uint64_t>>& level_tile_bytecounts,
+    uint64_t& data_start, std::vector<uint64_t>& tile_offsets_flat) {
+    const size_t nlev = level_width.size();
+    auto ifd_fields =
+        make_ifd_fields(spec, level_width, level_height, level_tile_bytecounts);
+    std::vector<Layout> lay;
+    std::vector<uint64_t> ifd_start;
+    uint64_t region_end = layout_ifds(ifd_fields, 8, lay, ifd_start);
+    data_start = align2(region_end);
+
+    // Assign tile offsets sequentially from data_start and patch TileOffsets.
+    tile_offsets_flat.clear();
+    uint64_t dcur = data_start;
+    for (size_t L = 0; L < nlev; ++L) {
+        std::vector<uint32_t> offs;
+        for (uint64_t bc : level_tile_bytecounts[L]) {
+            offs.push_back((uint32_t)dcur);
+            tile_offsets_flat.push_back(dcur);
+            dcur += bc;
+        }
+        patch_field(ifd_fields[L], 324, ser_longs(offs));
+    }
+
+    // TIFF header ("II", 42, offset to first IFD) + the IFD chain, padded to
+    // data_start so tiles start exactly where the header offsets point.
+    std::string out = "II";
+    put_u16(out, 42);
+    put_u32(out, (uint32_t)ifd_start[0]);
+    out += emit_ifds(ifd_fields, lay, ifd_start, 8, region_end);
     while (out.size() < data_start) out.push_back('\0');
     return out;
+}
+
+uint64_t cog_header_size(const CogSpec& spec,
+                         const std::vector<uint32_t>& level_width,
+                         const std::vector<uint32_t>& level_height) {
+    // The TileByteCounts values don't affect the header size (the field is a
+    // fixed one LONG per tile), so zero-filled counts of the right length give
+    // the correct layout.
+    std::vector<std::vector<uint64_t>> bytecounts(level_width.size());
+    for (size_t L = 0; L < level_width.size(); ++L) {
+        uint32_t ntx = (level_width[L] + spec.tile_width - 1) / spec.tile_width;
+        uint32_t nty =
+            (level_height[L] + spec.tile_height - 1) / spec.tile_height;
+        bytecounts[L].assign((size_t)ntx * nty, 0);
+    }
+    auto ifd_fields =
+        make_ifd_fields(spec, level_width, level_height, bytecounts);
+    std::vector<Layout> lay;
+    std::vector<uint64_t> ifd_start;
+    uint64_t region_end = layout_ifds(ifd_fields, 8, lay, ifd_start);
+    return align2(region_end);
+}
+
+std::string build_cog_header_fixed(
+    const CogSpec& spec, const std::vector<uint32_t>& level_width,
+    const std::vector<uint32_t>& level_height,
+    const std::vector<std::vector<uint64_t>>& level_tile_offsets,
+    const std::vector<std::vector<uint64_t>>& level_tile_bytecounts) {
+    const size_t nlev = level_width.size();
+    auto ifd_fields =
+        make_ifd_fields(spec, level_width, level_height, level_tile_bytecounts);
+    std::vector<Layout> lay;
+    std::vector<uint64_t> ifd_start;
+    uint64_t region_end = layout_ifds(ifd_fields, 8, lay, ifd_start);
+    uint64_t data_start = align2(region_end);
+
+    // Patch TileOffsets with the explicit (possibly out-of-order) offsets of
+    // the already-written tiles.
+    for (size_t L = 0; L < nlev; ++L) {
+        std::vector<uint32_t> offs;
+        offs.reserve(level_tile_offsets[L].size());
+        for (uint64_t o : level_tile_offsets[L]) offs.push_back((uint32_t)o);
+        patch_field(ifd_fields[L], 324, ser_longs(offs));
+    }
+
+    std::string out = "II";
+    put_u16(out, 42);
+    put_u32(out, (uint32_t)ifd_start[0]);
+    out += emit_ifds(ifd_fields, lay, ifd_start, 8, region_end);
+    while (out.size() < data_start) out.push_back('\0');
+    return out;
+}
+
+std::string build_plain_ifd(const CogSpec& spec, uint32_t width,
+                            uint32_t height,
+                            const std::vector<uint64_t>& tile_offsets,
+                            const std::vector<uint64_t>& tile_bytecounts,
+                            uint64_t ifd_block_start) {
+    std::vector<uint32_t> lw = {width};
+    std::vector<uint32_t> lh = {height};
+    std::vector<std::vector<uint64_t>> bc = {tile_bytecounts};
+    auto ifd_fields = make_ifd_fields(spec, lw, lh, bc);
+    std::vector<Layout> lay;
+    std::vector<uint64_t> ifd_start;
+    uint64_t region_end =
+        layout_ifds(ifd_fields, ifd_block_start, lay, ifd_start);
+
+    std::vector<uint32_t> offs;
+    offs.reserve(tile_offsets.size());
+    for (uint64_t o : tile_offsets) offs.push_back((uint32_t)o);
+    patch_field(ifd_fields[0], 324, ser_longs(offs));
+
+    // Just the IFD block (entries + external pool) placed at ifd_block_start;
+    // the 8-byte TIFF header and tile data are written by the caller.
+    return emit_ifds(ifd_fields, lay, ifd_start, ifd_block_start, region_end);
+}
+
+// --- Tile pack / overview down-sampling (COG pixel logic) -----------------
+// These own the per-tile numeric work the Cython writer used to do in NumPy:
+// padding + chunky interleaving of a tile and the nodata-aware 2x2 overview
+// down-sample. Keeping them here (like the FlatGeobuf index builder) means the
+// Cython layer only streams buffers and does file I/O.
+namespace {
+
+// Pad a chunky (h, w, spp) source to a full (th, tw, spp) tile, filling the
+// edge with `nodata`. Returns the raw (uncompressed) tile bytes.
+template <typename T>
+std::string pad_interleave(const uint8_t* src, uint32_t h, uint32_t w,
+                           uint32_t tw, uint32_t th, uint16_t spp, T nodata) {
+    std::string raw;
+    raw.resize((size_t)th * tw * spp * sizeof(T));
+    T* dst = reinterpret_cast<T*>(&raw[0]);
+    const T* s = reinterpret_cast<const T*>(src);
+    for (uint32_t y = 0; y < th; ++y)
+        for (uint32_t x = 0; x < tw; ++x)
+            for (uint16_t c = 0; c < spp; ++c)
+                dst[((size_t)y * tw + x) * spp + c] =
+                    (y < h && x < w) ? s[((size_t)y * w + x) * spp + c]
+                                     : nodata;
+    return raw;
+}
+
+// Down-sample a chunky (h, w, spp) block by two into (oh, ow, spp). Floats are
+// averaged over each 2x2 cell ignoring nodata (an all-nodata cell stays
+// nodata); integer types are decimated (top-left sample).
+template <typename T>
+std::string downsample_chunky(const uint8_t* src, uint32_t h, uint32_t w,
+                              uint16_t spp, bool is_float, T nodata,
+                              bool has_nodata, uint32_t& oh, uint32_t& ow) {
+    oh = (h + 1) / 2;
+    ow = (w + 1) / 2;
+    std::string raw;
+    raw.resize((size_t)oh * ow * spp * sizeof(T));
+    T* dst = reinterpret_cast<T*>(&raw[0]);
+    const T* s = reinterpret_cast<const T*>(src);
+    for (uint32_t oy = 0; oy < oh; ++oy) {
+        for (uint32_t ox = 0; ox < ow; ++ox) {
+            for (uint16_t c = 0; c < spp; ++c) {
+                if (is_float) {
+                    double sum = 0;
+                    int cnt = 0;
+                    for (uint32_t dy = 0; dy < 2; ++dy) {
+                        uint32_t yy = 2 * oy + dy;
+                        if (yy >= h) continue;
+                        for (uint32_t dx = 0; dx < 2; ++dx) {
+                            uint32_t xx = 2 * ox + dx;
+                            if (xx >= w) continue;
+                            T v = s[((size_t)yy * w + xx) * spp + c];
+                            if (has_nodata && (double)v == (double)nodata)
+                                continue;
+                            sum += (double)v;
+                            ++cnt;
+                        }
+                    }
+                    dst[((size_t)oy * ow + ox) * spp + c] =
+                        cnt ? (T)(sum / cnt) : (has_nodata ? nodata : (T)0);
+                } else {
+                    uint32_t yy = 2 * oy, xx = 2 * ox;
+                    dst[((size_t)oy * ow + ox) * spp + c] =
+                        (yy < h && xx < w) ? s[((size_t)yy * w + xx) * spp + c]
+                                           : nodata;
+                }
+            }
+        }
+    }
+    return raw;
+}
+
+// DEFLATE `raw` (level), or return it unchanged for compression != 8.
+std::string maybe_deflate(const std::string& raw, uint16_t compression,
+                          int level) {
+    if (compression == 8)
+        return deflate_block(reinterpret_cast<const uint8_t*>(raw.data()),
+                             raw.size(), level);
+    return raw;
+}
+
+}  // namespace
+
+// Dispatch a templated call `EXPR(T)` on the (sample_format, bits) dtype.
+#define FG_TYPED_DISPATCH(sample_format, bits, EXPR)           \
+    (((sample_format) == 3 && (bits) == 32)   ? EXPR(float)    \
+     : ((sample_format) == 3 && (bits) == 64) ? EXPR(double)   \
+     : ((sample_format) == 2 && (bits) == 8)  ? EXPR(int8_t)   \
+     : ((sample_format) == 2 && (bits) == 16) ? EXPR(int16_t)  \
+     : ((sample_format) == 2 && (bits) == 32) ? EXPR(int32_t)  \
+     : ((sample_format) == 1 && (bits) == 8)  ? EXPR(uint8_t)  \
+     : ((sample_format) == 1 && (bits) == 16) ? EXPR(uint16_t) \
+     : ((sample_format) == 1 && (bits) == 32) ? EXPR(uint32_t) \
+                                              : EXPR(uint8_t))
+
+std::string encode_tile(const uint8_t* src, uint32_t src_h, uint32_t src_w,
+                        uint32_t tile_w, uint32_t tile_h, uint16_t spp,
+                        uint16_t sample_format, uint16_t bits, double nodata,
+                        uint8_t has_nodata, uint16_t compression, int level) {
+    (void)has_nodata;
+#define FG_PACK(T) \
+    pad_interleave<T>(src, src_h, src_w, tile_w, tile_h, spp, (T)nodata)
+    std::string raw = FG_TYPED_DISPATCH(sample_format, bits, FG_PACK);
+#undef FG_PACK
+    return maybe_deflate(raw, compression, level);
+}
+
+std::string downsample_tile(const uint8_t* src, uint32_t src_h, uint32_t src_w,
+                            uint32_t tile_w, uint32_t tile_h, uint16_t spp,
+                            uint16_t sample_format, uint16_t bits,
+                            double nodata, uint8_t has_nodata,
+                            uint16_t compression, int level) {
+    bool is_float = (sample_format == 3);
+    uint32_t oh = 0, ow = 0;
+#define FG_DS(T)                                                      \
+    downsample_chunky<T>(src, src_h, src_w, spp, is_float, (T)nodata, \
+                         has_nodata != 0, oh, ow)
+    std::string ds = FG_TYPED_DISPATCH(sample_format, bits, FG_DS);
+#undef FG_DS
+#define FG_PACK(T)                                                         \
+    pad_interleave<T>(reinterpret_cast<const uint8_t*>(ds.data()), oh, ow, \
+                      tile_w, tile_h, spp, (T)nodata)
+    std::string raw = FG_TYPED_DISPATCH(sample_format, bits, FG_PACK);
+#undef FG_PACK
+    return maybe_deflate(raw, compression, level);
+}
+
+std::string downsample_raw(const uint8_t* src, uint32_t src_h, uint32_t src_w,
+                           uint16_t spp, uint16_t sample_format, uint16_t bits,
+                           double nodata, uint8_t has_nodata, uint32_t& out_h,
+                           uint32_t& out_w) {
+    bool is_float = (sample_format == 3);
+#define FG_DS(T)                                                      \
+    downsample_chunky<T>(src, src_h, src_w, spp, is_float, (T)nodata, \
+                         has_nodata != 0, out_h, out_w)
+    return FG_TYPED_DISPATCH(sample_format, bits, FG_DS);
+#undef FG_DS
 }
 
 }  // namespace fiatgtiff

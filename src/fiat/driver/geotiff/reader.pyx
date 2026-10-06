@@ -1,17 +1,9 @@
 # cython: language_level=3
 # distutils: language = c++
-"""Hand-rolled GeoTIFF read driver.
+"""GeoTIFF/ COG reader."""
 
-Reads tiled or stripped (Geo)TIFFs, DEFLATE- or un-compressed, into NumPy arrays
-via the C++ codec in ``tiff_c.cpp``. The public surface mirrors
-:class:`fiat.driver.netcdf.NetcdfReader` / ``NetcdfVariable`` so it is a drop-in
-replacement in the grid model.
-
-Supported on read: classic TIFF (little/big endian); compression 1 (none) and 8
-(Adobe Deflate); predictor 1 (none) and 2 (horizontal); sample formats uint/int
-(8/16/32-bit) and IEEE float (32/64-bit). Unsupported inputs raise a clear
-error.
-"""
+import os
+from pathlib import Path
 
 import numpy as np
 
@@ -39,44 +31,48 @@ cdef dict _DTYPE_MAP = {
 cdef class GeotiffBand:
     """A single raster band of a :class:`GeotiffReader`."""
 
-    cdef object _reader_ref
+    cdef dict _attrs
+    cdef object _data
+    cdef readonly object _dtype
+    cdef readonly object _nodata
     cdef GeotiffReader _reader
+    cdef object _reader_ref
     cdef readonly int index
     cdef readonly str name
-    cdef readonly object _nodata
-    cdef readonly object _dtype
-    cdef dict _attrs
-    cdef object _cache
-    cdef object _cache_sel
 
     def __cinit__(self):
+        # Set the attributes
+        self._attrs = {}
+        self._data = None
+        self._dtype = None
+        self._nodata = None
         self._reader = None
         self.index = 0
         self.name = ""
-        self._nodata = None
-        self._dtype = None
-        self._attrs = {}
-        self._cache = None
-        self._cache_sel = None
 
     @staticmethod
-    cdef GeotiffBand _create(GeotiffReader reader, int index, str name,
-                             object nodata, object dtype, dict attrs):
+    cdef GeotiffBand _create(
+        GeotiffReader reader, int index, str name, object nodata,
+        object dtype, dict attrs,
+    ):
         cdef GeotiffBand obj = GeotiffBand.__new__(GeotiffBand)
+        obj._attrs = attrs
+        obj._data = None
+        obj._dtype = dtype
+        obj._nodata = nodata
         obj._reader = reader
         obj.index = index
         obj.name = name
-        obj._nodata = nodata
-        obj._dtype = dtype
-        obj._attrs = attrs
-        obj._cache = None
-        obj._cache_sel = None
+
         return obj
 
     def __getitem__(self, select):
-        if self._cache is not None and select == self._cache_sel:
-            return self._cache
-        return self._reader._read_select(self.index, select)
+        return self._data[select]
+
+    @property
+    def data(self):
+        """Return the data in memory."""
+        return self._data
 
     @property
     def dtype(self):
@@ -88,23 +84,22 @@ cdef class GeotiffBand:
         """Return the nodata value, or ``None``."""
         return self._nodata
 
-    def clear_window(self):
-        """Release a held window from memory."""
-        self._cache = None
-        self._cache_sel = None
+    # I/O related
+    def clear(self):
+        """Release a data from memory."""
+        self._data = None
 
+    def load(self, *window):
+        """Read a window of data into memory, optionally caching it."""
+        select = slice(None) if not window else window
+        data = self._reader._read_select(self.index, select)
+        self._data = data
+        return self._data
+
+    # Get methods
     def get_attr(self, var):
         """Get a per-band metadata attribute by name."""
         return self._attrs[var]
-
-    def read_window(self, window=None, bint hold=False):
-        """Read a window of data into memory, optionally caching it."""
-        select = slice(None) if window is None else window
-        data = self._reader._read_select(self.index, select)
-        if hold:
-            self._cache = data
-            self._cache_sel = select
-        return data
 
 
 cdef class GeotiffReader:
@@ -116,8 +111,6 @@ cdef class GeotiffReader:
         The path to the TIFF file.
     crs : str, optional
         A user provided spatial reference system if the file has none.
-    mask : bool, optional
-        Kept for API compatibility with the netCDF driver.
     """
 
     cdef bytes _data
@@ -149,10 +142,7 @@ cdef class GeotiffReader:
     cdef readonly object _crs
     cdef list _variables
 
-    def __cinit__(self, file, crs=None, mask=True):
-        import os
-        from pathlib import Path
-
+    def __cinit__(self, file, crs=None):
         # State and pathing
         self.path = Path(file).as_posix()
         if not os.path.isfile(self.path):
@@ -177,8 +167,115 @@ cdef class GeotiffReader:
         self._build_profile(info)
         self._build_bands(info)
 
+    # Dunder methods
     def __dealloc__(self):
         self._ptr = NULL
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
+    def __getitem__(self, idx):
+        return self._variables[idx]
+
+    def __iter__(self):
+        return iter(self._variables)
+
+    def __reduce__(self):
+        return self.__class__, (self.path, self._crs)
+
+    # Private methods
+    cdef void _build_bands(self, TiffInfo& info) except *:
+        # Collect the per-band metadata items (GDAL_METADATA) and the band
+        # descriptions that double as band names.
+        cdef size_t i
+        band_attrs = [dict() for _ in range(self._spp)]
+        band_names = [None] * self._spp
+        for i in range(info.meta_items.size()):
+            name = info.meta_items[i].name.decode("utf-8", "replace")
+            value = info.meta_items[i].value.decode("utf-8", "replace")
+            sample = info.meta_items[i].sample
+            if 0 <= sample < self._spp:
+                band_attrs[sample][name] = value
+                if name == "DESCRIPTION":
+                    band_names[sample] = value
+
+        # A single nodata value applies to every band
+        nodata = None
+        if info.has_nodata:
+            nodata = info.nodata
+
+        # Build one band per sample, falling back to a generic name
+        self.variables = {}
+        self._variables = []
+        for i in range(self._spp):
+            name = band_names[i] if band_names[i] else f"band_{i + 1}"
+            band = GeotiffBand._create(
+                self, i, name, nodata, self._dtype_native, band_attrs[i]
+            )
+            self.variables[name] = band
+            self._variables.append(band)
+
+    cdef void _build_profile(self, TiffInfo& info) except *:
+        cdef double x0, y0, dx, dy
+        # Resolve the CRS: EPSG geo-key first, then an embedded WKT citation,
+        # then any user-supplied override.
+        crs_wkt = None
+        if info.epsg != 0:
+            crs_wkt = f"EPSG:{info.epsg}"
+        elif info.crs_citation.size():
+            crs_wkt = info.crs_citation.decode("utf-8", "replace")
+        elif self._crs is not None:
+            crs_wkt = self._crs
+
+        if info.has_pixel_scale and info.has_tiepoint:
+            # Derive the geotransform from the pixel scale + tiepoint, then build
+            # the cell-centre coordinate arrays the shared profile expects.
+            dx = info.pixel_scale[0]
+            dy = -info.pixel_scale[1]
+            x0 = info.tiepoint[3] - info.tiepoint[0] * dx
+            y0 = info.tiepoint[4] - info.tiepoint[1] * dy
+            xvals = x0 + dx * (np.arange(self._w) + 0.5)
+            yvals = y0 + dy * (np.arange(self._h) + 0.5)
+            self.profile = GridProfile(xvals=xvals, yvals=yvals, crs_wkt=crs_wkt)
+        else:
+            # Without georeferencing only the shape is known
+            self.profile = GridProfile(crs_wkt=crs_wkt)
+            self.profile.shape = (self._h, self._w)
+            self.profile.shape_xy = (self._w, self._h)
+
+    cdef object _load_block(self, Py_ssize_t block_id, Py_ssize_t block_rows,
+                            Py_ssize_t block_cols):
+        """Decode one tile/strip into a (rows, cols, spp) native-dtype array."""
+        cdef uint64_t off = self._tile_off[block_id]
+        cdef uint64_t bc = self._tile_bc[block_id]
+        cdef Py_ssize_t npix = block_rows * block_cols * self._spp
+        cdef Py_ssize_t nbytes = npix * (self._bps // 8)
+        cdef uint8_t[::1] dst_mv
+        cdef size_t n
+
+        # Raw blocks are viewed in place; DEFLATE blocks inflate into a buffer
+        if self._comp == 1:
+            arr = np.frombuffer(self._data, dtype=self._dtype_file,
+                                count=npix, offset=off)
+        else:
+            dst = np.empty(nbytes, dtype=np.uint8)
+            dst_mv = dst
+            n = inflate_block(self._ptr + off, bc, &dst_mv[0], nbytes)
+            if n != <size_t>nbytes:
+                raise ValueError("DEFLATE tile decompression failed")
+            arr = dst.view(self._dtype_file)
+
+        # Shape as (rows, cols, samples), swap to native order, undo prediction
+        arr = arr.reshape(block_rows, block_cols, self._spp)
+        if self._be:
+            arr = arr.astype(self._dtype_native)
+        if self._pred == 2:
+            arr = np.cumsum(arr, axis=1, dtype=self._dtype_native)
+        return np.ascontiguousarray(arr, dtype=self._dtype_native)
 
     cdef void _parse_layout(self, TiffInfo& info) except *:
         cdef IfdInfo* ifd = &info.ifds[0]
@@ -229,96 +326,6 @@ cdef class GeotiffReader:
             bc_mv[i] = ifd.tile_bytecounts[i]
         self._tile_off = off
         self._tile_bc = bc
-
-    cdef void _build_profile(self, TiffInfo& info) except *:
-        cdef double x0, y0, dx, dy
-        # Resolve the CRS: EPSG geo-key first, then an embedded WKT citation,
-        # then any user-supplied override.
-        crs_wkt = None
-        if info.epsg != 0:
-            crs_wkt = f"EPSG:{info.epsg}"
-        elif info.crs_citation.size():
-            crs_wkt = info.crs_citation.decode("utf-8", "replace")
-        elif self._crs is not None:
-            crs_wkt = self._crs
-
-        if info.has_pixel_scale and info.has_tiepoint:
-            # Derive the geotransform from the pixel scale + tiepoint, then build
-            # the cell-centre coordinate arrays the shared profile expects.
-            dx = info.pixel_scale[0]
-            dy = -info.pixel_scale[1]
-            x0 = info.tiepoint[3] - info.tiepoint[0] * dx
-            y0 = info.tiepoint[4] - info.tiepoint[1] * dy
-            xvals = x0 + dx * (np.arange(self._w) + 0.5)
-            yvals = y0 + dy * (np.arange(self._h) + 0.5)
-            self.profile = GridProfile(xvals=xvals, yvals=yvals, crs_wkt=crs_wkt)
-        else:
-            # Without georeferencing only the shape is known
-            self.profile = GridProfile(crs_wkt=crs_wkt)
-            self.profile.shape = (self._h, self._w)
-            self.profile.shape_xy = (self._w, self._h)
-
-    cdef void _build_bands(self, TiffInfo& info) except *:
-        # Collect the per-band metadata items (GDAL_METADATA) and the band
-        # descriptions that double as band names.
-        cdef size_t i
-        band_attrs = [dict() for _ in range(self._spp)]
-        band_names = [None] * self._spp
-        for i in range(info.meta_items.size()):
-            name = info.meta_items[i].name.decode("utf-8", "replace")
-            value = info.meta_items[i].value.decode("utf-8", "replace")
-            sample = info.meta_items[i].sample
-            if 0 <= sample < self._spp:
-                band_attrs[sample][name] = value
-                if name == "DESCRIPTION":
-                    band_names[sample] = value
-
-        # A single nodata value applies to every band
-        nodata = None
-        if info.has_nodata:
-            nodata = info.nodata
-
-        # Build one band per sample, falling back to a generic name
-        self.variables = {}
-        self._variables = []
-        for i in range(self._spp):
-            name = band_names[i] if band_names[i] else f"band_{i + 1}"
-            band = GeotiffBand._create(
-                self, i, name, nodata, self._dtype_native, band_attrs[i]
-            )
-            self.variables[name] = band
-            self._variables.append(band)
-
-    # --- Pixel reading -----------------------------------------------------
-    cdef object _load_block(self, Py_ssize_t block_id, Py_ssize_t block_rows,
-                            Py_ssize_t block_cols):
-        """Decode one tile/strip into a (rows, cols, spp) native-dtype array."""
-        cdef uint64_t off = self._tile_off[block_id]
-        cdef uint64_t bc = self._tile_bc[block_id]
-        cdef Py_ssize_t npix = block_rows * block_cols * self._spp
-        cdef Py_ssize_t nbytes = npix * (self._bps // 8)
-        cdef uint8_t[::1] dst_mv
-        cdef size_t n
-
-        # Raw blocks are viewed in place; DEFLATE blocks inflate into a buffer
-        if self._comp == 1:
-            arr = np.frombuffer(self._data, dtype=self._dtype_file,
-                                count=npix, offset=off)
-        else:
-            dst = np.empty(nbytes, dtype=np.uint8)
-            dst_mv = dst
-            n = inflate_block(self._ptr + off, bc, &dst_mv[0], nbytes)
-            if n != <size_t>nbytes:
-                raise ValueError("DEFLATE tile decompression failed")
-            arr = dst.view(self._dtype_file)
-
-        # Shape as (rows, cols, samples), swap to native order, undo prediction
-        arr = arr.reshape(block_rows, block_cols, self._spp)
-        if self._be:
-            arr = arr.astype(self._dtype_native)
-        if self._pred == 2:
-            arr = np.cumsum(arr, axis=1, dtype=self._dtype_native)
-        return np.ascontiguousarray(arr, dtype=self._dtype_native)
 
     cdef object _read_region(self, int bidx, Py_ssize_t r0, Py_ssize_t r1,
                              Py_ssize_t c0, Py_ssize_t c1):
@@ -386,23 +393,7 @@ cdef class GeotiffReader:
             raise TypeError(f"Unsupported selection: {select!r}")
         return self._read_region(bidx, r0, r1, c0, c1)
 
-    # --- Container protocol ------------------------------------------------
-    def __getitem__(self, idx):
-        return self._variables[idx]
-
-    def __iter__(self):
-        return iter(self._variables)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-        return False
-
-    def __reduce__(self):
-        return self.__class__, (self.path, self._crs)
-
+    # Properties
     @property
     def closed(self):
         """Return whether the dataset has been closed."""
@@ -418,6 +409,7 @@ cdef class GeotiffReader:
         """Return the number of bands."""
         return len(self.variables)
 
+    # I/O methods
     def close(self):
         """Close the dataset."""
         self._closed = True
@@ -426,3 +418,11 @@ cdef class GeotiffReader:
 
     def flush(self):
         """No-op for a read-only dataset."""
+
+    def load(
+        self,
+        *window: tuple[slice, ...],
+    ) -> None:
+        """Load spatial variables into memory."""
+        for var in self._variables:
+            _ = var.load(*window)

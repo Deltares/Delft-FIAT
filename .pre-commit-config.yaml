@@ -26,10 +26,12 @@ repos:
     rev: v1.4.0
     hooks:
       - id: clang-format
-        files: ^src/fiat/driver/_fgb/fgb_c\.(h|cpp)$
+        files: ^src/fiat/
+        exclude: ^src/fiat/driver/fgb/(header_generated\.h|feature_generated\.h|packedrtree\.(cpp|h))$
         args: [-i, --style=file]
       - id: cppcheck
-        files: ^src/fiat/driver/_fgb/fgb_c\.(h|cpp)$
+        files: ^src/fiat/
+        exclude: ^src/fiat/driver/fgb/(header_generated\.h|feature_generated\.h|packedrtree\.(cpp|h))$
         args:
           - --enable=warning,performance,portability
           - --std=c++17

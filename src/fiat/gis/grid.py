@@ -202,7 +202,7 @@ def reproject(
         # Create the spatial data variable
         write_ds.create_spatial_variable(var)
         # Get the data
-        data = var_obj[:]
+        data = var_obj.load()
         data[data == var_obj.nodata] = np.nan
 
         # Set up the interpolator

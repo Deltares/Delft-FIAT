@@ -1,10 +1,5 @@
 # cython: language_level=3
-"""Shared declarations for the hand-rolled GeoTIFF driver.
-
-Exposes the C++ codec layer (``tiff_c.h``) so the reader and writer modules can
-``cimport`` the parse/build/zlib primitives. See ``tiff_c.h`` for the file-format
-specifications these mirror.
-"""
+"""Shared declarations for the GeoTIFF driver."""
 
 from libc.stdint cimport uint8_t, uint16_t, uint32_t, uint64_t
 from libcpp.string cimport string
@@ -70,19 +65,59 @@ cdef extern from "tiff_c.h" namespace "fiatgtiff":
         int raster_type
         int epsg
         string crs_citation
-        string gdal_nodata_ascii
-        string gdal_metadata_xml
+        vector[MetaItem] meta_items
 
-    int parse_tiff(const uint8_t* buf, size_t length, TiffInfo& out) except +
+    int parse_tiff(
+        const uint8_t* buf, size_t length, TiffInfo& out,
+    ) except +
 
-    string deflate_block(const uint8_t* data, size_t length, int level) except +
+    string deflate_block(
+        const uint8_t* data, size_t length, int level,
+    ) except +
 
-    size_t inflate_block(const uint8_t* src, size_t src_len, uint8_t* dst,
-                         size_t dst_cap) except +
+    size_t inflate_block(
+        const uint8_t* src, size_t src_len, uint8_t* dst, size_t dst_cap,
+    ) except +
 
-    string build_cog_header(const CogSpec& spec,
-                            const vector[uint32_t]& level_width,
-                            const vector[uint32_t]& level_height,
-                            const vector[vector[uint64_t]]& level_tile_bytecounts,
-                            uint64_t& data_start,
-                            vector[uint64_t]& tile_offsets_flat) except +
+    string build_cog_header(
+        const CogSpec& spec, const vector[uint32_t]& level_width,
+        const vector[uint32_t]& level_height,
+        const vector[vector[uint64_t]]& level_tile_bytecounts, uint64_t& data_start,
+        vector[uint64_t]& tile_offsets_flat,
+    ) except +
+
+    uint64_t cog_header_size(
+        const CogSpec& spec, const vector[uint32_t]& level_width,
+        const vector[uint32_t]& level_height,
+    ) except +
+
+    string build_cog_header_fixed(
+        const CogSpec& spec, const vector[uint32_t]& level_width,
+        const vector[uint32_t]& level_height,
+        const vector[vector[uint64_t]]& level_tile_offsets,
+        const vector[vector[uint64_t]]& level_tile_bytecounts,
+    ) except +
+
+    string build_plain_ifd(
+        const CogSpec& spec, uint32_t width, uint32_t height,
+        const vector[uint64_t]& tile_offsets, const vector[uint64_t]& tile_bytecounts,
+        uint64_t ifd_block_start,
+    ) except +
+
+    string encode_tile(
+        const uint8_t* src, uint32_t src_h, uint32_t src_w, uint32_t tile_w,
+        uint32_t tile_h, uint16_t spp, uint16_t sample_format, uint16_t bits,
+        double nodata, uint8_t has_nodata, uint16_t compression, int level,
+    ) except +
+
+    string downsample_tile(
+        const uint8_t* src, uint32_t src_h, uint32_t src_w, uint32_t tile_w,
+        uint32_t tile_h, uint16_t spp, uint16_t sample_format, uint16_t bits,
+        double nodata, uint8_t has_nodata, uint16_t compression, int level,
+    ) except +
+
+    string downsample_raw(
+        const uint8_t* src, uint32_t src_h, uint32_t src_w, uint16_t spp,
+        uint16_t sample_format, uint16_t bits, double nodata, uint8_t has_nodata,
+        uint32_t& out_h, uint32_t& out_w,
+    ) except +

@@ -5,9 +5,8 @@ import numpy as np
 from fiat.driver.geotiff.writer import TileSink
 
 from fiat.driver import NetcdfReader
-from fiat.driver.geotiff import GeotiffReader
+from fiat.driver.geotiff import GeotiffReader, create_geotiff_handle
 from fiat.util import NODATA_VALUE
-from fiat.writer import create_geotiff_handle
 
 
 ## Handle creation
@@ -72,8 +71,8 @@ def test_geotiff_writer_serial_roundtrip(
     assert r.size == 2
     assert r.names == ["a", "b"]
     assert r.profile.crs.to_epsg() == hazard_event_data.profile.crs.to_epsg()
-    np.testing.assert_array_equal(r[0].read_window(), d0)
-    np.testing.assert_array_equal(r[1].read_window(), d1)
+    np.testing.assert_array_equal(r[0].load(), d0)
+    np.testing.assert_array_equal(r[1].load(), d1)
     r.close()
 
 
@@ -109,7 +108,7 @@ def test_geotiff_writer_parallel(
     h.close()
     assert p.is_file()
     r = GeotiffReader(str(p))
-    np.testing.assert_array_equal(r[0].read_window(), ref)
+    np.testing.assert_array_equal(r[0].load(), ref)
     r.close()
 
 
@@ -137,7 +136,7 @@ def test_geotiff_writer_parallel_nodata(
     h.collect_records(records)
     h.close()
     r = GeotiffReader(str(p))
-    out = r[0].read_window()
+    out = r[0].load()
     assert out[0, 0] == NODATA_VALUE
     assert out[1, 1] == 5.0
     assert r[0].nodata == NODATA_VALUE
@@ -167,7 +166,7 @@ def test_geotiff_writer_untouched_tiles_are_nodata(
     h.collect_records(records)
     h.close()
     r = GeotiffReader(str(p))
-    out = r[0].read_window()
+    out = r[0].load()
     assert np.all(out[:5, :5] == 3.0)
     assert np.all(out[5:, :] == NODATA_VALUE)
     assert np.all(out[:, 5:] == NODATA_VALUE)

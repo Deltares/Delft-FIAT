@@ -9,7 +9,7 @@ from fiat.driver.netcdf import NetcdfReader, NetcdfWriter
 from fiat.util import get_crs_repr
 
 
-def test_dataset(tmp_path: Path):
+def test_netcdf(tmp_path: Path):
     # Open the dataset
     ds = NetcdfWriter(Path(tmp_path, "foo.nc"))
 
@@ -18,7 +18,7 @@ def test_dataset(tmp_path: Path):
     assert ds.size == 0
 
 
-def test_dataset_read(hazard_event_path: Path):
+def test_netcdf_read(hazard_event_path: Path):
     # Open the dataset
     ds = NetcdfReader(hazard_event_path)
 
@@ -33,7 +33,7 @@ def test_dataset_read(hazard_event_path: Path):
     assert get_crs_repr(ds.profile.crs) == "EPSG:4326"
 
 
-def test_dataset_read_crs(
+def test_netcdf_read_crs(
     hazard_event_no_crs_path: Path,
     crs_4326: CRS,
 ):
@@ -65,7 +65,7 @@ def test_dataset_read_crs(
     assert get_crs_repr(ds.profile.crs) == "EPSG:4326"
 
 
-def test_dataset_read_transform(hazard_event_path: Path):
+def test_netcdf_read_transform(hazard_event_path: Path):
     # Open the dataset
     ds = NetcdfReader(hazard_event_path)
 
@@ -76,26 +76,22 @@ def test_dataset_read_transform(hazard_event_path: Path):
     )
 
 
-def test_dataset_lazy_window(hazard_event_path: Path):
+def test_netcdf_load(hazard_event_path: Path):
     # Open the dataset
     ds = NetcdfReader(hazard_event_path)
     band = ds.variables["data"]
 
     # A windowed read returns only that window
-    window = (slice(0, 5), slice(0, 5))
-    data = band.read_window(window)
+    window = slice(0, 5), slice(0, 5)
+    data = band.load(*window)
     assert data.shape == (5, 5)
 
     # Hold a window in memory and have it served from the cache
-    held = band.read_window(window, hold=True)
-    np.testing.assert_array_equal(band[window], held)
-
-    # Clearing the held window falls back to reading from disk
-    band.clear_window()
-    np.testing.assert_array_equal(band[window], held)
+    held = band.load(*window)
+    np.testing.assert_array_equal(band[*window], held)
 
 
-def test_dataset_state_error(hazard_event_path: Path):
+def test_netcdf_state_error(hazard_event_path: Path):
     # Open the dataset
     ds = NetcdfReader(hazard_event_path)
 
@@ -112,7 +108,7 @@ def test_dataset_state_error(hazard_event_path: Path):
         _ = ds.size
 
 
-def test_dataset_write(tmp_path: Path, crs_4326: CRS):
+def test_netcdf_write(tmp_path: Path, crs_4326: CRS):
     p = Path(tmp_path, "foo.nc")  # Make a path
     # Open the dataset
     ds = NetcdfWriter(p)
@@ -142,7 +138,31 @@ def test_dataset_write(tmp_path: Path, crs_4326: CRS):
     assert p.is_file()
 
 
-def test_dataset_reduce(hazard_event_path: Path):
+def test_netcdf_write_window(tmp_path: Path, crs_4326: CRS):
+    # write_window mirrors the GeoTIFF API and fans out across variables
+    p = Path(tmp_path, "win.nc")
+    ds = NetcdfWriter(p, compression="zlib", complevel=4)
+    lats = np.arange(0.5, 4.5, 1.0)  # 4 rows
+    lons = np.arange(0.5, 5.5, 1.0)  # 5 cols
+    ds.create_spatial_dims(lats=lats, lons=lons)
+    ds.set_spatial_ref(crs_4326)
+    ds.create_spatial_variable("a")
+    ds.create_spatial_variable("b")
+
+    # Two bands written as one (bands, h, w) window
+    ny, nx = len(lats), len(lons)
+    data = np.stack(
+        [np.arange(ny * nx, dtype="f4").reshape(ny, nx), np.ones((ny, nx), "f4")]
+    )
+    ds.write_window((0, 0), data)
+    ds.close()
+
+    with NetcdfReader(p) as r:
+        np.testing.assert_array_equal(r.variables["a"].load(), data[0])
+        np.testing.assert_array_equal(r.variables["b"].load(), data[1])
+
+
+def test_netcdf_reduce(hazard_event_path: Path):
     # Open the dataset
     ds = NetcdfReader(hazard_event_path)
 

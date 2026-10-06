@@ -156,9 +156,11 @@ cdef class FlatGeobufWriter:
     cdef vector[_Record] _records
     cdef public VectorProfile profile
 
-    def __init__(self, path, col_names, col_types, geom_type, name="",
-                 crs_wkt="", crs_org="", crs_code=0, node_size=16, lock=None,
-                 buffer_size=50 * 1024 * 1024):
+    def __init__(
+        self, path, col_names, col_types, geom_type, name="",
+        crs_wkt="", crs_org="", crs_code=0, node_size=16, lock=None,
+        buffer_size=50 * 1024 * 1024,
+    ):
         self.path = os.fspath(path)
         self.body_path = self.path + ".body"
         self.name = name or ""

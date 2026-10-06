@@ -3,6 +3,8 @@
 
 from pyproj.crs import CRS
 
+# Supported vector extensions (FlatGeobuf only).
+GEOM_EXTENSIONS = {".fgb"}
 
 cdef class VectorProfile:
     """Geospatial metadata of a vector layer.

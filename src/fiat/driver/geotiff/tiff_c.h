@@ -121,8 +121,10 @@ struct CogSpec {
     std::string
         crs_citation;  // GTCitation / PCSCitation text (e.g. CRS name or WKT)
 
-    std::string gdal_nodata_ascii;  // pre-formatted (tag 42113), empty -> omit
-    std::string gdal_metadata_xml;  // pre-built XML (tag 42112), empty -> omit
+    // Per-band metadata written into GDAL_METADATA (tag 42112). The ASCII
+    // GDAL_NODATA tag (42113) is formatted from `nodata` on the C++ side (see
+    // has_nodata / nodata above), so no pre-formatted strings are passed in.
+    std::vector<MetaItem> meta_items;
 };
 
 // --- Parsing --------------------------------------------------------------
@@ -160,6 +162,66 @@ std::string build_cog_header(
     const std::vector<uint32_t>& level_height,
     const std::vector<std::vector<uint64_t>>& level_tile_bytecounts,
     uint64_t& data_start, std::vector<uint64_t>& tile_offsets_flat);
+
+// Deterministic byte size of the COG header region for the given geometry (the
+// absolute offset at which tile data begins). Because the TileOffsets /
+// TileByteCounts fields are fixed-width (one LONG per tile), the header size
+// depends only on geometry, not on the compressed tile sizes. This lets the
+// streaming writer reserve the header up front, append compressed tiles
+// directly into the final file, and patch the header afterwards.
+uint64_t cog_header_size(const CogSpec& spec,
+                         const std::vector<uint32_t>& level_width,
+                         const std::vector<uint32_t>& level_height);
+
+// Build the COG header using explicit, per-tile absolute offsets instead of
+// assigning them sequentially. Used by the streaming writer where tiles are
+// appended to the file as they are produced (and so are not in tile order).
+// The returned header is padded to cog_header_size(spec, ...) bytes.
+std::string build_cog_header_fixed(
+    const CogSpec& spec, const std::vector<uint32_t>& level_width,
+    const std::vector<uint32_t>& level_height,
+    const std::vector<std::vector<uint64_t>>& level_tile_offsets,
+    const std::vector<std::vector<uint64_t>>& level_tile_bytecounts);
+
+// Build the single-IFD block of a plain (non-COG) tiled GeoTIFF, to be appended
+// at `ifd_block_start` (the end of the already-written tile data). Classic TIFF
+// allows the IFD to live anywhere, so the writer streams tiles first and writes
+// this IFD last. The caller writes the 8-byte TIFF header separately with its
+// first-IFD pointer set to `ifd_block_start`. `tile_offsets` /
+// `tile_bytecounts` are the absolute offsets and byte sizes of the tiles in
+// row-major order.
+std::string build_plain_ifd(const CogSpec& spec, uint32_t width,
+                            uint32_t height,
+                            const std::vector<uint64_t>& tile_offsets,
+                            const std::vector<uint64_t>& tile_bytecounts,
+                            uint64_t ifd_block_start);
+
+// --- Tile pack / overview down-sampling -----------------------------------
+// Pad a chunky (src_h, src_w, spp) source to a full (tile_h, tile_w) tile with
+// `nodata`, then DEFLATE it (compression 8) or leave it raw. `sample_format` /
+// `bits` give the pixel dtype (1=uint, 2=int, 3=float).
+std::string encode_tile(const uint8_t* src, uint32_t src_h, uint32_t src_w,
+                        uint32_t tile_w, uint32_t tile_h, uint16_t spp,
+                        uint16_t sample_format, uint16_t bits, double nodata,
+                        uint8_t has_nodata, uint16_t compression, int level);
+
+// Down-sample a chunky (src_h, src_w, spp) block by two (nodata-aware average
+// for float, decimation otherwise), pad the result to a (tile_h, tile_w) tile
+// and encode it like encode_tile. Used to build the COG overview pyramid.
+std::string downsample_tile(const uint8_t* src, uint32_t src_h, uint32_t src_w,
+                            uint32_t tile_w, uint32_t tile_h, uint16_t spp,
+                            uint16_t sample_format, uint16_t bits,
+                            double nodata, uint8_t has_nodata,
+                            uint16_t compression, int level);
+
+// Down-sample a chunky (src_h, src_w, spp) block by two into a raw (no pad, no
+// compression) chunky buffer of size (out_h, out_w, spp); sets out_h/out_w.
+// Used to assemble deeper overview levels a quadrant at a time without a large
+// scratch block.
+std::string downsample_raw(const uint8_t* src, uint32_t src_h, uint32_t src_w,
+                           uint16_t spp, uint16_t sample_format, uint16_t bits,
+                           double nodata, uint8_t has_nodata, uint32_t& out_h,
+                           uint32_t& out_w);
 
 }  // namespace fiatgtiff
 

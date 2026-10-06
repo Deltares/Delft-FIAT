@@ -127,6 +127,7 @@ def exposure_geom_data(exposure_geom_path: Path) -> FlatGeobufReader:
 @pytest.fixture
 def exposure_grid_data(exposure_grid_path: Path) -> NetcdfReader:
     ds = open_grid(exposure_grid_path)  # Read only
+    ds.load()
     assert isinstance(ds, NetcdfReader)
     return ds
 
@@ -134,6 +135,7 @@ def exposure_grid_data(exposure_grid_path: Path) -> NetcdfReader:
 @pytest.fixture(scope="session")
 def hazard_event_data(hazard_event_path: Path) -> NetcdfReader:
     ds = open_grid(hazard_event_path)  # Read only
+    ds.load()
     assert isinstance(ds, NetcdfReader)
     return ds
 
@@ -148,6 +150,7 @@ def hazard_event_highres_data(hazard_event_highres_path: Path) -> NetcdfReader:
 @pytest.fixture(scope="session")
 def hazard_risk_data(hazard_risk_path: Path) -> NetcdfReader:
     ds = open_grid(hazard_risk_path)  # Read only
+    ds.load()
     assert isinstance(ds, NetcdfReader)
     return ds
 

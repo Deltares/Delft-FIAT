@@ -22,6 +22,116 @@ def check_state(m):
     return _inner
 
 
+class NetcdfVariable:
+    """NetCDF variable wrapper with lazy, windowed reads."""
+
+    def __init__(self):
+        # Object itself
+        self._obj_ref: weakref.ReferenceType | None = None
+        self._obj: nc4.Variable | None = None
+
+        # Attributes
+        self._nodata: float | None = None
+
+        # Held data in memory
+        self._data: np.ndarray | None = None
+        raise AttributeError("No constructer defined")
+
+    def __getitem__(
+        self,
+        select: slice | tuple[slice, slice],
+    ):
+        return self._data[select]
+
+    ## Private methods
+    def _cleanup(self, weak_ref):
+        self._obj = None
+
+    def _discover_attributes(self):
+        self._nodata = self._obj.__dict__.get("_FillValue")
+
+    @classmethod
+    def _create(
+        cls,
+        var: nc4.Variable,
+        ref: nc4.Dataset,
+    ):
+        obj = NetcdfVariable.__new__(cls)
+        obj._obj_ref = weakref.ref(ref, obj._cleanup)
+        obj._obj = var
+        obj._nodata = None
+        obj._data = None
+
+        obj._discover_attributes()
+
+        return obj
+
+    ## Properties
+    @property
+    def data(self) -> np.ndarray | None:
+        """Return the in memory data."""
+        return self._data
+
+    @property
+    def dtype(self) -> str:
+        """Return the data type of the variable."""
+        return self._obj.datatype
+
+    @property
+    def name(self) -> str:
+        """Return the name of the variable."""
+        return self._obj.name
+
+    @property
+    def nodata(self) -> float | None:
+        """Return the nodata value."""
+        return self._nodata
+
+    @property
+    def is_spatial(self) -> bool:
+        """Return whether the variable is a spatial one."""
+        ...
+
+    ## I/O methods
+    def clear(self) -> None:
+        """Release data from memory."""
+        self._data = None
+
+    def load(
+        self,
+        *window: tuple[slice, ...],
+    ) -> np.ndarray:
+        """Load a window of data into memory.
+
+        Parameters
+        ----------
+        window : tuple[slice, ...], optional
+            The window to read. When no extend is provided, the full variable is read.
+        """
+        select = (slice(None),) if not window else window
+        data = self._obj[*select]
+        self._data = data
+        return self._data
+
+    ## Get methods
+    def get_attr(self, var: str):
+        """Get an attribute from the netcdf variable."""
+        return self._obj.getncattr(name=var)
+
+    ## Mutating methods
+    def set(
+        self,
+        data: np.ndarray,
+        origin: tuple[float],
+    ):
+        """Set data in the variable."""
+        shape = data.shape
+        self._obj[
+            origin[1] : origin[1] + shape[0],
+            origin[0] : origin[0] + shape[1],
+        ] = data
+
+
 class NetcdfReader:
     """Read-only NetCDF grid driver.
 
@@ -99,16 +209,14 @@ class NetcdfReader:
         except StopIteration:
             ...
 
-    def _discover_variables(self) -> None:
-        """Discover the dataset data variables."""
-        self._discover_reference()
-        crs_var = self.reference.name if self.reference is not None else None
-        for var_name, var in self.src.variables.items():
-            if var_name in self.src.dimensions or var_name == crs_var:
-                continue
-            if var_name not in self.variables:
-                self.variables[var_name] = NetcdfVariable._create(var, self.src)
-        self._variables = list(self.variables.values())
+    def _resolve_crs_wkt(self) -> str | None:
+        """Resolve the CRS as a WKT (or pyproj user-input) string."""
+        if self.reference is not None:
+            try:
+                return self.reference.getncattr("crs_wkt")
+            except AttributeError:
+                return None
+        return self._crs
 
     def _discover_spatial_dims(self) -> None:
         """Discover the spatial dimensions of the dataset and build the profile."""
@@ -132,14 +240,16 @@ class NetcdfReader:
             crs_wkt=self._resolve_crs_wkt(),
         )
 
-    def _resolve_crs_wkt(self) -> str | None:
-        """Resolve the CRS as a WKT (or pyproj user-input) string."""
-        if self.reference is not None:
-            try:
-                return self.reference.getncattr("crs_wkt")
-            except AttributeError:
-                return None
-        return self._crs
+    def _discover_variables(self) -> None:
+        """Discover the dataset data variables."""
+        self._discover_reference()
+        crs_var = self.reference.name if self.reference is not None else None
+        for var_name, var in self.src.variables.items():
+            if var_name in self.src.dimensions or var_name == crs_var:
+                continue
+            if var_name not in self.variables:
+                self.variables[var_name] = NetcdfVariable._create(var, self.src)
+        self._variables = list(self.variables.values())
 
     # Properties
     @property
@@ -170,121 +280,10 @@ class NetcdfReader:
     def flush(self) -> None:
         """No-op for a read-only dataset."""
 
-
-class NetcdfVariable:
-    """NetCDF variable wrapper with lazy, windowed reads.
-
-    Instances are created through :meth:`NetcdfVariable._create`. Data is read from disk
-    on demand; :meth:`read_window` can materialise and hold a window in memory.
-    """
-
-    def __init__(self):
-        # Object itself
-        self._obj_ref: weakref.ReferenceType | None = None
-        self._obj: nc4.Variable | None = None
-
-        # Attributes
-        self._nodata: float | None = None
-
-        # Held window cache
-        self._cache: np.ndarray | None = None
-        self._cache_sel: tuple | None = None
-        raise AttributeError("No constructer defined")
-
-    def __getitem__(
+    def load(
         self,
-        select: slice | tuple[slice, slice],
-    ):
-        if self._cache is not None and select == self._cache_sel:
-            return self._cache
-        return self._obj[select]
-
-    ## Private methods
-    def _cleanup(self, weak_ref):
-        self._obj = None
-
-    def _discover_attributes(self):
-        self._nodata = self._obj.__dict__.get("_FillValue")
-
-    @classmethod
-    def _create(
-        cls,
-        var: nc4.Variable,
-        ref: nc4.Dataset,
-    ):
-        obj = NetcdfVariable.__new__(cls)
-        obj._obj_ref = weakref.ref(ref, obj._cleanup)
-        obj._obj = var
-        obj._nodata = None
-        obj._cache = None
-        obj._cache_sel = None
-
-        obj._discover_attributes()
-
-        return obj
-
-    ## Properties
-    @property
-    def dtype(self) -> str:
-        """Return the data type of the variable."""
-        return self._obj.datatype
-
-    @property
-    def name(self) -> str:
-        """Return the name of the variable."""
-        return self._obj.name
-
-    @property
-    def nodata(self) -> float | None:
-        """Return the nodata value."""
-        return self._nodata
-
-    ## Get methods
-    def get_attr(self, var: str):
-        """Get an attribute from the netcdf variable."""
-        return self._obj.getncattr(name=var)
-
-    def read_window(
-        self,
-        window: slice | tuple[slice, slice] | None = None,
-        hold: bool = False,
-    ) -> np.ndarray:
-        """Read a window of data into memory.
-
-        Parameters
-        ----------
-        window : slice | tuple[slice, slice] | None, optional
-            The window to read. When None the full variable is read.
-        hold : bool, optional
-            When True the window is cached in memory so subsequent accesses of the same
-            window are served from memory, by default False.
-
-        Returns
-        -------
-        np.ndarray
-            The requested data.
-        """
-        select = slice(None) if window is None else window
-        data = self._obj[select]
-        if hold:
-            self._cache = data
-            self._cache_sel = select
-        return data
-
-    def clear_window(self) -> None:
-        """Release a held window from memory."""
-        self._cache = None
-        self._cache_sel = None
-
-    ## Mutating methods
-    def set(
-        self,
-        data: np.ndarray,
-        origin: tuple[float],
-    ):
-        """Set data in the variable."""
-        shape = data.shape
-        self._obj[
-            origin[1] : origin[1] + shape[0],
-            origin[0] : origin[0] + shape[1],
-        ] = data
+        *window: tuple[slice, ...],
+    ) -> None:
+        """Load spatial variables into memory."""
+        for var in self._variables:
+            _ = var.load(*window)

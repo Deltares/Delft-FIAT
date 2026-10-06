@@ -1,5 +1,6 @@
 """The csv driver."""
 
-from fiat.driver._csv import Table, parse_csv
+from .parse import parse_csv
+from .table import Table
 
 __all__ = ["Table", "parse_csv"]

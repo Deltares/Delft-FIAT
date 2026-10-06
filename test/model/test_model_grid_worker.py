@@ -9,16 +9,15 @@ from fiat.container import (
     VulnerabilityMeta,
 )
 from fiat.driver import NetcdfReader
-from fiat.driver.geotiff import GeotiffReader
+from fiat.driver.geotiff import GeotiffReader, create_geotiff_handle
 from fiat.method import flood
 from fiat.model.grid_worker import (
     array_worker,
-    initialize_geotiff_pool,
+    initialize_pool,
     process_hazard,
     worker,
 )
 from fiat.util import NODATA_VALUE
-from fiat.writer import create_geotiff_handle
 
 
 def test_process_hazard(
@@ -28,7 +27,6 @@ def test_process_hazard(
     # Call the function
     a = process_hazard(
         band=hazard_event_data.variables["data"],
-        window=(slice(0, 10), slice(0, 10)),
         vulnerability_meta=vulnerability_meta_run,
     )
 
@@ -135,7 +133,7 @@ def test_worker(
         tile=(10, 10),
     )
     lock = handle.start_parallel(get_context("spawn"))
-    initialize_geotiff_pool(handle.sink_descriptor(), lock)
+    initialize_pool(handle.sink_descriptor(), lock)
 
     # Call the function; it writes the tile directly and returns its records.
     records = worker(
@@ -157,7 +155,7 @@ def test_worker(
     reader = GeotiffReader(str(out))
 
     def band(i):
-        a = reader[i].read_window().astype("float64")
+        a = reader[i].load().astype("float64")
         a[a == NODATA_VALUE] = np.nan
         return a
 

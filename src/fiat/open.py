@@ -3,16 +3,22 @@
 from pathlib import Path
 
 from fiat.driver.csv import Table, parse_csv
-from fiat.driver.fgb import GEOM_EXTENSIONS, FlatGeobufReader
+from fiat.driver.fgb import FlatGeobufReader
 from fiat.driver.geotiff import GeotiffReader, GeotiffWriter
 from fiat.driver.handler import FileBufferHandler
 from fiat.driver.netcdf import NetcdfReader, NetcdfWriter
+from fiat.driver.raster import GRID_EXTENSIONS
+from fiat.driver.vector import GEOM_EXTENSIONS
 from fiat.error import DriverNotFoundError
 
 __all__ = ["open_csv", "open_geom", "open_grid"]
 
-# File extensions handled by the hand-rolled GeoTIFF driver.
-GEOTIFF_EXTENSIONS = (".tif", ".tiff")
+# Map the handles for grid
+grid_handles = {
+    ".nc": {True: NetcdfWriter, False: NetcdfReader},
+    ".tif": {True: GeotiffWriter, False: GeotiffReader},
+    ".tiff": {True: GeotiffWriter, False: GeotiffReader},
+}
 
 
 ## Open
@@ -80,7 +86,9 @@ def open_geom(
     file = Path(file)
     if file.suffix.lower() not in GEOM_EXTENSIONS:
         raise DriverNotFoundError(gog="Geometry", path=file)
-    return FlatGeobufReader(file.as_posix(), crs=crs)
+
+    # Return the handle
+    return FlatGeobufReader(file, crs=crs)
 
 
 def open_grid(
@@ -88,6 +96,7 @@ def open_grid(
     mode: str = "r",
     crs: str | None = None,
     subset: str = None,
+    **kwargs,
 ) -> NetcdfReader | NetcdfWriter | GeotiffReader | GeotiffWriter:
     """Open a grid source file.
 
@@ -103,9 +112,7 @@ def open_grid(
     mode : str, optional
         Open in `read` or `write` mode.
     crs : str, optional
-        A Spatial reference system string in case the dataset has none.
-    chunk : tuple, optional
-        Chunk size in x and y direction.
+        A Spatial reference system string in case the dataset has none..
     subset : str, optional
         In netCDF files, multiple variables are seen as subsets and can therefore not
         be loaded like normal bands. Specify one if one of those it wanted.
@@ -116,16 +123,9 @@ def open_grid(
         Object that holds a connection to the source file. A writer for write mode
         (``w``) and a reader otherwise (``r``, ``a``).
     """
-    if Path(file).suffix.lower() in GEOTIFF_EXTENSIONS:
-        if mode == "w":
-            return GeotiffWriter(file, crs)
-        return GeotiffReader(file, crs)
-    if mode == "w":
-        return NetcdfWriter(
-            file,
-            crs,
-        )
-    return NetcdfReader(
-        file,
-        crs,
-    )
+    file = Path(file)
+    if file.suffix.lower() not in GRID_EXTENSIONS:
+        raise DriverNotFoundError(gog="Grid", path=file)
+
+    # Return a handle
+    return grid_handles[file.suffix.lower()][mode == "w"](file, crs, **kwargs)

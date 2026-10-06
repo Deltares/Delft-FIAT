@@ -18,7 +18,7 @@ from fiat.typing import MethodType
 from fiat.util import FIAT_METHOD, FN, NODATA_VALUE
 
 
-def initialize_geotiff_pool(desc: dict, lock):
+def initialize_pool(desc: dict, lock):
     """Initialise a worker with a :class:`TileSink` bound to the shared output."""
     global tilesink
     tilesink = TileSink(desc, lock)
@@ -26,11 +26,10 @@ def initialize_geotiff_pool(desc: dict, lock):
 
 def process_hazard(
     band: NetcdfVariable,
-    window: tuple,
     vulnerability_meta: VulnerabilityMeta,
 ):
     """Small processor of hazard data chunk."""
-    out_array = band[*window]
+    out_array = band.data
     out_array[out_array == band.nodata] = np.nan
     out_array = np.fmax(
         np.fmin(out_array, vulnerability_meta.max),
@@ -88,13 +87,11 @@ def array_worker(
     ):
         # Get and process the hazard data
         hazard_data = [
-            process_hazard(
-                hazard[idx], window=window, vulnerability_meta=vulnerability_meta
-            )
+            process_hazard(hazard[idx], vulnerability_meta=vulnerability_meta)
             for idx in haz_indices
         ]
         # Get the exposure data
-        exposure_data = exp[*window]
+        exposure_data = exp.data
         exposure_data[exposure_data == exp.nodata] = np.nan
 
         # Call the impact function
@@ -148,7 +145,7 @@ def worker(
     Each job owns exactly one tile-aligned ``window``; the worker computes all
     output bands for that tile and appends the compressed tile to the shared
     output file through its :class:`TileSink` (set up by
-    :func:`initialize_geotiff_pool`). Returns the written tile's index records so
+    :func:`initialize_pool`). Returns the written tile's index records so
     the parent can rebuild the tile index.
 
     Parameters
@@ -177,6 +174,10 @@ def worker(
     row_slice, col_slice = window
     h = row_slice.stop - row_slice.start
     w = col_slice.stop - col_slice.start
+
+    # Read the window in memory
+    hazard.load(*window)
+    exposure.load(*window)
 
     # A fresh (padded) output block for this tile.
     out_array = np.full((exposure_meta.nb, *chunk), np.nan, dtype=np.float32)

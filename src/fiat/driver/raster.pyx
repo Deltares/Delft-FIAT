@@ -4,6 +4,8 @@
 import numpy as np
 from pyproj.crs import CRS
 
+# Supported file extensions
+GRID_EXTENSIONS = {".nc", ".tif", ".tiff"}
 
 cdef class GridProfile:
     """Geospatial metadata of a raster.
