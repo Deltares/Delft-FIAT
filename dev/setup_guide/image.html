@@ -423,7 +423,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>A container file is present within the repository of Delft-FIAT. This container file can be found <a href="https://github.com/Deltares/Delft-FIAT/blob/master/Containerfile">here</a>.</p>
+<p>A container file is present within the repository of Delft-FIAT. This container file can be found <a href="https://github.com/Deltares/Delft-FIAT/blob/main/Containerfile">here</a>.</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -466,7 +466,7 @@ Note
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> build <span class="at">-f</span> Containerfile <span class="at">--build-arg</span><span class="op">=</span><span class="st">"PIXIENV=default"</span> <span class="at">-t</span> fiat .</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>However, as an alternative, it can be build directly from the container file in the github remote repository:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> build <span class="at">-f</span> https://raw.githubusercontent.com/Deltares/Delft-FIAT/master/Containerfile <span class="at">--build-arg</span><span class="op">=</span><span class="st">"PIXIENV=default"</span> <span class="at">-t</span> fiat .</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">podman</span> build <span class="at">-f</span> https://raw.githubusercontent.com/Deltares/Delft-FIAT/main/Containerfile <span class="at">--build-arg</span><span class="op">=</span><span class="st">"PIXIENV=default"</span> <span class="at">-t</span> fiat .</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -477,7 +477,7 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The build argument <code>PIXIENV</code> is used to define which python enviroment to use. Using the <code>default</code> environment is recommended. An overview of all the environments can be found in the <a href="https://github.com/Deltares/Delft-FIAT/blob/master/pixi.toml">pixi toml file</a>.</p>
+<p>The build argument <code>PIXIENV</code> is used to define which python enviroment to use. Using the <code>default</code> environment is recommended. An overview of all the environments can be found in the <a href="https://github.com/Deltares/Delft-FIAT/blob/main/pixi.toml">pixi toml file</a>.</p>
 </div>
 </div>
 <p>After setting up the image, a podman container can be spawned from this image. The podman container will contain all the necessary components to run Delft-FIAT.</p>
