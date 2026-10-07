@@ -1,0 +1,30 @@
+---
+title: "Building FIAT"
+---
+
+To build FIAT as an executable/ binary, it is required to clone the FIAT repository to your local drive.
+This required [git](https://git-scm.com/) to be installed on your local machine.
+
+```bash
+git clone git@github.com:Deltares/Delft-FIAT.git
+```
+
+Besides pixi (mentioned [here](../index.qmd#Install)), a compiler is necessary as FIAT has
+extensions written in c++ and cython. [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/)
+is recommended on Windows and [GCC](https://gcc.gnu.org/) is recommended on Linux.
+The compiler need to be added to path.
+
+While in the cloned repository, one can install a small python environment used to build FIAT
+with pixi:
+
+```bash
+pixi install -e slim
+```
+
+After which FIAT can build be simple calling:
+
+```bash
+pixi run -e slim build
+```
+
+The resulting build will be placed in the bin/release directory.

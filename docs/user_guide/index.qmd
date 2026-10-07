@@ -5,7 +5,7 @@ include-in-header:
       <style>figure { padding: 3em 0 3em 0; }</style>
 ---
 
-::: column-page-inset-right
+::: {.column-page-inset-right .overview-tiles}
 {{< include /_static/listing_code.html >}}
 ```{=html}
 
@@ -36,7 +36,7 @@ FIAT computes the (economic) damage and risk of flood events at a specified geog
   - [Settings file](settings/index.qmd)
   - [Data](data/index.qmd)
 
-The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same [folder structure](data/index.qmd#folder-structure) that HydroMT-FIAT creates.
+The HydroMT plugin [HydroMT-FIAT](https://deltares.github.io/hydromt_fiat/latest) can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same [directory structure](data/index.qmd#directory-structure) that HydroMT-FIAT creates.
 
 ## The models
 The data is used by either one or both of the following models:
@@ -48,15 +48,15 @@ Some more information about the models can be found [here](../info/models.qmd).
 
 ## General User Information
 
-FIAT derives **damages and risk** at asset-level based on flood maps and additional inputs such as depth-damage functions, asset locations and their maximum potential damages.
+FIAT derives **damages and risk** at asset-level based on flood maps and additional inputs such as depth-vulnerability curves, asset locations and their maximum values.
 For each asset specified in the exposure dataset, the water depth or level is sampled from the flood map at the location of the assets.
 
 ::: {.callout-note}
 Water elevations are converted to water depths using the ground elevation of each asset.
 :::
 
-See @fig-fiat for an overview of the FIAT workflow. To obtain the flood inundation level, FIAT extracts the water depth or level at the location of each asset. For line or polygon assets, either the average or maximum water depth or level and the fraction of the asset are extracted from the hazard map. The **inundation depth** within buildings or on top of for example, roads, is obtained by subtracting the **ground floor height** from the **water depth**. FIAT derives the damage fraction for each asset using its inundation depth and interpolating over its depth-damage curve. Thereafter, the damage to the asset is calculated as the product of the maximum potential damage and the damage fraction. In case an asset is only partially flooded, the damages will be reduced by the dry fraction of the building. Instead of single events, the user can also provide return-period flood maps as input. Hence, FIAT calculates and integrates the associated return-period damages to derive the expected annual damages.
+See @fig-fiat for an overview of the FIAT workflow. To obtain the flood inundation level, FIAT extracts the water depth or level at the location of each asset. For line or polygon assets, either the average or maximum water depth or level and the fraction of the asset are extracted from the hazard map. The **inundation depth** within buildings or on top of for example, roads, is obtained by subtracting the **ground floor height** from the **water depth**. FIAT derives the damage fraction for each asset using its inundation depth and interpolating over its depth-damage curve. Thereafter, the damage to the asset is calculated as the product of the maximum value and the damage fraction. In case an asset is only partially flooded, the damages will be reduced by the dry fraction of the building. Instead of single events, the user can also provide return-period flood maps as input. Hence, FIAT calculates and integrates the associated return-period damages to derive the expected annual damages.
 
 
 ![**FIAT Workflow.**
-The damage of the flood **water level** in each object is determined by flood depth-damage functions, which relate the water level to the maximum potential damage of an asset, returning a **damage fraction**. The damage fraction is multiplied with the **max. potential damage** to obtain a monetary **damage per object**.](../_static/images/FIAT_Scheme.svg){#fig-fiat}
+The damage of the flood **water level** in each object is determined by flood depth-vulnerability curves, which relate the water level to the maximum value of an asset, returning a **damage fraction**. The damage fraction is multiplied with the **max. potential damage** to obtain a monetary **damage per object**.](../_static/images/FIAT_Scheme.svg){#fig-fiat}

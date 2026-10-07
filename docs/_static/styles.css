@@ -26,3 +26,30 @@
     font-weight: bold;
     text-decoration: underline;
 }
+
+/* Make sure code cells share the scroll bar for printed output */
+.grid-output-scroll {
+    width: 100%;
+    overflow-x: auto;
+    background-color: var(--bs-body-bg);
+}
+.grid-output-scroll .cell-output-display * {
+    color: var(--bs-body-color) !important;
+}
+/* No element inside the wrapper gets its own horizontal scrollbar */
+.grid-output-scroll * {
+    overflow-x: visible !important;
+    max-width: none !important;
+}
+
+/* Add a bit of support for directory tree */
+.file-tree {
+    margin-block: 2rem;
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+}
+
+/* Extra padding underneath tiles */
+.overview-tiles {
+    margin-bottom: 3rem;
+}

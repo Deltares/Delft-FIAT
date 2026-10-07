@@ -5,42 +5,53 @@ title: Types of hazard maps
 The most advised format for both event and risk is netCDF.
 :::
 
+```{python}
+#| include: false
+
+import os
+from IPython.display import display
+from pathlib import Path
+
+os.chdir(Path.cwd().parent.parent.parent)
+```
+
 ## Event
 Event maps are generally supplied in singular fashion (i.e. one band per event map).
-This band just simply contains the hazard values per cell. Let's have a quick peek at the data using [gdalinfo](https://gdal.org/programs/gdalinfo.html):
+This band just simply contains the hazard values per cell. Let's have a quick peek at the data:
 
 :::: {.columns}
-::: {style="height: 400px; overflow: auto;"}
+::: {.grid-output-scroll}
 ```{python}
 #| echo: false
-!gdalinfo ../../../.testdata/hazard/event_map.nc
+from fiat.open import open_grid
+# Open the file
+ds = open_grid("data/event_map.nc")
+# Show an overview of the data
+display(ds)
+# Show a variable and it's metadata
+display(ds[0])
 ```
 :::
 ::::
 ::: {.callout-note}
-Allthough netCDF is the preferred format, GeoTIFF's are also very handy for single events.
+Although netCDF is the preferred format, GeoTIFF's are also very handy for single events.
 :::
 
 As one can see, this dataset has only one band (variable).
 
 When created, it is preferred that the event map is compressed to prevent unneccessary data on the hard drive.
-More information regarding the compression and others settings can be found [here](https://gdal.org/drivers/raster/netcdf.html#creation-options).
+More information regarding the compression of netCDF files and others settings can be found [here](https://www.unidata.ucar.edu/blogs/developer/entry/netcdf_compression).
 
 ## Risk
 Risk maps in gerenal should contain multiple bands.
 
-These bands can be either supplied in either one of two ways:
-
-- Multiple variables (like normal bands)
-- As a subdataset
-
-Lets take a look quick look at the data (again with `gdalinfo`):
+Lets take a look quick look at the data:
 
 :::: {.columns}
 ::: {style="height: 400px; overflow: auto;"}
 ```{python}
 #| echo: false
-!gdalinfo ../../../.testdata/hazard/risk_map.nc
+!gdalinfo ../../../data/hazard/risk_map.nc
 ```
 :::
 ::::
@@ -90,7 +101,7 @@ Let's have a quick peek at the data using [gdalinfo](https://gdal.org/programs/g
 ::: {style="height: 400px; overflow: auto;"}
 ```{python}
 #| echo: false
-!gdalinfo -sd 1 -norat -nogcp ../../../.testdata/hazard/risk_map.nc
+!gdalinfo -sd 1 -norat -nogcp ../../../data/hazard/risk_map.nc
 ```
 :::
 ::::
