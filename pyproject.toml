@@ -17,8 +17,6 @@ dynamic = ['version']
 
 authors = [
     {name = "B.W. Dalmijn", email = "brendan.dalmijn@deltares.nl"},
-    {name = "F.C. de Groen", email = "frederique.degroen@deltares.nl"},
-    {name = "S.A. Rautenbach", email = "sarah.rautenbach@deltares.nl"},
     {name = "P. Athanasiou", email = "panos.athanasiou@deltares.nl"},
 ]
 maintainers = [
@@ -296,9 +294,9 @@ test-system = { cmd = [
 ## Dependencies
 [tool.pixi.dependencies]
 flatbuffers = "==24.12.23"
-zlib = "*"
 pip = "*"
 uv = "*"
+zlib = "*"
 
 # Itself
 [tool.pixi.pypi-dependencies]
@@ -314,8 +312,6 @@ dependencies = { quarto = "==1.9.38" }
 
 # Wheel building env
 [tool.pixi.feature.wheel.dependencies]
-flatbuffers = "==24.12.23"
-zlib = "*"
 pip = "*"
 uv = "*"
 
