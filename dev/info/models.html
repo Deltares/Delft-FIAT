@@ -2,13 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>Models – Delft FIAT</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -32,19 +35,18 @@ ul.task-list li input[type="checkbox"] {
 <link href="../_static/fiat.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-cd63564659c79cf0d95435a2186ff0e8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-b101ea9cecb332528bd1d41f1dc5f90e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-cd63564659c79cf0d95435a2186ff0e8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-1bcf9dfcd2b723bf5d78b53cad7cd392.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-fe28d5f7f3f79b9558248bc5d507e717.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-1bcf9dfcd2b723bf5d78b53cad7cd392.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -329,10 +331,6 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
-    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
-      <a href="../index.html" class="sidebar-logo-link">
-      </a>
-      </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
@@ -398,11 +396,11 @@ ul.task-list li input[type="checkbox"] {
 </ul>
 <section id="geommodel" class="level2">
 <h2 class="anchored" data-anchor-id="geommodel">GeomModel</h2>
-<p>The <code>GeomModel</code> requires a configuration file that indicates where the exposure geom(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in vector data as exposure assets (e.g., building footprints, road segments, and utility locations) one by one. Each exposure asset gets overlaid with the hazard map and with this data, the corresponding damage fraction is taken from the vulnerability curve and multiplied with the maximum potential damage to get the flood damage. When the user supplies multiple hazard maps with related return periods, they can choose to also calculate risk.</p>
+<p>The <code>GeomModel</code> requires a configuration file that indicates where the exposure geom(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in vector data as exposure assets (e.g., building footprints, road segments, and utility locations) one by one. Each exposure asset gets overlaid with the hazard map and with this data, the corresponding damage fraction is taken from the vulnerability curve and multiplied with the maximum value to get the flood damage. When the user supplies multiple hazard maps with related return periods, they can choose to also calculate risk.</p>
 </section>
 <section id="gridmodel" class="level2">
 <h2 class="anchored" data-anchor-id="gridmodel">GridModel</h2>
-<p>The <code>GridModel</code> requires a configuration file that indicates where the exposure raster(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in raster data as exposure layers (e.g.&nbsp;commercial, residential, industrial) holding the maximum potential damage values, which should be in the same resolution, size, and projection as the hazard map. To calculate damages, the exposure raster and hazard raster are overlaid and per cell, the maximum potential damage is multiplied with the damage fraction corresponding to the hazard value in that cell. Risk can also be calculated with the <code>GridModel</code>, although it must be noted that this functionality has not been thoroughly tested.</p>
+<p>The <code>GridModel</code> requires a configuration file that indicates where the exposure raster(s), vulnerability and hazard data are located and whether risk should be calculated on top of damages. The model reads in raster data as exposure layers (e.g.&nbsp;commercial, residential, industrial) holding the maximum value values, which should be in the same resolution, size, and projection as the hazard map. To calculate damages, the exposure raster and hazard raster are overlaid and per cell, the maximum value is multiplied with the damage fraction corresponding to the hazard value in that cell. Risk can also be calculated with the <code>GridModel</code>, although it must be noted that this functionality has not been thoroughly tested.</p>
 
 
 </section>

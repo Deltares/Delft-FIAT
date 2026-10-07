@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Types of hazard maps – Delft FIAT</title>
+<title>read_hazard – Delft FIAT</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -306,11 +306,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">Setup guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../../user_guide/index.html" aria-current="page"> 
+    <a class="nav-link" href="../../user_guide/index.html"> 
 <span class="menu-text">User guide</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../api/index.html"> 
+    <a class="nav-link active" href="../../api/index.html" aria-current="page"> 
 <span class="menu-text">API Reference</span></a>
   </li>  
   <li class="nav-item">
@@ -356,7 +356,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/data/index.html">Data</a></li><li class="breadcrumb-item"><a href="../../user_guide/data/hazard.html">Hazard data</a></li><li class="breadcrumb-item"><a href="../../user_guide/data/hazard_maps.html">Types of hazard maps</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel.html">Models</a></li><li class="breadcrumb-item"><a href="../../api/GridModel.html">GridModel</a></li><li class="breadcrumb-item"><a href="../../api/GridModel/read_hazard.html">read_hazard</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -368,113 +368,96 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">User guide</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../user_guide/settings/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Settings</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <a href="../../api/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API Reference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/settings/computation.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Computational input</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/settings/optional.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Optional input</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../user_guide/data/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Data</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../user_guide/data/hazard.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Hazard data</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth2 show">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../api/GeomModel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">GeomModel</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/hazard_maps.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Types of hazard maps</span></a>
+  <a href="../../api/GeomModel/read_exposure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">read_exposure</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GeomModel/read_hazard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">read_hazard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GeomModel/read_vulnerability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">read_vulnerability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GeomModel/run.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">run</span></a>
   </div>
 </li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../user_guide/data/exposure.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Exposure data</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <a href="../../api/GridModel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">GridModel</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth3 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/exposure/geometry.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Geometry</span></a>
+  <a href="../../api/GridModel/read_exposure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">read_exposure</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/exposure/grid.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Grid (raster)</span></a>
+  <a href="../../api/GridModel/read_hazard.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">read_hazard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GridModel/read_vulnerability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">read_vulnerability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../api/GridModel/run.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">run</span></a>
   </div>
 </li>
       </ul>
   </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/vulnerability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Vulnerability data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../user_guide/data/supported.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Supported formats</span></a>
-  </div>
-</li>
       </ul>
   </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../examples/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Examples</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="" class="collapse list-unstyled sidebar-section depth1 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../examples/single_event.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Single event</span></a>
-  </div>
-</li>
       </ul>
   </li>
     </ul>
@@ -487,145 +470,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#event" id="toc-event" class="nav-link active" data-scroll-target="#event">Event</a></li>
-  <li><a href="#risk" id="toc-risk" class="nav-link" data-scroll-target="#risk">Risk</a>
+  <li><a href="#fiat.GridModel.read_hazard" id="toc-fiat.GridModel.read_hazard" class="nav-link active" data-scroll-target="#fiat.GridModel.read_hazard">read_hazard</a>
   <ul class="collapse">
-  <li><a href="#return-periods" id="toc-return-periods" class="nav-link" data-scroll-target="#return-periods">Return periods</a></li>
+  <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
   </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
-
-
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../user_guide/data/index.html">Data</a></li><li class="breadcrumb-item"><a href="../../user_guide/data/hazard.html">Hazard data</a></li><li class="breadcrumb-item"><a href="../../user_guide/data/hazard_maps.html">Types of hazard maps</a></li></ol></nav>
-<div class="quarto-title">
-<h1 class="title">Types of hazard maps</h1>
-</div>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel.html">Models</a></li><li class="breadcrumb-item"><a href="../../api/GridModel.html">GridModel</a></li><li class="breadcrumb-item"><a href="../../api/GridModel/read_hazard.html">read_hazard</a></li></ol></nav></header>
 
 
 
-<div class="quarto-title-meta">
-
-    
-  
-    
-  </div>
-  
 
 
-</header>
-
-
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Tip
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The most advised format for both event and risk is netCDF.</p>
-</div>
-</div>
-<section id="event" class="level2">
-<h2 class="anchored" data-anchor-id="event">Event</h2>
-<p>Event maps are generally supplied in singular fashion (i.e.&nbsp;one band per event map). This band just simply contains the hazard values per cell. Let’s have a quick peek at the data:</p>
-<div class="columns">
-<div class="grid-output-scroll">
-<div id="f10ffd2e" class="cell" data-execution_count="2">
-<div class="cell-output cell-output-display">
-<pre><code>&lt;class 'netCDF4.Dataset'&gt;
-root group (NETCDF4 data model, file format HDF5):
-    dimensions(sizes): lat(10), lon(10)
-    variables(dimensions): float32 lat(lat), float32 lon(lon), int32 spatial_ref(), float32 data(lat, lon)
-    groups: </code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<pre><code>&lt;class 'netCDF4.Variable'&gt;
-float32 data(lat, lon)
-    _FillValue: -9999.0
-    grid_mapping: spatial_ref
-    type: water_depth
-unlimited dimensions: 
-current shape = (10, 10)
-filling on</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Although netCDF is the preferred format, GeoTIFF’s are also very handy for single events.</p>
-</div>
-</div>
-<p>As one can see, this dataset has only one band (variable).</p>
-<p>When created, it is preferred that the event map is compressed to prevent unneccessary data on the hard drive. More information regarding the compression of netCDF files and others settings can be found <a href="https://www.unidata.ucar.edu/blogs/developer/entry/netcdf_compression">here</a>.</p>
-</section>
-<section id="risk" class="level2">
-<h2 class="anchored" data-anchor-id="risk">Risk</h2>
-<p>Risk maps in gerenal should contain multiple bands.</p>
-<p>Lets take a look quick look at the data:</p>
-<div class="columns">
-<div style="height: 400px; overflow: auto;">
-<div id="a5080337" class="cell" data-execution_count="3">
-<div class="cell-output cell-output-stdout">
-<pre><code>/bin/bash: line 1: gdalinfo: command not found</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Instead of seeing normal metadata, we only get an overview of the available subdatasets.</p>
-</div>
-</div>
-<p>Multiple netCDF variables are normally not recognized as bands by the <a href="https://gdal.org/drivers/raster/netcdf.html">netCDF driver</a> of GDAL. Instead they are interpreted as subdatasets (!). One can set the key <code>var_as_band</code> to <code>true</code> within the <a href="../../user_guide/settings/index.html">settings file</a> to read the subdatasets as bands.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[hazard]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="er">&lt;</span><span class="dt">your-file</span><span class="er">&gt;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">risk</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[hazard.settings]</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">var_as_band</span> <span class="op">=</span> <span class="cn">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>When supplied in one subdataset (all bands are within that subdataset), the <code>subset</code> variable within the <a href="../../user_guide/settings/index.html">settings file</a> should be set under the header <code>hazard.settings</code>. The value set to <code>subset</code> should be the name of the desired subdataset.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[hazard]</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="er">&lt;</span><span class="dt">your-file</span><span class="er">&gt;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">risk</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[hazard.settings]</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">var_as_band</span> <span class="op">=</span> <span class="cn">false</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">subset</span> <span class="op">=</span> <span class="er">&lt;</span><span class="dt">your-wanted-subdataset</span><span class="er">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<section id="return-periods" class="level3">
-<h3 class="anchored" data-anchor-id="return-periods">Return periods</h3>
-<p>The return periods can be set in the <a href="../../user_guide/settings/optional.html#hazard">settings file</a> by supplying a list via the <code>hazard.return_periods</code> entry. However, the return periods can also be set via the hazard bands directly from the <code>return_period</code> attribute of the bands. This attribute is simply set using either <a href="https://docs.xarray.dev/en/stable/">xarray</a>, <a href="https://gdal.org/api/python/raster_api.html">gdal</a> or <a href="https://deltares.github.io/hydromt/latest/">hydromt</a>.</p>
-<p>When present in all bands, this attribute will be preferred over the return periods specified in the settings file. The reason being that the return period is directly linked to the corresponding band, whereas it is inferred in the case of setting it via the settings file.</p>
-<p>Let’s have a quick peek at the data using <a href="https://gdal.org/programs/gdalinfo.html">gdalinfo</a> (it will be at the bottom):</p>
-<div class="columns">
-<div style="height: 400px; overflow: auto;">
-<div id="683fff89" class="cell" data-execution_count="4">
-<div class="cell-output cell-output-stdout">
-<pre><code>/bin/bash: line 1: gdalinfo: command not found</code></pre>
-</div>
-</div>
-</div>
-</div>
+<section id="fiat.GridModel.read_hazard" class="level1">
+<h1>read_hazard</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>GridModel.read_hazard(path<span class="op">=</span><span class="va">None</span>, <span class="op">**</span>kwargs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Read the hazard data.</p>
+<p>If no path is provided the method tries to infer it from the model configurations.</p>
+<section id="parameters" class="level2 doc-section doc-section-parameters">
+<h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>path</td>
+<td><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></td>
+<td>Path to the hazard gridded dataset, by default None</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>kwargs</td>
+<td><a href="https://docs.python.org/3/builtins/stdtypes.html#dict">dict</a></td>
+<td>Keyword arguments for reading. These are passed into <a href="../../api/driver/open_grid.qmd">open_grid</a> after which into <a href="../../api/NetcdfReader.qmd">NetcdfReader</a>/</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
 
 
 </section>

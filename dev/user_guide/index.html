@@ -2,13 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>User guide – Delft FIAT</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -32,19 +35,18 @@ ul.task-list li input[type="checkbox"] {
 <link href="../_static/fiat.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-cd63564659c79cf0d95435a2186ff0e8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-b101ea9cecb332528bd1d41f1dc5f90e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-cd63564659c79cf0d95435a2186ff0e8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-1bcf9dfcd2b723bf5d78b53cad7cd392.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-fe28d5f7f3f79b9558248bc5d507e717.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-1bcf9dfcd2b723bf5d78b53cad7cd392.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -330,10 +332,6 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
-    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
-      <a href="../index.html" class="sidebar-logo-link">
-      </a>
-      </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
@@ -402,20 +400,14 @@ ul.task-list li input[type="checkbox"] {
       <ul id="" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/exposure/data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Exposure data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/exposure/geometries.html" class="sidebar-item-text sidebar-link">
+  <a href="../user_guide/data/exposure/geometry.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Geometry</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../user_guide/data/exposure/csv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">CSV</span></a>
+  <a href="../user_guide/data/exposure/grid.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Grid (raster)</span></a>
   </div>
 </li>
       </ul>
@@ -490,7 +482,7 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="column-page-inset-right">
+<div class="column-page-inset-right overview-tiles">
 <style type="text/css">
     .nav-tabs {
         margin-top: 0.5rem;
@@ -588,7 +580,7 @@ ul.task-list li input[type="checkbox"] {
 <li><a href="../user_guide/settings/index.html">Settings file</a></li>
 <li><a href="../user_guide/data/index.html">Data</a></li>
 </ul>
-<p>The HydroMT plugin <a href="https://deltares.github.io/hydromt_fiat/latest">HydroMT-FIAT</a> can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same <a href="../user_guide/data/index.html#folder-structure">folder structure</a> that HydroMT-FIAT creates.</p>
+<p>The HydroMT plugin <a href="https://deltares.github.io/hydromt_fiat/latest">HydroMT-FIAT</a> can be used to set up the FIAT model but that is not compulsory. If a user sets up their own FIAT model, it is recommended to save the data into the same <a href="../user_guide/data/index.html#directory-structure">directory structure</a> that HydroMT-FIAT creates.</p>
 </section>
 <section id="the-models" class="level2">
 <h2 class="anchored" data-anchor-id="the-models">The models</h2>
@@ -601,7 +593,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="general-user-information" class="level2">
 <h2 class="anchored" data-anchor-id="general-user-information">General User Information</h2>
-<p>FIAT derives <strong>damages and risk</strong> at asset-level based on flood maps and additional inputs such as depth-damage functions, asset locations and their maximum potential damages. For each asset specified in the exposure dataset, the water depth or level is sampled from the flood map at the location of the assets.</p>
+<p>FIAT derives <strong>damages and risk</strong> at asset-level based on flood maps and additional inputs such as depth-vulnerability curves, asset locations and their maximum values. For each asset specified in the exposure dataset, the water depth or level is sampled from the flood map at the location of the assets.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -615,14 +607,14 @@ Note
 <p>Water elevations are converted to water depths using the ground elevation of each asset.</p>
 </div>
 </div>
-<p>See <a href="#fig-fiat" class="quarto-xref">Figure&nbsp;1</a> for an overview of the FIAT workflow. To obtain the flood inundation level, FIAT extracts the water depth or level at the location of each asset. For line or polygon assets, either the average or maximum water depth or level and the fraction of the asset are extracted from the hazard map. The <strong>inundation depth</strong> within buildings or on top of for example, roads, is obtained by subtracting the <strong>ground floor height</strong> from the <strong>water depth</strong>. FIAT derives the damage fraction for each asset using its inundation depth and interpolating over its depth-damage curve. Thereafter, the damage to the asset is calculated as the product of the maximum potential damage and the damage fraction. In case an asset is only partially flooded, the damages will be reduced by the dry fraction of the building. Instead of single events, the user can also provide return-period flood maps as input. Hence, FIAT calculates and integrates the associated return-period damages to derive the expected annual damages.</p>
+<p>See <a href="#fig-fiat" class="quarto-xref">Figure&nbsp;1</a> for an overview of the FIAT workflow. To obtain the flood inundation level, FIAT extracts the water depth or level at the location of each asset. For line or polygon assets, either the average or maximum water depth or level and the fraction of the asset are extracted from the hazard map. The <strong>inundation depth</strong> within buildings or on top of for example, roads, is obtained by subtracting the <strong>ground floor height</strong> from the <strong>water depth</strong>. FIAT derives the damage fraction for each asset using its inundation depth and interpolating over its depth-damage curve. Thereafter, the damage to the asset is calculated as the product of the maximum value and the damage fraction. In case an asset is only partially flooded, the damages will be reduced by the dry fraction of the building. Instead of single events, the user can also provide return-period flood maps as input. Hence, FIAT calculates and integrates the associated return-period damages to derive the expected annual damages.</p>
 <div id="fig-fiat" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-fiat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="../_static/images/FIAT_Scheme.svg" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-fiat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: <strong>FIAT Workflow.</strong> The damage of the flood <strong>water level</strong> in each object is determined by flood depth-damage functions, which relate the water level to the maximum potential damage of an asset, returning a <strong>damage fraction</strong>. The damage fraction is multiplied with the <strong>max. potential damage</strong> to obtain a monetary <strong>damage per object</strong>.
+Figure&nbsp;1: <strong>FIAT Workflow.</strong> The damage of the flood <strong>water level</strong> in each object is determined by flood depth-vulnerability curves, which relate the water level to the maximum value of an asset, returning a <strong>damage fraction</strong>. The damage fraction is multiplied with the <strong>max. potential damage</strong> to obtain a monetary <strong>damage per object</strong>.
 </figcaption>
 </figure>
 </div>

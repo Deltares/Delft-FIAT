@@ -2,13 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>index – Delft FIAT</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -32,19 +35,18 @@ ul.task-list li input[type="checkbox"] {
 <link href="../_static/fiat.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-707d8167ce6003fca903bfe2be84ab7f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-cd63564659c79cf0d95435a2186ff0e8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-b101ea9cecb332528bd1d41f1dc5f90e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-cd63564659c79cf0d95435a2186ff0e8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-1bcf9dfcd2b723bf5d78b53cad7cd392.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-fe28d5f7f3f79b9558248bc5d507e717.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-1bcf9dfcd2b723bf5d78b53cad7cd392.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -329,10 +331,6 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
-    <div class="pt-lg-2 mt-2 text-left sidebar-header">
-      <a href="../index.html" class="sidebar-logo-link">
-      </a>
-      </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item sidebar-item-section">
@@ -347,7 +345,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
- <span class="menu-text">Basics</span></a>
+ <span class="menu-text">Models</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -355,75 +353,13 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
- <span class="menu-text">Main</span></a>
+            <a href="../api/GeomModel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">GeomModel</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth3 ">  
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../api/Configurations.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Configurations</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth4 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Configurations/from_file.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">from_file</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Configurations/generate_kwargs.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">generate_kwargs</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Configurations/get_path.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">get_path</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Configurations/set.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Configurations/setup_output_dir.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">setup_output_dir</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Configurations/update.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">update</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../api/GeomModel.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">GeomModel</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth4 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomModel/get_exposure_meta.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">get_exposure_meta</span></a>
-  </div>
-</li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../api/GeomModel/read_exposure.html" class="sidebar-item-text sidebar-link">
@@ -432,26 +368,14 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/GeomModel/read_exposure_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_exposure_data</span></a>
+  <a href="../api/GeomModel/read_hazard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">read_hazard</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/GeomModel/read_exposure_geoms.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_exposure_geoms</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomModel/read_hazard_grid.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_hazard_grid</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomModel/read_vulnerability_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_vulnerability_data</span></a>
+  <a href="../api/GeomModel/read_vulnerability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">read_vulnerability</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -460,57 +384,33 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">run</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomModel/set_model_srs.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_model_srs</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomModel/set_num_threads.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_num_threads</span></a>
-  </div>
-</li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../api/GridModel.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">GridModel</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth4 ">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/GridModel/create_equal_grids.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_equal_grids</span></a>
+  <a href="../api/GridModel/read_exposure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">read_exposure</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/GridModel/read_exposure_grid.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_exposure_grid</span></a>
+  <a href="../api/GridModel/read_hazard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">read_hazard</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/GridModel/read_hazard_grid.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_hazard_grid</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridModel/read_vulnerability_data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_vulnerability_data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridModel/resolve.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">resolve</span></a>
+  <a href="../api/GridModel/read_vulnerability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">read_vulnerability</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -519,597 +419,6 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">run</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridModel/set_model_srs.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_model_srs</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridModel/set_num_threads.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_num_threads</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
- <span class="menu-text">Methods</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/ead/risk_density.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">ead.risk_density</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/ead/calc_ead.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">ead.calc_ead</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/flood/calculate_hazard.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">flood.calculate_hazard</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/flood/calculate_damage.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">flood.calculate_damage</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
- <span class="menu-text">Logging</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/spawn_logger.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">spawn_logger</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/setup_default_log.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">setup_default_log</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/setup_mp_log.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">setup_mp_log</span></a>
-  </div>
-</li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../api/Logger.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Logger</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth3 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Logger/add_file_handler.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">add_file_handler</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Logger/add_handler.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">add_handler</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Logger/dead.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">dead</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Logger/debug.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">debug</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Logger/error.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">error</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Logger/info.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">info</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Logger/warning.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">warning</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../api/Receiver.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Receiver</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth3 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Receiver/add_handler.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">add_handler</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Receiver/close.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">close</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Receiver/close_handlers.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">close_handlers</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Receiver/get.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">get</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Receiver/start.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">start</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false">
- <span class="menu-text">GIS</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false">
- <span class="menu-text">Geometry (vector)</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth3 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/geom/point_in_geom.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">point_in_geom</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/geom/reproject.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">reproject</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false">
- <span class="menu-text">Grid (raster)</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth3 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/grid/reproject.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">reproject</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false">
- <span class="menu-text">Overlay</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth3 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/overlay/clip.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">clip</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/overlay/clip_weighted.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">clip_weighted</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/overlay/pin.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">pin</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false">
- <span class="menu-text">Utility</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-15" class="collapse list-unstyled sidebar-section depth3 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/util/world2pixel.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">world2pixel</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/util/pixel2world.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">pixel2world</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-16" role="navigation" aria-expanded="false">
- <span class="menu-text">I/O</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-16" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-16" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-17" role="navigation" aria-expanded="false">
- <span class="menu-text">Methods</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-17" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-17" class="collapse list-unstyled sidebar-section depth3 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/fio/merge_geom_layers.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">merge_geom_layers</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/fio/open_csv.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">open_csv</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/fio/open_geom.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">open_geom</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/fio/open_grid.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">open_grid</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-18" role="navigation" aria-expanded="false">
- <span class="menu-text">Objects</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-18" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-18" class="collapse list-unstyled sidebar-section depth3 ">  
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../api/GeomSource.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">GeomSource</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-19" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-19" class="collapse list-unstyled sidebar-section depth4 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/add_feature.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">add_feature</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/add_feature_from_defn.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">add_feature_from_defn</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/add_feature_with_map.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">add_feature_with_map</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/close.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">close</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/copy_layer.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">copy_layer</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/create.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/create_field.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_field</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/create_fields.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_fields</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/create_layer.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_layer</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/create_layer_from_copy.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_layer_from_copy</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/flush.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">flush</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/reduced_iter.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">reduced_iter</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/reopen.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">reopen</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomSource/set_layer_from_defn.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_layer_from_defn</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../api/GridSource.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">GridSource</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-20" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-20" class="collapse list-unstyled sidebar-section depth4 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/close.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">close</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/create.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/create_band.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">create_band</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/deter_band_names.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">deter_band_names</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/flush.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">flush</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/get_band_name.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">get_band_name</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/get_band_names.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">get_band_names</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/reopen.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">reopen</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/set_chunk_size.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_chunk_size</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/set_geotransform.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_geotransform</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridSource/set_srs.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_srs</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../api/Grid.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Grid</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-21" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-21" class="collapse list-unstyled sidebar-section depth4 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Grid/close.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">close</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Grid/flush.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">flush</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Grid/get_metadata_item.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">get_metadata_item</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Grid/set_chunk_size.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_chunk_size</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Grid/write_chunk.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">write_chunk</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../api/Table.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Table</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-22" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-22" class="collapse list-unstyled sidebar-section depth4 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Table/from_stream.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">from_stream</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/Table/upscale.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">upscale</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../api/TableLazy.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">TableLazy</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-23" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-23" class="collapse list-unstyled sidebar-section depth4 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/TableLazy/get.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">get</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/TableLazy/set_index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">set_index</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
       </ul>
   </li>
       </ul>
@@ -1128,24 +437,7 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#api-reference" id="toc-api-reference" class="nav-link active" data-scroll-target="#api-reference">API Reference</a>
   <ul class="collapse">
-  <li><a href="#basics" id="toc-basics" class="nav-link" data-scroll-target="#basics">Basics</a>
-  <ul class="collapse">
-  <li><a href="#main" id="toc-main" class="nav-link" data-scroll-target="#main">Main</a></li>
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
-  </ul></li>
-  <li><a href="#logging" id="toc-logging" class="nav-link" data-scroll-target="#logging">Logging</a></li>
-  <li><a href="#gis" id="toc-gis" class="nav-link" data-scroll-target="#gis">GIS</a>
-  <ul class="collapse">
-  <li><a href="#geometry-vector" id="toc-geometry-vector" class="nav-link" data-scroll-target="#geometry-vector">Geometry (vector)</a></li>
-  <li><a href="#grid-raster" id="toc-grid-raster" class="nav-link" data-scroll-target="#grid-raster">Grid (raster)</a></li>
-  <li><a href="#overlay" id="toc-overlay" class="nav-link" data-scroll-target="#overlay">Overlay</a></li>
-  <li><a href="#utility" id="toc-utility" class="nav-link" data-scroll-target="#utility">Utility</a></li>
-  </ul></li>
-  <li><a href="#io" id="toc-io" class="nav-link" data-scroll-target="#io">I/O</a>
-  <ul class="collapse">
-  <li><a href="#methods-1" id="toc-methods-1" class="nav-link" data-scroll-target="#methods-1">Methods</a></li>
-  <li><a href="#objects" id="toc-objects" class="nav-link" data-scroll-target="#objects">Objects</a></li>
-  </ul></li>
+  <li><a href="#models" id="toc-models" class="nav-link" data-scroll-target="#models">Models</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -1159,204 +451,23 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="api-reference" class="level1 doc doc-index">
 <h1 class="doc doc-index">API Reference</h1>
-<section id="basics" class="level2">
-<h2 class="anchored" data-anchor-id="basics">Basics</h2>
-<section id="main" class="level3">
-<h3 class="anchored" data-anchor-id="main">Main</h3>
-<p>Main components of working with FIAT.</p>
+<section id="models" class="level2">
+<h2 class="anchored" data-anchor-id="models">Models</h2>
+<p>FIAT models.</p>
 <table class="caption-top table">
 <tbody>
 <tr class="odd">
-<td><a href="../api/Configurations.html#fiat.Configurations">Configurations</a></td>
-<td>Object holding model configuration information.</td>
-</tr>
-<tr class="even">
 <td><a href="../api/GeomModel.html#fiat.GeomModel">GeomModel</a></td>
 <td>Geometry model.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="../api/GridModel.html#fiat.GridModel">GridModel</a></td>
 <td>Grid model.</td>
 </tr>
 </tbody>
 </table>
-</section>
-<section id="methods" class="level3">
-<h3 class="anchored" data-anchor-id="methods">Methods</h3>
-<p>The hazard functions</p>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td><a href="../api/ead/risk_density.html#fiat.methods.ead.risk_density">ead.risk_density</a></td>
-<td>Calculate the risk density factors from return periods values.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/ead/calc_ead.html#fiat.methods.ead.calc_ead">ead.calc_ead</a></td>
-<td>Calculate the EAD (risk).</td>
-</tr>
-<tr class="odd">
-<td><a href="../api/flood/calculate_hazard.html#fiat.methods.flood.calculate_hazard">flood.calculate_hazard</a></td>
-<td>Calculate the hazard value for flood hazard.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/flood/calculate_damage.html#fiat.methods.flood.calculate_damage">flood.calculate_damage</a></td>
-<td>Calculate the damage corresponding with the hazard value.</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="logging" class="level2">
-<h2 class="anchored" data-anchor-id="logging">Logging</h2>
-<p>Logging module of FIAT</p>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td><a href="../api/spawn_logger.html#fiat.log.spawn_logger">spawn_logger</a></td>
-<td>Spawn a logger within a hierarchy.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/setup_default_log.html#fiat.log.setup_default_log">setup_default_log</a></td>
-<td>Set up the base logger of a hierarchy.</td>
-</tr>
-<tr class="odd">
-<td><a href="../api/setup_mp_log.html#fiat.log.setup_mp_log">setup_mp_log</a></td>
-<td>Set up logging for multiprocessing.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/Logger.html#fiat.log.Logger">Logger</a></td>
-<td>Generate a logger.</td>
-</tr>
-<tr class="odd">
-<td><a href="../api/Receiver.html#fiat.log.Receiver">Receiver</a></td>
-<td>Create a receiver for multiprocessing logging.</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="gis" class="level2">
-<h2 class="anchored" data-anchor-id="gis">GIS</h2>
-<section id="geometry-vector" class="level3">
-<h3 class="anchored" data-anchor-id="geometry-vector">Geometry (vector)</h3>
-<p>Geometry specific methods</p>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td><a href="../api/geom/point_in_geom.html#fiat.gis.geom.point_in_geom">point_in_geom</a></td>
-<td>Create a point within a polygon.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/geom/reproject.html#fiat.gis.geom.reproject">reproject</a></td>
-<td>Reproject a geometry layer.</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="grid-raster" class="level3">
-<h3 class="anchored" data-anchor-id="grid-raster">Grid (raster)</h3>
-<p>Grid specific methods</p>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td><a href="../api/grid/reproject.html#fiat.gis.grid.reproject">reproject</a></td>
-<td>Reproject (warp) a grid.</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="overlay" class="level3">
-<h3 class="anchored" data-anchor-id="overlay">Overlay</h3>
-<p>For combined vector and raster methods</p>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td><a href="../api/overlay/clip.html#fiat.gis.overlay.clip">clip</a></td>
-<td>Clip a grid based on a feature (vector).</td>
-</tr>
-<tr class="even">
-<td><a href="../api/overlay/clip_weighted.html#fiat.gis.overlay.clip_weighted">clip_weighted</a></td>
-<td>Clip a grid based on a feature (vector), but weighted.</td>
-</tr>
-<tr class="odd">
-<td><a href="../api/overlay/pin.html#fiat.gis.overlay.pin">pin</a></td>
-<td>Pin a the value of a cell based on a coordinate.</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="utility" class="level3">
-<h3 class="anchored" data-anchor-id="utility">Utility</h3>
-<p>Some utility for the GIS module (basic)</p>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td><a href="../api/util/world2pixel.html#fiat.gis.util.world2pixel">world2pixel</a></td>
-<td>Calculate the pixel location based on coordinates.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/util/pixel2world.html#fiat.gis.util.pixel2world">pixel2world</a></td>
-<td>Calculate coordinates based on pixel location.</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="io" class="level2">
-<h2 class="anchored" data-anchor-id="io">I/O</h2>
-<section id="methods-1" class="level3">
-<h3 class="anchored" data-anchor-id="methods-1">Methods</h3>
-<p>Input/ output bound operations</p>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td><a href="../api/fio/merge_geom_layers.html#fiat.fio.merge_geom_layers">merge_geom_layers</a></td>
-<td>Merge multiple vector layers into one file.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/fio/open_csv.html#fiat.fio.open_csv">open_csv</a></td>
-<td>Open a csv file.</td>
-</tr>
-<tr class="odd">
-<td><a href="../api/fio/open_geom.html#fiat.fio.open_geom">open_geom</a></td>
-<td>Open a geometry source file.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/fio/open_grid.html#fiat.fio.open_grid">open_grid</a></td>
-<td>Open a grid source file.</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="objects" class="level3">
-<h3 class="anchored" data-anchor-id="objects">Objects</h3>
-<p>Objects constructed from data</p>
-<table class="caption-top table">
-<tbody>
-<tr class="odd">
-<td><a href="../api/GeomSource.html#fiat.fio.GeomSource">GeomSource</a></td>
-<td>A source object for geospatial vector data.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/GridSource.html#fiat.fio.GridSource">GridSource</a></td>
-<td>A source object for geospatial gridded data.</td>
-</tr>
-<tr class="odd">
-<td><a href="../api/Grid.html#fiat.fio.Grid">Grid</a></td>
-<td>A source object for a specific raster band.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/Table.html#fiat.fio.Table">Table</a></td>
-<td>Create a struct based on tabular data in a file.</td>
-</tr>
-<tr class="odd">
-<td><a href="../api/TableLazy.html#fiat.fio.TableLazy">TableLazy</a></td>
-<td>A lazy read of tabular data in a file.</td>
-</tr>
-</tbody>
-</table>
 
 
-</section>
 </section>
 </section>
 
