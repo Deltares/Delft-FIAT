@@ -5,8 +5,7 @@ ARG PIXIENV
 ARG UID=1000
 
 # Install some handy packages and build dependencies
-RUN dnf check-update && dnf -y update \
-  && dnf -y install curl gcc g++ vim
+RUN dnf -y update && dnf -y install curl gcc g++ vim
 
 # Set the user and the home directory
 RUN useradd deltares
