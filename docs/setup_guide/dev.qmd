@@ -1,0 +1,28 @@
+---
+title: "Development install"
+---
+
+This is for those who wish to contribute to the development of FIAT.
+First of all, clone the FIAT repository on Github into a local directory of choice:
+
+```bash
+cd ~/{your path}
+
+git clone https://github.com/Deltares/Delft-FIAT.git fiat
+```
+
+Create the default development environment with the help of pixi:
+
+```bash
+pixi install
+```
+
+We recommend using [vs code](https://code.visualstudio.com/) for development as it
+works well with an environment created with pixi. Simply run the following command to open
+code in this directory:
+
+```bash
+code .
+```
+
+There you go. FIAT is now installed on your local machine for development purposes.

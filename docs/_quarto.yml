@@ -88,16 +88,14 @@ website:
     - title: "Setup guide"
       collapse-level: 3
       contents:
-        - setup_guide/index.qmd
-        - section: "General setup"
-          contents:
-            - "setup_guide/general/conda.qmd"
-            - "setup_guide/general/docker.qmd"
-        - section: "FIAT package"
-          contents:
-            - setup_guide/kernel/install.qmd
-            - setup_guide/kernel/dev.qmd
-            - setup_guide/kernel/build.qmd
+        - text: Setup guide
+          file: setup_guide/index.qmd
+        - text: Building
+          file: setup_guide/build.qmd
+        - text: Container
+          file: setup_guide/image.qmd
+        - text: Development
+          file: setup_guide/dev.qmd
     - title: "User guide"
       collapse-level: 1
       contents:
