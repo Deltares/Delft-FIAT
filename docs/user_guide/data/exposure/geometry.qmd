@@ -1,0 +1,49 @@
+---
+title: Geometry
+---
+
+### Setting
+A user can specify one or multiple **geometry files** in the [settings.toml](../../settings/index.qmd). It is advisable to give descriptive names to the geometry files, e.g., *buildings.fgb* or *roads.fgb*. Most-used file types are GeoPackages or Shapefiles but more file types are accepted as can be seen at the bottom of this page.
+
+::: {.callout-tip title="Example"}
+Make sure that each geometry file gets it's own entry in the settings.toml file.
+:::
+
+When providing a polygon or line geometry file, a user can choose to use the *area extraction method* for considering water levels or depths over the whole area of the asset. This can be more appropriate than point estimates for example for large buildings.
+
+::: {.callout-warning}
+Assets cannot be partially or fully outside the hazard map extent! FIAT will stop if it detects any.
+:::
+
+#### Supported data formats
+An overview of supported formats is presented [here](../supported.qmd#geometry-files)
+
+### Tabular information
+In the table down below, an overview is provided od the necessary inputs in either the vector file.
+
+| Field                                                  | Required | Multiple | Example                   |
+|--------------------------------------------------------|----------|----------|---------------------------|
+| [object_type](#object_type)                            | No       | -        | residential               |
+| [fn_< any >_< any >](#vulnerability-curves)            | Yes      | Yes      | struct_2                  |
+| [ref](#reference)                                      | No       | -        | 4                         |
+| [max_< any >_< any >](#maximum-value)                  | Yes      | Yes      | 193457.00                 |
+: exposure input {#tbl-exposure .hover}
+
+A more detailed description of the data fields can be found below.
+
+#### Object Type
+The type of the object according to the type of the vector dataset, e.g. occupancy type for a building dataset.
+
+#### Vulnerability curves
+The user can input as many vulnerability curves and related maximum values as required. However, at least one vulnerability curve and related maximum value must be provides per asset. Vulnerability curve column are named as `fn_< exposure_type >_< component >` (for exposure types, see [here](../../settings/optional.qmd#exposure)). This name can be chosen freely but it is recommended to give it a descriptive name, such as **damage** (exposure type) in combination with **structure** or **content** (components), and it is required to use the same name in the maximum value column. (i.e. `max_< exposure-type >_< component >`) The value that must be entered is the name of the vulnerability curve, relating to the names in the corresponding vulnerability curves in the [vulnerability curves file](../vulnerability.qmd). Globally, continental vulnerability curves can be obtained from [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific functions when available.
+
+#### Reference
+The reference (height) of the exposure data compared to the hazard data. This can very well be
+a combination of the ground elevation and the groud floor elevation.
+
+::: {.callout-important}
+ Required for flood damage calculation, see [global model types](../../settings/optional.qmd#model)
+:::
+
+#### Maximum value
+The maximum value corresponds to the vulnerability curves for each asset. For each vulnerability curve type that was assigned, a maximum value must also be assigned. These values represent the maximum damage to, for example, the structure, content, or other (e.g. inventory). There are methods to derive these values, based on building type and area of the building. Globally, maximum damage values per country can be obtained from [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific damage values. In the US, [FEMA Hazus](https://www.fema.gov/flood-maps/products-tools/hazusis) is an industry standard in how to derive these values.

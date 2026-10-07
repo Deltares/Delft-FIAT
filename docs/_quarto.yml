@@ -117,9 +117,8 @@ website:
             - text: Exposure data
               file: user_guide/data/exposure.qmd
               contents:
-                - user_guide/data/exposure/data.qmd
-                - user_guide/data/exposure/geometries.qmd
-                - user_guide/data/exposure/csv.qmd
+                - user_guide/data/exposure/geometry.qmd
+                - user_guide/data/exposure/grid.qmd
             - user_guide/data/vulnerability.qmd
             - user_guide/data/supported.qmd
         - title: Examples

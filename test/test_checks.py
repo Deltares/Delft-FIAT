@@ -172,14 +172,14 @@ def test_check_exp_derived_types_pass(
 
     # Assert the logging message
     assert (
-        "No every damage function has a corresponding \
-maximum potential damage: ['content']"
+        "No every vulnerability curve has a corresponding \
+maximum value: ['content']"
         in caplog.text
     )
 
 
 def test_check_exp_grid_fn_fail():
-    # Call the function with an unknown damage function
+    # Call the function with an unknown vulnerability curve
     with pytest.raises(
         FIATDataError,
         match=re.escape(

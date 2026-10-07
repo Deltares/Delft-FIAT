@@ -43,6 +43,9 @@ class NetcdfVariable:
     ):
         return self._data[select]
 
+    def __repr__(self):
+        return self._obj.__repr__()
+
     ## Private methods
     def _cleanup(self, weak_ref):
         self._obj = None
@@ -179,12 +182,6 @@ class NetcdfReader:
 
     def __del__(self): ...
 
-    def __getitem__(self, idx: int):
-        return self._variables[idx]
-
-    def __iter__(self):
-        return iter(self._variables)
-
     def __enter__(self):
         return self
 
@@ -192,11 +189,20 @@ class NetcdfReader:
         self.close()
         return False
 
+    def __getitem__(self, idx: int):
+        return self._variables[idx]
+
+    def __iter__(self):
+        return iter(self._variables)
+
     def __reduce__(self):
         return self.__class__, (
             self.path,
             self._crs,
         )
+
+    def __repr__(self):
+        return self.src.__repr__()
 
     # Internals
     def _discover_reference(self) -> None:

@@ -126,7 +126,7 @@ The first full release of Delft-FIAT.
 - Extra arguments to `grid.reproject`
 - Function (`generate_jobs`) to generate jobs for parallelization
 - Function (`execute_pool`) to execute code in parallel using `multiprocessing`
-- Flood hazard/ damage functions (`methods` submodule)
+- Flood hazard/ vulnerability curves (`methods` submodule)
 - General method of creating output files in `GeomModel` (`_setup_output_files`)
 - Method `_create_model_dirs` of `Configurations` object for creating result directories in one go
 - Method `add_handler` of the `Log` object; user setting of custom stream
@@ -144,7 +144,7 @@ The first full release of Delft-FIAT.
 
 ### Changed
 - Better version of `BufferHandler`
-- Exposure data headers are now lower-/ snakecase ('object_id' -> 'objectId'), see [docs](./user_guide/data/exposure/data.qmd)
+- Exposure data headers are now lower-/ snakecase ('object_id' -> 'objectId')
 - Fixed binary creation in general, but also specifically for `GDAL >= v3.9.1`
 - Made read methods of `BaseModel`, `GeomModel` and `GridModel` public (removed underscore)
 - Made csv files (exposure data) optional

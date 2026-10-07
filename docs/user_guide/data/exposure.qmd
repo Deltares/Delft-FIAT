@@ -14,13 +14,14 @@ Because FIAT consists of two models, the exposure data can be supplied in either
 ### Vector data
 FIAT can be used to assess flood damages to buildings, roads, utilities, and other types of structures of which data is available. These type of assets are often spatially represented with vector, or geometry data. Building a FIAT model with geometry exposure data requires two data types:
 
-- [Geometry file(s)](exposure/geometries.qmd)
-- [CSV file (optional)](exposure/csv.qmd)
+- [Geometry file(s)](exposure/geometry.qmd)
 
-### Raster Data
+### Gridded (raster) Data
 
 ::: {.callout-important}
  This functionality is in beta phase
 :::
 
-Raster files must be **pre-processed** before being ingested into the FIAT model. Raster projection and extent must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a raster file with the **max potential damage** per cell is required. A damage function must be assigned to each raster file as well, linking with the damage function name in the meta data to the name in the [vulnerability curves file](vulnerability.qmd).
+Raster files must be **pre-processed** before being ingested into the FIAT model. Raster projection and extent must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a raster file with the **maximum value** per cell is required. A vulnerability curve must be assigned to each raster file as well, linking with the vulnerability curve name in the meta data to the name in the [vulnerability curves file](vulnerability.qmd).
+
+- [Gridded files](exposure/grid.qmd)

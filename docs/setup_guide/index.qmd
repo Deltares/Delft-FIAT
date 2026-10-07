@@ -2,7 +2,7 @@
 title: "Setup guide"
 ---
 
-::: column-page-inset-right
+::: {.column-page-inset-right .overview-tiles}
 {{< include /_static/listing_code.html >}}
 ```{=html}
 

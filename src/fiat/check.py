@@ -266,8 +266,8 @@ fn_{type}_* and max_{type}_* columns."
     # Log when combination of fn and max is missing
     if missing:
         logger.warning(
-            f"No every damage function has a corresponding \
-maximum potential damage: {missing}"
+            f"No every vulnerability curve has a corresponding \
+maximum value: {missing}"
         )
 
 
