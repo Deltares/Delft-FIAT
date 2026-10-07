@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - pyi/*
       - src/fiat/**/*
@@ -12,7 +12,7 @@ on:
       - .github/workflows/build.yml
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - pyi/*
       - src/fiat/**/*
@@ -49,7 +49,7 @@ jobs:
           environments: slim
           locked: false
           cache: true
-          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
       - name: Build FIAT
         run: |

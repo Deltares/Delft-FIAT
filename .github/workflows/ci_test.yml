@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - main
       - release/**
     paths:
       - src/fiat/**/*
@@ -15,7 +15,7 @@ on:
       - .github/workflows/test.yml
   pull_request:
     branches:
-      - master
+      - main
       - release/**
     paths:
       - src/fiat/**/*

@@ -3,7 +3,7 @@ name: Build Documentation
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - v*
     paths:
@@ -13,7 +13,7 @@ on:
       - .github/workflows/ci_docs.yml
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - docs/**/*
       - data/*
@@ -45,7 +45,7 @@ jobs:
           environments: docs
           locked: false
           cache: true
-          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
       - name: Install quarto extensions
         run: |

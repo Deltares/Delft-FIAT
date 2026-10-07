@@ -20,4 +20,4 @@ We welcome contributions like bug reports, bug fixes, documentation improvements
 Our [developer guide](guide.qmd) explains how one can contribute to Delft-FIAT!
 
 ## Licencing
-The [MIT license](https://github.com/Deltares/Delft-FIAT/blob/master/LICENSE) applies to all contributions.
+The [MIT license](https://github.com/Deltares/Delft-FIAT/blob/main/LICENSE) applies to all contributions.
