@@ -3,7 +3,7 @@ title: "Create a container"
 ---
 
 A container file is present within the repository of Delft-FIAT. This container file can
-be found [here](https://github.com/Deltares/Delft-FIAT/blob/master/Containerfile).
+be found [here](https://github.com/Deltares/Delft-FIAT/blob/main/Containerfile).
 
 ::: {.callout-important}
 We recommend using [podman](https://podman.io/) (alternative to docker), the cli calls reflect this.
@@ -30,12 +30,12 @@ However, as an alternative, it can be build directly from the container file in 
 remote repository:
 
 ```bash
-podman build -f https://raw.githubusercontent.com/Deltares/Delft-FIAT/master/Containerfile --build-arg="PIXIENV=default" -t fiat .
+podman build -f https://raw.githubusercontent.com/Deltares/Delft-FIAT/main/Containerfile --build-arg="PIXIENV=default" -t fiat .
 ```
 
 ::: {.callout-tip}
 The build argument `PIXIENV` is used to define which python enviroment to use. Using the `default` environment is recommended.
-An overview of all the environments can be found in the [pixi toml file](https://github.com/Deltares/Delft-FIAT/blob/master/pixi.toml).
+An overview of all the environments can be found in the [pixi toml file](https://github.com/Deltares/Delft-FIAT/blob/main/pixi.toml).
 :::
 
 After setting up the image, a podman container can be spawned from this

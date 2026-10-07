@@ -3,7 +3,7 @@ name: Build Image
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - Containerfile
       - pyproject.toml
@@ -11,7 +11,7 @@ on:
       - .github/workflows/ci_docker.yml
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - Containerfile
       - pyproject.toml

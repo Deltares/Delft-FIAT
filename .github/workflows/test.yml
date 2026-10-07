@@ -24,7 +24,7 @@ jobs:
           environments: test-py${{ inputs.python-version }}
           locked: false
           cache: true
-          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
       - name: Create testdata
         run: |
