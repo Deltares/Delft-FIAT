@@ -1,7 +1,12 @@
+from pathlib import Path
+from typing import Callable, Generator
+from unittest.mock import Mock
+
 import pytest
 from pytest_mock import MockerFixture
 
 import fiat.cli.main as cli_main
+from fiat.settings import GeomSettings, GridSettings
 
 
 def test_main_help(capsys):
@@ -14,7 +19,10 @@ def test_main_help(capsys):
     assert "Usage: fiat <options> <commands>" in capsys.readouterr().out
 
 
-def test_main_version(capsys, mocker: MockerFixture):
+def test_main_version(
+    capsys: Generator[pytest.CaptureFixture[str]],
+    mocker: MockerFixture,
+):
     # The version flag prints the version and exits
     mocker.patch.object(cli_main.sys, "argv", ["fiat", "--version"])
 
@@ -27,7 +35,54 @@ def test_main_version(capsys, mocker: MockerFixture):
     assert "FIAT " in capsys.readouterr().out
 
 
-def test_main_run_grid(run_config, run_patches, mocker: MockerFixture):
+def test_main_run_geom(
+    run_patches: Mock,
+    mocker: MockerFixture,
+    settings_files: Path,
+    model_settings: GeomSettings,
+):
+    # Get the settings
+    file = settings_files("geom_event.toml")
+    settings = model_settings(file)
+    # Mock loading the config file
+    load_settings = mocker.patch(
+        "fiat.cli.main.load_settings",
+        return_value=settings,
+    )
+    run_patches.load_settings = load_settings
+
+    # Run without a model type, the geom model is the default
+    mocker.patch.object(
+        cli_main.sys,
+        "argv",
+        ["fiat", "run", str(file)],
+    )
+
+    # Call the function
+    cli_main.main(["use-sys-argv"])
+
+    # Assert the geom model was selected and run
+    run_patches.geom_model.assert_called_once_with(settings)
+    run_patches.geom_model.return_value.run.assert_called_once_with()
+    run_patches.grid_model.assert_not_called()
+
+
+def test_main_run_grid(
+    run_patches: Mock,
+    mocker: MockerFixture,
+    settings_files: Callable[[str], Path],
+    model_settings: Callable[[str], GridSettings],
+):
+    # Get the file and settings
+    file = settings_files("grid_event.toml")
+    settings = model_settings(file)
+    # Mock loading the config file
+    load_settings = mocker.patch(
+        "fiat.cli.main.load_settings",
+        return_value=settings,
+    )
+    run_patches.load_settings = load_settings
+
     # Run the grid model with cli overrides
     mocker.patch.object(
         cli_main.sys,
@@ -35,47 +90,22 @@ def test_main_run_grid(run_config, run_patches, mocker: MockerFixture):
         [
             "fiat",
             "run",
-            str(run_config.filepath),
-            "--threads",
-            "3",
-            "-d",
-            f"{cli_main.MODEL_TYPE}={cli_main.GRID}",
-            "-d",
-            "custom.values=[1,2]",
-        ],  # fmt: skip
+            file.as_posix(),
+            "-t",
+            "1",
+            "-s",
+            "output_dir=tmp",
+        ],
     )
 
     # Call the function
     cli_main.main(["use-sys-argv"])
 
     # Assert the overrides landed on the config
-    assert run_config.values[cli_main.MODEL_THREADS] == 3
-    assert run_config.values[cli_main.MODEL_TYPE] == cli_main.GRID
-    assert run_config.values["custom.values"] == [1, 2]
-    assert run_config.output_dir_was_setup is True
+    assert settings.threads == 1
+    assert settings.output_dir == Path(settings.context.config_dir, "tmp")
 
     # Assert the grid model was selected and run
-    run_patches.config_entries.assert_called_once_with(
-        run_config,
-        cli_main.MANDATORY_MODEL_ENTRIES + cli_main.MANDATORY_GRID_ENTRIES,
-    )
-    run_patches.grid_model.assert_called_once_with(run_config)
+    run_patches.grid_model.assert_called_once_with(settings)
     run_patches.grid_model.return_value.run.assert_called_once_with()
     run_patches.geom_model.assert_not_called()
-
-
-def test_main_run_geom(run_config, run_patches, mocker: MockerFixture):
-    # Run without a model type, the geom model is the default
-    mocker.patch.object(cli_main.sys, "argv", ["fiat", "run", str(run_config.filepath)])
-
-    # Call the function
-    cli_main.main(["use-sys-argv"])
-
-    # Assert the geom model was selected and run
-    run_patches.config_entries.assert_called_once_with(
-        run_config,
-        cli_main.MANDATORY_MODEL_ENTRIES + cli_main.MANDATORY_GEOM_ENTRIES,
-    )
-    run_patches.geom_model.assert_called_once_with(run_config)
-    run_patches.geom_model.return_value.run.assert_called_once_with()
-    run_patches.grid_model.assert_not_called()

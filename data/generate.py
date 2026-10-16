@@ -219,17 +219,13 @@ def create_hazard_risk_map():
 def create_settings_geom():
     """Create exposure geometry model settings."""
     doc = {
-        "model": {
-            "type": "geom",
-            "risk": False,
-            "projection": {
-                "crs": "EPSG:4326",
-            },
+        "type": "geom",
+        "risk": False,
+        "output_dir": "output/geom_event",
+        "projection": {
+            "crs": "EPSG:4326",
         },
-        "output": {
-            "path": "output/geom_event",
-            "geom": [{"file": "spatial.fgb"}],
-        },
+        "output": [{"file": "spatial.fgb"}],
         "vulnerability": {
             "file": "vulnerability/curves.csv",
         },
@@ -239,17 +235,15 @@ def create_settings_geom():
                 "crs": "EPSG:4326",
             },
         },
-        "exposure": {
-            "geom": [
-                {
-                    "file": "exposure/spatial.fgb",
-                    "area_method": "area",
-                    "settings": {
-                        "crs": "EPSG:4326",
-                    },
+        "exposure": [
+            {
+                "file": "exposure/spatial.fgb",
+                "area_method": "area",
+                "settings": {
+                    "crs": "EPSG:4326",
                 },
-            ],
-        },
+            },
+        ],
     }
 
     # Dump directly as default event toml
@@ -258,24 +252,24 @@ def create_settings_geom():
 
     # Setup toml with two geometry files
     doc2g = copy.deepcopy(doc)
-    doc2g["output"]["path"] = "output/geom_event_2g"
-    doc2g["output"]["geom"].append({"file": "spatial2.fgb"})
-    doc2g["exposure"]["geom"].append({"file": "exposure/spatial2.fgb"})
+    doc2g["output_dir"] = "output/geom_event_2g"
+    doc2g["output"].append({"file": "spatial2.fgb"})
+    doc2g["exposure"].append({"file": "exposure/spatial2.fgb"})
 
     with open(Path(p, "geom_event_2g.toml"), "w") as f:
         tomlkit.dump(doc2g, f)
 
     # Setup toml with geometries lying outside hazard are
     doc_o = copy.deepcopy(doc)
-    doc_o["exposure"]["geom"][0]["file"] = "exposure/spatial_outside.fgb"
+    doc_o["exposure"][0]["file"] = "exposure/spatial_outside.fgb"
 
     with open(Path(p, "geom_event_outside.toml"), "w") as f:
         tomlkit.dump(doc_o, f)
 
     # Setup toml for risk calculation
     doc_r = copy.deepcopy(doc)
-    doc_r["model"]["risk"] = True
-    doc_r["output"]["path"] = "output/geom_risk"
+    doc_r["risk"] = True
+    doc_r["output_dir"] = "output/geom_risk"
     doc_r["hazard"]["file"] = "risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
 
@@ -284,9 +278,9 @@ def create_settings_geom():
 
     # Setup toml for risk calculation with 2 geometries
     doc_r2g = copy.deepcopy(doc_r)
-    doc_r2g["output"]["path"] = "output/geom_risk_2g"
-    doc_r2g["output"]["geom"].append({"file": "spatial2.fgb"})
-    doc_r2g["exposure"]["geom"].append({"file": "exposure/spatial2.fgb"})
+    doc_r2g["output_dir"] = "output/geom_risk_2g"
+    doc_r2g["output"].append({"file": "spatial2.fgb"})
+    doc_r2g["exposure"].append({"file": "exposure/spatial2.fgb"})
 
     with open(Path(p, "geom_risk_2g.toml"), "w") as f:
         tomlkit.dump(doc_r2g, f)
@@ -295,17 +289,13 @@ def create_settings_geom():
 def create_settings_grid():
     """Create exposure grid model settings."""
     doc = {
-        "model": {
-            "type": "grid",
-            "risk": False,
-            "projection": {
-                "crs": "EPSG:4326",
-            },
+        "type": "grid",
+        "risk": False,
+        "output_dir": "output/grid_event",
+        "projection": {
+            "crs": "EPSG:4326",
         },
-        "output": {
-            "path": "output/grid_event",
-            "grid": {"name": "output.nc"},
-        },
+        "output": {"file": "output.tif"},
         "vulnerability": {
             "file": "vulnerability/curves.csv",
         },
@@ -316,11 +306,9 @@ def create_settings_grid():
             },
         },
         "exposure": {
-            "grid": {
-                "file": "exposure/spatial.nc",
-                "settings": {
-                    "crs": "EPSG:4326",
-                },
+            "file": "exposure/spatial.nc",
+            "settings": {
+                "crs": "EPSG:4326",
             },
         },
     }
@@ -331,8 +319,8 @@ def create_settings_grid():
 
     # Set up for risk calculations
     doc_r = copy.deepcopy(doc)
-    doc_r["model"]["risk"] = True
-    doc_r["output"]["path"] = "output/grid_risk"
+    doc_r["risk"] = True
+    doc_r["output_dir"] = "output/grid_risk"
     doc_r["hazard"]["file"] = "risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
 
@@ -341,6 +329,7 @@ def create_settings_grid():
 
     # With high resolution data
     doc_u = copy.deepcopy(doc)
+    doc_u["output_dir"] = "output/grid_ueq"
     doc_u["hazard"]["file"] = "event_map_highres.nc"
 
     with open(Path(p, "grid_unequal.toml"), "w") as f:

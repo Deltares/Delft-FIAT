@@ -6,9 +6,8 @@ import sys
 from pathlib import Path
 from typing import Callable
 
-from fiat.cfg import Configurations
 from fiat.log import Logger
-from fiat.util import OUTPUT_PATH
+from fiat.settings import GeomSettings, GridSettings
 
 
 def file_path_check(path):
@@ -46,7 +45,7 @@ def run_log(
 def run_profiler(
     func: Callable,
     profile: str,
-    cfg: Configurations,
+    settings: GeomSettings | GridSettings,
     logger: Logger,
 ):
     """Run the profiler from cli."""
@@ -59,14 +58,14 @@ def run_profiler(
     profiler.disable()
 
     # Save all the stats
-    profile_out = cfg.get(OUTPUT_PATH) / profile
+    profile_out = settings.output_dir / profile
     profiler.dump_stats(profile_out)
     logger.info(f"Saved profiling stats to: {profile_out}")
 
     # Save a human readable portion to a text file
-    txt_out = cfg.get(OUTPUT_PATH) / "profile.txt"
+    txt_out = settings.output_dir / "profile.txt"
     with open(txt_out, "w") as _w:
-        _w.write(f"Delft-FIAT profile ({cfg.filepath}):\n\n")
+        _w.write(f"Delft-FIAT profile ({settings.context.config_dir}):\n\n")
         stats = pstats.Stats(profiler, stream=_w)
         _ = stats.sort_stats("tottime").print_stats()
         logger.info(f"Saved profiling stats in human readable format: {txt_out}")

@@ -1,42 +1,43 @@
-from os import cpu_count
 from pathlib import Path
+from typing import Callable
 
-import pytest
-
-from fiat.cfg import Configurations
 from fiat.driver import NetcdfReader, Table
 from fiat.log import Logger
 from fiat.model.base import BaseModel
+from fiat.settings import GeomSettings
 from fiat.util import get_crs_repr
 
 # Overwrite the abstractmethods to be able to initialize it
 BaseModel.__abstractmethods__ = set()
 
 
-def test_basemodel(config_empty: Configurations):
+def test_basemodel(model_settings: Callable[[str], GeomSettings]):
     # Create the object
-    m = BaseModel(config_empty)
+    m = BaseModel(model_settings("geom_event.toml"))
 
     # Assert some simple stuff
     # Data should be None still
-    assert m.hazard is None
-    assert m.vulnerability is None
+    assert m.hazard is not None
+    assert m.vulnerability is not None
+    assert isinstance(m.hazard, NetcdfReader)
+    assert isinstance(m.vulnerability, Table)
 
 
-def test_basemodel_general_properties(config_empty: Configurations):
+def test_basemodel_general_properties(model_settings: Callable[[str], GeomSettings]):
     # Create the object
-    m = BaseModel(config_empty)
+    m = BaseModel(model_settings("geom_event.toml"))
 
     # Assert the important properties
     assert not m.risk
     assert get_crs_repr(m.crs) == "EPSG:4326"
     assert m.threads == 1
-    assert m.type == "flood.depth"
+    assert m.type == "geom"
+    assert m.settings.method == "flood.depth"
 
 
-def test_basemodel_risk(config_empty: Configurations):
+def test_basemodel_risk(model_settings: Callable[[str], GeomSettings]):
     # Create the object
-    m = BaseModel(config_empty)
+    m = BaseModel(model_settings("geom_event.toml"))
     # Assert the current state
     assert not m.risk
 
@@ -45,174 +46,71 @@ def test_basemodel_risk(config_empty: Configurations):
 
     # Assert the state
     assert m.risk
+    assert m.settings.risk
 
 
-def test_basemodel_threads(
-    config_empty: Configurations,
-):
+def test_basemodel_threads(model_settings: Callable[[str], GeomSettings]):
     # Create the object
-    m = BaseModel(config_empty)
+    m = BaseModel(model_settings("geom_event.toml"))
     # Assert the current state
     assert m.threads == 1
 
-    # This test is quite hazardous, let's just set the threads to zero to be able
-    # To set it to 1
-    m._threads = 0
-    assert m.threads == 0
     # Set the threads
-    m.threads = 1
+    m.threads = 2
 
     # Assert
-    assert m.threads == 1
+    assert m.threads == 2
+    assert m.settings.threads == 2
 
 
-def test_basemodel_threads_warnings(
-    config_empty: Configurations,
-    caplog: Logger,
-):
-    # Create the object
-    m = BaseModel(config_empty)
-    # Assert the current state
-    assert m.threads == 1
-
-    # Pretty sure this exceeds any machine's cpu count
-    m.threads = 1000
-
-    # Assert the logging message
-    assert (
-        "Given number of threads ('1000') \
-exceeds machine thread count"
-        in caplog.text
-    )
-    assert m.threads == cpu_count()
-
-
-def test_basemodel_type(config_empty: Configurations):
-    # Create the object
-    m = BaseModel(config_empty)
-    # Assert the current state
-    assert m.type == "flood.depth"
-
-    # This will error as there are no other modules
-    with pytest.raises(
-        ModuleNotFoundError,
-        match="No module named 'fiat.method.fatality'",
-    ):
-        m.type = "fatality"
-
-
-def test_basemodel_read_hazard_config(
-    hazard_event_path: Path,
-    config_empty: Configurations,
-):
-    # Adjust the config
-    config_empty.set("hazard.file", hazard_event_path)
-
+def test_basemodel_read_hazard(model_settings: Callable[[str], GeomSettings]):
     # Creat the object, which directly tries to read from the config
-    m = BaseModel(config_empty)
+    m = BaseModel(model_settings("geom_event.toml"))
 
     # Assert the state
     assert m.hazard is not None
     assert isinstance(m.hazard, NetcdfReader)
-
-
-def test_basemodel_read_hazard_argument(
-    hazard_event_path: Path,
-    config_empty: Configurations,
-):
-    # Creat the object, which directly tries to read from the config
-    m = BaseModel(config_empty)
-    # Assert the current state
-    assert m.hazard is None
-
-    # Read with an argument
-    m.read_hazard(path=hazard_event_path)
-
-    # Assert the state
-    assert m.hazard is not None
-    assert isinstance(m.hazard, NetcdfReader)
-
-
-def test_basemodel_read_hazard_risk(
-    hazard_risk_path: Path,
-    config_empty: Configurations,
-):
-    # Adjust the config
-    config_empty.set("model.risk", True)
-    config_empty.set("hazard.file", hazard_risk_path)
-
-    # Creat the object, which directly tries to read from the config
-    m = BaseModel(config_empty)
-
-    # Assert the state
-    assert m.hazard is not None
-    assert isinstance(m.hazard, NetcdfReader)
+    assert m.hazard.size == 1
 
 
 def test_basemodel_read_hazard_warnings(
-    hazard_event_path: Path,
-    config_empty: Configurations,
+    model_settings: Callable[[str], GeomSettings],
     caplog: Logger,
 ):
-    # Adjust the config
-    config_empty.set("model.crs.value", "EPSG:3857")
-    config_empty.set("hazard.file", hazard_event_path)
-
     # Creat the object, which directly tries to read from the config
-    m = BaseModel(config_empty)
+    m = BaseModel(model_settings("geom_event.toml"))
+    # Set the projection
+    m.crs = "EPSG:3857"
 
     # Assert logging message
     assert "Setting the model crs from the hazard data." in caplog.text
 
     # Prefer global SRS over hazard SRS
     m.crs = "EPSG:3857"
-    m.cfg.set("model.projection.force", True)
+    m.settings.projection.force = True
 
     # Re-read the hazard data
-    m.read_hazard()
+    m._read_hazard()
 
     # Assert logging message
     assert (
-        f"Spatial reference of '{hazard_event_path.name}' \
+        f"Spatial reference of '{m.settings.hazard.file.name}' \
 ('EPSG:4326') does not match the \
 model spatial reference ('EPSG:3857')"
         in caplog.text
     )
     assert Path(
-        hazard_event_path.parent,
-        f"{hazard_event_path.stem}_repr.nc",
+        m.settings.hazard.file.parent,
+        f"{m.settings.hazard.file.stem}_repr.nc",
     ).is_file()
 
 
-def test_basemodel_read_vulnerability(
-    vulnerability_path: Path,
-    config_empty: Configurations,
-):
-    # Adjust the config for a vulnerability file to be read
-    config_empty.set("vulnerability.file", vulnerability_path)
-
+def test_basemodel_read_vulnerability(model_settings: Callable[[str], GeomSettings]):
     # Create the object
-    m = BaseModel(config_empty)
+    m = BaseModel(model_settings("geom_event.toml"))
 
     # Assert the state
     assert m.vulnerability is not None
     assert isinstance(m.vulnerability, Table)
     # Had been upscaled so a long index
     assert len(m.vulnerability.index) == 21
-
-
-def test_basemodel_read_vulnerability_argument(
-    vulnerability_path: Path,
-    config_empty: Configurations,
-):
-    # Create the object
-    m = BaseModel(config_empty)
-    # Assert the current state
-    assert m.vulnerability is None
-
-    # Read the data via argument
-    m.read_vulnerability(path=vulnerability_path)
-
-    # Assert the state
-    assert m.vulnerability is not None
-    assert isinstance(m.vulnerability, Table)

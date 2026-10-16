@@ -5,11 +5,8 @@ from unittest.mock import MagicMock
 import pytest
 from pyproj import CRS
 
-from fiat import Configurations
 from fiat.check import (
     check_available_values,
-    check_config_entries,
-    check_config_grid,
     check_duplicate_columns,
     check_exp_columns,
     check_exp_derived_types,
@@ -28,7 +25,6 @@ from fiat.container import Container
 from fiat.error import FIATDataError
 from fiat.log import Logger
 from fiat.method.flood.depth import COLUMNS
-from fiat.util import MANDATORY_MODEL_ENTRIES
 
 
 def test_check_available_values_fail():
@@ -53,51 +49,6 @@ def test_check_available_values_pass():
         available=["foo", "bar", "baz"],
         msg="Dummy",
     )
-
-
-def test_check_config_entries_fail():
-    # Call the function with entries missing
-    with pytest.raises(
-        FIATDataError,
-        match=re.escape(
-            "Data error -> Missing mandatory entries in the settings. \
-Please fill in the following missing entries: ['vulnerability.file']"
-        ),
-    ):
-        check_config_entries(
-            Configurations(**{"hazard": {"file": "foo"}}),
-            MANDATORY_MODEL_ENTRIES,
-        )
-
-
-def test_check_config_entries_pass():
-    # Call the function with all entries present
-    check_config_entries(
-        Configurations(**{"hazard": {"file": "foo"}, "vulnerability": {"file": "bar"}}),
-        MANDATORY_MODEL_ENTRIES,
-    )
-
-
-def test_check_config_grid_fail(config: Configurations):
-    # Call the function with missing entry
-    b = check_config_grid(config)
-    # Assert it's not there, therefore false
-    assert not b
-
-    # Call the function with missing entry but with grid stuff
-    config.set("exposure.grid.settings.crs", "EPSG:4326")
-    b = check_config_grid(config)
-    # Assert it's not there, therefore false
-    assert not b
-
-
-def test_check_config_grid_pass(config: Configurations):
-    # Adjust to config to add the exposure grid file
-    config.set("exposure.grid.file", "foo.txt")
-    # Call the function with missing entry
-    b = check_config_grid(config)
-    # Assert it's not there, therefore false
-    assert b
 
 
 def test_check_duplicate_columns_fail():

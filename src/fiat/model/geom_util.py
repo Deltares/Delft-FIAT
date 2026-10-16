@@ -3,7 +3,6 @@
 import copy
 import re
 from itertools import product
-from pathlib import Path
 
 from fiat.check import (
     check_available_values,
@@ -98,26 +97,6 @@ def generate_output_columns(
 
     # Return the output meta
     return out
-
-
-def generate_output_filepaths(
-    outfiles: list[Path] | None,
-    infiles: list[Path],
-    output_dir: Path,
-) -> list[Path]:
-    """Simple method for determining the output file paths."""  # noqa: D401
-    outfiles = outfiles or []
-    # Ensure typing
-    outfiles = [Path(item) for item in outfiles]
-    infiles = [Path(item) for item in infiles]
-    # Complete set from infiles if outfiles are None
-    if not outfiles:
-        outfiles = infiles
-    # Supplement if missing
-    outfiles += infiles[len(outfiles) :]
-    # Yes
-    outfiles = [Path(output_dir, item.name).with_suffix(".fgb") for item in outfiles]
-    return outfiles
 
 
 def get_exposure_meta(

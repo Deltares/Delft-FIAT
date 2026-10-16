@@ -5,33 +5,24 @@ import importlib
 import sys
 from multiprocessing import freeze_support
 
-from fiat.cfg import Configurations
-from fiat.check import check_config_entries
 from fiat.cli.action import KeyValueAction
 from fiat.cli.formatter import MainHelpFormatter
 from fiat.cli.util import file_path_check, run_log, run_profiler
 from fiat.log import setup_default_log
 from fiat.log.util import check_loglevel
 from fiat.model import GeomModel, GridModel
+from fiat.settings import GeomSettings, GridSettings, load_settings
 from fiat.util import (
     FIAT,
     GEOM,
     GRID,
-    INPUT,
-    MANDATORY_GEOM_ENTRIES,
-    MANDATORY_GRID_ENTRIES,
-    MANDATORY_MODEL_ENTRIES,
-    MODEL,
-    MODEL_LOGLEVEL,
-    MODEL_THREADS,
-    MODEL_TYPE,
-    OUTPUT_PATH,
+    generic_directory_check,
 )
 from fiat.version import __version__
 
 _models = {
-    GEOM: {MODEL: GeomModel, INPUT: MANDATORY_GEOM_ENTRIES},
-    GRID: {MODEL: GridModel, INPUT: MANDATORY_GRID_ENTRIES},
+    GEOM: GeomModel,
+    GRID: GridModel,
 }
 
 fiat_start_str = """
@@ -77,41 +68,31 @@ def run(args):
     )
     sys.stdout.write(fiat_start_str)
 
-    # Setup the config reader
-    cfg = file_path_check(args.config)
-    cfg = run_log(Configurations.from_file, logger, cfg)
+    # Setup the settings reader
+    settings = file_path_check(args.settings)
+    settings: GeomSettings | GridSettings = run_log(load_settings, logger, settings)
 
-    # Set the threads is specified
-    if args.threads is not None:
-        assert int(args.threads)
-        cfg.set(MODEL_THREADS, int(args.threads))
-
+    # Update with extra settings from cli
     if args.set_entry is not None:
-        cfg.update(args.set_entry)
-    cfg.setup_output_dir()
+        settings.update(**args.set_entry)
+    generic_directory_check(settings.output_dir)
 
     # Complete the setup of the logger
-    loglevel = check_loglevel(cfg.get(MODEL_LOGLEVEL, "INFO"))
     logger.add_file_handler(
-        dst=cfg.get(OUTPUT_PATH),
+        dst=settings.output_dir,
         filename=FIAT,
     )
-    logger.level = loglevel
+    logger.level = check_loglevel(settings.loglevel)
 
     # Add the model version
     logger.info(f"Delft-Fiat version: {__version__}")
 
     # Kickstart the model
-    model_type = cfg.get(MODEL_TYPE, GEOM)
-    check_config_entries(
-        cfg,
-        MANDATORY_MODEL_ENTRIES + _models[model_type][INPUT],
-    )
-    obj = _models[model_type][MODEL](cfg)
+    model = _models[settings.type](settings)
     if args.profile is not None:
-        run_profiler(obj.run, profile=args.profile, cfg=cfg, logger=logger)
+        run_profiler(model.run, profile=args.profile, cfg=settings, logger=logger)
     else:
-        run_log(obj.run, logger=logger)
+        run_log(model.run, logger=logger)
 
 
 ## Constructing the arguments parser for FIAT.
@@ -166,7 +147,7 @@ def args_parser():
         # usage="%(prog)s subcommand1 [options] sub1_arg"
     )
     run_parser.add_argument(
-        "config",
+        "settings",
         help="Path to the settings file",
     )
     run_parser.add_argument(
@@ -179,7 +160,7 @@ def args_parser():
         default=None,
     )
     run_parser.add_argument(
-        "-d",
+        "-s",
         "--set-entry",
         metavar="<KEY=VALUE>",
         help="Overwrite entry in settings file",
