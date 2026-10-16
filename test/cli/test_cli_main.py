@@ -20,7 +20,7 @@ def test_main_help(capsys):
 
 
 def test_main_version(
-    capsys: Generator[pytest.CaptureFixture[str]],
+    capsys: Generator[pytest.CaptureFixture[str], None, None],
     mocker: MockerFixture,
 ):
     # The version flag prints the version and exits

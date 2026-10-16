@@ -272,7 +272,6 @@ class GeomSettings(BaseSettings):
     @model_validator(mode="after")
     def ensure_output_files(self, info: ValidationInfo):
         """Ensure the output files."""
-        print("yes")
         if self.output is None:
             self.output = _derive_output_files(
                 self.exposure,
