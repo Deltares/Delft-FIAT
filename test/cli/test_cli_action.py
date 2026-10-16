@@ -34,36 +34,36 @@ def test_parse_cli_value_list():
 def test_key_value_action():
     # Set a parser using the action
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--set-entry", action=KeyValueAction)
+    parser.add_argument("-s", "--set-entry", action=KeyValueAction)
 
     # Repeated flags collect into a dict with coerced values
     args = parser.parse_args(
         [
-            "-d",
-            "model.threads=4",
+            "-s",
+            "threads=4",
             "--set-entry",
-            "model.type=grid",
-            "-d",
+            "type=grid",
+            "-s",
             "hazard.return_periods=[1, 2.5]",
         ]  # fmt: skip
     )
 
     # Assert the output
     assert args.set_entry == {
-        "model.threads": 4,
-        "model.type": "grid",
-        "hazard.return_periods": [1.0, 2.5],
+        "threads": 4,
+        "type": "grid",
+        "hazard": {"return_periods": [1.0, 2.5]},
     }
 
 
 def test_key_value_action_error(capsys):
     # Set a parser using the action
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--set-entry", action=KeyValueAction)
+    parser.add_argument("-s", "--set-entry", action=KeyValueAction)
 
     # A value without a '=' separator is rejected
     with pytest.raises(SystemExit) as exc:
-        parser.parse_args(["-d", "not-a-pair"])
+        parser.parse_args(["-s", "not-a-pair"])
 
     # Assert the output
     assert exc.value.code == 2

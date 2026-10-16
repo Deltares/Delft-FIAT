@@ -7,7 +7,6 @@ import pytest
 from pyproj import CRS
 from scipy.interpolate import make_interp_spline
 
-from fiat.cfg import Configurations
 from fiat.container import (
     ExposureGeomData,
     ExposureGeomMeta,
@@ -59,45 +58,6 @@ def grid_handle(
 
 
 ## Data related
-@pytest.fixture
-def config_empty(tmp_path: Path) -> Configurations:
-    c = Configurations(_root=tmp_path)
-    assert c.path == tmp_path
-    return c
-
-
-@pytest.fixture
-def config_read_geom(
-    config: Configurations,
-) -> Configurations:
-    config.set(
-        "exposure.geom",
-        [
-            {"file": "exposure/spatial.fgb"},
-            {"file": "exposure/spatial2.fgb"},
-        ],
-    )
-    return config
-
-
-@pytest.fixture
-def config_read_grid(
-    config: Configurations,
-) -> Configurations:
-    config.set("exposure.grid.file", "exposure/spatial.nc")
-    return config
-
-
-@pytest.fixture
-def config_run_geom(
-    config_empty: Configurations,
-) -> Configurations:
-    config_empty.set("hazard.type", "flood")
-    config_empty.set("vulnerability.step_size", 0.01)
-    config_empty.setup_output_dir()
-    return config_empty
-
-
 @pytest.fixture(scope="session")
 def density():
     coef = fn_density(rp=[2, 5, 10, 25])

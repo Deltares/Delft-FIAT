@@ -1,6 +1,5 @@
 import copy
 import re
-from pathlib import Path
 
 import pytest
 
@@ -10,7 +9,6 @@ from fiat.method import flood
 from fiat.model.geom_util import (
     discover_exp_columns,
     generate_output_columns,
-    generate_output_filepaths,
     get_exposure_meta,
 )
 
@@ -77,52 +75,6 @@ def test_generate_output_columns_multi():
     assert new_fields[4] == "total_affected_1"
     assert new_fields[5] == "depth_2"
     assert new_fields[-1] == "ead_affected"
-
-
-def test_generate_output_filepaths(
-    tmp_path: Path,
-):
-    # Call the function
-    out = generate_output_filepaths(
-        outfiles=["foo.gpkg", "bar.gpkg"],
-        infiles=[],
-        output_dir=tmp_path,
-    )
-
-    # Assert the output
-    assert len(out) == 2
-    assert out[0] == Path(tmp_path, "foo.fgb")
-
-
-def test_generate_output_filepaths_none(
-    tmp_path: Path,
-):
-    # Call the function
-    out = generate_output_filepaths(
-        outfiles=None,
-        infiles=["foo.gpkg"],
-        output_dir=tmp_path,
-    )
-
-    # Assert the output
-    assert len(out) == 1
-    assert out[0] == Path(tmp_path, "foo.fgb")
-
-
-def test_generate_output_filepaths_add(
-    tmp_path: Path,
-):
-    # Call the function
-    out = generate_output_filepaths(
-        outfiles=["foo.gpkg"],
-        infiles=["baz.gpkg", "bar.gpkg"],
-        output_dir=tmp_path,
-    )
-
-    # Assert the output
-    assert len(out) == 2
-    assert out[0] == Path(tmp_path, "foo.fgb")
-    assert out[1] == Path(tmp_path, "bar.fgb")
 
 
 def test_get_exposure_meta(

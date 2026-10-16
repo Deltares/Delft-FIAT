@@ -4,7 +4,7 @@
 # Organisation: Deltares
 ##################################################
 # Author: B.W. Dalmijn
-# E-mail: brencodeert@outlook.com
+# E-mail: brendan.dalmijn@deltares.nl
 ##################################################
 # License: MIT license
 #
@@ -12,16 +12,16 @@
 #
 #
 ##################################################
-from .cfg import Configurations
 from .model import GeomModel, GridModel
 from .open import open_csv, open_geom, open_grid
+from .settings import Settings
 from .version import __version__
 
 __all__ = [
-    "Configurations",
     "open_csv",
     "open_geom",
     "open_grid",
     "GeomModel",
     "GridModel",
+    "Settings",
 ]

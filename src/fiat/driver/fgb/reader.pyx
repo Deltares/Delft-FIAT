@@ -373,6 +373,12 @@ cdef class FlatGeobufReader:
             return None
         return self._feature_from(&g, &props)
 
+    # Properties
+    @property
+    def size(self):
+        """Return the number of features."""
+        return int(self.features_count)
+
     # I/O related
     @property
     def closed(self):
