@@ -90,7 +90,7 @@ def run(args):
     # Kickstart the model
     model = _models[settings.type](settings)
     if args.profile is not None:
-        run_profiler(model.run, profile=args.profile, cfg=settings, logger=logger)
+        run_profiler(model.run, profile=args.profile, settings=settings, logger=logger)
     else:
         run_log(model.run, logger=logger)
 
