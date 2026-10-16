@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>read_hazard – Delft FIAT</title>
+<title>from_file – Delft FIAT</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -356,7 +356,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel.html">Models</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel.html">GeomModel</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel/read_hazard.html">read_hazard</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel.html">Models</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel.html">GeomModel</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel/from_file.html">from_file</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -397,20 +397,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth3 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/GeomModel/read_exposure.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_exposure</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../api/GeomModel/read_hazard.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">read_hazard</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../api/GeomModel/read_vulnerability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_vulnerability</span></a>
+  <a href="../../api/GeomModel/from_file.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">from_file</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -432,20 +420,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../api/GridModel/read_exposure.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_exposure</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../api/GridModel/read_hazard.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_hazard</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../api/GridModel/read_vulnerability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_vulnerability</span></a>
+  <a href="../../api/GridModel/from_file.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">from_file</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -470,54 +446,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#fiat.GeomModel.read_hazard" id="toc-fiat.GeomModel.read_hazard" class="nav-link active" data-scroll-target="#fiat.GeomModel.read_hazard">read_hazard</a>
-  <ul class="collapse">
-  <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
-  </ul></li>
+  <li><a href="#fiat.GeomModel.from_file" id="toc-fiat.GeomModel.from_file" class="nav-link active" data-scroll-target="#fiat.GeomModel.from_file">from_file</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel.html">Models</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel.html">GeomModel</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel/read_hazard.html">read_hazard</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../api/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel.html">Models</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel.html">GeomModel</a></li><li class="breadcrumb-item"><a href="../../api/GeomModel/from_file.html">from_file</a></li></ol></nav></header>
 
 
 
 
 
-<section id="fiat.GeomModel.read_hazard" class="level1">
-<h1>read_hazard</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>GeomModel.read_hazard(path<span class="op">=</span><span class="va">None</span>, <span class="op">**</span>kwargs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Read the hazard data.</p>
-<p>If no path is provided the method tries to infer it from the model configurations.</p>
-<section id="parameters" class="level2 doc-section doc-section-parameters">
-<h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>path</td>
-<td><a href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | <a href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></td>
-<td>Path to the hazard gridded dataset, by default None</td>
-<td><code>None</code></td>
-</tr>
-<tr class="even">
-<td>kwargs</td>
-<td><a href="https://docs.python.org/3/builtins/stdtypes.html#dict">dict</a></td>
-<td>Keyword arguments for reading. These are passed into <a href="../../api/driver/open_grid.qmd">open_grid</a> after which into <a href="../../api/NetcdfReader.qmd">NetcdfReader</a>/</td>
-<td><code>{}</code></td>
-</tr>
-</tbody>
-</table>
+<section id="fiat.GeomModel.from_file" class="level1">
+<h1>from_file</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>GeomModel.from_file(<span class="bu">file</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Initialize the model from a settings file.</p>
 
 
-</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->

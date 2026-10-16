@@ -429,37 +429,11 @@
     ]
   },
   {
-    "objectID": "api/GridModel/read_hazard.html",
-    "href": "api/GridModel/read_hazard.html",
-    "title": "read_hazard",
-    "section": "",
-    "text": "GridModel.read_hazard(path=None, **kwargs)\nRead the hazard data.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the hazard gridded dataset, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_grid after which into NetcdfReader/\n{}",
-    "crumbs": [
-      "API Reference",
-      "Models",
-      "GridModel",
-      "read_hazard"
-    ]
-  },
-  {
-    "objectID": "api/GridModel/read_hazard.html#parameters",
-    "href": "api/GridModel/read_hazard.html#parameters",
-    "title": "read_hazard",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the hazard gridded dataset, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_grid after which into NetcdfReader/\n{}",
-    "crumbs": [
-      "API Reference",
-      "Models",
-      "GridModel",
-      "read_hazard"
-    ]
-  },
-  {
     "objectID": "api/GridModel.html",
     "href": "api/GridModel.html",
     "title": "GridModel",
     "section": "",
-    "text": "GridModel(cfg)\nGrid model.\nNeeds the following settings in order to be run:\n\nexposure.grid.file\noutput.grid.file\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigurations\nConfigurations object containing the settings.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\ncrs\nReturn the model crs.\n\n\nrisk\nReturn the calculation modus.\n\n\nthreads\nReturn the number of threads to be used.\n\n\ntype\nReturn the hazard type.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nread_exposure\nRead the exposure grid.\n\n\nread_hazard\nRead the hazard data.\n\n\nread_vulnerability\nRead the vulnerability data.\n\n\nrun\nRun the grid model with provided settings.",
+    "text": "GridModel(settings)\nGrid model.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsettings\nGridSettings\nValidated settings.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\ncrs\nReturn the model crs.\n\n\nexposure\nReturn the exposure grid data.\n\n\nhazard\nReturn the hazard data.\n\n\nmethod\nReturn the current method module.\n\n\nrisk\nReturn the calculation modus.\n\n\nthreads\nReturn the number of threads to be used.\n\n\ntype\nReturn the hazard type.\n\n\nvulnerability\nReturn the vulnerability data.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nfrom_file\nInitialize the model from a settings file.\n\n\nrun\nRun the grid model with provided settings.",
     "crumbs": [
       "API Reference",
       "Models",
@@ -471,7 +445,7 @@
     "href": "api/GridModel.html#parameters",
     "title": "GridModel",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigurations\nConfigurations object containing the settings.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsettings\nGridSettings\nValidated settings.\nrequired",
     "crumbs": [
       "API Reference",
       "Models",
@@ -483,7 +457,7 @@
     "href": "api/GridModel.html#attributes",
     "title": "GridModel",
     "section": "",
-    "text": "Name\nDescription\n\n\n\n\ncrs\nReturn the model crs.\n\n\nrisk\nReturn the calculation modus.\n\n\nthreads\nReturn the number of threads to be used.\n\n\ntype\nReturn the hazard type.",
+    "text": "Name\nDescription\n\n\n\n\ncrs\nReturn the model crs.\n\n\nexposure\nReturn the exposure grid data.\n\n\nhazard\nReturn the hazard data.\n\n\nmethod\nReturn the current method module.\n\n\nrisk\nReturn the calculation modus.\n\n\nthreads\nReturn the number of threads to be used.\n\n\ntype\nReturn the hazard type.\n\n\nvulnerability\nReturn the vulnerability data.",
     "crumbs": [
       "API Reference",
       "Models",
@@ -495,7 +469,7 @@
     "href": "api/GridModel.html#methods",
     "title": "GridModel",
     "section": "",
-    "text": "Name\nDescription\n\n\n\n\nread_exposure\nRead the exposure grid.\n\n\nread_hazard\nRead the hazard data.\n\n\nread_vulnerability\nRead the vulnerability data.\n\n\nrun\nRun the grid model with provided settings.",
+    "text": "Name\nDescription\n\n\n\n\nfrom_file\nInitialize the model from a settings file.\n\n\nrun\nRun the grid model with provided settings.",
     "crumbs": [
       "API Reference",
       "Models",
@@ -503,55 +477,16 @@
     ]
   },
   {
-    "objectID": "api/GeomModel/read_vulnerability.html",
-    "href": "api/GeomModel/read_vulnerability.html",
-    "title": "read_vulnerability",
+    "objectID": "api/GeomModel/from_file.html",
+    "href": "api/GeomModel/from_file.html",
+    "title": "from_file",
     "section": "",
-    "text": "GeomModel.read_vulnerability(path=None, **kwargs)\nRead the vulnerability data.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the vulnerabulity data, by default None.\nNone\n\n\n**kwargs\ndict\nKeyword arguments for reading. These are passed into open_csv after which into Table/.\n{}",
+    "text": "from_file\nGeomModel.from_file(file)\nInitialize the model from a settings file.\n\n\n\n\n Back to top",
     "crumbs": [
       "API Reference",
       "Models",
       "GeomModel",
-      "read_vulnerability"
-    ]
-  },
-  {
-    "objectID": "api/GeomModel/read_vulnerability.html#parameters",
-    "href": "api/GeomModel/read_vulnerability.html#parameters",
-    "title": "read_vulnerability",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the vulnerabulity data, by default None.\nNone\n\n\n**kwargs\ndict\nKeyword arguments for reading. These are passed into open_csv after which into Table/.\n{}",
-    "crumbs": [
-      "API Reference",
-      "Models",
-      "GeomModel",
-      "read_vulnerability"
-    ]
-  },
-  {
-    "objectID": "api/GeomModel/read_exposure.html",
-    "href": "api/GeomModel/read_exposure.html",
-    "title": "read_exposure",
-    "section": "",
-    "text": "GeomModel.read_exposure(path=None, **kwargs)\nRead the exposure geometries.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nA path to the file on the drive. Can contain a wildcard that take the form of an asterisk (*). Must be relative to the directory of the config. By default None.\nNone\n\n\n**kwargs\ndict\nKeyword arguments for reading. These are passed into open_geom after which into GeomDriver/\n{}",
-    "crumbs": [
-      "API Reference",
-      "Models",
-      "GeomModel",
-      "read_exposure"
-    ]
-  },
-  {
-    "objectID": "api/GeomModel/read_exposure.html#parameters",
-    "href": "api/GeomModel/read_exposure.html#parameters",
-    "title": "read_exposure",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nA path to the file on the drive. Can contain a wildcard that take the form of an asterisk (*). Must be relative to the directory of the config. By default None.\nNone\n\n\n**kwargs\ndict\nKeyword arguments for reading. These are passed into open_geom after which into GeomDriver/\n{}",
-    "crumbs": [
-      "API Reference",
-      "Models",
-      "GeomModel",
-      "read_exposure"
+      "from_file"
     ]
   },
   {
@@ -559,7 +494,7 @@
     "href": "api/GeomModel.html",
     "title": "GeomModel",
     "section": "",
-    "text": "GeomModel(cfg)\nGeometry model.\nNeeds the following settings in order to be run:\n\nexposure.geom.file\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigurations\nConfigurations object containing the settings.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\ncrs\nReturn the model crs.\n\n\nrisk\nReturn the calculation modus.\n\n\nthreads\nReturn the number of threads to be used.\n\n\ntype\nReturn the hazard type.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nread_exposure\nRead the exposure geometries.\n\n\nread_hazard\nRead the hazard data.\n\n\nread_vulnerability\nRead the vulnerability data.\n\n\nrun\nRun the geometry model with provided settings.",
+    "text": "GeomModel(settings)\nGeometry model.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsettings\nGeomSettings\nValidated settings.\nrequired\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\ncrs\nReturn the model crs.\n\n\nexposure\nReturn the exposure data.\n\n\nhazard\nReturn the hazard data.\n\n\nmethod\nReturn the current method module.\n\n\nrisk\nReturn the calculation modus.\n\n\nthreads\nReturn the number of threads to be used.\n\n\ntype\nReturn the hazard type.\n\n\nvulnerability\nReturn the vulnerability data.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\nfrom_file\nInitialize the model from a settings file.\n\n\nrun\nRun the geometry model with provided settings.",
     "crumbs": [
       "API Reference",
       "Models",
@@ -571,7 +506,7 @@
     "href": "api/GeomModel.html#parameters",
     "title": "GeomModel",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ncfg\nConfigurations\nConfigurations object containing the settings.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsettings\nGeomSettings\nValidated settings.\nrequired",
     "crumbs": [
       "API Reference",
       "Models",
@@ -583,7 +518,7 @@
     "href": "api/GeomModel.html#attributes",
     "title": "GeomModel",
     "section": "",
-    "text": "Name\nDescription\n\n\n\n\ncrs\nReturn the model crs.\n\n\nrisk\nReturn the calculation modus.\n\n\nthreads\nReturn the number of threads to be used.\n\n\ntype\nReturn the hazard type.",
+    "text": "Name\nDescription\n\n\n\n\ncrs\nReturn the model crs.\n\n\nexposure\nReturn the exposure data.\n\n\nhazard\nReturn the hazard data.\n\n\nmethod\nReturn the current method module.\n\n\nrisk\nReturn the calculation modus.\n\n\nthreads\nReturn the number of threads to be used.\n\n\ntype\nReturn the hazard type.\n\n\nvulnerability\nReturn the vulnerability data.",
     "crumbs": [
       "API Reference",
       "Models",
@@ -595,37 +530,11 @@
     "href": "api/GeomModel.html#methods",
     "title": "GeomModel",
     "section": "",
-    "text": "Name\nDescription\n\n\n\n\nread_exposure\nRead the exposure geometries.\n\n\nread_hazard\nRead the hazard data.\n\n\nread_vulnerability\nRead the vulnerability data.\n\n\nrun\nRun the geometry model with provided settings.",
+    "text": "Name\nDescription\n\n\n\n\nfrom_file\nInitialize the model from a settings file.\n\n\nrun\nRun the geometry model with provided settings.",
     "crumbs": [
       "API Reference",
       "Models",
       "GeomModel"
-    ]
-  },
-  {
-    "objectID": "api/GeomModel/read_hazard.html",
-    "href": "api/GeomModel/read_hazard.html",
-    "title": "read_hazard",
-    "section": "",
-    "text": "GeomModel.read_hazard(path=None, **kwargs)\nRead the hazard data.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the hazard gridded dataset, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_grid after which into NetcdfReader/\n{}",
-    "crumbs": [
-      "API Reference",
-      "Models",
-      "GeomModel",
-      "read_hazard"
-    ]
-  },
-  {
-    "objectID": "api/GeomModel/read_hazard.html#parameters",
-    "href": "api/GeomModel/read_hazard.html#parameters",
-    "title": "read_hazard",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the hazard gridded dataset, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_grid after which into NetcdfReader/\n{}",
-    "crumbs": [
-      "API Reference",
-      "Models",
-      "GeomModel",
-      "read_hazard"
     ]
   },
   {
@@ -642,55 +551,16 @@
     ]
   },
   {
-    "objectID": "api/GridModel/read_exposure.html",
-    "href": "api/GridModel/read_exposure.html",
-    "title": "read_exposure",
+    "objectID": "api/GridModel/from_file.html",
+    "href": "api/GridModel/from_file.html",
+    "title": "from_file",
     "section": "",
-    "text": "GridModel.read_exposure(path=None, **kwargs)\nRead the exposure grid.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to an exposure grid, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_grid after which into GridSouce/\n{}",
+    "text": "from_file\nGridModel.from_file(file)\nInitialize the model from a settings file.\n\n\n\n\n Back to top",
     "crumbs": [
       "API Reference",
       "Models",
       "GridModel",
-      "read_exposure"
-    ]
-  },
-  {
-    "objectID": "api/GridModel/read_exposure.html#parameters",
-    "href": "api/GridModel/read_exposure.html#parameters",
-    "title": "read_exposure",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to an exposure grid, by default None\nNone\n\n\nkwargs\ndict\nKeyword arguments for reading. These are passed into open_grid after which into GridSouce/\n{}",
-    "crumbs": [
-      "API Reference",
-      "Models",
-      "GridModel",
-      "read_exposure"
-    ]
-  },
-  {
-    "objectID": "api/GridModel/read_vulnerability.html",
-    "href": "api/GridModel/read_vulnerability.html",
-    "title": "read_vulnerability",
-    "section": "",
-    "text": "GridModel.read_vulnerability(path=None, **kwargs)\nRead the vulnerability data.\nIf no path is provided the method tries to infer it from the model configurations.\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the vulnerabulity data, by default None.\nNone\n\n\n**kwargs\ndict\nKeyword arguments for reading. These are passed into open_csv after which into Table/.\n{}",
-    "crumbs": [
-      "API Reference",
-      "Models",
-      "GridModel",
-      "read_vulnerability"
-    ]
-  },
-  {
-    "objectID": "api/GridModel/read_vulnerability.html#parameters",
-    "href": "api/GridModel/read_vulnerability.html#parameters",
-    "title": "read_vulnerability",
-    "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npath\nPath | str\nPath to the vulnerabulity data, by default None.\nNone\n\n\n**kwargs\ndict\nKeyword arguments for reading. These are passed into open_csv after which into Table/.\n{}",
-    "crumbs": [
-      "API Reference",
-      "Models",
-      "GridModel",
-      "read_vulnerability"
+      "from_file"
     ]
   },
   {

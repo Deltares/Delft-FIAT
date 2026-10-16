@@ -397,20 +397,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/GeomModel/read_exposure.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_exposure</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomModel/read_hazard.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_hazard</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GeomModel/read_vulnerability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_vulnerability</span></a>
+  <a href="../api/GeomModel/from_file.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">from_file</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -432,20 +420,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth3 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../api/GridModel/read_exposure.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_exposure</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridModel/read_hazard.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_hazard</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../api/GridModel/read_vulnerability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">read_vulnerability</span></a>
+  <a href="../api/GridModel/from_file.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">from_file</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -488,21 +464,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="fiat.GridModel" class="level1">
 <h1>GridModel</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>GridModel(cfg)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>GridModel(settings)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Grid model.</p>
-<p>Needs the following settings in order to be run:</p>
-<ul>
-<li>exposure.grid.file</li>
-<li>output.grid.file</li>
-</ul>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 7%">
-<col style="width: 39%">
-<col style="width: 42%">
-<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 51%">
+<col style="width: 23%">
+<col style="width: 13%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -514,9 +485,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>cfg</td>
-<td><code>Configurations</code></td>
-<td>Configurations object containing the settings.</td>
+<td>settings</td>
+<td><code>GridSettings</code></td>
+<td>Validated settings.</td>
 <td><em>required</em></td>
 </tr>
 </tbody>
@@ -537,16 +508,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Return the model crs.</td>
 </tr>
 <tr class="even">
+<td><a href="#fiat.GridModel.exposure">exposure</a></td>
+<td>Return the exposure grid data.</td>
+</tr>
+<tr class="odd">
+<td><a href="#fiat.GridModel.hazard">hazard</a></td>
+<td>Return the hazard data.</td>
+</tr>
+<tr class="even">
+<td><a href="#fiat.GridModel.method">method</a></td>
+<td>Return the current method module.</td>
+</tr>
+<tr class="odd">
 <td><a href="#fiat.GridModel.risk">risk</a></td>
 <td>Return the calculation modus.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#fiat.GridModel.threads">threads</a></td>
 <td>Return the number of threads to be used.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#fiat.GridModel.type">type</a></td>
 <td>Return the hazard type.</td>
+</tr>
+<tr class="even">
+<td><a href="#fiat.GridModel.vulnerability">vulnerability</a></td>
+<td>Return the vulnerability data.</td>
 </tr>
 </tbody>
 </table>
@@ -562,16 +549,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../api/GridModel/read_exposure.html#fiat.GridModel.read_exposure">read_exposure</a></td>
-<td>Read the exposure grid.</td>
-</tr>
-<tr class="even">
-<td><a href="../api/GridModel/read_hazard.html#fiat.GridModel.read_hazard">read_hazard</a></td>
-<td>Read the hazard data.</td>
-</tr>
-<tr class="odd">
-<td><a href="../api/GridModel/read_vulnerability.html#fiat.GridModel.read_vulnerability">read_vulnerability</a></td>
-<td>Read the vulnerability data.</td>
+<td><a href="../api/GridModel/from_file.html#fiat.GridModel.from_file">from_file</a></td>
+<td>Initialize the model from a settings file.</td>
 </tr>
 <tr class="even">
 <td><a href="../api/GridModel/run.html#fiat.GridModel.run">run</a></td>
