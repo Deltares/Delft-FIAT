@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from fiat.log import Logger
 from fiat.settings import BaseSettings, GeomSettings, GridSettings, load_settings
-from fiat.settings.exposure import ExposureGrid
+from fiat.settings.exposure import ExposureGeometry, ExposureGrid
 from fiat.settings.file import FileContext, InputFileModel
 from fiat.util import FLOOD_DEPTH
 
@@ -26,6 +26,43 @@ def test_settings_input_file_errors(tmp_path: Path):
     ):
         InputFileModel.model_validate(
             {"file", Path(tmp_path, "foo.fgb")},
+        )
+
+
+def test_settings_exposure_geom(testdata_dir: Path):
+    # Setup the exposure with valid input
+    _ = ExposureGeometry(
+        file=Path(testdata_dir, "exposure", "spatial.fgb"),
+        area_method="area",
+        zonal_method="min",
+    )
+
+    _ = ExposureGeometry(
+        file=Path(testdata_dir, "exposure", "spatial.fgb"),
+        area_method="centroid",
+        zonal_method="mean",
+    )
+
+
+def test_settings_exposure_geom_fail_area(testdata_dir: Path):
+    # Setup the exposure with invalid area method
+    with pytest.raises(
+        ValidationError,
+        match="1 validation error for ExposureGeometry\narea_method",
+    ):
+        _ = ExposureGeometry(
+            file=Path(testdata_dir, "exposure", "spatial.fgb"), area_method="foo"
+        )
+
+
+def test_settings_exposure_geom_fail_zonal(testdata_dir: Path):
+    # Setup the exposure with invalid zonal method
+    with pytest.raises(
+        ValidationError,
+        match="1 validation error for ExposureGeometry\nzonal_method",
+    ):
+        _ = ExposureGeometry(
+            file=Path(testdata_dir, "exposure", "spatial.fgb"), zonal_method="foo"
         )
 
 
