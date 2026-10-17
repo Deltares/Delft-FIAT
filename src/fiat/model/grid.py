@@ -14,14 +14,15 @@ from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
-from fiat.model.grid_util import equal_grid, get_exposure_meta
+from fiat.model.grid_util import equal_grid
 from fiat.model.grid_worker import initialize_pool, worker
-from fiat.model.util import (
-    create_2d_windows,
+from fiat.model.meta import (
+    get_exposure_grid_meta,
     get_hazard_meta,
     get_run_meta,
     get_vulnerability_meta,
 )
+from fiat.model.util import create_2d_windows
 from fiat.open import open_grid
 from fiat.settings import GridSettings
 from fiat.util import (
@@ -121,7 +122,7 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         vulnerability_meta = get_vulnerability_meta(self.vulnerability)
 
         # Get the exposure meta
-        exposure_meta = get_exposure_meta(
+        exposure_meta = get_exposure_grid_meta(
             self.exposure,
             run_meta=run_meta,
             hazard_meta=hazard_meta,

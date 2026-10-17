@@ -1,11 +1,9 @@
 """Generic container."""
 
 import copy
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
-__all__ = ["Container", "ExposureGeomMeta", "VulnerabilityMeta"]
+__all__ = ["Container"]
 
 
 class Container:
@@ -68,76 +66,3 @@ class Container:
         self._i += 1
         n = f"{self._base}{self._i}"
         self[n] = value
-
-
-@dataclass
-class RunMeta:
-    """Small container for geometry configuration metadata."""
-
-    risk: bool
-    type: str
-    type_length: int
-
-
-@dataclass
-class ExposureGeomData:
-    """Small container for exposure geometry data and settings."""
-
-    area_method: str
-    data: Any
-    impact_types: list[str]
-    path: Path
-    zonal_method: str
-
-    def __hash__(self):
-        return hash(self.data)
-
-
-@dataclass
-class ExposureGeomMeta:
-    """Small container for exposure geometry metadata."""
-
-    area_method: str
-    indices_impact: dict[str, Any]
-    indices_new: list[int]
-    indices_spec: list[int]
-    indices_total: dict[str, list[int]]
-    indices_type: dict[str, Any]
-    new: list[str]
-    new_length: int
-    type_length: int
-    zonal_method: str
-
-
-@dataclass
-class ExposureGridMeta:
-    """Small container for exposure grid metadata."""
-
-    fn_list: list[str]
-    indices_new: list[list[int]]
-    indices_total: list[int]
-    nb: int
-    new: list[str]
-    index_ead: int | None = None
-
-
-@dataclass
-class HazardMeta:
-    """Small container for exposure metadata."""
-
-    density: list[float | int]
-    ids: list[str]
-    indices_run: list[list[int]]
-    indices_type: list[list[str]]
-    length: int
-    rp: list[float]
-
-
-@dataclass
-class VulnerabilityMeta:
-    """Small container for some vulnerability metadata."""
-
-    fn: dict[str, Callable[[float], float]]
-    fn_list: list[str] | tuple[str]
-    min: float | int
-    max: float | int
