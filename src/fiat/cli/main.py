@@ -78,6 +78,7 @@ def run(args):
         extra_entries.update(threads=args.threads)
     if args.set_entry is not None:
         settings.update(**args.set_entry)
+    settings.update(**extra_entries)
     generic_directory_check(settings.output_dir)
 
     # Complete the setup of the logger
