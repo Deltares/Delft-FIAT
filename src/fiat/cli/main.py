@@ -9,7 +9,7 @@ from fiat.cli.action import KeyValueAction
 from fiat.cli.formatter import MainHelpFormatter
 from fiat.cli.util import file_path_check, run_log, run_profiler
 from fiat.log import setup_default_log
-from fiat.log.util import check_loglevel
+from fiat.log.util import LogLevels
 from fiat.model import GeomModel, GridModel
 from fiat.settings import GeomSettings, GridSettings, load_settings
 from fiat.util import (
@@ -73,6 +73,9 @@ def run(args):
     settings: GeomSettings | GridSettings = run_log(load_settings, logger, settings)
 
     # Update with extra settings from cli
+    extra_entries = {}
+    if args.threads is not None:
+        extra_entries.update(threads=args.threads)
     if args.set_entry is not None:
         settings.update(**args.set_entry)
     generic_directory_check(settings.output_dir)
@@ -82,7 +85,10 @@ def run(args):
         dst=settings.output_dir,
         filename=FIAT,
     )
-    logger.level = check_loglevel(settings.loglevel)
+    # Set the logging level
+    logger.level = min(
+        5, max(1, LogLevels[settings.loglevel].value - args.quiet + args.verbose)
+    )
 
     # Add the model version
     logger.info(f"Delft-Fiat version: {__version__}")

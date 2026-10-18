@@ -25,17 +25,18 @@ def test_process_hazard(
     vulnerability_meta_run: VulnerabilityMeta,
 ):
     # Call the function
-    a = process_hazard(
-        band=hazard_event_data.variables["data"],
+    band = hazard_event_data[0]
+    process_hazard(
+        band=band,
         vulnerability_meta=vulnerability_meta_run,
     )
 
     # Assert the output
-    assert a.shape == (10, 10)
-    np.testing.assert_almost_equal(a.mean(), 1.8)
-    np.testing.assert_almost_equal(a[0, 0], 3.6)
-    np.testing.assert_almost_equal(a[9, 9], 0.0)
-    assert a.max() <= vulnerability_meta_run.max
+    assert band.data.shape == (10, 10)
+    np.testing.assert_almost_equal(band.data.mean(), 1.8)
+    np.testing.assert_almost_equal(band[0, 0], 3.6)
+    np.testing.assert_almost_equal(band[9, 9], 0.0)
+    assert band.data.max() <= vulnerability_meta_run.max
 
 
 def test_array_worker(
@@ -58,7 +59,6 @@ def test_array_worker(
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_meta_run,
         fn_impact=flood.depth.fn_impact,
-        window=(slice(0, 10), slice(0, 10)),
     )
 
     # Assert the output
@@ -91,7 +91,6 @@ def test_array_worker_risk(
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_risk_meta_run,
         fn_impact=flood.depth.fn_impact,
-        window=(slice(0, 10), slice(0, 10)),
     )
 
     # Assert the output
@@ -144,7 +143,6 @@ def test_worker(
         exposure=exposure_grid_data,
         exposure_meta=exposure_grid_meta_run,
         window=(slice(0, 10), slice(0, 10)),
-        chunk=(10, 10),
     )
     assert records
 

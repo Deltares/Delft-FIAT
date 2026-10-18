@@ -20,13 +20,16 @@ from pyproj.crs import CRS
 ## Config entries
 # Building blocks
 AREA = "area"
+CATEGORIZED = "categorized"
 CENTROID = "centroid"
 CHUNK = "chunk"
+COMBINED = "combined"
 CONFIG = "config"
 CRSS = "crs"
 BASE = "base"
 BUFFERS = "buffers"
 DAMAGE = "damage"
+DEFAULT = "default"
 DEPTH = "depth"
 EAD = "ead"
 EXPOSURE = "exposure"

@@ -26,7 +26,6 @@ from fiat.model.util import create_2d_windows
 from fiat.open import open_grid
 from fiat.settings import GridSettings
 from fiat.util import (
-    CHUNK,
     EXPOSURE,
     EXPOSURE__META,
     HAZARD,
@@ -112,8 +111,19 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             [EXPOSURE, self.exposure, NetcdfReader],
         )
 
+        # Check for equal hazard and exposure grids
+        self._hazard, self._exposure = equal_grid(
+            self.hazard,
+            self.exposure,
+            base=self.settings.grid.base,
+        )
+
         # Setup the basic metadata
-        run_meta = get_run_meta(risk=self.risk, method=self.method)
+        run_meta = get_run_meta(
+            cell_size=self.hazard.get_attr_lazy("area_sqm") or 1.0,
+            risk=self.risk,
+            method=self.method,
+        )
         hazard_meta = get_hazard_meta(
             self.hazard,
             risk=run_meta.risk,
@@ -127,13 +137,6 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             run_meta=run_meta,
             hazard_meta=hazard_meta,
             vulnerability_meta=vulnerability_meta,
-        )
-
-        # Check for equal hazard and exposure grids
-        self._hazard, self._exposure = equal_grid(
-            self.hazard,
-            self.exposure,
-            base=self.settings.grid.base,
         )
 
         # The tile size is also the parallel write granularity. Default to a
@@ -168,7 +171,6 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
                 EXPOSURE: self.exposure,
                 EXPOSURE__META: exposure_meta,
                 WINDOW: windows,
-                CHUNK: [chunk],
             },
         )
 

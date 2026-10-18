@@ -13,9 +13,6 @@ def run_patches(mocker: MockerFixture) -> Mock:
     logger = mocker.Mock()
     setup_log = mocker.patch("fiat.cli.main.setup_default_log", return_value=logger)
 
-    # Mock return the loglevel
-    loglevel = mocker.patch("fiat.cli.main.check_loglevel", return_value=2)
-
     # Mock the models
     geom_model = mocker.Mock(name="GeomModel")
     grid_model = mocker.Mock(name="GridModel")
@@ -28,7 +25,6 @@ def run_patches(mocker: MockerFixture) -> Mock:
     return mocker.Mock(
         logger=logger,
         setup_log=setup_log,
-        loglevel=loglevel,
         geom_model=geom_model,
         grid_model=grid_model,
     )

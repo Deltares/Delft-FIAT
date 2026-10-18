@@ -1,7 +1,7 @@
 """Worker functions for grid model."""
 
 import importlib
-from itertools import product
+from itertools import chain, product
 from typing import Callable
 
 import numpy as np
@@ -29,13 +29,11 @@ def process_hazard(
     vulnerability_meta: VulnerabilityMeta,
 ):
     """Small processor of hazard data chunk."""
-    out_array = band.data
-    out_array[out_array == band.nodata] = np.nan
-    out_array = np.fmax(
-        np.fmin(out_array, vulnerability_meta.max),
+    band.data[band.data == band.nodata] = np.nan
+    band.data = np.fmax(
+        np.fmin(band.data, vulnerability_meta.max),
         vulnerability_meta.min,
     )
-    return out_array
 
 
 def array_worker(
@@ -47,7 +45,6 @@ def array_worker(
     exposure: NetcdfReader,
     exposure_meta: ExposureGridMeta,
     fn_impact: Callable,
-    window: tuple,
 ) -> np.ndarray:
     """Calculate the impact for a chunk of the exposure.
 
@@ -69,8 +66,6 @@ def array_worker(
         Metadata specific to the exposure data.
     fn_impact : Callable
         The impact function.
-    window : tuple
-        The window of the chunk.
 
     Returns
     -------
@@ -78,53 +73,85 @@ def array_worker(
         The calculated impact.
     """
     bn = 0
-    h = window[0].stop - window[0].start
-    w = window[1].stop - window[1].start
-    # Loop through the combinations
-    for exp, haz_indices in product(
-        exposure.variables.values(),
+    # Process the hazard data
+    for idx in chain.from_iterable(hazard_meta.indices_run):
+        process_hazard(hazard[idx], vulnerability_meta=vulnerability_meta)
+
+    # Loop through the default calculation combinations
+    for haz_indices, exp_index in product(
         hazard_meta.indices_run,
+        exposure_meta.indices_default,
     ):
-        # Get and process the hazard data
-        hazard_data = [
-            process_hazard(hazard[idx], vulnerability_meta=vulnerability_meta)
-            for idx in haz_indices
-        ]
         # Get the exposure data
-        exposure_data = exp.data
-        exposure_data[exposure_data == exp.nodata] = np.nan
+        exp = exposure[exp_index]
+        exp.data[exp.data == exp.nodata] = np.nan
 
         # Call the impact function
-        out_array[bn, :h, :w] = fn_impact(
-            *hazard_data,
-            exposure_data,
+        out_array[exposure_meta.indices_default_new[bn]] = fn_impact(
+            *[hazard[idx].data for idx in haz_indices],
+            exp.data,
             fact=1,
             fn_curve=vulnerability_meta.fn[exp.get_attr(FN)],
         )
         bn += 1
 
+    # Loop through the categorized indices
+    for haz_indices, (exp_index, exp_cat_indices) in product(
+        hazard_meta.indices_run,
+        zip(exposure_meta.indices_cat, exposure_meta.indices_cat_values),
+    ):
+        # Get the exposure data
+        exp = exposure[exp_index]
+        # Loop through the integer header based vulnerability curves
+        for key, fn in vulnerability_meta.fn.items():
+            try:
+                key = int(key)
+            except BaseException:
+                continue
+            if key == 0:
+                continue
+            mask = exp.data == key
+            if mask.sum() == 0:
+                continue
+            bn = 0
+            # Only when there is an active mask, go through all categories value
+            # categories... funny aint it
+            for cat_value_idx in exp_cat_indices:
+                values = (
+                    fn_impact(
+                        *[[hazard[idx].data[mask] for idx in haz_indices]],
+                        exposure[cat_value_idx][key],
+                        fn,
+                        1,
+                    )
+                    * run_meta.cell_size
+                )
+                values[values == 0] = np.nan
+                out_array[exposure_meta.indices_cat_new[bn], mask] = values
+                bn += 1
+
     # Set the total damages
     for part, total in zip(exposure_meta.indices_new, exposure_meta.indices_total):
-        mask = np.isnan([out_array[idx, :h, :w] for idx in part]).all(axis=0)
-        out_array[total, :h, :w] = np.nansum(
-            [out_array[idx, :h, :w] for idx in part],
+        mask = np.isnan([out_array[idx] for idx in part]).all(axis=0)
+        out_array[total] = np.nansum(
+            [out_array[idx] for idx in part],
             axis=0,
         )
-        out_array[total, :h, :w][mask] = np.nan
+        out_array[total][mask] = np.nan
 
     # Risk
     if run_meta.risk:
-        mask = np.isnan(out_array[exposure_meta.indices_total, :h, :w]).all(axis=0)
-        out_array[-1, :h, :w] = np.nansum(
+        mask = np.isnan(out_array[exposure_meta.indices_total]).all(axis=0)
+        out_array[-1] = np.nansum(
             [
                 f * a
                 for f, a in zip(
-                    hazard_meta.density, out_array[exposure_meta.indices_total, :h, :w]
+                    hazard_meta.density, out_array[exposure_meta.indices_total]
                 )
             ],
             axis=0,
         )
-        out_array[-1, :h, :w][mask] = np.nan
+        out_array[-1][mask] = np.nan
 
     # Return the array
     return out_array
@@ -138,7 +165,6 @@ def worker(
     exposure: NetcdfReader,
     exposure_meta: ExposureGridMeta,
     window: tuple,
-    chunk: tuple,
 ):
     """Compute one output tile and write it directly to the shared GeoTIFF.
 
@@ -164,8 +190,6 @@ def worker(
         Metadata specific to the exposure data.
     window : tuple[slice, slice]
         The tile-aligned ``(row_slice, col_slice)`` for this job.
-    chunk : tuple
-        The tile size as ``(height, width)``.
     """
     # Setup the hazard type module
     method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{run_meta.type}")
@@ -180,7 +204,7 @@ def worker(
     exposure.load(*window)
 
     # A fresh (padded) output block for this tile.
-    out_array = np.full((exposure_meta.nb, *chunk), np.nan, dtype=np.float32)
+    out_array = np.full((exposure_meta.nb, h, w), np.nan, dtype=np.float32)
     array_worker(
         out_array=out_array,
         run_meta=run_meta,
@@ -190,10 +214,9 @@ def worker(
         exposure=exposure,
         exposure_meta=exposure_meta,
         fn_impact=fn_impact,
-        window=window,
     )
 
     # Fill nodata and write the tile directly to the shared output file.
-    tile = out_array[:, :h, :w].copy()
+    tile = out_array.copy()
     tile[np.isnan(tile)] = NODATA_VALUE
     return tilesink.write_block((col_slice.start, row_slice.start), tile)

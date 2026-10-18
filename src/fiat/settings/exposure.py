@@ -57,7 +57,7 @@ if `area_method` is set to 'area'.",
         """Validate the zonal method setting."""
         if value not in AREA__METHODS:
             raise ValueError(
-                f"Area method invalid: {value}, \chose from {AREA__METHODS}",
+                f"Area method invalid: {value}, chose from {AREA__METHODS}",
             )
         return value
 
@@ -67,7 +67,7 @@ if `area_method` is set to 'area'.",
         """Validate the zonal method setting."""
         if value not in ZONAL_CODES:
             raise ValueError(
-                f"Zonal method invalid: {value}, \chose from {list(ZONAL_CODES)}",
+                f"Zonal method invalid: {value}, chose from {list(ZONAL_CODES)}",
             )
         return value
 

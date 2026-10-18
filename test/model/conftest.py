@@ -122,6 +122,11 @@ def exposure_geom_risk_meta_run() -> ExposureGeomMeta:
 def exposure_grid_meta_run() -> ExposureGridMeta:
     meta = ExposureGridMeta(
         fn_list=["struct_1", "struct_2"],
+        indices_cat=[],
+        indices_cat_values=[[]],
+        indices_default=[0, 1],
+        indices_cat_new=[],
+        indices_default_new=[0, 1],
         indices_new=[[0, 1]],
         indices_total=[2],
         nb=3,
@@ -136,6 +141,11 @@ def exposure_grid_risk_meta_run() -> ExposureGridMeta:
     meta = ExposureGridMeta(
         fn_list=["struct_1", "struct_2"],
         index_ead=12,
+        indices_cat=[],
+        indices_cat_values=[[]],
+        indices_default=[0, 1],
+        indices_cat_new=[],
+        indices_default_new=[0, 4, 1, 5, 2, 6, 3, 7],
         indices_new=[[0, 4], [1, 5], [2, 6], [3, 7]],
         indices_total=[8, 9, 10, 11],
         nb=13,
