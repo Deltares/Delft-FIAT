@@ -89,7 +89,7 @@ def create_exposure_grid():
     data[9, 2] = 4600
     data[8, 8] = 3200
     # Write the data
-    var.setncattr("fn", "struct_1")
+    var.setncattr("fn_curve", "struct_1")
     var.setncattr("type", "default")
     var[:] = data
     # Flush the data
@@ -108,7 +108,7 @@ def create_exposure_grid():
     data[9, 2] = 5500
     data[8, 8] = 4100
     # Write the data
-    var.setncattr("fn", "struct_2")
+    var.setncattr("fn_curve", "struct_2")
     var.setncattr("type", "default")
     var[:] = data
     # Flush the data
