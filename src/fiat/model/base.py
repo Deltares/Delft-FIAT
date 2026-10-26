@@ -59,6 +59,7 @@ class BaseModel(metaclass=ABCMeta):
         self.queue = Queue(maxsize=1000, ctx=self.ctx)
 
         ## Call the necessary methods at init
+        logger.info(f"Using number of threads: {self.settings.threads}")
         self._read_vulnerability()
         self._read_hazard()
 

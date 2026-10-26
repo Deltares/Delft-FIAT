@@ -1,7 +1,7 @@
 """Runtime meta module."""
 
 from dataclasses import dataclass
-from itertools import product
+from itertools import chain, product
 from pathlib import Path
 from typing import Any, Callable
 
@@ -18,7 +18,7 @@ from fiat.driver import NetcdfReader, Table
 from fiat.method.ead import fn_density
 from fiat.model.geom_util import discover_exp_columns, generate_output_columns
 from fiat.typing import MethodType
-from fiat.util import EAD, FN, RP, TOTAL, TYPE
+from fiat.util import CATEGORIZED, DEFAULT, EAD, FN__CURVE, RP, TOTAL, TYPE
 
 
 @dataclass
@@ -28,15 +28,18 @@ class RunMeta:
     risk: bool
     type: str
     type_length: int
+    cell_size: float | int = 1
 
 
 def get_run_meta(
     risk: bool,
     method: MethodType,
+    cell_size: float | int = 1.0,
 ) -> RunMeta:
     """Derive the meta data from the config file for the geom calculations."""
     # Setup the meta
     meta = RunMeta(
+        cell_size=cell_size,
         risk=risk,
         type=method.NAME,
         type_length=len(method.TYPES),
@@ -255,6 +258,11 @@ class ExposureGridMeta:
     """Small container for exposure grid metadata."""
 
     fn_list: list[str]
+    indices_cat: list[int]
+    indices_cat_values: list[list[int]]
+    indices_default: list[int]
+    indices_cat_new: list[int]
+    indices_default_new: list[int]
     indices_new: list[list[int]]
     indices_total: list[int]
     nb: int
@@ -269,28 +277,54 @@ def get_exposure_grid_meta(
     vulnerability_meta: VulnerabilityMeta,
 ) -> ExposureGridMeta:
     """Simple method for sorting out the exposure grid meta."""  # noqa : D401
-    # Check if all impact functions are correct
-    fn_list = [item.get_attr(FN) for item in exposure]
+    # First get the categorized indices
+    indices_cat = [
+        idx
+        for idx, item in enumerate(exposure)
+        if item.get_attr_lazy(TYPE) == CATEGORIZED
+    ]
+    _n = [exposure.names[idx] for idx in indices_cat]
+    indices_cat_values = [
+        [idx for idx, item in enumerate(exposure) if item.has_as_dim(f"{name}_cat")]
+        for name in _n
+    ]
+    flicv = list(chain.from_iterable(indices_cat_values))
+
+    # Get the default calculation type indices
+    indices_default = [
+        idx for idx, item in enumerate(exposure) if item.get_attr_lazy(TYPE) == DEFAULT
+    ]
+
+    # Set the total number of indices
+    nindices = len(flicv) + len(indices_default)
+
+    # Check the vulnerability function for the default calculation layers
+    fn_list = [exposure[idx].get_attr(FN__CURVE) for idx in indices_default]
     check_exp_grid_fn(
         fn_list=fn_list,
         fn_available=vulnerability_meta.fn_list,
     )
 
     # Get the new band names
-    new = ["_".join(c) for c in product(exposure.names, hazard_meta.ids)]
+    names = [exposure.names[idx] for idx in indices_default + flicv]
+    new = ["_".join(c) for c in product(names, hazard_meta.ids)]
     new += [f"{TOTAL}_{idi}" for idi in hazard_meta.ids]
 
     # Setup from indices
     indices_new = [
-        [s + hazard_meta.length * i for i in range(exposure.size)]
+        [s + hazard_meta.length * i for i in range(nindices)]
         for s in range(hazard_meta.length)
     ]
+    indices_cat_new = [item[len(indices_default) :] for item in indices_new]
+    indices_default_new = [item[: len(indices_default)] for item in indices_new]
     indices_total = list(
         range(
-            hazard_meta.length * exposure.size,
-            hazard_meta.length * exposure.size + hazard_meta.length,
+            hazard_meta.length * nindices,
+            hazard_meta.length * nindices + hazard_meta.length,
         )
     )
+
+    # Set the ead band
     index_ead = None
     if run_meta.risk:
         index_ead = len(new)
@@ -300,6 +334,11 @@ def get_exposure_grid_meta(
     meta = ExposureGridMeta(
         fn_list=fn_list,
         index_ead=index_ead,
+        indices_cat=indices_cat,
+        indices_cat_values=indices_cat_values,
+        indices_default=indices_default,
+        indices_cat_new=list(chain.from_iterable(indices_cat_new)),
+        indices_default_new=list(chain.from_iterable(indices_default_new)),
         indices_new=indices_new,
         indices_total=indices_total,
         nb=len(new),
