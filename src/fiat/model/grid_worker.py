@@ -15,7 +15,7 @@ from fiat.model.meta import (
     VulnerabilityMeta,
 )
 from fiat.typing import MethodType
-from fiat.util import FIAT_METHOD, FN, NODATA_VALUE
+from fiat.util import FIAT_METHOD, FN__CURVE, NODATA_VALUE
 
 
 def initialize_pool(desc: dict, lock):
@@ -30,8 +30,8 @@ def process_hazard(
 ):
     """Small processor of hazard data chunk."""
     band.data[band.data == band.nodata] = np.nan
-    band.data = np.fmax(
-        np.fmin(band.data, vulnerability_meta.max),
+    band.data = np.maximum(
+        np.minimum(band.data, vulnerability_meta.max),
         vulnerability_meta.min,
     )
 
@@ -91,7 +91,7 @@ def array_worker(
             *[hazard[idx].data for idx in haz_indices],
             exp.data,
             fact=1,
-            fn_curve=vulnerability_meta.fn[exp.get_attr(FN)],
+            fn_curve=vulnerability_meta.fn[exp.get_attr(FN__CURVE)],
         )
         bn += 1
 

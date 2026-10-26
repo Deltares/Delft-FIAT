@@ -18,7 +18,7 @@ from fiat.driver import NetcdfReader, Table
 from fiat.method.ead import fn_density
 from fiat.model.geom_util import discover_exp_columns, generate_output_columns
 from fiat.typing import MethodType
-from fiat.util import CATEGORIZED, DEFAULT, EAD, FN, RP, TOTAL, TYPE
+from fiat.util import CATEGORIZED, DEFAULT, EAD, FN__CURVE, RP, TOTAL, TYPE
 
 
 @dataclass
@@ -299,7 +299,7 @@ def get_exposure_grid_meta(
     nindices = len(flicv) + len(indices_default)
 
     # Check the vulnerability function for the default calculation layers
-    fn_list = [exposure[idx].get_attr(FN) for idx in indices_default]
+    fn_list = [exposure[idx].get_attr(FN__CURVE) for idx in indices_default]
     check_exp_grid_fn(
         fn_list=fn_list,
         fn_available=vulnerability_meta.fn_list,
