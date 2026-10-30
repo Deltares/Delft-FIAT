@@ -2,12 +2,6 @@ from pathlib import Path
 
 import numpy as np
 
-from fiat.container import (
-    ExposureGridMeta,
-    HazardMeta,
-    RunMeta,
-    VulnerabilityMeta,
-)
 from fiat.driver import NetcdfReader
 from fiat.driver.geotiff import GeotiffReader, create_geotiff_handle
 from fiat.method import flood
@@ -16,6 +10,12 @@ from fiat.model.grid_worker import (
     initialize_pool,
     process_hazard,
     worker,
+)
+from fiat.model.meta import (
+    ExposureGridMeta,
+    HazardMeta,
+    RunMeta,
+    VulnerabilityMeta,
 )
 from fiat.util import NODATA_VALUE
 

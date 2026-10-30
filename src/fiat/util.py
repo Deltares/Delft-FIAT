@@ -86,6 +86,7 @@ OUTPUT_GEOM_FILE = f"{OUTPUT}.{GEOM}.{FILE}"
 OUTPUT_GRID_FILE = f"{OUTPUT}.{GRID}.{FILE}"
 # Input
 AREA__METHOD = f"{AREA}_{METHOD}"
+AREA__METHODS = [AREA, CENTROID]
 EXPOSURE_GEOM = f"{EXPOSURE}.{GEOM}"
 EXPOSURE_GEOM_FILE = f"{EXPOSURE_GEOM}.{FILE}"
 EXPOSURE_GEOM_IMPACT__TYPES = f"{EXPOSURE}.{GEOM}.{IMPACT}_{TYPE}"
@@ -417,18 +418,21 @@ def generic_directory_check(
     return path
 
 
-def generic_path_check(
-    path: Path | str,
+def generic_file_check(
+    file: Path | str,
     root: Path | str | None = None,
+    error: bool = True,
 ) -> Path:
     """Check whether a file exists.
 
     Parameters
     ----------
-    path : str
+    file : Path | str
         Path to the file.
-    root : str
+    root : Path | str, optional
         Current root/ working directory.
+    error : bool, optional
+        Whether to error when the file does not exist, by default True.
 
     Returns
     -------
@@ -436,11 +440,11 @@ def generic_path_check(
         Absolute path to the file.
     """
     root = root or Path.cwd()
-    path = Path(path)
+    path = Path(file)
     if not path.is_absolute():
         path = Path(root, path)
-    if not (path.is_file() | path.is_dir()):
-        raise FileNotFoundError(f"{path.as_posix()} is not a valid path")
+    if error and not path.is_file():
+        raise FileNotFoundError(f"{path.as_posix()} is not a valid file")
     return path
 
 

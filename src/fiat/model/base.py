@@ -1,15 +1,14 @@
 """Base model of FIAT."""
 
 import importlib
+import tomllib
 from abc import ABCMeta, abstractmethod
 from multiprocessing import get_context
 from multiprocessing.queues import Queue
-from os import cpu_count
 from pathlib import Path
 
 from pyproj.crs import CRS
 
-from fiat.cfg import Configurations
 from fiat.check import (
     check_duplicate_columns,
     check_internal_crs,
@@ -19,25 +18,11 @@ from fiat.driver import NetcdfReader, Table
 from fiat.gis import grid
 from fiat.log import spawn_logger
 from fiat.open import open_csv, open_grid
+from fiat.settings import GeomSettings, GridSettings
 from fiat.typing import MethodType
 from fiat.util import (
-    DEPTH,
     FIAT_METHOD,
-    FLOOD_DEPTH,
-    HAZARD_FILE,
-    HAZARD_RESALG,
-    HAZARD_SETTINGS,
-    INDEX,
-    MODEL_GRID_CHUNK,
-    MODEL_METHOD,
-    MODEL_PROJECTION_CRS,
-    MODEL_PROJECTION_FORCE,
-    MODEL_RISK,
-    MODEL_THREADS,
-    NEED_IMPLEMENTED,
-    VULNERABILITY_FILE,
-    VULNERABILITY_SETTINGS,
-    generic_path_check,
+    generic_directory_check,
     get_crs_repr,
 )
 
@@ -49,44 +34,33 @@ class BaseModel(metaclass=ABCMeta):
 
     Parameters
     ----------
-    cfg : Configurations
-        Configuration object, derived from dictionary.
+    settings : GeomSettings | GridSettings
+        Validated settings.
     """
 
     def __init__(
         self,
-        cfg: Configurations,
+        settings: GeomSettings | GridSettings,
     ):
-        self.cfg = cfg
-        logger.info(f"Using settings from '{self.cfg.filepath}'")
+        self.settings = settings
 
         ## Declarations
         # Model data
-        self._crs: CRS | None = None
-        self.hazard: NetcdfReader | None = None
-        self.vulnerability: Table | None = None
+        self._hazard: NetcdfReader | None = None
+        self._vulnerability: Table | None = None
 
         # Type of calculations
-        self._type: str = self.cfg.get(MODEL_METHOD, FLOOD_DEPTH)
-        self.method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{self.type}")
-        # Risk or event based
-        self._risk: bool = self.cfg.get(MODEL_RISK, False)
+        self._method: MethodType = importlib.import_module(
+            f"{FIAT_METHOD}.{self.settings.method}",
+        )
 
         # Threading stuff
         self.ctx = get_context("spawn")
         self.queue = Queue(maxsize=1000, ctx=self.ctx)
-        self.shm = None
-        self._threads: int = 1
 
         ## Call the necessary methods at init
-        self._crs = self.cfg.get(MODEL_PROJECTION_CRS, "EPSG:4326")
-        self.threads = self.cfg.get(MODEL_THREADS)
-        self.read_hazard()
-        self.read_vulnerability()
-
-    @abstractmethod
-    def __del__(self):
-        self._crs = None
+        self._read_vulnerability()
+        self._read_hazard()
 
     def __repr__(self):
         return f"<{self.__class__.__name__} object at {id(self):#018x}>"
@@ -95,7 +69,7 @@ class BaseModel(metaclass=ABCMeta):
     @property
     def crs(self) -> CRS:
         """Return the model crs."""
-        return CRS.from_user_input(self._crs)
+        return CRS.from_user_input(self.settings.projection.crs)
 
     @crs.setter
     def crs(self, value: str):
@@ -110,27 +84,37 @@ class BaseModel(metaclass=ABCMeta):
         # Infer the spatial reference system
         try:
             CRS.from_user_input(value)
-            self._crs = value
+            self.settings.update(projection={"crs": value})
         except BaseException as e:
             raise e
 
     @property
+    def hazard(self) -> NetcdfReader | None:
+        """Return the hazard data."""
+        return self._hazard
+
+    @property
+    def method(self) -> MethodType:
+        """Return the current method module."""
+        return self._method
+
+    @property
     def risk(self) -> bool:
         """Return the calculation modus."""
-        return self._risk
+        return self.settings.risk
 
     @risk.setter
     def risk(self, value: bool):
         """Set the calculation modus."""
-        self._risk = value
+        self.settings.update(risk=value)
 
     @property
     def threads(self) -> int:
         """Return the number of threads to be used."""
-        return self._threads
+        return self.settings.threads
 
     @threads.setter
-    def threads(self, n: int | None):
+    def threads(self, n: int):
         """Set the number of threads.
 
         Either through the config file, cli or directly.
@@ -140,141 +124,94 @@ class BaseModel(metaclass=ABCMeta):
         n : int
             Number of threads.
         """
-        max_threads = cpu_count()
-        if n is not None:
-            if n > max_threads:
-                logger.warning(
-                    f"Given number of threads ('{n}') \
-exceeds machine thread count ('{max_threads}')"
-                )
-            self._threads = min(max_threads, n)
-
-        logger.info(f"Using number of threads: {self._threads}")
+        self.settings.update(threads=n)
+        logger.info(f"Using number of threads: {self.settings.threads}")
 
     @property
     def type(self) -> str:
         """Return the hazard type."""
-        return self._type
+        return self.settings.type
 
-    @type.setter
-    def type(self, value: str):
-        """Set the hazard type."""
-        self._type = value
-        self.method = importlib.import_module(f"{FIAT_METHOD}.{value}")
+    @property
+    def vulnerability(self) -> Table | None:
+        """Return the vulnerability data."""
+        return self._vulnerability
+
+    ## Class methods
+    @classmethod
+    def from_file(cls, file: Path | str):
+        """Initialize the model from a settings file."""
+        obj = cls()
+
+        # Set the settings
+        with open(file, "rb") as reader:
+            settings = tomllib.load(reader)
+            obj.settings.model_validate(settings)
+
+        return obj
 
     ## Read data methods
-    def read_hazard(
-        self,
-        path: Path | str = None,
-        **kwargs: dict,
-    ) -> None:
-        """Read the hazard data.
+    def _read_hazard(self) -> None:
+        """Read the hazard data."""
+        file = self.settings.hazard.file
+        # Move on with distilling the read kwargs
+        logger.info(f"Reading hazard data ('{file.name}')")
 
-        If no path is provided the method tries to
-        infer it from the model configurations.
+        # Get the kwargs from the model settings
+        kwargs = self.settings.hazard.settings.model_dump(exclude_none=True)
+        # Read the data
+        data = open_grid(file, **kwargs)
 
-        Parameters
-        ----------
-        path : Path | str, optional
-            Path to the hazard gridded dataset, by default None
-        kwargs : dict, optional
-            Keyword arguments for reading. These are passed into [open_grid]\
-(/api/driver/open_grid.qmd) after which into [NetcdfReader](/api/NetcdfReader.qmd)/
-        """
-        # Sort the pathing
-        # Hierarchy: 1) signature, 2) configurations
-        path = path or self.cfg.get(HAZARD_FILE)
-        if path is None:
-            return
-        path = generic_path_check(path, root=self.cfg.path)
-        logger.info(f"Reading hazard data ('{path.name}')")
-
-        # Set the extra arguments from the settings file
-        kw = {}
-        kw.update(
-            self.cfg.generate_kwargs(HAZARD_SETTINGS),
-        )
-        kw.update(
-            self.cfg.generate_kwargs(MODEL_GRID_CHUNK),
-        )
-        kw.update(**kwargs)
-        data = open_grid(path, **kw)
-        ## checks
+        # checks
         logger.info("Executing hazard checks...")
 
         # check the internal crs of the file
         check_internal_crs(
             data.profile.crs,
-            path.name,
+            file.name,
         )
 
-        if not self.cfg.get(MODEL_PROJECTION_FORCE, False):
+        if not self.settings.projection.force:
             logger.warning("Setting the model crs from the hazard data.")
             self.crs = data.profile.crs.to_wkt()
 
         # check if file crs is the same as the model crs
         if not check_vs_crs(self.crs, data.profile.crs):
             logger.warning(
-                f"Spatial reference of '{path.name}' \
+                f"Spatial reference of '{file.name}' \
 ('{get_crs_repr(data.profile.crs)}') does not match the \
 model spatial reference ('{get_crs_repr(self.crs)}')"
             )
-            logger.info(f"Reprojecting '{path.name}' to '{get_crs_repr(self.crs)}'")
-            _resalg = self.cfg.get(HAZARD_RESALG, "nearest")
+            logger.info(f"Reprojecting '{file.name}' to '{get_crs_repr(self.crs)}'")
+            _resalg = self.settings.hazard.resalg
             data = grid.reproject(
                 data,
                 dst_crs=self.crs.to_wkt(),
                 method=_resalg,
             )
 
-        # Reset to ensure the entry is present
-        self.cfg.set(HAZARD_FILE, path)
         # When all is done, add it
-        self.hazard = data
+        self._hazard = data
 
-    def read_vulnerability(
-        self,
-        path: Path | str = None,
-        **kwargs: dict,
-    ):
-        """Read the vulnerability data.
+    def _read_vulnerability(self):
+        """Read the vulnerability data."""
+        # Get the file path
+        file = self.settings.vulnerability.file
+        logger.info(f"Reading vulnerability curves ('{file.name}')")
 
-        If no path is provided the method tries to
-        infer it from the model configurations.
+        # Get the kwargs from the model settings
+        kwargs = self.settings.vulnerability.settings.model_dump(exclude_none=True)
+        # Read the data
+        data = open_csv(file, **kwargs)
 
-        Parameters
-        ----------
-        path : Path | str, optional
-            Path to the vulnerabulity data, by default None.
-        **kwargs : dict, optional
-            Keyword arguments for reading. These are passed into [open_csv]\
-(/api/driver/open_csv.qmd) after which into [Table](/api/Table.qmd)/.
-        """
-        # Sort the pathing
-        # Hierarchy: 1) signature, 2) configurations
-        path = path or self.cfg.get(VULNERABILITY_FILE)
-        if path is None:
-            return
-        path = generic_path_check(path, root=self.cfg.path)
-        logger.info(f"Reading vulnerability curves ('{path.name}')")
-
-        # Setting the keyword arguments from settings file
-        kw = {INDEX: DEPTH}
-        kw.update(
-            self.cfg.generate_kwargs(VULNERABILITY_SETTINGS),
-        )
-        kw.update(kwargs)  # Update with user defined method input
-        data = open_csv(str(path), **kw)
         ## checks
         logger.info("Executing vulnerability checks...")
 
         # Column check
         check_duplicate_columns(data.duplicate_columns)
 
-        # Reset to ensure the entry is present
-        self.cfg.set(VULNERABILITY_FILE, path)
         # When all is done, add it
-        self.vulnerability = data
+        self._vulnerability = data
 
     ## Run
     @abstractmethod
@@ -282,4 +219,4 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         self,
     ):
         """Run model."""
-        raise NotImplementedError(NEED_IMPLEMENTED)
+        generic_directory_check(self.settings.output_dir)

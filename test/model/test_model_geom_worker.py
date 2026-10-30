@@ -3,15 +3,15 @@ from pathlib import Path
 
 import numpy as np
 
-from fiat.container import (
+from fiat.driver import FlatGeobufReader, NetcdfReader, fgb
+from fiat.method.flood.depth import fn_hazard, fn_impact
+from fiat.model.geom_worker import feature_worker, initialize_pool, worker
+from fiat.model.meta import (
     ExposureGeomMeta,
     HazardMeta,
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import FlatGeobufReader, NetcdfReader, fgb
-from fiat.method.flood.depth import fn_hazard, fn_impact
-from fiat.model.geom_worker import feature_worker, initialize_pool, worker
 from fiat.open import open_geom
 
 
