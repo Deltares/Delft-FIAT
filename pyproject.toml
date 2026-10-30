@@ -1,6 +1,6 @@
 ## Build system related stuff
 [build-system]
-requires = ["cython", "numpy", "setuptools>=61.0.0", "wheel"]
+requires = ["cython", "numpy", "setuptools>=84.2.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -71,7 +71,7 @@ classifiers = [
 [project.optional-dependencies] # Optional
 all = [
     "cython",
-    "pyinstaller>=6.0.0",
+    "pyinstaller>=6.22.3",
     "tomlkit",
 ]
 dev = [
@@ -79,7 +79,7 @@ dev = [
     "mypy",
     "pre-commit",
     "ruff",
-    "setuptools>=61.0.0",
+    "setuptools>=84.2.1",
 ]
 docs = [
     "griffe==1.15.0",
