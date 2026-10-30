@@ -3,22 +3,13 @@
 import copy
 import re
 from itertools import product
+from pathlib import Path
+from typing import Any
 
-from fiat.check import (
-    check_available_values,
-    check_exp_columns,
-    check_exp_derived_types,
-)
-from fiat.container import (
-    ExposureGeomData,
-    ExposureGeomMeta,
-    HazardMeta,
-    RunMeta,
-)
+from fiat.driver.fgb import CT_FLOAT
+from fiat.driver.vector import VectorProfile
 from fiat.gis import overlay
-from fiat.method.util import ZONAL_METHODS
-from fiat.typing import MethodType
-from fiat.util import AREA, CENTROID, EAD, FN, MAX, TOTAL, re_filter
+from fiat.util import AREA, CENTROID, FN, MAX, TOTAL, re_filter
 
 AREA_METHODS = {
     AREA: overlay.area_mask,
@@ -99,98 +90,19 @@ def generate_output_columns(
     return out
 
 
-def get_exposure_meta(
-    exposure: ExposureGeomData,
-    run_meta: RunMeta,
-    hazard_meta: HazardMeta,
-    method: MethodType,
+def set_finalizing_params(
+    params: dict[str, Any],
+    output_path: Path | str,
+    profile: VectorProfile,
+    exposure_meta: Any,
 ):
-    """Simple method for sorting out the exposure meta."""  # noqa: D401
-    # Check the area method
-    check_available_values(
-        exposure.area_method,
-        available=[AREA, CENTROID],
-        msg="Exposure area method",
-    )
-    # Check the zonal method
-    check_available_values(
-        exposure.zonal_method,
-        available=list(ZONAL_METHODS),
-        msg="Exposure zonal method",
-    )
-
-    # Check the columns validity
-    columns = exposure.data.profile.columns
-    mandatory_columns = method.COLUMNS
-    # Check the exposure column headers
-    check_exp_columns(
-        list(columns.keys()),
-        mandatory_columns=mandatory_columns,
-    )
-    indices_spec = [columns[item] for item in mandatory_columns]
-
-    # Check the found columns
-    indices_type = {}
-    length_type = {}
-    type_dict = {}
-    for t in exposure.impact_types:
-        indices_type[t] = {}
-        found, found_idx, missing = discover_exp_columns(columns, type=t)
-        check_exp_derived_types(t, found, missing)
-        indices_type[t] = found_idx
-        length_type[t] = len(found)
-        type_dict[t] = found
-
-    # The length of columns per hazard
-    type_length = (
-        run_meta.type_length
-        + sum([len(item) for item in type_dict.values()])
-        + len(type_dict)
-    )
-
-    ## Names of the new columns
-    extra = []
-    if run_meta.risk:
-        extra = [EAD]
-    new = generate_output_columns(
-        method.NEW_COLUMNS,
-        type_dict,
-        hazard_ids=hazard_meta.ids,
-        extra=extra,
-    )
-
-    # Indices of colums during calculation
-    offset = run_meta.type_length
-    indices_impact = {}
-    indices_total = {}
-    for key, value in length_type.items():
-        indices_impact[key] = list(
-            zip(
-                *[
-                    range(offset + i, len(new), type_length)[: hazard_meta.length]
-                    for i in range(value)
-                ]
-            )
-        )
-        indices_total[key] = list(range(offset + value, len(new), type_length))[
-            : hazard_meta.length
-        ]
-        offset += value + 1
-
-    # Set the indices for the outgoing columns
-    indices_new = list(range(len(columns), len(columns) + len(new)))
-
-    # Create the exposure meta struct
-    meta = ExposureGeomMeta(
-        area_method=exposure.area_method,
-        indices_impact=indices_impact,
-        indices_new=indices_new,
-        indices_spec=indices_spec,
-        indices_total=indices_total,
-        indices_type=indices_type,
-        new=new,
-        new_length=len(new),
-        type_length=type_length,
-        zonal_method=exposure.zonal_method,
-    )
-    return meta
+    """Set the parameters used to finalize a vector file."""
+    params[Path(output_path).as_posix()] = {
+        "name": Path(output_path).stem,
+        "geom_type": profile.geom_type,
+        "col_names": list(profile.fields) + list(exposure_meta.new),
+        "col_types": list(profile.dtypes) + [CT_FLOAT] * len(exposure_meta.new),
+        "crs_wkt": profile.crs_wkt,
+        "crs_org": profile.crs_org,
+        "crs_code": profile.crs_code,
+    }
