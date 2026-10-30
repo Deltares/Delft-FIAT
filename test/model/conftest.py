@@ -7,7 +7,9 @@ import pytest
 from pyproj import CRS
 from scipy.interpolate import make_interp_spline
 
-from fiat.container import (
+from fiat.driver import FlatGeobufReader, NetcdfWriter, Table
+from fiat.method.ead import fn_density
+from fiat.model.meta import (
     ExposureGeomData,
     ExposureGeomMeta,
     ExposureGridMeta,
@@ -15,8 +17,6 @@ from fiat.container import (
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import FlatGeobufReader, NetcdfWriter, Table
-from fiat.method.ead import fn_density
 
 
 ## Structures

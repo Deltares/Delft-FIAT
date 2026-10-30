@@ -4,9 +4,12 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    field_validator,
 )
 
+from fiat.method.util import ZONAL_CODES
 from fiat.settings.file import InputFileModel
+from fiat.util import AREA__METHODS
 
 __all__ = ["ExposureGeometry", "ExposureGrid"]
 
@@ -46,6 +49,27 @@ based on the exposure geometry.",
         description="The zonal statistics method. Only really applicable \
 if `area_method` is set to 'area'.",
     )
+
+    # Validator(s)
+    @field_validator("area_method", mode="after")
+    @classmethod
+    def validate_area_method(cls, value: str):
+        """Validate the zonal method setting."""
+        if value not in AREA__METHODS:
+            raise ValueError(
+                f"Area method invalid: {value}, \chose from {AREA__METHODS}",
+            )
+        return value
+
+    @field_validator("zonal_method", mode="after")
+    @classmethod
+    def validate_zonal_method(cls, value: str):
+        """Validate the zonal method setting."""
+        if value not in ZONAL_CODES:
+            raise ValueError(
+                f"Zonal method invalid: {value}, \chose from {list(ZONAL_CODES)}",
+            )
+        return value
 
 
 class ExposureGridSettings(BaseModel):
