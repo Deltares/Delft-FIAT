@@ -6,14 +6,14 @@ from typing import Callable
 
 import numpy as np
 
-from fiat.container import (
+from fiat.driver import NetcdfReader, NetcdfVariable
+from fiat.driver.geotiff.writer import TileSink
+from fiat.model.meta import (
     ExposureGridMeta,
     HazardMeta,
     RunMeta,
     VulnerabilityMeta,
 )
-from fiat.driver import NetcdfReader, NetcdfVariable
-from fiat.driver.geotiff.writer import TileSink
 from fiat.typing import MethodType
 from fiat.util import FIAT_METHOD, FN, NODATA_VALUE
 
