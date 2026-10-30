@@ -82,7 +82,7 @@ dev = [
     "setuptools>=84.2.1",
 ]
 docs = [
-    "griffe==1.15.0",
+    "griffe==2.4.1",
     "jupyter",
     "jupyter-cache",
     "matplotlib",
