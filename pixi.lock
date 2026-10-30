@@ -2647,7 +2647,7 @@ packages:
   - matplotlib ; extra == 'docs'
   - pandas ; extra == 'docs'
   - quartodoc==0.11.1 ; extra == 'docs'
-  - pytest>=2.7.3 ; extra == 'test'
+  - pytest>=9.1.1 ; extra == 'test'
   - pytest-cov ; extra == 'test'
   - pytest-mock ; extra == 'test'
   - responses ; extra == 'test'
