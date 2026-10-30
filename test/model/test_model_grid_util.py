@@ -1,56 +1,6 @@
-from fiat.container import HazardMeta, RunMeta, VulnerabilityMeta
 from fiat.driver import NetcdfReader
-from fiat.model.grid_util import equal_grid, get_exposure_meta
+from fiat.model.grid_util import equal_grid
 from fiat.util import EXPOSURE
-
-
-def test_get_exposure_meta(
-    exposure_grid_data: NetcdfReader,
-    run_meta: RunMeta,
-    hazard_meta_run: HazardMeta,
-    vulnerability_meta_run: VulnerabilityMeta,
-):
-    # Call the function
-    meta = get_exposure_meta(
-        exposure=exposure_grid_data,
-        run_meta=run_meta,
-        hazard_meta=hazard_meta_run,
-        vulnerability_meta=vulnerability_meta_run,
-    )
-
-    # Assert the output
-    assert meta.fn_list == ["struct_1", "struct_2"]
-    assert meta.index_ead is None
-    assert meta.indices_new == [[0, 1]]
-    assert meta.indices_total == [2]
-    assert meta.nb == 3
-    assert meta.new == ["exposure1_1", "exposure2_1", "total_1"]
-
-
-def test_get_exposure_meta_risk(
-    exposure_grid_data: NetcdfReader,
-    run_risk_meta: RunMeta,
-    hazard_risk_meta_run: HazardMeta,
-    vulnerability_meta_run: VulnerabilityMeta,
-):
-    # Call the function
-    meta = get_exposure_meta(
-        exposure=exposure_grid_data,
-        run_meta=run_risk_meta,
-        hazard_meta=hazard_risk_meta_run,
-        vulnerability_meta=vulnerability_meta_run,
-    )
-
-    # Assert the output
-    assert meta.fn_list == ["struct_1", "struct_2"]
-    assert meta.index_ead == 12
-    assert meta.indices_new == [[0, 4], [1, 5], [2, 6], [3, 7]]
-    assert meta.indices_total == [8, 9, 10, 11]
-    assert meta.nb == 13
-    assert "exposure1_5" in meta.new
-    assert "exposure2_10" in meta.new
-    assert "total_25" in meta.new
-    assert "ead" in meta.new
 
 
 def test_equal_grid(

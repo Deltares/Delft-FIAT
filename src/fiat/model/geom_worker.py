@@ -9,17 +9,17 @@ from typing import Callable
 
 import numpy as np
 
-from fiat.container import (
-    ExposureGeomMeta,
-    HazardMeta,
-    RunMeta,
-    VulnerabilityMeta,
-)
 from fiat.driver import FlatGeobufReader, NetcdfReader, fgb
 from fiat.driver.fgb import Feature, FlatGeobufWriter
 from fiat.gis import overlay
 from fiat.method.ead import fn_ead
 from fiat.model.geom_util import AREA_METHODS
+from fiat.model.meta import (
+    ExposureGeomMeta,
+    HazardMeta,
+    RunMeta,
+    VulnerabilityMeta,
+)
 from fiat.typing import MethodType
 from fiat.util import FIAT_METHOD
 

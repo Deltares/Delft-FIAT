@@ -2,9 +2,7 @@
 
 import sys
 import time
-from pathlib import Path
 
-from fiat.cfg import Configurations
 from fiat.check import (
     check_input_data,
     check_internal_crs,
@@ -16,32 +14,27 @@ from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
 from fiat.model.base import BaseModel
-from fiat.model.grid_util import equal_grid, get_exposure_meta
+from fiat.model.grid_util import equal_grid
 from fiat.model.grid_worker import initialize_pool, worker
-from fiat.model.util import (
-    create_2d_windows,
+from fiat.model.meta import (
+    get_exposure_grid_meta,
     get_hazard_meta,
     get_run_meta,
     get_vulnerability_meta,
 )
+from fiat.model.util import create_2d_windows
 from fiat.open import open_grid
+from fiat.settings import GridSettings
 from fiat.util import (
     CHUNK,
     EXPOSURE,
     EXPOSURE__META,
-    EXPOSURE_GRID_FILE,
-    EXPOSURE_GRID_RESALG,
-    EXPOSURE_GRID_SETTINGS,
     HAZARD,
     HAZARD__META,
-    MODEL_GRID_BASE,
-    MODEL_GRID_CHUNK,
-    OUTPUT_GRID_FILE,
     RUN__META,
     VULNERABILITY,
     VULNERABILITY__META,
     WINDOW,
-    generic_path_check,
     get_crs_repr,
 )
 
@@ -51,90 +44,59 @@ logger = spawn_logger(__name__)
 class GridModel(BaseModel):
     """Grid model.
 
-    Needs the following settings in order to be run: \n
-    - exposure.grid.file
-    - output.grid.file
-
     Parameters
     ----------
-    cfg : Configurations
-        Configurations object containing the settings.
+    settings : GridSettings
+        Validated settings.
     """
 
     def __init__(
         self,
-        cfg: Configurations,
+        settings: GridSettings,
     ):
-        super().__init__(cfg)
+        super().__init__(settings)
 
         # Declare
-        self.exposure: NetcdfReader | None = None
+        self._exposure: NetcdfReader | None = None
 
         # Setup the model
-        self.read_exposure()
+        self._read_exposure()
 
-    def __del__(self):
-        BaseModel.__del__(self)
+    @property
+    def exposure(self) -> NetcdfReader | None:
+        """Return the exposure grid data."""
+        return self._exposure
 
-    def read_exposure(
-        self,
-        path: Path | str = None,
-        **kwargs: dict,
-    ):
-        """Read the exposure grid.
+    def _read_exposure(self):
+        """Read the exposure grid."""
+        # Get the file and read kwargs
+        file = self.settings.exposure.file
+        kwargs = self.settings.exposure.settings.model_dump(exclude_none=True)
 
-        If no path is provided the method tries to
-        infer it from the model configurations.
-
-        Parameters
-        ----------
-        path : Path | str, optional
-            Path to an exposure grid, by default None
-        kwargs : dict, optional
-            Keyword arguments for reading. These are passed into [open_grid]\
-(/api/driver/open_grid.qmd) after which into [GridSouce](/api/NetcdfReader.qmd)/
-        """
-        # Sort the pathing
-        # Hierarchy: 1) signature, 2) configurations
-        path = path or self.cfg.get(EXPOSURE_GRID_FILE)
-        if path is None:
-            return
-        path = generic_path_check(path, root=self.cfg.path)
-        logger.info(f"Reading exposure grid ('{path.name}')")
-
-        # Set the extra arguments from the settings file
-        kw = {}
-        kw.update(
-            self.cfg.generate_kwargs(EXPOSURE_GRID_SETTINGS),
-        )
-        kw.update(
-            self.cfg.generate_kwargs(MODEL_GRID_CHUNK),
-        )
-        kw.update(kwargs)
-        data = open_grid(path, **kw)
+        # Read the file
+        logger.info(f"Reading exposure grid ('{file.name}')")
+        data = open_grid(file, **kwargs)
         ## checks
         logger.info("Executing exposure data checks...")
 
         # Check if there is a crs present
         check_internal_crs(
             data.profile.crs,
-            path.name,
+            file.name,
         )
 
         if not check_vs_crs(self.crs, data.profile.crs):
             logger.warning(
-                f"Spatial reference of '{path.name}' \
+                f"Spatial reference of '{file.name}' \
 ('{get_crs_repr(data.profile.crs)}') does not match the \
 model spatial reference ('{get_crs_repr(self.crs)}')"
             )
-            logger.info(f"Reprojecting '{path.name}' to '{get_crs_repr(self.crs)}'")
-            _resalg = self.cfg.get(EXPOSURE_GRID_RESALG, 0)
+            logger.info(f"Reprojecting '{file.name}' to '{get_crs_repr(self.crs)}'")
+            _resalg = self.settings.exposure.resalg
             data = grid.reproject(data, self.crs.to_wkt(), _resalg)
 
-        # Reset to ensure the entry is present
-        self.cfg.set(EXPOSURE_GRID_FILE, path)
         ## When all is done, add it
-        self.exposure = data
+        self._exposure = data
 
     def run(self):
         """Run the grid model with provided settings.
@@ -142,6 +104,7 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         Generates output in the specified `output.path` directory.
         """
         logger.info("Running the model")
+        super().run()
         # Quick check if all cdata is set
         check_input_data(
             [HAZARD, self.hazard, NetcdfReader],
@@ -159,40 +122,30 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         vulnerability_meta = get_vulnerability_meta(self.vulnerability)
 
         # Get the exposure meta
-        exposure_meta = get_exposure_meta(
+        exposure_meta = get_exposure_grid_meta(
             self.exposure,
             run_meta=run_meta,
             hazard_meta=hazard_meta,
             vulnerability_meta=vulnerability_meta,
         )
 
-        # Create the output directory and files
-        self.cfg.setup_output_dir()
-
         # Check for equal hazard and exposure grids
-        self.hazard, self.exposure = equal_grid(
+        self._hazard, self._exposure = equal_grid(
             self.hazard,
             self.exposure,
-            base=self.cfg.get(MODEL_GRID_BASE, HAZARD),
+            base=self.settings.grid.base,
         )
-
-        # Get the output path. Output is always a Cloud Optimized GeoTIFF.
-        output_name = self.cfg.get(OUTPUT_GRID_FILE) or self.exposure.path.name
-        output_filepath = Path(self.cfg.output_dir, output_name).with_suffix(".tif")
 
         # The tile size is also the parallel write granularity. Default to a
         # bounded 512x512 tile (clamped to the grid) so each worker processes and
         # writes one tile at a time instead of materialising the whole raster;
         # override via ``model.grid.chunk``.
         ny, nx = self.exposure.profile.shape
-        chunk = self.cfg.get(
-            MODEL_GRID_CHUNK,
-            fallback=(min(512, ny), min(512, nx)),
-        )
+        chunk = self.settings.grid.chunk or (min(512, ny), min(512, nx))
 
         # Create the output handle and open it for direct, parallel tile writes.
         handle = create_geotiff_handle(
-            path=output_filepath,
+            path=self.settings.output.file,
             variables=exposure_meta.new,
             ds_like=self.exposure,
             crs=self.crs,
@@ -243,7 +196,7 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             exc_info = None
 
         else:
-            logger.info(f"Output generated in: '{self.cfg.get('output.path')}'")
+            logger.info(f"Output generated in: '{self.settings.output_dir}'")
             logger.info("Model run is done!")
 
         # Finalise and write the COG (overviews + header-first layout).
