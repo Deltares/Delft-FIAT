@@ -299,7 +299,7 @@
     "href": "changelog.html",
     "title": "What’s new?",
     "section": "",
-    "text": "These are the unreleased changes.",
+    "text": "These are the unreleased changes.\n\n\n\n\n\n\n\n\n\n\n\n\nVulnerability curves are no longer extrapolated: a water depth below the first curve depth gives the first damage fraction (no negative damage) and a depth above the last gives the last (#205)",
     "crumbs": [
       "Developments",
       "What's new?"
@@ -310,7 +310,7 @@
     "href": "changelog.html#unreleased",
     "title": "What’s new?",
     "section": "",
-    "text": "These are the unreleased changes.",
+    "text": "These are the unreleased changes.\n\n\n\n\n\n\n\n\n\n\n\n\nVulnerability curves are no longer extrapolated: a water depth below the first curve depth gives the first damage fraction (no negative damage) and a depth above the last gives the last (#205)",
     "crumbs": [
       "Developments",
       "What's new?"
