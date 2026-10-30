@@ -2634,7 +2634,7 @@ packages:
   - regex
   - scipy
   - cython ; extra == 'all'
-  - pyinstaller>=6.0.0 ; extra == 'all'
+  - pyinstaller>=6.22.3 ; extra == 'all'
   - tomlkit ; extra == 'all'
   - build ; extra == 'dev'
   - mypy ; extra == 'dev'
