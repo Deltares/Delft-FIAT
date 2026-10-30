@@ -18,7 +18,7 @@ from fiat.util import (
     find_duplicates,
     flatten_dict,
     generic_directory_check,
-    generic_path_check,
+    generic_file_check,
     get_crs_repr,
     get_module_attr,
     mean,
@@ -207,30 +207,30 @@ def test_flatten_dict():
     assert "entry2.sub1" in flattened
 
 
-def test_generic_path_check(
+def test_generic_file_check(
     testdata_dir: Path,
 ):
     # Call the function
-    p = generic_path_check("geom_event.toml", root=testdata_dir)
+    p = generic_file_check("geom_event.toml", root=testdata_dir)
     # Assert the output
     assert p == Path(testdata_dir, "geom_event.toml")
 
     # Call the function on absolute path
-    p = generic_path_check(Path(testdata_dir, "geom_event.toml"), root=testdata_dir)
+    p = generic_file_check(Path(testdata_dir, "geom_event.toml"), root=testdata_dir)
     # Assert the output
     assert p == Path(testdata_dir, "geom_event.toml")
 
 
-def test_generic_path_check_error(
+def test_generic_file_check_error(
     tmp_path: Path,
 ):
     p = Path(tmp_path, "tmp.unknown")
     # Call the function while the path doesnt exist
     with pytest.raises(
         FileNotFoundError,
-        match=f"{p.as_posix()} is not a valid path",
+        match=f"{p.as_posix()} is not a valid file",
     ):
-        generic_path_check(p, root=tmp_path)
+        generic_file_check(p, root=tmp_path)
 
 
 def test_generic_directory_check(tmp_path: Path):

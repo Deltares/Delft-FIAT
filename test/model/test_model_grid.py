@@ -1,76 +1,50 @@
-from pathlib import Path
-from typing import Generator
+from typing import Callable, Generator
 
 import pytest
-from pyproj.crs import CRS
 
-from fiat.cfg import Configurations
-from fiat.driver import NetcdfReader, Table
+from fiat.driver import NetcdfReader
 from fiat.log import Logger
 from fiat.model import GridModel
+from fiat.settings import GridSettings
 from fiat.util import get_crs_repr
 
 
-def test_gridmodel(config_empty: Configurations):
+def test_gridmodel(model_settings: Callable[[str], GridSettings]):
     # Create the object
-    m = GridModel(config_empty)
+    m = GridModel(model_settings("grid_event.toml"))
 
     # Assert some simple stuff
-    assert m.exposure is None
+    assert m.exposure is not None
 
 
-def test_gridmodel_read_exposure(config_empty: Configurations):
+def test_gridmodel_properties(model_settings: Callable[[str], GridSettings]):
     # Create the object
-    m = GridModel(config_empty)
+    m = GridModel(model_settings("grid_event.toml"))
 
-    # Call the method
-    m.read_exposure()
+    # Assert some simple stuff
+    assert isinstance(m.exposure, NetcdfReader)
+
+
+def test_gridmodel_read_exposure(model_settings: Callable[[str], GridSettings]):
+    # Create the object
+    m = GridModel(model_settings("grid_risk.toml"))
 
     # Assert nothing's there
-    assert m.exposure is None
-
-
-def test_gridmodel_read_exposure_config(
-    config_read_grid: Configurations,
-):
-    # Create the object
-    m = GridModel(config_read_grid)
-
-    # Call the method
-    m.read_exposure()
-
-    # Assert the presense of a dataset
-    assert isinstance(m.exposure, NetcdfReader)
-    assert m.exposure.size == 2
-
-
-def test_gridmodel_read_exposure_sig(
-    config_empty: Configurations,
-    exposure_grid_path: Path,
-):
-    # Create the object
-    m = GridModel(config_empty)
-
-    # Call the method
-    m.read_exposure(path=exposure_grid_path)
-
-    # Assert the presense of a dataset
-    assert isinstance(m.exposure, NetcdfReader)
+    assert m.exposure is not None
     assert m.exposure.size == 2
 
 
 def test_gridmodel_read_exposure_reproj(
     caplog: Logger,
-    config_empty: Configurations,
-    crs_3857: CRS,
-    exposure_grid_path: Path,
+    model_settings: Callable[[str], GridSettings],
 ):
     # Create the object
-    m = GridModel(config_empty)
-    m._crs = crs_3857
+    m = GridModel(model_settings("grid_event.toml"))
+    # Set the model crs
+    m.crs = "EPSG:3857"
 
-    # Call the method
-    m.read_exposure(path=exposure_grid_path)
+    # Re-call the method
+    m._read_exposure()
 
     # Assert the logging
     assert "Reprojecting 'spatial.nc' to 'EPSG:3857'" in caplog.text
@@ -91,21 +65,14 @@ def mockworker_error(*args, **kwargs):
 def test_gridmodel_run(
     monkeypatch: Generator[pytest.MonkeyPatch, None, None],
     caplog: Logger,
-    config_empty: Configurations,
-    vulnerability_data_run: Table,
-    hazard_event_data: NetcdfReader,
-    exposure_grid_data: NetcdfReader,
+    model_settings: Callable[[str], GridSettings],
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.grid.worker", mockworker)
 
     # Create the object
-    m = GridModel(config_empty)
-    m.threads = 2
-    # Set data like a dummy
-    m.vulnerability = vulnerability_data_run
-    m.hazard = hazard_event_data
-    m.exposure = exposure_grid_data
+    m = GridModel(model_settings("grid_event.toml"))
+    m.threads = 1
 
     # Run the model
     m.run()
@@ -119,20 +86,13 @@ def test_gridmodel_run(
 def test_gridmodel_run_fail(
     monkeypatch: Generator[pytest.MonkeyPatch, None, None],
     caplog: Logger,
-    config_empty: Configurations,
-    vulnerability_data_run: Table,
-    hazard_event_data: NetcdfReader,
-    exposure_grid_data: NetcdfReader,
+    model_settings: Callable[[str], GridSettings],
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.grid.worker", mockworker_error)
 
     # Create the object
-    m = GridModel(config_empty)
-    # Set data like a dummy
-    m.vulnerability = vulnerability_data_run
-    m.hazard = hazard_event_data
-    m.exposure = exposure_grid_data
+    m = GridModel(model_settings("grid_event.toml"))
 
     # Run the model
     m.run()
@@ -142,17 +102,3 @@ def test_gridmodel_run_fail(
     assert "Busy..." in caplog.text
     assert "No bueno..." in caplog.text
     assert "Model run is done!" not in caplog.text
-
-
-def test_geommodel_run_errors(
-    config_empty: Configurations,
-):
-    # Create the object
-    m = GridModel(config_empty)
-
-    # Should error on having no data
-    with pytest.raises(
-        TypeError,
-        match="hazard is incorrectly set, currently of type NoneType",
-    ):
-        m.run()

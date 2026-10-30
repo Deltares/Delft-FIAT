@@ -4,15 +4,16 @@ import shutil
 from multiprocessing import get_context
 from multiprocessing.queues import Queue
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
 from pyproj.crs import CRS
 
-from fiat.cfg import Configurations
 from fiat.driver import FlatGeobufReader, NetcdfReader, Table
 from fiat.log import Logger
 from fiat.open import open_csv, open_geom, open_grid
+from fiat.settings import GeomSettings, GridSettings, load_settings
 
 TEST_MODULE = Path(__file__).parent
 
@@ -95,14 +96,40 @@ def vulnerability_path(testdata_dir: Path) -> Path:
     return p
 
 
-## Globally used object
+# Config file and settings factories
 @pytest.fixture
-def config(testdata_dir: Path) -> Configurations:
-    c = Configurations(
-        _root=testdata_dir,
-        _name="tmp.toml",
-    )
-    return c
+def settings_files(testdata_dir: Path) -> Path:
+    def _factory(file: Path | str):
+        p = Path(testdata_dir, file)
+        assert p.is_file()
+        return p
+
+    return _factory
+
+
+@pytest.fixture
+def model_settings(settings_files) -> GeomSettings | GridSettings:
+    def _factory(file: Path | str):
+        file = Path(file)
+        if not file.is_absolute():
+            file = settings_files(file)
+        settings = load_settings(file)
+        return settings
+
+    return _factory
+
+
+# Other data structures used globally
+@pytest.fixture(scope="session")
+def crs_4326() -> CRS:
+    s = CRS.from_user_input("EPSG:4326")
+    return s
+
+
+@pytest.fixture(scope="session")
+def crs_3857() -> CRS:
+    s = CRS.from_user_input("EPSG:3857")
+    return s
 
 
 @pytest.fixture
@@ -195,16 +222,12 @@ def mp_queue() -> Queue:
     return q
 
 
-@pytest.fixture(scope="session")
-def crs_4326() -> CRS:
-    s = CRS.from_user_input("EPSG:4326")
-    return s
-
-
-@pytest.fixture(scope="session")
-def crs_3857() -> CRS:
-    s = CRS.from_user_input("EPSG:3857")
-    return s
+@pytest.fixture
+def settings_dummy() -> dict[str, Any]:
+    return {
+        "hazard": {"file": "event_map.nc"},
+        "vulnerability": {"file": "vulnerability/curves.csv"},
+    }
 
 
 @pytest.fixture(scope="session")
