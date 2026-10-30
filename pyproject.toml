@@ -246,8 +246,8 @@ serve = { cmd = "python -m http.server 8000 -d ./docs/_site" }
 [tool.pixi.feature.test.tasks]
 test = { cmd = "pytest --verbose" }
 test-lf = { cmd = "pytest --lf --tb=short" }
-test-cov = { cmd = "pytest -m not (integration or system) --verbose --cov=fiat --cov-report xml" }
-test-cov-html = { cmd = "pytest -m not (integration or system) --verbose --cov --cov-report html" }
+test-cov = { cmd = "pytest -m \"not (integration or system)\" --verbose --cov=fiat --cov-report xml" }
+test-cov-html = { cmd = "pytest -m \"not (integration or system)\" --verbose --cov --cov-report html" }
 test-integration = { cmd = "pytest -m integration --verbose" }
 test-system = { cmd = "pytest -m system --verbose" }
 
