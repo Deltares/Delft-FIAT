@@ -196,58 +196,42 @@ preview = ["pixi-build"]
 # First general tasks
 [tool.pixi.tasks]
 # Build fiat
-build = { cmd = [
-    "pyinstaller",
-    "$PIXI_PROJECT_ROOT/pyi/build.spec",
-    "--distpath",
-    "$PIXI_PROJECT_ROOT/bin",
-    "--workpath",
-    "$PIXI_PROJECT_ROOT/bin/intermediates",
-] }
+build = { cmd = "pyinstaller $PIXI_PROJECT_ROOT/pyi/build.spec --distpath $PIXI_PROJECT_ROOT/bin --workpath $PIXI_PROJECT_ROOT/bin/intermediates" }
 
 # Clean up (some of) the temporary files
-clean = { depends-on = [
-    "clean-bin",
-    "clean-build",
-    "clean-dist",
-    "clean-docs",
-] }
-clean-bin = { cmd = ["rm", "-rf", "bin"] }
-clean-build = { cmd = ["rm", "-rf", "build"] }
-clean-dist = { cmd = ["rm", "-rf", "dist"] }
-clean-docs = { depends-on = [
-    "clean-docs-site",
-    "clean-docs-freeze",
-    "clean-docs-inv"
-] }
-clean-docs-freeze = { cmd = ["rm", "-rf", "docs/_freeze"] }
-clean-docs-inv = { cmd = ["rm", "-rf", "docs/_inv"] }
-clean-docs-site = { cmd = ["rm", "-rf", "docs/_site"] }
+clean = { depends-on = ["clean-bin", "clean-build", "clean-dist", "clean-docs"] }
+clean-bin = { cmd = "rm -rf bin" }
+clean-build = { cmd = "rm -rf build" }
+clean-dist = { cmd = "rm -rf dist" }
+clean-docs = { depends-on = ["clean-docs-site", "clean-docs-freeze", "clean-docs-inv"] }
+clean-docs-freeze = { cmd = "rm -rf docs/_freeze" }
+clean-docs-inv = { cmd = "rm -rf docs/_inv" }
+clean-docs-site = { cmd = "rm -rf docs/_site" }
 
 # Docker related stuff (expand in future)
-docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
+docker-clean = { cmd = "docker system prune -f" }
 
 # Testdata
-testdata = { cmd = ["python", "data/generate.py"] }
+testdata = { cmd = "python data/generate.py" }
 
 # Dev specific taskss
 [tool.pixi.feature.dev.tasks]
 # Installation
-install-pre-commit = "pre-commit install"
+install-pre-commit = { cmd = "pre-commit install" }
 install = { depends-on = ["install-pre-commit"] }
 
 # Linting and code checking
-lint = { cmd = ["pre-commit", "run", "--all"] }
-mypy = { cmd = ["mypy", ".", "--install-types", "--non-interactive"] }
+lint = { cmd = "pre-commit run --all" }
+mypy = { cmd = "mypy . --install-types --non-interactive" }
 
 # Tasks for buildings documentation
 [tool.pixi.feature.docs.tasks]
 # Create the separate elements
-create-api = { cmd = ["python", "docs/_scripts/api.py", "docs/_quarto.yml"] }
-create-inv = { cmd = ["python", "docs/_scripts/inv.py", "interlinks", "docs/_quarto.yml"] }
+create-api = { cmd = "python docs/_scripts/api.py docs/_quarto.yml" }
+create-inv = { cmd = "python docs/_scripts/inv.py interlinks docs/_quarto.yml" }
 # Call the framework
-render = { cmd = ["quarto", "render", "docs"] }
-execute = { cmd = ["quarto", "render", "docs/**/*.ipynb", "--execute"] }
+render = { cmd = "quarto render docs" }
+execute = { cmd = "quarto render docs/**/*.ipynb --execute" }
 # Build the docs
 docs = { depends-on = ["create-api", "create-inv", "render"] }
 docs-rebuild = { depends-on = ["clean-docs", "docs"] }
@@ -256,42 +240,16 @@ docs-slim = { depends-on = ["create-inv", "render"] }
 docs-slim-execute = { depends-on = ["docs-slim", "execute"] }
 docs-slim-rebuild = { depends-on = ["clean-docs", "docs-slim"] }
 # Host the docs locally
-serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "./docs/_site"] }
+serve = { cmd = "python -m http.server 8000 -d ./docs/_site" }
 
 # Testing tasks
 [tool.pixi.feature.test.tasks]
-test = { cmd = ["pytest", "--verbose"] }
-test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
-test-cov = { cmd = [
-    "pytest",
-    "-m",
-    "not (integration or system)",
-    "--verbose",
-    "--cov=fiat",
-    "--cov-report",
-    "xml"
-] }
-test-cov-html = { cmd = [
-    "pytest",
-    "-m",
-    "not (integration or system)",
-    "--verbose",
-    "--cov",
-    "--cov-report",
-    "html"
-] }
-test-integration = { cmd = [
-    "pytest",
-    "-m",
-    "integration",
-    "--verbose",
-] }
-test-system = { cmd = [
-    "pytest",
-    "-m",
-    "system",
-    "--verbose",
-] }
+test = { cmd = "pytest --verbose" }
+test-lf = { cmd = "pytest --lf --tb=short" }
+test-cov = { cmd = "pytest -m not (integration or system) --verbose --cov=fiat --cov-report xml" }
+test-cov-html = { cmd = "pytest -m not (integration or system) --verbose --cov --cov-report html" }
+test-integration = { cmd = "pytest -m integration --verbose" }
+test-system = { cmd = "pytest -m system --verbose" }
 
 ## Dependencies
 [tool.pixi.dependencies]
