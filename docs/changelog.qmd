@@ -12,6 +12,7 @@ These are the unreleased changes.
 ### Deprecated
 
 ### Fixed
+- Vulnerability curves are no longer extrapolated: a water depth below the first curve depth gives the first damage fraction (no negative damage) and a depth above the last gives the last ([#205](https://github.com/Deltares/Delft-FIAT/issues/205))
 
 ### Removed
 
