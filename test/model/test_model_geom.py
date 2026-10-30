@@ -1,53 +1,45 @@
-from pathlib import Path
-from typing import Generator
+from typing import Callable, Generator
 
 import pytest
-from pyproj.crs import CRS
 
-from fiat.cfg import Configurations
-from fiat.container import Container, ExposureGeomData
-from fiat.driver import NetcdfReader, Table
+from fiat.container import Container
+from fiat.driver import FlatGeobufReader
 from fiat.log import Logger
 from fiat.model import GeomModel
+from fiat.settings import GeomSettings
 from fiat.util import get_crs_repr
 
 
-def test_geommodel(config_empty: Configurations):
+def test_geommodel(model_settings: Callable[[str], GeomSettings]):
     # Create the object
-    m = GeomModel(config_empty)
+    m = GeomModel(model_settings("geom_event.toml"))
 
     # Assert some simple stuff
     assert isinstance(m.exposure, Container)
-    assert len(m.exposure) == 0
 
 
-def test_geommodel_properties(config_empty: Configurations):
+def test_geommodel_properties(model_settings: Callable[[str], GeomSettings]):
     # Create the object
-    m = GeomModel(config_empty)
+    m = GeomModel(model_settings("geom_event.toml"))
 
     # Assert important properties/ attributes (one in this case :p)
-    assert m.exposure is not None
+    assert m.type == "geom"
+    assert len(m.exposure) == 1
+    assert isinstance(m.exposure.ds1.data, FlatGeobufReader)
 
 
-def test_geommodel_read_exposure(config_empty: Configurations):
+def test_geommodel_read_exposure(model_settings: Callable[[str], GeomSettings]):
     # Create the object
-    m = GeomModel(config_empty)
-
-    # Call the method
-    m.read_exposure()
+    m = GeomModel(model_settings("geom_event.toml"))
 
     # Assert nothing's there
-    assert len(m.exposure) == 0
+    assert len(m.exposure) == 1
+    assert m.exposure.ds1.data.size == 4
 
 
-def test_geommodel_read_exposure_config(
-    config_read_geom: Configurations,
-):
+def test_geommodel_read_exposure_multi(model_settings: Callable[[str], GeomSettings]):
     # Create the object
-    m = GeomModel(config_read_geom)
-
-    # Call the method
-    m.read_exposure()
+    m = GeomModel(model_settings("geom_event_2g.toml"))
 
     # Assert the presense of a dataset
     assert len(m.exposure) == 2
@@ -55,33 +47,17 @@ def test_geommodel_read_exposure_config(
     assert m.exposure.ds2.data.profile.size == 1
 
 
-def test_geommodel_read_exposure_sig(
-    config_empty: Configurations,
-    exposure_geom_path: Path,
-):
-    # Create the object
-    m = GeomModel(config_empty)
-
-    # Call the method
-    m.read_exposure(path=exposure_geom_path)
-
-    # Assert the presense of a dataset
-    assert len(m.exposure) == 1
-    assert m.exposure.ds1.data.profile.size == 4
-
-
 def test_geommodel_read_exposure_reproj(
     caplog: Logger,
-    config_empty: Configurations,
-    crs_3857: CRS,
-    exposure_geom_path: Path,
+    model_settings: Callable[[str], GeomSettings],
 ):
     # Create the object
-    m = GeomModel(config_empty)
-    m._crs = crs_3857
+    m = GeomModel(model_settings("geom_event.toml"))
+    # Set the crs
+    m.settings.projection.crs = "EPSG:3857"
 
-    # Call the method
-    m.read_exposure(path=exposure_geom_path)
+    # Re-read it
+    m._read_exposure()
 
     # Assert the logging
     assert "Reprojecting 'spatial.fgb' to 'EPSG:3857'" in caplog.text
@@ -102,21 +78,14 @@ def mockworker_error(*args, **kwargs):
 def test_geommodel_run(
     monkeypatch: Generator[pytest.MonkeyPatch, None, None],
     caplog: Logger,
-    config_empty: Configurations,
-    vulnerability_data_run: Table,
-    hazard_event_data: NetcdfReader,
-    exposure_geom_data_run: ExposureGeomData,
+    model_settings: Callable[[str], GeomSettings],
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.geom.worker", mockworker)
 
     # Create the object
-    m = GeomModel(config_empty)
-    m.threads = 2
-    # Set data like a dummy
-    m.vulnerability = vulnerability_data_run
-    m.hazard = hazard_event_data
-    m.exposure.set(exposure_geom_data_run)
+    m = GeomModel(model_settings("geom_event.toml"))
+    m.threads = 1
 
     # Run the model
     m.run()
@@ -130,21 +99,13 @@ def test_geommodel_run(
 def test_geommodel_run_fail(
     monkeypatch: Generator[pytest.MonkeyPatch, None, None],
     caplog: Logger,
-    config_empty: Configurations,
-    vulnerability_data_run: Table,
-    hazard_event_data: NetcdfReader,
-    exposure_geom_data_run: ExposureGeomData,
+    model_settings: Callable[[str], GeomSettings],
 ):
     # Monkeypatch the worker
     monkeypatch.setattr("fiat.model.geom.worker", mockworker_error)
 
     # Create the object
-    m = GeomModel(config_empty)
-    # Set data like a dummy
-    m.vulnerability = vulnerability_data_run
-    m.hazard = hazard_event_data
-    m.exposure.set(exposure_geom_data_run)
-
+    m = GeomModel(model_settings("geom_event.toml"))
     # Run the model
     m.run()
 
@@ -153,17 +114,3 @@ def test_geommodel_run_fail(
     assert "Busy..." in caplog.text
     assert "No bueno..." in caplog.text
     assert "Model run is done!" not in caplog.text
-
-
-def test_geommodel_run_errors(
-    config_empty: Configurations,
-):
-    # Create the object
-    m = GeomModel(config_empty)
-
-    # Should error on having no data
-    with pytest.raises(
-        TypeError,
-        match="hazard is incorrectly set, currently of type NoneType",
-    ):
-        m.run()

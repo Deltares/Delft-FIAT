@@ -2,6 +2,7 @@
 
 import argparse
 import re
+from typing import Any
 
 from fiat.util import _dtypes_reversed, deter_type
 
@@ -25,6 +26,23 @@ def parse_cli_value(value: str) -> object:
     return value
 
 
+def set_entry_value(
+    args_dict: dict[str, Any],
+    key_chain: list[str],
+    value: Any,
+):
+    """Set the value in the set entry dict."""
+    key = key_chain[0]
+    if key not in args_dict:
+        args_dict[key] = {}
+    if len(key_chain) != 1:
+        if not isinstance(args_dict[key], dict):
+            args_dict[key] = {}
+        set_entry_value(args_dict[key], key_chain[1:], value)
+    else:
+        args_dict[key] = value
+
+
 class KeyValueAction(argparse.Action):
     """Simple class for key values pairs with equal signs."""
 
@@ -36,12 +54,12 @@ class KeyValueAction(argparse.Action):
 
         # Set the values
         try:
-            key_value_dict = getattr(namespace, self.dest)
-            key, value = values.split("=", 1)
-            key_value_dict[key] = parse_cli_value(value)
-            setattr(namespace, self.dest, key_value_dict)
+            args_dict = getattr(namespace, self.dest)
+            keys, value = values.split("=", 1)
+            set_entry_value(args_dict, keys.split("."), parse_cli_value(value))
+            setattr(namespace, self.dest, args_dict)
         except BaseException:
             parser.error(
-                f"-d, key/ value pair in the wrong format: -> '{values}'. \
+                f"-s, key/ value pair in the wrong format: -> '{values}'. \
 Should be KEY=VALUE"
             )

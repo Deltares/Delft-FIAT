@@ -1,10 +1,11 @@
 from pathlib import Path
-from typing import Generator
+from typing import Callable, Generator
 
 import pytest
 from pytest_mock import MockerFixture
 
 from fiat.cli.util import file_path_check, run_log, run_profiler
+from fiat.settings import GeomSettings
 
 
 def test_file_path_check(
@@ -84,23 +85,23 @@ def test_run_log_interrupt(mocker: MockerFixture):
 
 
 def test_run_profiler(
-    tmp_path: Path,
     mocker: MockerFixture,
-    profiler_config,
+    model_settings: Callable[[str], GeomSettings],
 ):
+    settings = model_settings("geom_event.toml")
     # Set a function to profile
     func = mocker.Mock(return_value=None)
     logger = mocker.Mock()
 
     # Call the function
-    run_profiler(func, profile="profile", cfg=profiler_config, logger=logger)
+    run_profiler(func, profile="profile", settings=settings, logger=logger)
 
     # Assert both profile outputs were written
     func.assert_called_once_with()
-    assert (tmp_path / "profile").is_file()
-    txt = tmp_path / "profile.txt"
+    assert (settings.output_dir / "profile").is_file()
+    txt = settings.output_dir / "profile.txt"
     assert txt.is_file()
-    assert f"Delft-FIAT profile ({profiler_config.filepath})" in txt.read_text(
+    assert f"Delft-FIAT profile ({settings.context.config_dir})" in txt.read_text(
         encoding="utf-8"
     )
     logger.warning.assert_called_once_with("Running profiler...")

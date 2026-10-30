@@ -6,11 +6,10 @@ from typing import Any
 
 from pyproj.crs import CRS
 
-from fiat.cfg import Configurations
 from fiat.container import Container
 from fiat.error import FIATDataError
 from fiat.log import spawn_logger
-from fiat.util import EXPOSURE_GRID_FILE, get_crs_repr
+from fiat.util import get_crs_repr
 
 logger = spawn_logger(__name__)
 
@@ -26,34 +25,6 @@ def check_available_values(
         raise FIATDataError(
             f"{msg} value: '{value}' invalid, chose from {available}",
         )
-
-
-def check_config_entries(
-    cfg: Configurations,
-    mandatory_entries: list | tuple,
-) -> None:
-    """Check the mandatory config entries."""
-    _check = [cfg.get(item) for item in mandatory_entries]
-    if not all(_check):
-        _missing = [item for item, b in zip(mandatory_entries, _check) if not b]
-        msg = f"Missing mandatory entries in the settings. Please fill in the \
-following missing entries: {_missing}"
-        raise FIATDataError(msg)
-
-
-def check_config_grid(
-    cfg: Configurations,
-) -> bool:
-    """Check the grid config entries."""
-    entry = cfg.get(EXPOSURE_GRID_FILE)
-    if entry is None:
-        logger.warning(
-            f"Info for the grid (raster) model was found, but not all. \
-            {EXPOSURE_GRID_FILE} was/ were missing"
-        )
-        return False
-
-    return True
 
 
 ## Text files
