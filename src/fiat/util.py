@@ -20,13 +20,17 @@ from pyproj.crs import CRS
 ## Config entries
 # Building blocks
 AREA = "area"
+CATEGORIZED = "categorized"
 CENTROID = "centroid"
 CHUNK = "chunk"
+COMBINED = "combined"
 CONFIG = "config"
 CRSS = "crs"
+CURVE = "curve"
 BASE = "base"
 BUFFERS = "buffers"
 DAMAGE = "damage"
+DEFAULT = "default"
 DEPTH = "depth"
 EAD = "ead"
 EXPOSURE = "exposure"
@@ -108,6 +112,7 @@ EXPOSURE__META = f"{EXPOSURE}_{META}"
 FIAT_METHOD = f"{FIAT}.{METHOD}"
 FLOOD_DEPTH = f"{FLOOD}.{DEPTH}"
 FLOOD_LEVEL = f"{FLOOD}.{LEVEL}"
+FN__CURVE = f"{FN}_{CURVE}"
 HAZARD__META = f"{HAZARD}_{META}"
 OUTPUT__PATH = f"{OUTPUT}_{PATH}"
 RUN__META = f"{RUN}_{META}"
@@ -384,7 +389,7 @@ def get_crs_repr(
     auth = crs.to_authority()
 
     if auth is None:
-        return crs.to_proj4()
+        return crs.to_wkt()
 
     return ":".join(auth)
 

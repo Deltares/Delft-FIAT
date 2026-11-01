@@ -12,6 +12,7 @@ MODEL_SETTINGS = [
     "geom_event_outside",
     "geom_risk",
     "geom_risk_2g",
+    "grid_cat",
     "grid_event",
     "grid_risk",
     "grid_unequal",

@@ -307,7 +307,7 @@ PROJCRS["Custom Site Grid",
     r = get_crs_repr(crs)
 
     # Assert the output
-    assert r.startswith("+proj")
+    assert r.startswith("PROJCRS")
 
 
 def test_get_crs_repr_error():

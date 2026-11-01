@@ -109,3 +109,87 @@ def test_main_run_grid(
     run_patches.grid_model.assert_called_once_with(settings)
     run_patches.grid_model.return_value.run.assert_called_once_with()
     run_patches.geom_model.assert_not_called()
+
+
+def test_main_run_threads(
+    run_patches: Mock,
+    mocker: MockerFixture,
+    tmp_path: Path,
+    settings_files: Callable[[str], Path],
+    model_settings: Callable[[str], GridSettings],
+):
+    # Get the file and settings
+    file = settings_files("grid_event.toml")
+    settings = model_settings(file)
+    # Mock loading the config file
+    mocker.patch("fiat.cli.main.load_settings", return_value=settings)
+
+    # Run with only the threads override
+    mocker.patch.object(
+        cli_main.sys,
+        "argv",
+        [
+            "fiat",
+            "run",
+            file.as_posix(),
+            "--threads",
+            "2",
+            "-s",
+            f"output_dir={tmp_path.as_posix()}",
+        ],
+    )
+
+    # Call the function
+    cli_main.main(["use-sys-argv"])
+
+    # Assert the override landed on the config
+    assert settings.threads == 2
+
+
+@pytest.mark.parametrize(
+    ("flags", "level"),
+    [
+        ([], 2),
+        (["-q"], 3),
+        (["-qq"], 4),
+        (["-qqqq"], 5),  # Clipped to the highest level
+        (["-v"], 1),
+        (["-vv"], 1),  # Clipped to the lowest level
+        (["-q", "-v"], 2),
+    ],
+)
+def test_main_run_loglevel(
+    run_patches: Mock,
+    mocker: MockerFixture,
+    tmp_path: Path,
+    settings_files: Callable[[str], Path],
+    model_settings: Callable[[str], GridSettings],
+    flags: list[str],
+    level: int,
+):
+    # Get the file and settings, the default log level is INFO (2)
+    file = settings_files("grid_event.toml")
+    settings = model_settings(file)
+    assert settings.loglevel == "INFO"
+    # Mock loading the config file
+    mocker.patch("fiat.cli.main.load_settings", return_value=settings)
+
+    # Run with the quiet/ verbose flags
+    mocker.patch.object(
+        cli_main.sys,
+        "argv",
+        [
+            "fiat",
+            "run",
+            file.as_posix(),
+            "-s",
+            f"output_dir={tmp_path.as_posix()}",
+            *flags,
+        ],
+    )
+
+    # Call the function
+    cli_main.main(["use-sys-argv"])
+
+    # Assert the log level, higher is less output
+    assert run_patches.logger.level == level

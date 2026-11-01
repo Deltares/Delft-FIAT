@@ -107,6 +107,34 @@ def test_settings_base_errors(testdata_dir: Path, settings_dummy: dict[str, Any]
         )
 
 
+def test_settings_base_errors_loglevel(
+    testdata_dir: Path,
+    settings_dummy: dict[str, Any],
+):
+    settings_dummy["loglevel"] = "foo"
+    # Load settings with an invalid log level
+    with pytest.raises(
+        ValidationError,
+        match="Level \\(foo\\) is not a valid log level",
+    ):
+        _ = BaseSettings.model_validate(
+            settings_dummy,
+            context=FileContext(config_dir=testdata_dir),
+        )
+
+
+def test_settings_base_loglevel(testdata_dir: Path, settings_dummy: dict[str, Any]):
+    settings_dummy["loglevel"] = "DEBUG"
+    # Load settings
+    settings = BaseSettings.model_validate(
+        settings_dummy,
+        context=FileContext(config_dir=testdata_dir),
+    )
+
+    # Assert simple stuff
+    assert settings.loglevel == "DEBUG"
+
+
 def test_settings_base_to_dict(testdata_dir: Path, settings_dummy: dict[str, Any]):
     # Load settings
     settings = BaseSettings.model_validate(
@@ -143,6 +171,19 @@ def test_settings_base_from_toml(settings_files: Callable[[str], Path]):
     # Assert settings
     assert settings.threads == 1
     assert settings.hazard.file.is_file()
+
+
+def test_settings_grid_output(testdata_dir: Path, settings_dummy: dict[str, Any]):
+    settings_dummy["type"] = "grid"
+    settings_dummy["exposure"] = {"file": "exposure/spatial.nc"}
+    # Load settings without specifying an output file
+    settings = GridSettings.model_validate(
+        settings_dummy,
+        context=FileContext(config_dir=testdata_dir),
+    )
+
+    # Assert the output file is derived from the exposure file
+    assert settings.output.file.name == "spatial.tif"
 
 
 def test_settings_load_settings_geom(settings_files: Callable[[str], Path]):

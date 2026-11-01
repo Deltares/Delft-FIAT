@@ -61,6 +61,13 @@ def exposure_grid_path(testdata_dir: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
+def exposure_grid_cat_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "exposure", "spatial_cat.nc")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
 def hazard_event_path(testdata_dir: Path) -> Path:
     p = Path(testdata_dir, "event_map.nc")
     assert p.is_file()
@@ -92,6 +99,13 @@ def hazard_risk_path(testdata_dir: Path) -> Path:
 @pytest.fixture(scope="session")
 def vulnerability_path(testdata_dir: Path) -> Path:
     p = Path(testdata_dir, "vulnerability", "curves.csv")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
+def vulnerability_cat_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "vulnerability", "curves_cat.csv")
     assert p.is_file()
     return p
 
@@ -154,6 +168,14 @@ def exposure_geom_data(exposure_geom_path: Path) -> FlatGeobufReader:
 @pytest.fixture
 def exposure_grid_data(exposure_grid_path: Path) -> NetcdfReader:
     ds = open_grid(exposure_grid_path)  # Read only
+    ds.load()
+    assert isinstance(ds, NetcdfReader)
+    return ds
+
+
+@pytest.fixture
+def exposure_grid_cat_data(exposure_grid_cat_path: Path) -> NetcdfReader:
+    ds = open_grid(exposure_grid_cat_path)  # Read only
     ds.load()
     assert isinstance(ds, NetcdfReader)
     return ds
@@ -228,6 +250,13 @@ def settings_dummy() -> dict[str, Any]:
         "hazard": {"file": "event_map.nc"},
         "vulnerability": {"file": "vulnerability/curves.csv"},
     }
+
+
+@pytest.fixture(scope="session")
+def vulnerability_cat_data(vulnerability_cat_path: Path) -> Table:
+    ds = open_csv(vulnerability_cat_path, index="depth")
+    assert isinstance(ds, Table)
+    return ds
 
 
 @pytest.fixture(scope="session")

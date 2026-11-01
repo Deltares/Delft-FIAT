@@ -26,6 +26,19 @@ def test_get_run_meta():
     assert not meta.risk
     assert meta.type == "flood.depth"
     assert meta.type_length == 1
+    assert meta.cell_size == 1.0
+
+
+def test_get_run_meta_cell_size():
+    # Call the function
+    meta = get_run_meta(
+        risk=False,
+        method=flood.depth,
+        cell_size=25.0,
+    )
+
+    # Assert the output
+    assert meta.cell_size == 25.0
 
 
 def test_get_vulnerability_meta(vulnerability_data_run: Table):
@@ -133,10 +146,43 @@ def test_get_exposure_grid_meta(
     # Assert the output
     assert meta.fn_list == ["struct_1", "struct_2"]
     assert meta.index_ead is None
+    assert meta.indices_cat == []
+    assert meta.indices_cat_new == []
+    assert meta.indices_cat_values == []
+    assert meta.indices_default == [0, 1]
+    assert meta.indices_default_new == [0, 1]
     assert meta.indices_new == [[0, 1]]
     assert meta.indices_total == [2]
     assert meta.nb == 3
     assert meta.new == ["exposure1_1", "exposure2_1", "total_1"]
+
+
+def test_get_exposure_grid_meta_cat(
+    exposure_grid_cat_data: NetcdfReader,
+    run_meta: RunMeta,
+    hazard_meta_run: HazardMeta,
+    vulnerability_cat_meta_run: VulnerabilityMeta,
+):
+    # Call the function
+    meta = get_exposure_grid_meta(
+        exposure=exposure_grid_cat_data,
+        run_meta=run_meta,
+        hazard_meta=hazard_meta_run,
+        vulnerability_meta=vulnerability_cat_meta_run,
+    )
+
+    # Assert the output
+    assert meta.fn_list == []
+    assert meta.index_ead is None
+    assert meta.indices_cat == [0]
+    assert meta.indices_cat_new == [0]
+    assert meta.indices_cat_values == [[1]]
+    assert meta.indices_default == []
+    assert meta.indices_default_new == []
+    assert meta.indices_new == [[0]]
+    assert meta.indices_total == [1]
+    assert meta.nb == 2
+    assert meta.new == ["exposure_values_1", "total_1"]
 
 
 def test_get_exposure_grid_meta_risk(
@@ -156,6 +202,11 @@ def test_get_exposure_grid_meta_risk(
     # Assert the output
     assert meta.fn_list == ["struct_1", "struct_2"]
     assert meta.index_ead == 12
+    assert meta.indices_cat == []
+    assert meta.indices_cat_new == []
+    assert meta.indices_cat_values == []
+    assert meta.indices_default == [0, 1]
+    assert meta.indices_default_new == [0, 4, 1, 5, 2, 6, 3, 7]
     assert meta.indices_new == [[0, 4], [1, 5], [2, 6], [3, 7]]
     assert meta.indices_total == [8, 9, 10, 11]
     assert meta.nb == 13

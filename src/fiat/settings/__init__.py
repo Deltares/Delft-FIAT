@@ -18,6 +18,7 @@ from pydantic import (
 )
 
 from fiat.log import spawn_logger
+from fiat.log.util import LogLevels
 from fiat.util import (
     EXPOSURE,
     FILE,
@@ -134,6 +135,14 @@ Can be either 'flood.depth' or 'flood.level'.",
         return _relpath(value=value, root=context.config_dir)
 
     # Validators(s)
+    @field_validator("loglevel", mode="after")
+    @classmethod
+    def validate_loglevel(cls, value: str):
+        """Validate the loglevel validity."""
+        if value not in LogLevels._member_map_:
+            raise ValueError(f"Level ({value}) is not a valid log level.")
+        return value
+
     @field_validator("output_dir", mode="after")
     @classmethod
     def validate_output_path(cls, value: Path, info: ValidationInfo):
@@ -316,7 +325,7 @@ class GridSettings(BaseSettings):
         if self.output is not None:
             return self
         self.output = OutputFileModel.model_validate(
-            file=self.exposure.file.with_suffix(".tif").name,
+            {FILE: self.exposure.file.with_suffix(".tif").name},
             context=info.context or DEFAULT_CONTEXT,
         )
         return self

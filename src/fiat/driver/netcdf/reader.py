@@ -10,6 +10,9 @@ from fiat.driver.raster import GridProfile
 
 __all__ = ["NetcdfReader", "NetcdfVariable"]
 
+YDIMS = ["y", "lat", "latitude"]
+XDIMS = ["x", "lon", "long", "longitude"]
+
 
 def check_state(m):
     """Guard a method against being called on a closed driver."""
@@ -32,6 +35,7 @@ class NetcdfVariable:
 
         # Attributes
         self._nodata: float | None = None
+        self._spatial: bool = False
 
         # Held data in memory
         self._data: np.ndarray | None = None
@@ -52,6 +56,10 @@ class NetcdfVariable:
 
     def _discover_attributes(self):
         self._nodata = self._obj.__dict__.get("_FillValue")
+        # Spatial flag
+        yflag = not set(YDIMS).isdisjoint(self._obj.dimensions)
+        xflag = not set(XDIMS).isdisjoint(self._obj.dimensions)
+        self._spatial = yflag and xflag
 
     @classmethod
     def _create(
@@ -75,6 +83,12 @@ class NetcdfVariable:
         """Return the in memory data."""
         return self._data
 
+    @data.setter
+    def data(self, values: np.ndarray) -> None:
+        """Set the data when mutating it."""
+        assert self._data.shape == values.shape
+        self._data = values
+
     @property
     def dtype(self) -> str:
         """Return the data type of the variable."""
@@ -93,7 +107,7 @@ class NetcdfVariable:
     @property
     def is_spatial(self) -> bool:
         """Return whether the variable is a spatial one."""
-        ...
+        return self._spatial
 
     ## I/O methods
     def clear(self) -> None:
@@ -112,7 +126,10 @@ class NetcdfVariable:
             The window to read. When no extend is provided, the full variable is read.
         """
         select = (slice(None),) if not window else window
-        data = self._obj[*select]
+        if self.is_spatial:
+            data = self._obj[*select]
+        else:
+            data = self._obj[:]
         self._data = data
         return self._data
 
@@ -120,6 +137,14 @@ class NetcdfVariable:
     def get_attr(self, var: str):
         """Get an attribute from the netcdf variable."""
         return self._obj.getncattr(name=var)
+
+    def get_attr_lazy(self, var: str):
+        """Get an attribute in a forgiving manner."""
+        return self._obj.__dict__.get(var, None)
+
+    def has_as_dim(self, dim: str):
+        """Return whether this var has a certain dimension."""
+        return not set([dim]).isdisjoint(self._obj.dimensions)
 
     ## Mutating methods
     def set(
@@ -227,19 +252,14 @@ class NetcdfReader:
     def _discover_spatial_dims(self) -> None:
         """Discover the spatial dimensions of the dataset and build the profile."""
         try:
-            yvar = next(
-                item for item in ["y", "lat", "latitude"] if item in self.src.dimensions
-            )
-            xvar = next(
-                item
-                for item in ["x", "lon", "longitude"]
-                if item in self.src.dimensions
-            )
-            self.ydim = self.src.variables[yvar]
-            self.xdim = self.src.variables[xvar]
+            yvar = next(item for item in YDIMS if item in self.src.dimensions)
+            xvar = next(item for item in XDIMS if item in self.src.dimensions)
         except StopIteration:
             raise ValueError("Couldn't derive the spatial dimensions")
 
+        # Set data and metadata
+        self.ydim = self.src.variables[yvar]
+        self.xdim = self.src.variables[xvar]
         self.profile = GridProfile(
             xvals=self.xdim[:],
             yvals=self.ydim[:],
@@ -293,3 +313,12 @@ class NetcdfReader:
         """Load spatial variables into memory."""
         for var in self._variables:
             _ = var.load(*window)
+
+    ## Get methods
+    def get_attr(self, var: str):
+        """Get an attribute from the netcdf variable."""
+        return self.src.getncattr(name=var)
+
+    def get_attr_lazy(self, var: str):
+        """Get an attribute in a forgiving manner."""
+        return self.src.__dict__.get(var, None)

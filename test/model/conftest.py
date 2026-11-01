@@ -119,9 +119,31 @@ def exposure_geom_risk_meta_run() -> ExposureGeomMeta:
 
 
 @pytest.fixture(scope="session")
+def exposure_grid_cat_meta_run() -> ExposureGridMeta:
+    meta = ExposureGridMeta(
+        fn_list=[],
+        indices_cat=[0],
+        indices_cat_values=[[1]],
+        indices_default=[],
+        indices_cat_new=[0],
+        indices_default_new=[],
+        indices_new=[[0]],
+        indices_total=[1],
+        nb=2,
+        new=["exposure_values_1", "total_1"],
+    )
+    return meta
+
+
+@pytest.fixture(scope="session")
 def exposure_grid_meta_run() -> ExposureGridMeta:
     meta = ExposureGridMeta(
         fn_list=["struct_1", "struct_2"],
+        indices_cat=[],
+        indices_cat_values=[[]],
+        indices_default=[0, 1],
+        indices_cat_new=[],
+        indices_default_new=[0, 1],
         indices_new=[[0, 1]],
         indices_total=[2],
         nb=3,
@@ -136,6 +158,11 @@ def exposure_grid_risk_meta_run() -> ExposureGridMeta:
     meta = ExposureGridMeta(
         fn_list=["struct_1", "struct_2"],
         index_ead=12,
+        indices_cat=[],
+        indices_cat_values=[[]],
+        indices_default=[0, 1],
+        indices_cat_new=[],
+        indices_default_new=[0, 4, 1, 5, 2, 6, 3, 7],
         indices_new=[[0, 4], [1, 5], [2, 6], [3, 7]],
         indices_total=[8, 9, 10, 11],
         nb=13,
@@ -206,6 +233,26 @@ def vulnerability_data_run(vulnerability_data: Table) -> Table:
     new = Table(data, index=x, columns=vulnerability_data.columns)
     new.index_name = vulnerability_data.index_name
     return new
+
+
+@pytest.fixture(scope="session")
+def vulnerability_cat_meta_run(vulnerability_cat_data: Table) -> VulnerabilityMeta:
+    fn_list = ["1", "2"]
+    fn = {
+        item: make_interp_spline(
+            vulnerability_cat_data.index,
+            vulnerability_cat_data[:, item],
+            k=1,
+        )
+        for item in fn_list
+    }
+    meta = VulnerabilityMeta(
+        fn=fn,
+        fn_list=fn_list,
+        min=0,
+        max=5,
+    )
+    return meta
 
 
 @pytest.fixture(scope="session")
