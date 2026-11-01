@@ -1,6 +1,6 @@
 ## Build system related stuff
 [build-system]
-requires = ["cython", "numpy", "setuptools>=61.0.0", "wheel"]
+requires = ["cython", "numpy", "setuptools>=84.2.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -29,6 +29,7 @@ readme = "README.md"
 
 requires-python = ">=3.12"
 dependencies = [
+    "certifi>=2026.10.19",
     "netcdf4",
     "numpy",
     "pydantic",
@@ -71,7 +72,7 @@ classifiers = [
 [project.optional-dependencies] # Optional
 all = [
     "cython",
-    "pyinstaller>=6.0.0",
+    "pyinstaller>=6.22.3",
     "tomlkit",
 ]
 dev = [
@@ -79,7 +80,7 @@ dev = [
     "mypy",
     "pre-commit",
     "ruff",
-    "setuptools>=61.0.0",
+    "setuptools>=84.2.1",
 ]
 docs = [
     "griffe==1.15.0",
@@ -90,7 +91,7 @@ docs = [
     "quartodoc==0.11.1",
 ]
 test = [
-    "pytest>=2.7.3",
+    "pytest>=9.1.1",
     "pytest-cov",
     "pytest-mock",
     "responses",

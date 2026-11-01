@@ -17,13 +17,24 @@ def test_interp1d():
     np.testing.assert_almost_equal(fn(3.5), 7.0)  # Between knots
 
 
-def test_interp1d_extrapolate():
+def test_interp1d_outside_grid():
     # Set the object
     fn = Interp1D([1.0, 3.0, 6.0], [2.0, 6.0, 12.0])
 
-    # Assert linear extrapolation along the first and last segment
-    np.testing.assert_almost_equal(fn(0.0), 0.0)  # Below the first knot
-    np.testing.assert_almost_equal(fn(9.0), 18.0)  # Above the last knot
+    # Queries outside the grid hold the boundary values (no extrapolation)
+    np.testing.assert_almost_equal(fn(0.0), 2.0)  # Below the first knot
+    np.testing.assert_almost_equal(fn(-5.0), 2.0)  # Far below the first knot
+    np.testing.assert_almost_equal(fn(9.0), 12.0)  # Above the last knot
+    np.testing.assert_array_almost_equal(fn([0.0, 9.0]), [2.0, 12.0])  # Array call
+
+
+def test_interp1d_negative_depth():
+    # A damage curve starting at (0, 0), queried below the ground floor (issue #205)
+    fn = Interp1D([0.0, 0.2, 1.0], [0.0, 0.1965981, 1.0])
+
+    # Water below the first curve depth causes no damage, not negative damage
+    np.testing.assert_almost_equal(fn(-0.164498), 0.0)
+    assert fn(-0.164498) * 6766.98 == 0.0
 
 
 def test_interp1d_nan():
@@ -87,4 +98,5 @@ def test_interp1d_pickle():
 
     # Assert the restored object behaves the same
     assert isinstance(restored, Interp1D)
-    np.testing.assert_array_almost_equal(restored([0.5, 2.0, 4.0]), [1.0, 5.0, 11.0])
+    # (4.0 lies above the last knot and holds the last value)
+    np.testing.assert_array_almost_equal(restored([0.5, 2.0, 4.0]), [1.0, 5.0, 8.0])

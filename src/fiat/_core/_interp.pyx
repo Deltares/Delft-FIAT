@@ -92,21 +92,14 @@ cdef class Interp1D:
         if isnan(xq):
             return NAN
 
-        # Below the first knot: extrapolate along the first segment.
+        # Outside the grid: hold the boundary value, like numpy.interp. A
+        # vulnerability curve is only defined between its first and last depth;
+        # extrapolating along the end segments gives negative damage below the
+        # first depth and damage above the last curve value beyond it.
         if xq <= self._x[0]:
-            x0 = self._x[0]
-            x1 = self._x[1]
-            y0 = self._y[0]
-            y1 = self._y[1]
-            return y0 + (y1 - y0) * (xq - x0) / (x1 - x0)
-
-        # Above the last knot: extrapolate along the last segment.
+            return self._y[0]
         if xq >= self._x[n - 1]:
-            x0 = self._x[n - 2]
-            x1 = self._x[n - 1]
-            y0 = self._y[n - 2]
-            y1 = self._y[n - 1]
-            return y0 + (y1 - y0) * (xq - x0) / (x1 - x0)
+            return self._y[n - 1]
 
         # Binary search for the interval [lo, lo + 1] containing xq.
         lo = 0
