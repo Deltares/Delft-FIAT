@@ -389,7 +389,7 @@ def get_crs_repr(
     auth = crs.to_authority()
 
     if auth is None:
-        return crs.to_proj4()
+        return crs.to_wkt()
 
     return ":".join(auth)
 

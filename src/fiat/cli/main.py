@@ -88,7 +88,7 @@ def run(args):
     )
     # Set the logging level
     logger.level = min(
-        5, max(1, LogLevels[settings.loglevel].value - args.quiet + args.verbose)
+        5, max(1, LogLevels[settings.loglevel].value + args.quiet - args.verbose)
     )
 
     # Add the model version

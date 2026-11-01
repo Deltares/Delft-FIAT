@@ -1,6 +1,7 @@
 import pickle
 from pathlib import Path
 
+import netCDF4 as nc4
 import numpy as np
 import pytest
 from pyproj.crs import CRS
@@ -89,6 +90,93 @@ def test_netcdf_load(hazard_event_path: Path):
     # Hold a window in memory and have it served from the cache
     held = band.load(*window)
     np.testing.assert_array_equal(band[*window], held)
+
+
+def test_netcdf_load_non_spatial(exposure_grid_cat_path: Path):
+    # Open the dataset
+    ds = NetcdfReader(exposure_grid_cat_path)
+    var = ds.variables["exposure_values"]
+
+    # A non spatial variable is always read in full, a window is ignored
+    data = var.load(slice(0, 2), slice(0, 2))
+    np.testing.assert_array_equal(data, [0, 5000, 3000])
+    np.testing.assert_array_equal(var.data, [0, 5000, 3000])
+
+
+def test_netcdf_get_attr(tmp_path: Path):
+    # Create a minimal dataset with a global attribute
+    p = Path(tmp_path, "foo.nc")
+    src = nc4.Dataset(filename=p, mode="w")
+    for name in ("lat", "lon"):
+        src.createDimension(dimname=name, size=3)
+        dim = src.createVariable(varname=name, datatype="f4", dimensions=(name,))
+        dim[:] = np.arange(0.5, 3.0, 1.0)
+    src.setncattr("title", "foo")
+    src.close()
+
+    # Open the dataset
+    ds = NetcdfReader(p)
+
+    # Assert the attribute getters
+    assert ds.get_attr("title") == "foo"
+    assert ds.get_attr_lazy("title") == "foo"
+    # The lazy getter is forgiving
+    assert ds.get_attr_lazy("bar") is None
+
+
+def test_netcdf_variable_attr(exposure_grid_cat_path: Path):
+    # Open the dataset
+    ds = NetcdfReader(exposure_grid_cat_path)
+    var = ds.variables["exposure"]
+
+    # Assert the attribute getters
+    assert var.get_attr("type") == "categorized"
+    assert var.get_attr_lazy("type") == "categorized"
+    # The lazy getter is forgiving
+    assert var.get_attr_lazy("foo") is None
+
+
+def test_netcdf_variable_data(exposure_grid_cat_path: Path):
+    # Open the dataset and load the data
+    ds = NetcdfReader(exposure_grid_cat_path)
+    var = ds.variables["exposure"]
+    var.load()
+
+    # Assert the loaded data
+    assert var.nodata == 0
+    assert var.data.shape == (10, 10)
+    assert var[0, 1] == 1
+    assert var[1, 5] == 2
+
+    # Set new data of the same shape
+    new = np.ones((10, 10), dtype=var.data.dtype)
+    var.data = new
+    assert var.data is new
+
+    # Setting data of another shape is not allowed
+    with pytest.raises(AssertionError):
+        var.data = np.ones((5, 5), dtype=var.data.dtype)
+
+
+def test_netcdf_variable_dim(exposure_grid_cat_path: Path):
+    # Open the dataset
+    ds = NetcdfReader(exposure_grid_cat_path)
+
+    # Assert the dimensions of the variables
+    assert ds.variables["exposure"].has_as_dim("lat")
+    assert not ds.variables["exposure"].has_as_dim("exposure_cat")
+    assert ds.variables["exposure_values"].has_as_dim("exposure_cat")
+    assert not ds.variables["exposure_values"].has_as_dim("lat")
+
+
+def test_netcdf_variable_is_spatial(exposure_grid_cat_path: Path):
+    # Open the dataset
+    ds = NetcdfReader(exposure_grid_cat_path)
+
+    # Assert the spatial flag
+    assert ds.names == ["exposure", "exposure_values"]
+    assert ds.variables["exposure"].is_spatial
+    assert not ds.variables["exposure_values"].is_spatial
 
 
 def test_netcdf_state_error(hazard_event_path: Path):

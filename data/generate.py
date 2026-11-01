@@ -407,6 +407,7 @@ def create_settings_grid():
     doc_c = copy.deepcopy(doc)
     doc_c["output_dir"] = "output/grid_cat"
     doc_c["exposure"]["file"] = "exposure/spatial_cat.nc"
+    doc_c["vulnerability"]["file"] = "vulnerability/curves_cat.csv"
 
     with open(Path(p, "grid_cat.toml"), "w") as f:
         tomlkit.dump(doc_c, f)
@@ -431,6 +432,29 @@ def create_vulnerability():
         f.write(b"#UNIT=meter\n")
         f.write(b"#method=mean,max\n")
         f.write(b"depth,struct_1,struct_2\n")
+        for idx, item in enumerate(wd):
+            f.write(f"{item},{dc1[idx]},{dc2[idx]}\n".encode())
+
+
+def create_vulnerability_categorized():
+    """Create vulnerability curves with integers as headers (categorized)."""
+
+    # Function for creating the curves
+    def log_base(b, x):
+        r = math.log(x) / math.log(b)
+        if r < 0:
+            return 0
+        return r
+
+    wd = np.arange(0, 5.25, 0.25)
+    dc1 = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
+    dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
+
+    # Write to a csv
+    with open(Path(p, "vulnerability", "curves_cat.csv"), mode="wb") as f:
+        f.write(b"#UNIT=meter\n")
+        f.write(b"#method=mean,max\n")
+        f.write(b"depth,1,2\n")
         for idx, item in enumerate(wd):
             f.write(f"{item},{dc1[idx]},{dc2[idx]}\n".encode())
 
@@ -473,5 +497,6 @@ if __name__ == "__main__":
     create_settings_geom()
     create_settings_grid()
     create_vulnerability()
+    create_vulnerability_categorized()
     create_vulnerability_win()
     gc.collect()

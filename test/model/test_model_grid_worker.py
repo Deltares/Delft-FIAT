@@ -71,6 +71,45 @@ def test_array_worker(
     np.testing.assert_almost_equal(np.nanmax(out_array[2]), 4648, decimal=0)
 
 
+def test_array_worker_cat(
+    run_meta: RunMeta,
+    hazard_event_data: NetcdfReader,
+    hazard_meta_run: HazardMeta,
+    vulnerability_cat_meta_run: VulnerabilityMeta,
+    exposure_grid_cat_data: NetcdfReader,
+    exposure_grid_cat_meta_run: ExposureGridMeta,
+):
+    # Create the out_array
+    out_array = np.zeros((exposure_grid_cat_meta_run.nb, 10, 10)) * np.nan
+    # Call the function
+    array_worker(
+        out_array=out_array,
+        run_meta=run_meta,
+        hazard=hazard_event_data,
+        hazard_meta=hazard_meta_run,
+        vulnerability_meta=vulnerability_cat_meta_run,
+        exposure=exposure_grid_cat_data,
+        exposure_meta=exposure_grid_cat_meta_run,
+        fn_impact=flood.depth.fn_impact,
+    )
+
+    # Assert the output
+    assert out_array.shape == (exposure_grid_cat_meta_run.nb, 10, 10)
+    # Cell (8, 8) has a zero damage fraction, which is set to nan
+    assert np.isnan(out_array[0, 8, 8])
+    assert np.isfinite(out_array[0]).sum() == 5
+
+    # Assert the propagation per category (1: value 5000, 2: value 3000)
+    np.testing.assert_almost_equal(out_array[0, 0, 1], 3800, decimal=0)
+    np.testing.assert_almost_equal(out_array[0, 3, 9], 560, decimal=0)
+    np.testing.assert_almost_equal(out_array[0, 1, 5], 2382, decimal=0)
+    np.testing.assert_almost_equal(out_array[0, 5, 6], 906, decimal=0)
+    np.testing.assert_almost_equal(out_array[0, 9, 2], 906, decimal=0)
+
+    # Assert the total, only one categorized layer so equal to the layer itself
+    np.testing.assert_array_equal(out_array[1], out_array[0])
+
+
 def test_array_worker_risk(
     run_risk_meta: RunMeta,
     hazard_risk_data: NetcdfReader,
