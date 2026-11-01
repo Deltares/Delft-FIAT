@@ -78,9 +78,6 @@ def fgb_writer(
 
 def netcdf_handle(
     fname: Path | str,
-    lats: np.ndarray,
-    lons: np.ndarray,
-    crs: CRS | str | None = None,
 ) -> nc4.Dataset:
     """Simply create netcdf files."""
     # Open the file
@@ -88,6 +85,34 @@ def netcdf_handle(
         filename=Path(DATA_DIR, fname),
         mode="w",
     )
+    return ds
+
+
+def netcdf_dimension(
+    ds,
+    name: str,
+    values: np.ndarray | list,
+    dtype: str = "f4",
+) -> None:
+    """Create a dimensions."""
+    # Create the dimension
+    ds.createDimension(dimname=name, size=len(values))
+    # Setup the variable
+    dim = ds.createVariable(
+        varname=name,
+        datatype=dtype,
+        dimensions=(name,),
+    )
+    dim[:] = values
+
+
+def netcdf_spatial_dimensions(
+    ds: nc4.Dataset,
+    lats: np.ndarray,
+    lons: np.ndarray,
+    crs: CRS | str | None = None,
+) -> None:
+    """Create the spatial dimensions."""
     # Create the spatial dimensions
     ds.createDimension(dimname="lat", size=len(lats))
     ds.createDimension(dimname="lon", size=len(lons))
@@ -119,25 +144,41 @@ def netcdf_handle(
             "spatial_ref": crs.to_wkt(),
         }
     )
-    gtf = [lons[0], np.diff(lons).mean(), 0.0, lats[0], 0.0, np.diff(lats).mean()]
-    gtf = [float(item) for item in gtf]
-    reference.setncattr("GeoTransform", str(gtf).strip("[]").replace(",", ""))
-    return ds
 
 
-def netcdf_variable(
+def netcdf_spatial_variable(
     ds: nc4.Dataset,
     name: str,
+    dtype: str = "f4",
+    fill_value: float | int = -9999,
 ) -> nc4.Variable:
-    """Simply create a netcdf variable in a dataset."""
+    """Simply create a spatial netcdf variable in a dataset."""
     data = ds.createVariable(
         varname=name,
-        datatype="f4",
+        datatype=dtype,
         dimensions=("lat", "lon"),
-        fill_value=-9999,
+        fill_value=fill_value,
     )
 
     # Check if there is a spatial reference present
     if "spatial_ref" in ds.variables:
         data.setncattr("grid_mapping", "spatial_ref")
+    return data
+
+
+def netcdf_variable(
+    ds: nc4.Dataset,
+    name: str,
+    dims: tuple[str, ...],
+    dtype: str = "f4",
+    fill_value: float | int = -9999,
+) -> nc4.Variable:
+    """Simply create a netcdf variable in a dataset."""
+    data = ds.createVariable(
+        varname=name,
+        datatype=dtype,
+        dimensions=dims,
+        fill_value=fill_value,
+    )
+    # Return the variable
     return data

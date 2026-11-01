@@ -4,12 +4,20 @@ import copy
 import gc
 import math
 import os
+import warnings
 from itertools import product
 from pathlib import Path
 
 import numpy as np
 import tomlkit
-from generate_helpers import fgb_writer, netcdf_handle, netcdf_variable
+from generate_helpers import (
+    fgb_writer,
+    netcdf_dimension,
+    netcdf_handle,
+    netcdf_spatial_dimensions,
+    netcdf_spatial_variable,
+    netcdf_variable,
+)
 
 p = Path(__file__).parent
 
@@ -17,6 +25,9 @@ directories = (
     "exposure",
     "vulnerability",
 )
+
+# Suppress some warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 def create_dbase_stucture():
@@ -71,15 +82,16 @@ def create_exposure_geoms_outside():
 
 def create_exposure_grid():
     """Create raster file with exposure data for grid model."""
-    ds = netcdf_handle(
-        fname="exposure/spatial.nc",
+    ds = netcdf_handle(fname="exposure/spatial.nc")
+    netcdf_spatial_dimensions(
+        ds=ds,
         lats=np.arange(9.5, 0.4, -1),
         lons=np.arange(0.5, 9.6, 1),
         crs="EPSG:4326",
     )
 
     # Setup variables 1
-    var = netcdf_variable(ds=ds, name="exposure1")
+    var = netcdf_spatial_variable(ds=ds, name="exposure1")
     data = np.ones((10, 10)) * -9999
     # Create spatially different data
     data[0, 1] = 2200
@@ -97,7 +109,7 @@ def create_exposure_grid():
     var = None
 
     # Setup band 2
-    var = netcdf_variable(ds=ds, name="exposure2")
+    var = netcdf_spatial_variable(ds=ds, name="exposure2")
     data = np.ones((10, 10)) * -9999
     # Create spatially different data
     data[0, 1] = 3100
@@ -122,17 +134,67 @@ def create_exposure_grid():
     ds = None
 
 
+def create_exposure_categorized_grid():
+    """Create raster file with exposure data for grid model."""
+    ds = netcdf_handle(fname="exposure/spatial_cat.nc")
+    netcdf_spatial_dimensions(
+        ds=ds,
+        lats=np.arange(9.5, 0.4, -1),
+        lons=np.arange(0.5, 9.6, 1),
+        crs="EPSG:4326",
+    )
+    netcdf_dimension(
+        ds=ds,
+        name="exposure_cat",
+        values=np.array([0, 1, 2]),
+        dtype="i4",
+    )
+
+    # Setup spatial variable
+    var = netcdf_spatial_variable(ds=ds, name="exposure", dtype="i4", fill_value=0)
+    data = np.zeros((10, 10), dtype=np.int32)
+    # Create spatially different data
+    data[0, 1] = 1
+    data[1, 5] = 2
+    data[5, 6] = 2
+    data[3, 9] = 1
+    data[9, 2] = 2
+    data[8, 8] = 1
+    # Set the metadata
+    var.setncattr("categories", [0, 1, 2])
+    var.setncattr("type", "categorized")
+
+    # Setup the category variable
+    var2 = netcdf_variable(
+        ds=ds,
+        name="exposure_values",
+        dims=("exposure_cat",),
+        dtype="i4",
+        fill_value=-9999,
+    )
+
+    # Write the data
+    var[:] = data
+    var2[:] = np.array([0, 5000, 3000], dtype=np.int32)
+
+    # Flush the data
+    ds.sync()
+    var = None
+    var2 = None
+
+
 def create_hazard_event_map(fname: Path | str, crs: str = None):
     """Create hazard event map."""
-    ds = netcdf_handle(
-        fname=fname,
+    ds = netcdf_handle(fname=fname)
+    netcdf_spatial_dimensions(
+        ds=ds,
         lats=np.arange(9.5, 0.4, -1),
         lons=np.arange(0.5, 9.6, 1),
         crs=crs,
     )
 
     # Create the variables
-    var = netcdf_variable(ds=ds, name="data")
+    var = netcdf_spatial_variable(ds=ds, name="data")
 
     # Create the data
     data = np.zeros((10, 10))
@@ -155,22 +217,25 @@ def create_hazard_event_map(fname: Path | str, crs: str = None):
 
 def create_hazard_event_map_highres():
     """Create a high resolution hazard map to be reprojected."""
-    ds = netcdf_handle(
-        fname="event_map_highres.nc",
+    ds = netcdf_handle(fname="event_map_highres.nc")
+    netcdf_spatial_dimensions(
+        ds=ds,
         lats=np.arange(0.05, 9.96, 0.1),
         lons=np.arange(9.95, 0.04, -0.1),
         crs="EPSG:4326",
     )
 
     # Create the variable
-    var = netcdf_variable(ds=ds, name="data")
+    var = netcdf_spatial_variable(ds=ds, name="data")
 
     # Create the data
     data = np.zeros((100, 100))
     oneD = tuple(range(100))
+
     # Create spatially different data
     for x, y in product(oneD, oneD):
         data[x, y] = 3.6 - ((x + y) * 0.02)
+
     # Write the data
     var.setncattr("type", "water_depth")
     var[:] = data
@@ -186,8 +251,9 @@ def create_hazard_event_map_highres():
 
 def create_hazard_risk_map():
     """Create a hazard map for risk calculations."""
-    ds = netcdf_handle(
-        fname="risk_map.nc",
+    ds = netcdf_handle(fname="risk_map.nc")
+    netcdf_spatial_dimensions(
+        ds=ds,
         lats=np.arange(9.5, 0.4, -1),
         lons=np.arange(0.5, 9.6, 1),
         crs="EPSG:4326",
@@ -196,7 +262,7 @@ def create_hazard_risk_map():
     # Set return periods values
     rps = [2, 5, 10, 25]
     for idx, fc in enumerate((1.5, 1.8, 1.9, 1.95)):
-        var = netcdf_variable(ds=ds, name=f"{rps[idx]}Y")
+        var = netcdf_spatial_variable(ds=ds, name=f"{rps[idx]}Y")
         data = np.zeros((10, 10))
         oneD = tuple(range(10))
         # Create spatially different data
@@ -337,6 +403,14 @@ def create_settings_grid():
     with open(Path(p, "grid_unequal.toml"), "w") as f:
         tomlkit.dump(doc_u, f)
 
+    # With catagorized exposure data
+    doc_c = copy.deepcopy(doc)
+    doc_c["output_dir"] = "output/grid_cat"
+    doc_c["exposure"]["file"] = "exposure/spatial_cat.nc"
+
+    with open(Path(p, "grid_cat.toml"), "w") as f:
+        tomlkit.dump(doc_c, f)
+
 
 def create_vulnerability():
     """Create vulnerability curves."""
@@ -391,6 +465,7 @@ if __name__ == "__main__":
     create_exposure_geoms_5th()
     create_exposure_geoms_outside()
     create_exposure_grid()
+    create_exposure_categorized_grid()
     create_hazard_event_map(fname="event_map.nc", crs="EPSG:4326")
     create_hazard_event_map(fname="event_map_no_crs.nc", crs=None)
     create_hazard_event_map_highres()
