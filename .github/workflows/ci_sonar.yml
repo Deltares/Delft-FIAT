@@ -26,7 +26,7 @@ jobs:
 
       - name: SonarQube Scan
         if: ${{ github.event.client_payload.pr_flag == 'false' }}
-        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
+        uses: SonarSource/sonarqube-scan-action@d209202bc7d53ff1cc128f7f907dac145c9d6ae9
         env:
           SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN_2025 }}
         with:
@@ -35,7 +35,7 @@ jobs:
 
       - name: SonarQube Scan (PR)
         if: ${{ github.event.client_payload.pr_flag == 'true' }}
-        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
+        uses: SonarSource/sonarqube-scan-action@d209202bc7d53ff1cc128f7f907dac145c9d6ae9
         env:
           SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN_2025 }}
         with:
