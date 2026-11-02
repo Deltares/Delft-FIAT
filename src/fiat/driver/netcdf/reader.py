@@ -34,6 +34,7 @@ class NetcdfVariable:
         self._obj: nc4.Variable | None = None
 
         # Attributes
+        self._dims: list[str] = None
         self._nodata: float | None = None
         self._spatial: bool = False
 
@@ -55,6 +56,9 @@ class NetcdfVariable:
         self._obj = None
 
     def _discover_attributes(self):
+        # The dimensions
+        self._dims = self._obj.dimensions
+        # The nodata variable
         self._nodata = self._obj.__dict__.get("_FillValue")
         # Spatial flag
         yflag = not set(YDIMS).isdisjoint(self._obj.dimensions)
@@ -78,6 +82,11 @@ class NetcdfVariable:
         return obj
 
     ## Properties
+    @property
+    def dims(self) -> tuple[str, ...] | None:
+        """Return the dimensions of the variable."""
+        return self._dims
+
     @property
     def data(self) -> np.ndarray | None:
         """Return the in memory data."""
@@ -196,6 +205,7 @@ class NetcdfReader:
         # Attributes
         self._crs: str | None = crs
         self._variables: list[NetcdfVariable] = []
+        self.dims: dict[str, nc4.Variable] = {}
         self.profile: GridProfile | None = None
         self.reference: nc4.Variable | None = None
         self.xdim: nc4.Variable | None = None
@@ -204,6 +214,7 @@ class NetcdfReader:
 
         self._discover_variables()
         self._discover_spatial_dims()
+        self._discover_dims()
 
     def __del__(self): ...
 
@@ -249,13 +260,23 @@ class NetcdfReader:
                 return None
         return self._crs
 
+    def _discover_dims(self) -> None:
+        """Discover non spatial dimensions."""
+        spatial_dims = [
+            item.name for item in [self.ydim, self.xdim] if item is not None
+        ]
+        for dim in self.src.dimensions:
+            if dim in spatial_dims:
+                continue
+            self.dims[dim] = self.src.variables[dim]
+
     def _discover_spatial_dims(self) -> None:
         """Discover the spatial dimensions of the dataset and build the profile."""
         try:
             yvar = next(item for item in YDIMS if item in self.src.dimensions)
             xvar = next(item for item in XDIMS if item in self.src.dimensions)
         except StopIteration:
-            raise ValueError("Couldn't derive the spatial dimensions")
+            return
 
         # Set data and metadata
         self.ydim = self.src.variables[yvar]

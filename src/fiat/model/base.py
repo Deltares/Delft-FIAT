@@ -10,14 +10,13 @@ from pathlib import Path
 from pyproj.crs import CRS
 
 from fiat.check import (
-    check_duplicate_columns,
     check_internal_crs,
     check_vs_crs,
 )
-from fiat.driver import NetcdfReader, Table
+from fiat.driver import NetcdfReader
 from fiat.gis import grid
 from fiat.log import spawn_logger
-from fiat.open import open_csv, open_grid
+from fiat.open import open_grid
 from fiat.settings import GeomSettings, GridSettings
 from fiat.typing import MethodType
 from fiat.util import (
@@ -47,7 +46,7 @@ class BaseModel(metaclass=ABCMeta):
         ## Declarations
         # Model data
         self._hazard: NetcdfReader | None = None
-        self._vulnerability: Table | None = None
+        self._vulnerability: NetcdfReader | None = None
 
         # Type of calculations
         self._method: MethodType = importlib.import_module(
@@ -134,7 +133,7 @@ class BaseModel(metaclass=ABCMeta):
         return self.settings.type
 
     @property
-    def vulnerability(self) -> Table | None:
+    def vulnerability(self) -> NetcdfReader | None:
         """Return the vulnerability data."""
         return self._vulnerability
 
@@ -200,16 +199,11 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         file = self.settings.vulnerability.file
         logger.info(f"Reading vulnerability curves ('{file.name}')")
 
-        # Get the kwargs from the model settings
-        kwargs = self.settings.vulnerability.settings.model_dump(exclude_none=True)
         # Read the data
-        data = open_csv(file, **kwargs)
+        data = open_grid(file)
 
         ## checks
         logger.info("Executing vulnerability checks...")
-
-        # Column check
-        check_duplicate_columns(data.duplicate_columns)
 
         # When all is done, add it
         self._vulnerability = data

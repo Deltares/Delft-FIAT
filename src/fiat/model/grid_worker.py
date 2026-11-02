@@ -6,7 +6,7 @@ from typing import Callable
 
 import numpy as np
 
-from fiat.driver import NetcdfReader, NetcdfVariable
+from fiat.driver import NetcdfReader
 from fiat.driver.geotiff.writer import TileSink
 from fiat.model.meta import (
     ExposureGridMeta,
@@ -22,18 +22,6 @@ def initialize_pool(desc: dict, lock):
     """Initialise a worker with a :class:`TileSink` bound to the shared output."""
     global tilesink
     tilesink = TileSink(desc, lock)
-
-
-def process_hazard(
-    band: NetcdfVariable,
-    vulnerability_meta: VulnerabilityMeta,
-):
-    """Small processor of hazard data chunk."""
-    band.data[band.data == band.nodata] = np.nan
-    band.data = np.maximum(
-        np.minimum(band.data, vulnerability_meta.max),
-        vulnerability_meta.min,
-    )
 
 
 def array_worker(
@@ -75,7 +63,7 @@ def array_worker(
     bn = 0
     # Process the hazard data
     for idx in chain.from_iterable(hazard_meta.indices_run):
-        process_hazard(hazard[idx], vulnerability_meta=vulnerability_meta)
+        hazard[idx].data[hazard[idx].data == hazard[idx].nodata] = np.nan
 
     # Loop through the default calculation combinations
     for haz_indices, exp_index in product(

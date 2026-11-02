@@ -14,11 +14,11 @@ from fiat.check import (
     check_hazard_rp,
     check_hazard_types,
 )
-from fiat.driver import NetcdfReader, Table
+from fiat.driver import NetcdfReader
 from fiat.method.ead import fn_density
 from fiat.model.geom_util import discover_exp_columns, generate_output_columns
 from fiat.typing import MethodType
-from fiat.util import CATEGORIZED, DEFAULT, EAD, FN__CURVE, RP, TOTAL, TYPE
+from fiat.util import CATEGORIZED, CURVE, DEFAULT, EAD, FN__CURVE, RP, TOTAL, TYPE
 
 
 @dataclass
@@ -48,31 +48,55 @@ def get_run_meta(
 
 
 @dataclass
-class VulnerabilityMeta:
+class VulnerabilityCurveMeta:
     """Small container for some vulnerability metadata."""
 
     fn: dict[str, Callable[[float], float]]
     fn_list: list[str] | tuple[str]
-    min: float | int
-    max: float | int
+
+
+@dataclass
+class VulnerabilityMeta:
+    """Small container for multiple vulnerability datasets."""
+
+    curves: dict[str, VulnerabilityCurveMeta]
+    variables: list[str]
 
 
 def get_vulnerability_meta(
-    vulnerability: Table,
+    vulnerability: NetcdfReader,
+    variables: str | list[str],
 ) -> VulnerabilityMeta:
     """Obtain some metadata from the vulnerability data."""
-    imin = min(vulnerability.index)
-    imax = max(vulnerability.index)
-    fn_list = vulnerability.columns
-    fn = {
-        item: Interp1D(vulnerability.index, vulnerability[:, item]) for item in fn_list
-    }
-    meta = VulnerabilityMeta(
-        fn=fn,
-        fn_list=fn_list,
-        min=imin,
-        max=imax,
-    )
+    if not isinstance(variables, (list | tuple)):
+        variables = [variables]
+
+    # Load the vulnerability
+    vulnerability.load()
+
+    curves = {}
+    # Go thought the variables
+    for var in variables:
+        assert var in vulnerability.variables
+        curve_dim = f"{CURVE}_{var}"
+        curve_ids = vulnerability.dims[curve_dim][:]
+        index_dim = [
+            item for item in vulnerability.variables[var].dims if item != curve_dim
+        ][0]
+
+        # Get the interpolated functions
+        fn = {}
+        for idx, curve in enumerate(curve_ids):
+            fn[curve] = Interp1D(
+                vulnerability.dims[index_dim][:],
+                vulnerability.variables[var][:, idx],
+            )
+
+        curves[var] = VulnerabilityCurveMeta(fn=fn, fn_list=curve_ids.tolist())
+
+    # Set the metadata
+    meta = VulnerabilityMeta(curves=curves, variables=variables)
+
     return meta
 
 
@@ -302,7 +326,9 @@ def get_exposure_grid_meta(
     fn_list = [exposure[idx].get_attr(FN__CURVE) for idx in indices_default]
     check_exp_grid_fn(
         fn_list=fn_list,
-        fn_available=vulnerability_meta.fn_list,
+        fn_available=set(
+            *chain(item.fn_list for item in vulnerability_meta.curves.values()),
+        ),
     )
 
     # Get the new band names

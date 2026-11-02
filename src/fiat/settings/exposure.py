@@ -44,6 +44,12 @@ based on the exposure geometry.",
         description="Settings for reading the exposure geometry data.",
     )
 
+    vulnerability: str = Field(
+        default="default",
+        description="The vulnerability dataset (variable) to use from the \
+vulnerability netcdf dataset.",
+    )
+
     zonal_method: str = Field(
         default="mean",
         description="The zonal statistics method. Only really applicable \
@@ -94,4 +100,10 @@ class ExposureGrid(InputFileModel):
     settings: ExposureGridSettings | None = Field(
         default=None,
         description="Settings for reading the exposure grid data.",
+    )
+
+    vulnerability: str = Field(
+        default="default",
+        description="The vulnerability dataset (variable) to use from the \
+vulnerability netcdf dataset.",
     )

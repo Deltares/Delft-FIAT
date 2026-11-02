@@ -8,7 +8,7 @@ from fiat.check import (
     check_internal_crs,
     check_vs_crs,
 )
-from fiat.driver import NetcdfReader, Table
+from fiat.driver import NetcdfReader
 from fiat.driver.geotiff import create_geotiff_handle
 from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
@@ -107,7 +107,7 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         # Quick check if all cdata is set
         check_input_data(
             [HAZARD, self.hazard, NetcdfReader],
-            [VULNERABILITY, self.vulnerability, Table],
+            [VULNERABILITY, self.vulnerability, NetcdfReader],
             [EXPOSURE, self.exposure, NetcdfReader],
         )
 
@@ -129,7 +129,10 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             risk=run_meta.risk,
             method_types=self.method.TYPES,
         )
-        vulnerability_meta = get_vulnerability_meta(self.vulnerability)
+        vulnerability_meta = get_vulnerability_meta(
+            self.vulnerability,
+            variables=self.settings.exposure.vulnerability,
+        )
 
         # Get the exposure meta
         exposure_meta = get_exposure_grid_meta(

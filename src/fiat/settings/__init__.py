@@ -29,10 +29,9 @@ from fiat.util import (
 )
 
 from .exposure import ExposureGeometry, ExposureGrid
-from .file import DEFAULT_CONTEXT, FileContext, OutputFileModel
+from .file import DEFAULT_CONTEXT, FileContext, InputFileModel, OutputFileModel
 from .hazard import Hazard
 from .util import _relpath
-from .vulnerability import Vulnerability
 
 __all__ = ["GeomSettings", "GridSettings"]
 
@@ -111,7 +110,7 @@ Can be either 'flood.depth' or 'flood.level'.",
     )
 
     # Input data
-    vulnerability: Vulnerability = Field(
+    vulnerability: InputFileModel = Field(
         default=...,
         description="Vulnerability settings for the model.",
     )
