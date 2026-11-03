@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import tomlkit
+
 from generate_helpers import (
     fgb_writer,
     netcdf_dimension,
@@ -19,11 +20,11 @@ from generate_helpers import (
     netcdf_variable,
 )
 
-p = Path(__file__).parent
+p = Path(Path(__file__).parent, "data")
+p.mkdir(exist_ok=True)
 
 directories = (
     "exposure",
-    "vulnerability",
 )
 
 # Suppress some warnings
@@ -82,7 +83,7 @@ def create_exposure_geoms_outside():
 
 def create_exposure_grid():
     """Create raster file with exposure data for grid model."""
-    ds = netcdf_handle(fname="exposure/spatial.nc")
+    ds = netcdf_handle(fname=Path(p, "exposure", "spatial.nc"))
     netcdf_spatial_dimensions(
         ds=ds,
         lats=np.arange(9.5, 0.4, -1),
@@ -136,7 +137,7 @@ def create_exposure_grid():
 
 def create_exposure_categorized_grid():
     """Create raster file with exposure data for grid model."""
-    ds = netcdf_handle(fname="exposure/spatial_cat.nc")
+    ds = netcdf_handle(fname=Path(p, "exposure", "spatial_cat.nc"))
     netcdf_spatial_dimensions(
         ds=ds,
         lats=np.arange(9.5, 0.4, -1),
@@ -185,7 +186,7 @@ def create_exposure_categorized_grid():
 
 def create_hazard_event_map(fname: Path | str, crs: str = None):
     """Create hazard event map."""
-    ds = netcdf_handle(fname=fname)
+    ds = netcdf_handle(fname=Path(p, fname))
     netcdf_spatial_dimensions(
         ds=ds,
         lats=np.arange(9.5, 0.4, -1),
@@ -217,7 +218,7 @@ def create_hazard_event_map(fname: Path | str, crs: str = None):
 
 def create_hazard_event_map_highres():
     """Create a high resolution hazard map to be reprojected."""
-    ds = netcdf_handle(fname="event_map_highres.nc")
+    ds = netcdf_handle(fname=Path(p, "event_map_highres.nc"))
     netcdf_spatial_dimensions(
         ds=ds,
         lats=np.arange(0.05, 9.96, 0.1),
@@ -251,7 +252,7 @@ def create_hazard_event_map_highres():
 
 def create_hazard_risk_map():
     """Create a hazard map for risk calculations."""
-    ds = netcdf_handle(fname="risk_map.nc")
+    ds = netcdf_handle(fname=Path(p, "risk_map.nc"))
     netcdf_spatial_dimensions(
         ds=ds,
         lats=np.arange(9.5, 0.4, -1),
@@ -295,7 +296,7 @@ def create_settings_geom():
         },
         "output": [{"file": "spatial.fgb"}],
         "vulnerability": {
-            "file": "vulnerability/curves.csv",
+            "file": "curves.nc",
         },
         "hazard": {
             "file": "event_map.nc",
@@ -365,7 +366,7 @@ def create_settings_grid():
         },
         "output": {"file": "output.tif"},
         "vulnerability": {
-            "file": "vulnerability/curves.csv",
+            "file": "curves.nc",
         },
         "hazard": {
             "file": "event_map.nc",
@@ -407,7 +408,7 @@ def create_settings_grid():
     doc_c = copy.deepcopy(doc)
     doc_c["output_dir"] = "output/grid_cat"
     doc_c["exposure"]["file"] = "exposure/spatial_cat.nc"
-    doc_c["vulnerability"]["file"] = "vulnerability/curves_cat.csv"
+    doc_c["vulnerability"]["file"] = "curves_cat.nc"
 
     with open(Path(p, "grid_cat.toml"), "w") as f:
         tomlkit.dump(doc_c, f)
@@ -415,7 +416,6 @@ def create_settings_grid():
 
 def create_vulnerability():
     """Create vulnerability curves."""
-
     # Function for creating the curves
     def log_base(b, x):
         r = math.log(x) / math.log(b)
@@ -423,22 +423,34 @@ def create_vulnerability():
             return 0
         return r
 
+    # Set up the netcdf file
+    ds = netcdf_handle(Path(p, "curves.nc"))
     wd = np.arange(0, 5.25, 0.25)
-    dc1 = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
-    dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
+    netcdf_dimension(ds, name="depth_default", values=wd)
+    netcdf_dimension(
+        ds, name="curve_default", values=np.array(["struct_1", "struct_2"]), dtype=str,
+    )
 
-    # Write to a csv
-    with open(Path(p, "vulnerability", "curves.csv"), mode="wb") as f:
-        f.write(b"#UNIT=meter\n")
-        f.write(b"#method=mean,max\n")
-        f.write(b"depth,struct_1,struct_2\n")
-        for idx, item in enumerate(wd):
-            f.write(f"{item},{dc1[idx]},{dc2[idx]}\n".encode())
+    # Create the netcdf variable
+    var = netcdf_variable(ds, name="default", dims=("depth_default", "curve_default"))
+    # Create array
+    data = np.zeros((len(wd), 2), dtype=np.float32)
+
+    # Define the data
+    data[:,0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
+    data[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
+
+    # Set the data
+    var[:] = data
+
+    # Sync and close
+    ds.sync()
+    var = None
+    ds.close()
 
 
 def create_vulnerability_categorized():
     """Create vulnerability curves with integers as headers (categorized)."""
-
     # Function for creating the curves
     def log_base(b, x):
         r = math.log(x) / math.log(b)
@@ -446,22 +458,32 @@ def create_vulnerability_categorized():
             return 0
         return r
 
+    # Set up the netcdf file
+    ds = netcdf_handle(Path(p, "curves_cat.nc"))
     wd = np.arange(0, 5.25, 0.25)
-    dc1 = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
-    dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
+    netcdf_dimension(ds, name="depth_default", values=wd)
+    netcdf_dimension(ds, name="curve_default", values=np.array([1, 2]), dtype="i4")
 
-    # Write to a csv
-    with open(Path(p, "vulnerability", "curves_cat.csv"), mode="wb") as f:
-        f.write(b"#UNIT=meter\n")
-        f.write(b"#method=mean,max\n")
-        f.write(b"depth,1,2\n")
-        for idx, item in enumerate(wd):
-            f.write(f"{item},{dc1[idx]},{dc2[idx]}\n".encode())
+    # Create the netcdf variable
+    var = netcdf_variable(ds, name="default", dims=("depth_default", "curve_default"))
+    # Create array
+    data = np.zeros((len(wd), 2), dtype=np.float32)
+
+    # Define the data
+    data[:,0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
+    data[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
+
+    # Set the data
+    var[:] = data
+
+    # Sync and close
+    ds.sync()
+    var = None
+    ds.close()
 
 
-def create_vulnerability_win():
-    """Create vulnerability curves with Windows newline char."""
-
+def create_vulnerability_multi():
+    """Create vulnerability curves."""
     # Function for creating the curves
     def log_base(b, x):
         r = math.log(x) / math.log(b)
@@ -469,17 +491,36 @@ def create_vulnerability_win():
             return 0
         return r
 
+    # Set up the netcdf file
+    ds = netcdf_handle(Path(p, "curves_multi.nc"))
     wd = np.arange(0, 5.25, 0.25)
-    dc1 = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
-    dc2 = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
+    netcdf_dimension(ds, name="depth_direct", values=wd)
+    netcdf_dimension(ds, name="curve_direct", values=np.array([1, 2]), dtype="i4")
+    netcdf_dimension(ds, name="days_indirect", values=wd)
+    netcdf_dimension(ds, name="curve_indirect", values=np.array([1, 2]), dtype="i4")
 
-    # Write to a csv
-    with open(Path(p, "vulnerability", "curves_win.csv"), mode="wb") as f:
-        f.write(b"#UNIT=meter\r\n")
-        f.write(b"#method=mean,max\r\n")
-        f.write(b"depth,struct_1,struct_2\r\n")
-        for idx, item in enumerate(wd):
-            f.write(f"{item},{dc1[idx]},{dc2[idx]}\r\n".encode())
+    # Create the netcdf variable
+    var = netcdf_variable(ds, name="direct", dims=("depth_direct", "curve_direct"))
+    var2 = netcdf_variable(ds, name="indirect", dims=("days_indirect", "curve_indirect"))
+    # Create array
+    data = np.zeros((len(wd), 2), dtype=np.float32)
+    data2 = np.zeros((len(wd), 2), dtype=np.float32)
+
+    # Define the data
+    data[:,0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
+    data[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
+    data2[:,0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
+    data2[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
+
+    # Set the data
+    var[:] = data
+    var2[:] = data2
+
+    # Sync and close
+    ds.sync()
+    var = None
+    var2 = None
+    ds.close()
 
 
 if __name__ == "__main__":
@@ -498,5 +539,5 @@ if __name__ == "__main__":
     create_settings_grid()
     create_vulnerability()
     create_vulnerability_categorized()
-    create_vulnerability_win()
+    create_vulnerability_multi()
     gc.collect()
