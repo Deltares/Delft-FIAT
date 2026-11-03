@@ -23,9 +23,7 @@ from generate_helpers import (
 p = Path(Path(__file__).parent, "data")
 p.mkdir(exist_ok=True)
 
-directories = (
-    "exposure",
-)
+directories = ("exposure",)
 
 # Suppress some warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -416,6 +414,7 @@ def create_settings_grid():
 
 def create_vulnerability():
     """Create vulnerability curves."""
+
     # Function for creating the curves
     def log_base(b, x):
         r = math.log(x) / math.log(b)
@@ -428,7 +427,10 @@ def create_vulnerability():
     wd = np.arange(0, 5.25, 0.25)
     netcdf_dimension(ds, name="depth_default", values=wd)
     netcdf_dimension(
-        ds, name="curve_default", values=np.array(["struct_1", "struct_2"]), dtype=str,
+        ds,
+        name="curve_default",
+        values=np.array(["struct_1", "struct_2"]),
+        dtype=str,
     )
 
     # Create the netcdf variable
@@ -437,7 +439,7 @@ def create_vulnerability():
     data = np.zeros((len(wd), 2), dtype=np.float32)
 
     # Define the data
-    data[:,0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
+    data[:, 0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
     data[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
 
     # Set the data
@@ -451,6 +453,7 @@ def create_vulnerability():
 
 def create_vulnerability_categorized():
     """Create vulnerability curves with integers as headers (categorized)."""
+
     # Function for creating the curves
     def log_base(b, x):
         r = math.log(x) / math.log(b)
@@ -470,7 +473,7 @@ def create_vulnerability_categorized():
     data = np.zeros((len(wd), 2), dtype=np.float32)
 
     # Define the data
-    data[:,0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
+    data[:, 0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
     data[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
 
     # Set the data
@@ -484,6 +487,7 @@ def create_vulnerability_categorized():
 
 def create_vulnerability_multi():
     """Create vulnerability curves."""
+
     # Function for creating the curves
     def log_base(b, x):
         r = math.log(x) / math.log(b)
@@ -501,15 +505,17 @@ def create_vulnerability_multi():
 
     # Create the netcdf variable
     var = netcdf_variable(ds, name="direct", dims=("depth_direct", "curve_direct"))
-    var2 = netcdf_variable(ds, name="indirect", dims=("days_indirect", "curve_indirect"))
+    var2 = netcdf_variable(
+        ds, name="indirect", dims=("days_indirect", "curve_indirect")
+    )
     # Create array
     data = np.zeros((len(wd), 2), dtype=np.float32)
     data2 = np.zeros((len(wd), 2), dtype=np.float32)
 
     # Define the data
-    data[:,0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
+    data[:, 0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
     data[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
-    data2[:,0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
+    data2[:, 0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
     data2[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
 
     # Set the data
