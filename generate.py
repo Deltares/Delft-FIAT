@@ -79,6 +79,23 @@ def create_exposure_geoms_outside():
     )
 
 
+def create_exposure_geoms_types():
+    """Create basic vector file with 4 geometries and 2 impact types."""
+    geoms = (
+        "POLYGON ((0.5 9.5, 0.5 8.5, 1.5 8.5, 1.5 9.5, 0.5 9.5))",
+        "POLYGON ((4.5 5.5, 4.5 2.5, 6.5 2.5, 6.5 3.5, 5.5 3.5, 5.5 5.5, 4.5 5.5))",
+        "POLYGON ((1.5 1.05, 2.5 3.95, 3.5 1.05, 1.5 1.05))",
+        "POLYGON ((6.05 7.95, 8.95 7.95, 8.5 6.05, 6.5 6.05, 6.05 7.95))",
+    )
+    fgb_writer(
+        Path(p, "exposure", "spatial_types.fgb"),
+        "spatial_types",
+        geoms,
+        epsg=4326,
+        types=("damage", "affected"),
+    )
+
+
 def create_exposure_grid():
     """Create raster file with exposure data for grid model."""
     ds = netcdf_handle(fname=Path(p, "exposure", "spatial.nc"))
@@ -172,14 +189,25 @@ def create_exposure_categorized_grid():
         fill_value=-9999,
     )
 
+    # Setup a second category variable
+    var3 = netcdf_variable(
+        ds=ds,
+        name="exposure_values2",
+        dims=("exposure_cat",),
+        dtype="i4",
+        fill_value=-9999,
+    )
+
     # Write the data
     var[:] = data
     var2[:] = np.array([0, 5000, 3000], dtype=np.int32)
+    var3[:] = np.array([0, 2500, 1500], dtype=np.int32)
 
     # Flush the data
     ds.sync()
     var = None
     var2 = None
+    var3 = None
 
 
 def create_hazard_event_map(fname: Path | str, crs: str = None):
@@ -276,6 +304,65 @@ def create_hazard_risk_map():
         var = None
 
     # Flush the source
+    ds.sync()
+    ds.close()
+
+    # Dereference
+    ds = None
+
+
+def write_depth_duration(ds, fc: float, duration: float, rp: int | None = None):
+    """Write a flood depth and a flood duration band to a netcdf file."""
+    # Create the data
+    data = np.zeros((10, 10))
+    oneD = tuple(range(10))
+    # Create spatially different data
+    for x, y in product(oneD, oneD):
+        data[x, y] = 3.6 - ((x + y) * 0.2)
+    data *= fc
+
+    # Write the depth and duration (only where it is wet)
+    suffix = "" if rp is None else f"_{rp}Y"
+    for name, type, values in (
+        ("depth", "water_depth", data),
+        ("duration", "duration", np.where(data > 0, duration, 0.0)),
+    ):
+        var = netcdf_spatial_variable(ds=ds, name=f"{name}{suffix}")
+        if rp is not None:
+            var.setncattr("rp", f"{rp}")
+        var.setncattr("type", type)
+        var[:] = values
+        var = None
+
+
+def create_hazard_duration_maps():
+    """Create hazard maps with both flood depth and flood duration bands."""
+    # Event map
+    ds = netcdf_handle(fname=Path(p, "event_map_duration.nc"))
+    netcdf_spatial_dimensions(
+        ds=ds,
+        lats=np.arange(9.5, 0.4, -1),
+        lons=np.arange(0.5, 9.6, 1),
+        crs="EPSG:4326",
+    )
+    write_depth_duration(ds, fc=1.0, duration=3.0)
+    ds.sync()
+    ds.close()
+
+    # Risk map
+    ds = netcdf_handle(fname=Path(p, "risk_map_duration.nc"))
+    netcdf_spatial_dimensions(
+        ds=ds,
+        lats=np.arange(9.5, 0.4, -1),
+        lons=np.arange(0.5, 9.6, 1),
+        crs="EPSG:4326",
+    )
+    for rp, fc, duration in zip(
+        (2, 5, 10, 25),
+        (1.5, 1.8, 1.9, 1.95),
+        (1.0, 2.0, 3.0, 5.0),
+    ):
+        write_depth_duration(ds, fc=fc, duration=duration, rp=rp)
     ds.sync()
     ds.close()
 
@@ -412,120 +499,350 @@ def create_settings_grid():
         tomlkit.dump(doc_c, f)
 
 
-def create_vulnerability():
-    """Create vulnerability curves."""
+def create_settings_multi():
+    """Create settings for the multi-vulnerability (dataset) models."""
 
-    # Function for creating the curves
-    def log_base(b, x):
-        r = math.log(x) / math.log(b)
-        if r < 0:
-            return 0
-        return r
+    def dump(doc: dict, name: str):
+        doc["output_dir"] = f"output/{name}"
+        with open(Path(p, f"{name}.toml"), "w") as f:
+            tomlkit.dump(doc, f)
 
-    # Set up the netcdf file
-    ds = netcdf_handle(Path(p, "curves.nc"))
+    base = {
+        "type": "grid",
+        "risk": False,
+        "projection": {
+            "crs": "EPSG:4326",
+        },
+        "output": {"file": "output.tif"},
+        "vulnerability": {
+            "file": "curves_multi.nc",
+        },
+        "hazard": {
+            "file": "event_map_duration.nc",
+            "settings": {
+                "crs": "EPSG:4326",
+            },
+        },
+        "exposure": {
+            "file": "exposure/spatial.nc",
+            "vulnerability": "default",
+            "settings": {
+                "crs": "EPSG:4326",
+            },
+        },
+    }
+
+    # Grid, multiple datasets combined in one method call
+    doc = copy.deepcopy(base)
+    doc["exposure"]["variables"] = [
+        {"name": "exposure2", "vulnerability": ["direct", "indirect"]},
+    ]
+    dump(doc, "grid_multi_combined")
+
+    # Grid, multiple datasets each their own method call
+    doc = copy.deepcopy(base)
+    doc["exposure"]["variables"] = [
+        {"name": "exposure2", "vulnerability": ["default", "default_2d"]},
+    ]
+    dump(doc, "grid_multi_separate")
+
+    # Grid, one 2D dataset
+    doc = copy.deepcopy(base)
+    doc["exposure"]["vulnerability"] = "default_2d"
+    dump(doc, "grid_2d")
+
+    # Grid, missing (unknown) hazard variable
+    doc_m = copy.deepcopy(doc)
+    doc_m["hazard"]["variables"] = [{"name": "nope"}]
+    dump(doc_m, "grid_missing_variable")
+
+    # Grid, settings overriding the netcdf attributes
+    doc_o = copy.deepcopy(doc)
+    doc_o["vulnerability"]["variables"] = [
+        {
+            "name": "default_2d",
+            "method": "flood.depth_duration_2d",
+            "types": {
+                "depth_default_2d": "water_depth",
+                "duration_default_2d": "duration",
+            },
+        },
+    ]
+    doc_o["hazard"]["variables"] = [
+        {"name": "depth", "type": "water_depth"},
+        {"name": "duration", "type": "duration"},
+    ]
+    doc_o["exposure"]["variables"] = [
+        {"name": "exposure1", "fn_curve": "struct_2"},
+    ]
+    dump(doc_o, "grid_override")
+
+    # Grid, uniform hazard and exposure layers
+    doc = copy.deepcopy(base)
+    doc["hazard"]["file"] = "event_map.nc"
+    doc["hazard"]["variables"] = [
+        {"name": "duration", "type": "duration", "value": 3.0},
+    ]
+    doc["exposure"]["vulnerability"] = "default_2d"
+    doc["exposure"]["variables"] = [
+        {
+            "name": "exposure3",
+            "type": "default",
+            "fn_curve": "struct_1",
+            "value": 1500.0,
+        },
+    ]
+    dump(doc, "grid_uniform")
+
+    # Grid, uniform hazard layers per return period
+    doc = copy.deepcopy(base)
+    doc["risk"] = True
+    doc["hazard"]["file"] = "risk_map.nc"
+    doc["hazard"]["return_periods"] = [2, 5, 10, 25]
+    doc["hazard"]["variables"] = [
+        {"name": f"duration_{rp}Y", "type": "duration", "value": dur, "rp": rp}
+        for rp, dur in zip((2, 5, 10, 25), (1.0, 2.0, 3.0, 5.0))
+    ]
+    doc["exposure"]["variables"] = [
+        {"name": "exposure2", "vulnerability": ["direct", "indirect"]},
+    ]
+    dump(doc, "grid_uniform_risk")
+
+    # Grid, categorized with variables
+    doc_c = copy.deepcopy(base)
+    doc_c["vulnerability"]["file"] = "curves_cat.nc"
+    doc_c["exposure"]["file"] = "exposure/spatial_cat.nc"
+    doc = copy.deepcopy(doc_c)
+    doc["exposure"]["variables"] = [
+        {
+            "name": "exposure",
+            "type": "categorized",
+            "vulnerability": "default",
+            "values": ["exposure_values", "exposure_values2"],
+        },
+        {"name": "exposure_values2", "vulnerability": "default_2d"},
+    ]
+    dump(doc, "grid_cat_variables")
+
+    # Grid, categorized with a uniform categorized layer
+    doc = copy.deepcopy(doc_c)
+    doc["exposure"]["variables"] = [
+        {
+            "name": "exposure",
+            "type": "categorized",
+            "values": ["exposure_values2"],
+        },
+        {
+            "name": "exposure_uniform",
+            "type": "categorized",
+            "value": 1,
+            "values": ["exposure_values"],
+        },
+    ]
+    dump(doc, "grid_cat_uniform")
+
+    # Geometry, one 2D dataset
+    doc_g = copy.deepcopy(base)
+    doc_g["type"] = "geom"
+    doc_g["output"] = [{"file": "spatial.fgb"}]
+    doc_g["exposure"] = [
+        {
+            "file": "exposure/spatial.fgb",
+            "area_method": "area",
+            "vulnerability": "default_2d",
+            "settings": {
+                "crs": "EPSG:4326",
+            },
+        },
+    ]
+    dump(copy.deepcopy(doc_g), "geom_2d")
+
+    # Geometry, risk with one 2D dataset and two impact types
+    doc = copy.deepcopy(doc_g)
+    doc["risk"] = True
+    doc["hazard"]["file"] = "risk_map_duration.nc"
+    doc["hazard"]["return_periods"] = [2, 5, 10, 25]
+    doc["output"] = [{"file": "spatial_types.fgb"}]
+    doc["exposure"][0]["file"] = "exposure/spatial_types.fgb"
+    doc["exposure"][0]["impact_type"] = ["damage", "affected"]
+    dump(doc, "geom_2d_risk")
+
+    # Geometry, uniform hazard layer
+    doc = copy.deepcopy(doc_g)
+    doc["hazard"]["file"] = "event_map.nc"
+    doc["hazard"]["variables"] = [
+        {"name": "duration", "type": "duration", "value": 3.0},
+    ]
+    dump(doc, "geom_uniform")
+
+
+def log_base(b: float, x: float) -> float:
+    """Logarithm with base b, floored at zero (also for x == 0)."""
+    if x <= 0:
+        return 0.0
+    r = math.log(x) / math.log(b)
+    if r < 0:
+        return 0.0
+    return r
+
+
+def curve_1d(b: float, wd: np.ndarray) -> list[float]:
+    """Create a 1D (depth) vulnerability curve."""
+    return [float(round(min(log_base(b, x), 0.96), 2)) for x in wd]
+
+
+def curve_2d(b: float, wd: np.ndarray, dur: np.ndarray) -> np.ndarray:
+    """Create a 2D (depth x duration) vulnerability curve."""
+    data = np.zeros((len(wd), len(dur)), dtype=np.float32)
+    for (i, d), (j, t) in product(enumerate(wd), enumerate(dur)):
+        data[i, j] = min(log_base(b, d), 0.96) * min(1, 0.5 + t / 20)
+    return data
+
+
+def write_vulnerability_1d(
+    ds,
+    name: str,
+    ids: np.ndarray,
+    method: str,
+    index: str = "depth",
+    type: str = "water_depth",
+    dtype: str = "str",
+):
+    """Write a 1D vulnerability dataset to a netcdf file."""
     wd = np.arange(0, 5.25, 0.25)
-    netcdf_dimension(ds, name="depth_default", values=wd)
-    netcdf_dimension(
-        ds,
-        name="curve_default",
-        values=np.array(["struct_1", "struct_2"]),
-        dtype=str,
-    )
+    netcdf_dimension(ds, name=f"{index}_{name}", values=wd)
+    ds.variables[f"{index}_{name}"].setncattr("type", type)
+    netcdf_dimension(ds, name=f"curve_{name}", values=ids, dtype=dtype)
 
     # Create the netcdf variable
-    var = netcdf_variable(ds, name="default", dims=("depth_default", "curve_default"))
+    var = netcdf_variable(ds, name=name, dims=(f"{index}_{name}", f"curve_{name}"))
+    var.setncattr("method", method)
     # Create array
     data = np.zeros((len(wd), 2), dtype=np.float32)
 
     # Define the data
-    data[:, 0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
-    data[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
+    data[:, 0] = curve_1d(5, wd)
+    data[:, 1] = curve_1d(3, wd)
 
     # Set the data
     var[:] = data
+    var = None
+
+
+def write_vulnerability_2d(
+    ds,
+    name: str,
+    ids: np.ndarray,
+    dtype: str = "str",
+):
+    """Write a 2D (depth x duration) vulnerability dataset to a netcdf file."""
+    wd = np.arange(0, 5.25, 0.25)
+    dur = np.array([0, 1, 2, 5, 10], dtype=np.float32)
+    netcdf_dimension(ds, name=f"depth_{name}", values=wd)
+    ds.variables[f"depth_{name}"].setncattr("type", "water_depth")
+    netcdf_dimension(ds, name=f"duration_{name}", values=dur)
+    ds.variables[f"duration_{name}"].setncattr("type", "duration")
+    netcdf_dimension(ds, name=f"curve_{name}", values=ids, dtype=dtype)
+
+    # Create the netcdf variable
+    var = netcdf_variable(
+        ds,
+        name=name,
+        dims=(f"depth_{name}", f"duration_{name}", f"curve_{name}"),
+    )
+    var.setncattr("method", "flood.depth_duration_2d")
+    # Create array
+    data = np.zeros((len(wd), len(dur), 2), dtype=np.float32)
+
+    # Define the data
+    data[:, :, 0] = curve_2d(5, wd, dur)
+    data[:, :, 1] = curve_2d(3, wd, dur)
+
+    # Set the data
+    var[:] = data
+    var = None
+
+
+def create_table(fname: str = "table.csv", newline: str = "\n"):
+    """Create a generic csv table (curves with metadata header rows)."""
+    wd = np.arange(0, 5.25, 0.25)
+    dc1 = curve_1d(5, wd)
+    dc2 = curve_1d(3, wd)
+
+    # Write to a csv
+    with open(Path(p, fname), mode="wb") as f:
+        f.write(f"#UNIT=meter{newline}".encode())
+        f.write(f"#method=mean,max{newline}".encode())
+        f.write(f"depth,struct_1,struct_2{newline}".encode())
+        for idx, item in enumerate(wd):
+            f.write(f"{item},{dc1[idx]},{dc2[idx]}{newline}".encode())
+
+
+def create_vulnerability():
+    """Create vulnerability curves."""
+    ds = netcdf_handle(Path(p, "curves.nc"))
+    write_vulnerability_1d(
+        ds,
+        name="default",
+        ids=np.array(["struct_1", "struct_2"]),
+        method="flood.depth",
+    )
 
     # Sync and close
     ds.sync()
-    var = None
+    ds.close()
+
+
+def create_vulnerability_2d():
+    """Create 2D (depth x duration) vulnerability curves."""
+    ds = netcdf_handle(Path(p, "curves_2d.nc"))
+    write_vulnerability_2d(ds, name="default", ids=np.array(["struct_1", "struct_2"]))
+
+    # Sync and close
+    ds.sync()
     ds.close()
 
 
 def create_vulnerability_categorized():
     """Create vulnerability curves with integers as headers (categorized)."""
-
-    # Function for creating the curves
-    def log_base(b, x):
-        r = math.log(x) / math.log(b)
-        if r < 0:
-            return 0
-        return r
-
-    # Set up the netcdf file
     ds = netcdf_handle(Path(p, "curves_cat.nc"))
-    wd = np.arange(0, 5.25, 0.25)
-    netcdf_dimension(ds, name="depth_default", values=wd)
-    netcdf_dimension(ds, name="curve_default", values=np.array([1, 2]), dtype="i4")
-
-    # Create the netcdf variable
-    var = netcdf_variable(ds, name="default", dims=("depth_default", "curve_default"))
-    # Create array
-    data = np.zeros((len(wd), 2), dtype=np.float32)
-
-    # Define the data
-    data[:, 0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
-    data[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
-
-    # Set the data
-    var[:] = data
+    write_vulnerability_1d(
+        ds,
+        name="default",
+        ids=np.array([1, 2]),
+        method="flood.depth",
+        dtype="i4",
+    )
+    write_vulnerability_2d(ds, name="default_2d", ids=np.array([1, 2]), dtype="i4")
 
     # Sync and close
     ds.sync()
-    var = None
     ds.close()
 
 
 def create_vulnerability_multi():
-    """Create vulnerability curves."""
-
-    # Function for creating the curves
-    def log_base(b, x):
-        r = math.log(x) / math.log(b)
-        if r < 0:
-            return 0
-        return r
-
-    # Set up the netcdf file
+    """Create a vulnerability file with multiple datasets."""
+    ids = np.array(["struct_1", "struct_2"])
     ds = netcdf_handle(Path(p, "curves_multi.nc"))
-    wd = np.arange(0, 5.25, 0.25)
-    netcdf_dimension(ds, name="depth_direct", values=wd)
-    netcdf_dimension(ds, name="curve_direct", values=np.array([1, 2]), dtype="i4")
-    netcdf_dimension(ds, name="days_indirect", values=wd)
-    netcdf_dimension(ds, name="curve_indirect", values=np.array([1, 2]), dtype="i4")
-
-    # Create the netcdf variable
-    var = netcdf_variable(ds, name="direct", dims=("depth_direct", "curve_direct"))
-    var2 = netcdf_variable(
-        ds, name="indirect", dims=("days_indirect", "curve_indirect")
+    write_vulnerability_1d(ds, name="default", ids=ids, method="flood.depth")
+    write_vulnerability_2d(ds, name="default_2d", ids=ids)
+    write_vulnerability_1d(
+        ds,
+        name="direct",
+        ids=ids,
+        method="flood.depth_duration",
     )
-    # Create array
-    data = np.zeros((len(wd), 2), dtype=np.float32)
-    data2 = np.zeros((len(wd), 2), dtype=np.float32)
-
-    # Define the data
-    data[:, 0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
-    data[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
-    data2[:, 0] = [0.0] + [float(round(min(log_base(5, x), 0.96), 2)) for x in wd[1:]]
-    data2[:, 1] = [0.0] + [float(round(min(log_base(3, x), 0.96), 2)) for x in wd[1:]]
-
-    # Set the data
-    var[:] = data
-    var2[:] = data2
+    write_vulnerability_1d(
+        ds,
+        name="indirect",
+        ids=ids,
+        method="flood.depth_duration",
+        index="days",
+        type="duration",
+    )
 
     # Sync and close
     ds.sync()
-    var = None
-    var2 = None
     ds.close()
 
 
@@ -535,15 +852,21 @@ if __name__ == "__main__":
     create_exposure_geoms(epsg=None)
     create_exposure_geoms_5th()
     create_exposure_geoms_outside()
+    create_exposure_geoms_types()
     create_exposure_grid()
     create_exposure_categorized_grid()
     create_hazard_event_map(fname="event_map.nc", crs="EPSG:4326")
     create_hazard_event_map(fname="event_map_no_crs.nc", crs=None)
     create_hazard_event_map_highres()
     create_hazard_risk_map()
+    create_hazard_duration_maps()
     create_settings_geom()
     create_settings_grid()
+    create_settings_multi()
+    create_table()
+    create_table(fname="table_win.csv", newline="\r\n")
     create_vulnerability()
+    create_vulnerability_2d()
     create_vulnerability_categorized()
     create_vulnerability_multi()
     gc.collect()

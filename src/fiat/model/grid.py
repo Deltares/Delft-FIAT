@@ -17,8 +17,10 @@ from fiat.model.base import BaseModel
 from fiat.model.grid_util import equal_grid
 from fiat.model.grid_worker import initialize_pool, worker
 from fiat.model.meta import (
+    get_exposure_grid_datasets,
     get_exposure_grid_meta,
     get_hazard_meta,
+    get_method_types,
     get_run_meta,
     get_vulnerability_meta,
 )
@@ -32,7 +34,6 @@ from fiat.util import (
     HAZARD__META,
     RUN__META,
     VULNERABILITY,
-    VULNERABILITY__META,
     WINDOW,
     get_crs_repr,
 )
@@ -59,12 +60,24 @@ class GridModel(BaseModel):
         self._exposure: NetcdfReader | None = None
 
         # Setup the model
-        self._read_exposure()
+        try:
+            self._read_exposure()
+        except BaseException:
+            self.close()
+            raise
 
     @property
     def exposure(self) -> NetcdfReader | None:
         """Return the exposure grid data."""
         return self._exposure
+
+    def close(self) -> None:
+        """Close the model data."""
+        super().close()
+        # Not yet declared when reading the base data fails
+        exposure = getattr(self, "_exposure", None)
+        if exposure is not None and not exposure.closed:
+            exposure.close()
 
     def _read_exposure(self):
         """Read the exposure grid."""
@@ -72,9 +85,9 @@ class GridModel(BaseModel):
         file = self.settings.exposure.file
         kwargs = self.settings.exposure.settings.model_dump(exclude_none=True)
 
-        # Read the file
+        # Read the file, the variable specifications from the settings applied
         logger.info(f"Reading exposure grid ('{file.name}')")
-        data = open_grid(file, **kwargs)
+        data = open_grid(file, specs=self.settings.exposure.specs(), **kwargs)
         ## checks
         logger.info("Executing exposure data checks...")
 
@@ -122,16 +135,17 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         run_meta = get_run_meta(
             cell_size=self.hazard.get_attr_lazy("area_sqm") or 1.0,
             risk=self.risk,
-            method=self.method,
+        )
+        # The linked datasets from the exposure data, i.e. settings and attributes
+        default = self.settings.exposure.vulnerability
+        vulnerability_meta = get_vulnerability_meta(
+            self.vulnerability,
+            names=get_exposure_grid_datasets(self.exposure, default=default),
         )
         hazard_meta = get_hazard_meta(
             self.hazard,
             risk=run_meta.risk,
-            method_types=self.method.TYPES,
-        )
-        vulnerability_meta = get_vulnerability_meta(
-            self.vulnerability,
-            variables=self.settings.exposure.vulnerability,
+            method_types=get_method_types(vulnerability_meta),
         )
 
         # Get the exposure meta
@@ -140,6 +154,7 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             run_meta=run_meta,
             hazard_meta=hazard_meta,
             vulnerability_meta=vulnerability_meta,
+            default=default,
         )
 
         # The tile size is also the parallel write granularity. Default to a
@@ -170,7 +185,6 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
                 RUN__META: run_meta,
                 HAZARD: self.hazard,
                 HAZARD__META: hazard_meta,
-                VULNERABILITY__META: vulnerability_meta,
                 EXPOSURE: self.exposure,
                 EXPOSURE__META: exposure_meta,
                 WINDOW: windows,

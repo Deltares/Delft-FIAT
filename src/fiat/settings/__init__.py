@@ -22,16 +22,16 @@ from fiat.log.util import LogLevels
 from fiat.util import (
     EXPOSURE,
     FILE,
-    FLOOD_DEPTH,
     HAZARD,
     OUTPUT,
     generic_file_check,
 )
 
 from .exposure import ExposureGeometry, ExposureGrid
-from .file import DEFAULT_CONTEXT, FileContext, InputFileModel, OutputFileModel
+from .file import DEFAULT_CONTEXT, FileContext, OutputFileModel
 from .hazard import Hazard
 from .util import _relpath
+from .vulnerability import Vulnerability
 
 __all__ = ["GeomSettings", "GridSettings"]
 
@@ -82,12 +82,6 @@ class BaseSettings(BaseModel):
     # Model wide settings
     loglevel: str = Field(default="INFO", description="The logging level of FIAT.")
 
-    method: str = Field(
-        default=FLOOD_DEPTH,
-        description="Method to use for the model. \
-Can be either 'flood.depth' or 'flood.level'.",
-    )
-
     output_dir: Path = Field(
         default=Path("output"),
         description="Directory to store the output of the model.",
@@ -110,7 +104,7 @@ Can be either 'flood.depth' or 'flood.level'.",
     )
 
     # Input data
-    vulnerability: InputFileModel = Field(
+    vulnerability: Vulnerability = Field(
         default=...,
         description="Vulnerability settings for the model.",
     )

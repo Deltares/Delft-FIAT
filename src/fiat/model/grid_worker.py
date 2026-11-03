@@ -1,8 +1,7 @@
 """Worker functions for grid model."""
 
 import importlib
-from itertools import chain, product
-from typing import Callable
+from typing import Any, Callable
 
 import numpy as np
 
@@ -12,10 +11,8 @@ from fiat.model.meta import (
     ExposureGridMeta,
     HazardMeta,
     RunMeta,
-    VulnerabilityMeta,
 )
-from fiat.typing import MethodType
-from fiat.util import FIAT_METHOD, FN__CURVE, NODATA_VALUE
+from fiat.util import FIAT_METHOD, NODATA_VALUE
 
 
 def initialize_pool(desc: dict, lock):
@@ -29,10 +26,9 @@ def array_worker(
     run_meta: RunMeta,
     hazard: NetcdfReader,
     hazard_meta: HazardMeta,
-    vulnerability_meta: VulnerabilityMeta,
     exposure: NetcdfReader,
     exposure_meta: ExposureGridMeta,
-    fn_impact: Callable,
+    fns: dict[str, Callable[..., Any]],
 ) -> np.ndarray:
     """Calculate the impact for a chunk of the exposure.
 
@@ -46,80 +42,75 @@ def array_worker(
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
-    vulnerability_meta : VulnerabilityMeta
-        Metadata specific to the vulnerability data.
     exposure : NetcdfReader
         The exposure data.
     exposure_meta : ExposureGridMeta
-        Metadata specific to the exposure data.
-    fn_impact : Callable
-        The impact function.
+        Metadata specific to the exposure data (the calculation units).
+    fns : dict[str, Callable]
+        The impact functions per method name.
 
     Returns
     -------
     np.ndarray
         The calculated impact.
     """
-    bn = 0
-    # Process the hazard data
-    for idx in chain.from_iterable(hazard_meta.indices_run):
-        hazard[idx].data[hazard[idx].data == hazard[idx].nodata] = np.nan
+    # Process the hazard data, every used band once
+    bands = {
+        idx
+        for unit in exposure_meta.units
+        for indices in unit.hazard_indices
+        for idx in indices
+    }
+    for idx in sorted(bands):
+        band = hazard[idx]
+        # Integer bands are cast to float so nodata can become nan
+        if not np.issubdtype(band.data.dtype, np.floating):
+            band.data = band.data.astype(np.float64)
+        if band.nodata is not None:
+            band.data[band.data == band.nodata] = np.nan
 
-    # Loop through the default calculation combinations
-    for haz_indices, exp_index in product(
-        hazard_meta.indices_run,
-        exposure_meta.indices_default,
-    ):
-        # Get the exposure data
-        exp = exposure[exp_index]
-        exp.data[exp.data == exp.nodata] = np.nan
+    # Loop through the calculation units
+    for unit in exposure_meta.units:
+        fn_impact = fns[unit.method]
+        exp = exposure[unit.exp_index]
+        if unit.value_index is None:
+            if exp.nodata is not None:
+                exp.data[exp.data == exp.nodata] = np.nan
+            for haz_indices, out_index in zip(unit.hazard_indices, unit.out_indices):
+                out_array[out_index] = fn_impact(
+                    tuple(hazard[idx].data for idx in haz_indices),
+                    exp.data,
+                    unit.curves,
+                    1,
+                )
+            continue
 
-        # Call the impact function
-        out_array[exposure_meta.indices_default_new[bn]] = fn_impact(
-            *[hazard[idx].data for idx in haz_indices],
-            exp.data,
-            fact=1,
-            fn_curve=vulnerability_meta.fn[exp.get_attr(FN__CURVE)],
-        )
-        bn += 1
-
-    # Loop through the categorized indices
-    for haz_indices, (exp_index, exp_cat_indices) in product(
-        hazard_meta.indices_run,
-        zip(exposure_meta.indices_cat, exposure_meta.indices_cat_values),
-    ):
-        # Get the exposure data
-        exp = exposure[exp_index]
-        # Loop through the integer header based vulnerability curves
-        for key, fn in vulnerability_meta.fn.items():
-            try:
-                key = int(key)
-            except BaseException:
-                continue
-            if key == 0:
+        # Categorized, the exposure value per category from the value variable
+        assert isinstance(unit.curves, dict)
+        value_var = exposure[unit.value_index]
+        coords = exposure.dims[value_var.dims[0]][:].tolist()
+        for key, curves in unit.curves.items():
+            if key not in coords:
                 continue
             mask = exp.data == key
             if mask.sum() == 0:
                 continue
-            bn = 0
-            # Only when there is an active mask, go through all categories value
-            # categories... funny aint it
-            for cat_value_idx in exp_cat_indices:
+            value = value_var[coords.index(key)]
+            for haz_indices, out_index in zip(unit.hazard_indices, unit.out_indices):
                 values = (
                     fn_impact(
-                        *[[hazard[idx].data[mask] for idx in haz_indices]],
-                        exposure[cat_value_idx][key],
-                        fn,
+                        tuple(hazard[idx].data[mask] for idx in haz_indices),
+                        value,
+                        curves,
                         1,
                     )
                     * run_meta.cell_size
                 )
                 values[values == 0] = np.nan
-                out_array[exposure_meta.indices_cat_new[bn], mask] = values
-                bn += 1
+                out_array[out_index, mask] = values
 
     # Set the total damages
-    for part, total in zip(exposure_meta.indices_new, exposure_meta.indices_total):
+    for part, total in zip(exposure_meta.totals, exposure_meta.indices_total):
         mask = np.isnan([out_array[idx] for idx in part]).all(axis=0)
         out_array[total] = np.nansum(
             [out_array[idx] for idx in part],
@@ -130,7 +121,7 @@ def array_worker(
     # Risk
     if run_meta.risk:
         mask = np.isnan(out_array[exposure_meta.indices_total]).all(axis=0)
-        out_array[-1] = np.nansum(
+        out_array[exposure_meta.index_ead] = np.nansum(
             [
                 f * a
                 for f, a in zip(
@@ -139,7 +130,7 @@ def array_worker(
             ],
             axis=0,
         )
-        out_array[-1][mask] = np.nan
+        out_array[exposure_meta.index_ead][mask] = np.nan
 
     # Return the array
     return out_array
@@ -149,7 +140,6 @@ def worker(
     run_meta: RunMeta,
     hazard: NetcdfReader,
     hazard_meta: HazardMeta,
-    vulnerability_meta: VulnerabilityMeta,
     exposure: NetcdfReader,
     exposure_meta: ExposureGridMeta,
     window: tuple,
@@ -170,8 +160,6 @@ def worker(
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
-    vulnerability_meta : VulnerabilityMeta
-        Metadata specific to the vulnerability data.
     exposure : NetcdfReader
         The exposure data.
     exposure_meta : ExposureGridMeta
@@ -179,9 +167,11 @@ def worker(
     window : tuple[slice, slice]
         The tile-aligned ``(row_slice, col_slice)`` for this job.
     """
-    # Setup the hazard type module
-    method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{run_meta.type}")
-    fn_impact = method.fn_impact
+    # Import the methods of the calculation units once
+    fns = {
+        name: importlib.import_module(f"{FIAT_METHOD}.{name}").fn_impact
+        for name in {unit.method for unit in exposure_meta.units}
+    }
 
     row_slice, col_slice = window
     h = row_slice.stop - row_slice.start
@@ -198,10 +188,9 @@ def worker(
         run_meta=run_meta,
         hazard=hazard,
         hazard_meta=hazard_meta,
-        vulnerability_meta=vulnerability_meta,
         exposure=exposure,
         exposure_meta=exposure_meta,
-        fn_impact=fn_impact,
+        fns=fns,
     )
 
     # Fill nodata and write the tile directly to the shared output file.

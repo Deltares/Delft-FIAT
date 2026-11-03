@@ -7,8 +7,10 @@ from pydantic import (
     field_validator,
 )
 
+from fiat.driver.netcdf.reader import VariableSpec
 from fiat.method.util import ZONAL_CODES
 from fiat.settings.file import InputFileModel
+from fiat.settings.variables import ExposureGridVariable, variable_specs
 from fiat.util import AREA__METHODS
 
 __all__ = ["ExposureGeometry", "ExposureGrid"]
@@ -102,8 +104,17 @@ class ExposureGrid(InputFileModel):
         description="Settings for reading the exposure grid data.",
     )
 
-    vulnerability: str = Field(
-        default="default",
-        description="The vulnerability dataset (variable) to use from the \
-vulnerability netcdf dataset.",
+    variables: list[ExposureGridVariable] = Field(
+        default=[],
+        description="Settings per exposure variable (layer).",
     )
+
+    vulnerability: str | list[str] = Field(
+        default="default",
+        description="The default vulnerability dataset(s) (variables) to use from \
+the vulnerability netcdf dataset.",
+    )
+
+    def specs(self) -> dict[str, VariableSpec]:
+        """Return the variable specifications."""
+        return variable_specs(self.variables)

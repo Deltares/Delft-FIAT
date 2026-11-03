@@ -2,11 +2,10 @@
 
 import copy
 import re
-from itertools import product
 from pathlib import Path
 from typing import Any
 
-from fiat.driver.fgb import CT_FLOAT
+from fiat.driver.fgb import CT_DOUBLE
 from fiat.driver.vector import VectorProfile
 from fiat.gis import overlay
 from fiat.util import AREA, CENTROID, FN, MAX, TOTAL, re_filter
@@ -71,7 +70,24 @@ def generate_output_columns(
     hazard_ids: tuple | list,
     extra: tuple | list = [],
 ) -> list[str]:
-    """Generate the output columns."""
+    """Generate the output columns.
+
+    Parameters
+    ----------
+    columns : list
+        The hazard columns (per hazard identifier).
+    exposure_types : dict
+        The exposure column suffixes per impact type.
+    hazard_ids : tuple | list
+        The hazard identifiers.
+    extra : tuple | list, optional
+        Extra columns appended as-is (e.g. the ead columns), by default [].
+
+    Returns
+    -------
+    list[str]
+        The output column names.
+    """
     columns = copy.deepcopy(columns)
 
     # Loop over the exposure types
@@ -84,7 +100,7 @@ def generate_output_columns(
     for name in hazard_ids:
         add = [f"{item}_{name}" for item in columns]
         out += add
-    out += [f"{x}_{y}" for x, y in product(extra, exposure_types.keys())]
+    out += list(extra)
 
     # Return the output meta
     return out
@@ -101,7 +117,7 @@ def set_finalizing_params(
         "name": Path(output_path).stem,
         "geom_type": profile.geom_type,
         "col_names": list(profile.fields) + list(exposure_meta.new),
-        "col_types": list(profile.dtypes) + [CT_FLOAT] * len(exposure_meta.new),
+        "col_types": list(profile.dtypes) + [CT_DOUBLE] * len(exposure_meta.new),
         "crs_wkt": profile.crs_wkt,
         "crs_org": profile.crs_org,
         "crs_code": profile.crs_code,

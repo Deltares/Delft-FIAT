@@ -2,6 +2,7 @@
 
 import queue as _queue
 from multiprocessing.queues import Queue
+from typing import Any
 
 from fiat.driver.vector import VectorProfile
 
@@ -74,9 +75,20 @@ GEOM_TYPE = {
 }
 
 
-def _finalize_outputs(queue: Queue, parameters: dict) -> None:
-    """Drain worker index records and write the final indexed FlatGeobuf files."""
-    records_by_path: dict[str, list] = {key: [] for key in parameters}
+def _finalize_outputs(
+    queue: "Queue[tuple[str, list[Any]]]",
+    parameters: dict[str, dict[str, Any]],
+    count: int | None = None,
+) -> None:
+    """Drain worker index records and write the final indexed FlatGeobuf files.
+
+    `count` is the number of record batches (jobs) to wait for, as items put on a
+    multiprocessing queue are not instantly available to a non blocking get.
+    """
+    records_by_path: dict[str, list[Any]] = {key: [] for key in parameters}
+    for _ in range(count or 0):
+        out_path, records = queue.get(block=True)
+        records_by_path.setdefault(out_path, []).extend(records)
     while True:
         try:
             out_path, records = queue.get(block=False)

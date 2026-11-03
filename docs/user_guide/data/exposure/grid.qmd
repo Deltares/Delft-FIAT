@@ -1,3 +1,86 @@
 ---
 title: Grid (raster)
 ---
+
+### Setting
+The gridded exposure is a single [gridded file](../supported.qmd#gridded-data-files) (NetCDF advised), set via `file` under the `[exposure]` section of the [settings.toml](../../settings/index.qmd). It must have the same grid (resolution, size and projection) as the hazard data, otherwise one of the two is reprojected (see `base` under `[grid]`).
+
+::: {.callout-warning}
+The grid model only supports methods that need no hazard conversion. The method `flood.level` (water level hazard) can therefore not be used with gridded exposure, see the [methods](../vulnerability.qmd#methods).
+:::
+
+### Layers
+Every variable (layer) of the file with an exposure **type** is calculated. The type is set by a `type` attribute on the variable and is either:
+
+- `default`: the layer holds the maximum value per cell. The vulnerability curve is set by the `fn_curve` attribute; this curve id is looked up in **every** vulnerability dataset linked to the layer.
+- `categorized`: the layer holds a category (integer) per cell, see [categorized layers](#categorized-layers).
+
+Variables without a type (e.g. the category-value variables) are not calculated by themselves.
+
+The vulnerability dataset(s) of a layer are set by a `vulnerability` attribute on the variable. When absent, the `vulnerability` entry of the `[exposure]` section (default `default`) is used. A link can be a single dataset or a list of datasets, see [linking exposure to datasets](../vulnerability.qmd#linking-exposure-to-datasets).
+
+### Categorized layers
+A categorized layer `<layer>` holds a category per cell. Its maximum values are given by one or more **category-value variables**: 1D variables over a category dimension, by default the variables with the dimension `<layer>_cat`. The coordinate of that dimension holds the categories (integers) and the variable holds the maximum value per category. The categories are used as curve ids in every linked vulnerability dataset. Category `0` means no exposure.
+
+::: {.callout-note}
+The categories are taken from the category coordinate of the category-value variable; the grid itself is not scanned. Cells holding a category that is not in that coordinate produce **no damage**.
+:::
+
+The impact of a cell is the maximum value of its category multiplied by the cell area, taken from the `area_sqm` attribute of the hazard file (1 when absent).
+
+The vulnerability link of a category-value variable resolves as: the `vulnerability` of the category-value variable, then the `vulnerability` of the categorized layer, then the `vulnerability` entry of the `[exposure]` section. So the category-value variables of one layer may be linked to different datasets. A category-value variable can belong to only one categorized layer.
+
+### Settings
+The attributes of the layers can also be set (or overridden) in the [settings file](../../settings/index.qmd) with a `[[exposure.variables]]` entry per variable. A setting in the settings file takes precedence over the attribute in the file.
+
+```toml
+[exposure]
+file = "exposure/spatial.nc"
+vulnerability = "default"                 # default for all grid layers
+
+[[exposure.variables]]
+name = "exposure2"
+type = "default"                          # overrides the 'type' attribute
+vulnerability = ["direct", "indirect"]
+fn_curve = "struct_2"                     # overrides the 'fn_curve' attribute
+
+[[exposure.variables]]
+name = "exposure3"                        # not in the file: uniform layer
+type = "default"
+fn_curve = "struct_1"
+value = 1500.0
+
+[[exposure.variables]]
+name = "landuse"
+type = "categorized"
+values = ["exposure_values"]              # category-value variables (overrides the
+                                          # '<name>_cat' dimension discovery)
+
+[[exposure.variables]]
+name = "exposure_values"                  # category-value variable
+vulnerability = ["direct", "indirect"]
+```
+
+- `name`: the name of the variable; it must exist in the file, unless `value` is set.
+- `type`: the exposure type, `default` or `categorized`.
+- `vulnerability`: the linked vulnerability dataset(s), a name or a list of names.
+- `fn_curve`: the curve id of a `default` layer.
+- `values`: the category-value variables of a `categorized` layer (only allowed with `type = "categorized"`).
+- `value`: a constant value, see [uniform layers](#uniform-layers).
+
+### Uniform layers
+A `[[exposure.variables]]` entry with a `value` defines a uniform layer: a layer that is not in the file and has the same (constant) value over the whole grid. The `name` must be a **new** variable (not present in the file) and the entry must have a `type`, as there are no attributes in the file to fall back on. Otherwise FIAT stops with an error when reading the exposure data.
+
+- For a `default` layer the value is the maximum value of every cell.
+- For a `categorized` layer the value is the category of every cell; it must be in the category coordinate of the category-value variable(s), set with `values`.
+- A category-value variable can not be defined by a value.
+
+### Output
+The output file holds a band per calculation and hazard identifier (the band number for an event, the return period for risk):
+
+- `<layer>_<id>`: when a layer gives a single calculation (a single dataset, or combined datasets);
+- `<layer>_<dataset>_<id>`: when a layer gives several separate calculations. A combined calculation among them is named after its datasets joined by `-`, e.g. `<layer>_direct-indirect_<id>`;
+- `total_<id>`: the sum of all calculations;
+- `ead`: the expected annual damage (risk only).
+
+For categorized layers `<layer>` is the name of the category-value variable.

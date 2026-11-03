@@ -1,6 +1,5 @@
 """Base model of FIAT."""
 
-import importlib
 import tomllib
 from abc import ABCMeta, abstractmethod
 from multiprocessing import get_context
@@ -18,9 +17,7 @@ from fiat.gis import grid
 from fiat.log import spawn_logger
 from fiat.open import open_grid
 from fiat.settings import GeomSettings, GridSettings
-from fiat.typing import MethodType
 from fiat.util import (
-    FIAT_METHOD,
     generic_directory_check,
     get_crs_repr,
 )
@@ -48,19 +45,18 @@ class BaseModel(metaclass=ABCMeta):
         self._hazard: NetcdfReader | None = None
         self._vulnerability: NetcdfReader | None = None
 
-        # Type of calculations
-        self._method: MethodType = importlib.import_module(
-            f"{FIAT_METHOD}.{self.settings.method}",
-        )
-
         # Threading stuff
         self.ctx = get_context("spawn")
         self.queue = Queue(maxsize=1000, ctx=self.ctx)
 
         ## Call the necessary methods at init
         logger.info(f"Using number of threads: {self.settings.threads}")
-        self._read_vulnerability()
-        self._read_hazard()
+        try:
+            self._read_vulnerability()
+            self._read_hazard()
+        except BaseException:
+            self.close()
+            raise
 
     def __repr__(self):
         return f"<{self.__class__.__name__} object at {id(self):#018x}>"
@@ -92,11 +88,6 @@ class BaseModel(metaclass=ABCMeta):
     def hazard(self) -> NetcdfReader | None:
         """Return the hazard data."""
         return self._hazard
-
-    @property
-    def method(self) -> MethodType:
-        """Return the current method module."""
-        return self._method
 
     @property
     def risk(self) -> bool:
@@ -150,6 +141,13 @@ class BaseModel(metaclass=ABCMeta):
 
         return obj
 
+    ## I/O
+    def close(self) -> None:
+        """Close the model data."""
+        for data in (self._hazard, self._vulnerability):
+            if data is not None and not data.closed:
+                data.close()
+
     ## Read data methods
     def _read_hazard(self) -> None:
         """Read the hazard data."""
@@ -159,8 +157,8 @@ class BaseModel(metaclass=ABCMeta):
 
         # Get the kwargs from the model settings
         kwargs = self.settings.hazard.settings.model_dump(exclude_none=True)
-        # Read the data
-        data = open_grid(file, **kwargs)
+        # Read the data, the variable specifications from the settings applied
+        data = open_grid(file, specs=self.settings.hazard.specs(), **kwargs)
 
         # checks
         logger.info("Executing hazard checks...")
@@ -199,8 +197,8 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         file = self.settings.vulnerability.file
         logger.info(f"Reading vulnerability curves ('{file.name}')")
 
-        # Read the data
-        data = open_grid(file)
+        # Read the data, the variable specifications from the settings applied
+        data = open_grid(file, specs=self.settings.vulnerability.specs())
 
         ## checks
         logger.info("Executing vulnerability checks...")

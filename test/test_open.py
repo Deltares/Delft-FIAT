@@ -2,42 +2,46 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from pyproj.crs import CRS
 
 from fiat.driver import (
     FlatGeobufReader,
+    GeotiffReader,
     NetcdfReader,
+    VariableSpec,
 )
 from fiat.driver.csv import Table
-from fiat.error import DriverNotFoundError
+from fiat.driver.geotiff import GeotiffWriter
+from fiat.error import DriverNotFoundError, FIATDataError
 from fiat.open import open_csv, open_geom, open_grid
 
 
-def test_open_csv_default(vulnerability_path: Path):
+def test_open_csv_default(csv_path: Path):
     # Open the dataset
-    ds = open_csv(vulnerability_path)
+    ds = open_csv(csv_path)
 
     # Assert some simple stuff
     assert isinstance(ds, Table)
     assert isinstance(ds.data, np.ndarray)
 
 
-def test_open_csv_delimiter(vulnerability_path: Path):
+def test_open_csv_delimiter(csv_path: Path):
     # Open the dataset
-    ds = open_csv(vulnerability_path)
+    ds = open_csv(csv_path)
 
     # Assert the shape
     assert ds.shape == (21, 3)  # 5 rows and 6 columns
 
     # Select another delimiter (wrong one)
-    ds = open_csv(vulnerability_path, delimiter=";")
+    ds = open_csv(csv_path, delimiter=";")
 
     # Assert the shape
     assert ds.shape == (21, 1)  # No more columns as they can't be separated
 
 
-def test_open_csv_header(vulnerability_path: Path):
+def test_open_csv_header(csv_path: Path):
     # Open the dataset
-    ds = open_csv(vulnerability_path, header=True)  # Which is default
+    ds = open_csv(csv_path, header=True)  # Which is default
 
     # Assert the columns
     assert ds.columns == (
@@ -47,22 +51,22 @@ def test_open_csv_header(vulnerability_path: Path):
     )  # Very specific, but this should be True for this dataset
 
     # No header
-    ds = open_csv(vulnerability_path, header=False)
+    ds = open_csv(csv_path, header=False)
 
     # Assert the default columns
     assert ds.columns == ("col_0", "col_1", "col_2")
 
 
-def test_open_csv_index(vulnerability_path: Path):
+def test_open_csv_index(csv_path: Path):
     # Open the dataset
-    ds = open_csv(vulnerability_path, index=None)  # Which is default
+    ds = open_csv(csv_path, index=None)  # Which is default
 
     # Assert the index and name
     assert ds.index_name == "index"
     assert ds.index[:5] == (0, 1, 2, 3, 4)  # Default
 
     # Open with selected header
-    ds = open_csv(vulnerability_path, index="depth")
+    ds = open_csv(csv_path, index="depth")
 
     # Assert the new index
     assert ds.index_name == "depth"
@@ -170,3 +174,27 @@ def test_open_grid_write(tmp_path: Path):
     # Assert some simple stuff
     assert ds.closed is False
     assert ds.src is not None
+
+
+def test_open_grid_geotiff_specs(tmp_path: Path):
+    # Write a tiny GeoTIFF to open
+    p = Path(tmp_path, "tmp.tif")
+    w = GeotiffWriter(p)
+    w.create_spatial_dims(np.array([1.5, 0.5]), np.array([0.5, 1.5]))
+    w.set_spatial_ref(CRS.from_user_input("EPSG:4326"))
+    w.create_spatial_variable("band1")
+    w.variables["band1"].set(np.ones((2, 2), dtype="f4"), origin=(0, 0))
+    w.close()
+
+    # No or empty specifications are ignored
+    for specs in (None, {}):
+        ds = open_grid(p, specs=specs)
+        assert isinstance(ds, GeotiffReader)
+        ds.close()
+
+    # Non empty specifications are not supported for GeoTIFF
+    with pytest.raises(
+        FIATDataError,
+        match="only supported for NetCDF files",
+    ):
+        _ = open_grid(p, specs={"band1": VariableSpec(attrs={"type": "water_depth"})})

@@ -119,9 +119,9 @@ def test_parse_csv_numeric_no_header(numeric_buffer_handler: BufferHandler):
     assert t[1, "col_1"] == 4.0
 
 
-def test_open_csv(vulnerability_path: Path):
+def test_open_csv(csv_path: Path):
     # Open a real curve file through the public entry point
-    t = open_csv(vulnerability_path, index="depth")
+    t = open_csv(csv_path, index="depth")
 
     # Assert it returns the compiled Table
     assert isinstance(t, Table)

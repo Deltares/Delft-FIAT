@@ -6,10 +6,10 @@ from fiat.driver.csv import Table, parse_csv
 from fiat.driver.fgb import FlatGeobufReader
 from fiat.driver.geotiff import GeotiffReader, GeotiffWriter
 from fiat.driver.handler import FileBufferHandler
-from fiat.driver.netcdf import NetcdfReader, NetcdfWriter
+from fiat.driver.netcdf import NetcdfReader, NetcdfWriter, VariableSpec
 from fiat.driver.raster import GRID_EXTENSIONS
 from fiat.driver.vector import GEOM_EXTENSIONS
-from fiat.error import DriverNotFoundError
+from fiat.error import DriverNotFoundError, FIATDataError
 
 __all__ = ["open_csv", "open_geom", "open_grid"]
 
@@ -96,6 +96,7 @@ def open_grid(
     mode: str = "r",
     crs: str | None = None,
     subset: str = None,
+    specs: dict[str, VariableSpec] | None = None,
     **kwargs,
 ) -> NetcdfReader | NetcdfWriter | GeotiffReader | GeotiffWriter:
     """Open a grid source file.
@@ -116,6 +117,10 @@ def open_grid(
     subset : str, optional
         In netCDF files, multiple variables are seen as subsets and can therefore not
         be loaded like normal bands. Specify one if one of those it wanted.
+    specs : dict[str, VariableSpec] | None, optional
+        Variable specifications from the settings (netCDF reader only), see
+        `NetcdfReader`. By default None. Non empty specifications raise a
+        `FIATDataError` for GeoTIFF files.
 
     Returns
     -------
@@ -126,6 +131,14 @@ def open_grid(
     file = Path(file)
     if file.suffix.lower() not in GRID_EXTENSIONS:
         raise DriverNotFoundError(gog="Grid", path=file)
+
+    # Only pass the specifications when provided, netCDF only
+    if specs and file.suffix.lower() != ".nc":
+        raise FIATDataError(
+            f"Variable settings for '{file}' are only supported for NetCDF files"
+        )
+    if specs is not None and file.suffix.lower() == ".nc":
+        kwargs["specs"] = specs
 
     # Return a handle
     return grid_handles[file.suffix.lower()][mode == "w"](file, crs, **kwargs)

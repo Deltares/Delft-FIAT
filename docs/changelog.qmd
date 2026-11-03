@@ -6,15 +6,33 @@ title: "What's new?"
 These are the unreleased changes.
 
 ### Added
+- Vulnerability datasets in a NetCDF file: one file can hold several datasets (variables), each with its own calculation method (`method` attribute) and a hazard type per curve axis (`type` attribute on the index dimensions)
+- Grid exposure layers can be linked to several vulnerability datasets (`vulnerability` as a list), either combined in one calculation or as separate calculations, all added to the total
+- Vulnerability datasets with curves over two or more hazard axes (e.g. depth and duration), interpolated with the new multilinear interpolator `InterpND`
+- Methods `flood.depth_duration` (a water depth and a flood duration dataset combined, grid only) and `flood.depth_duration_2d` (one 2D depth-duration dataset)
+- `[[vulnerability.variables]]`, `[[hazard.variables]]` and `[[exposure.variables]]` settings to set or override the attributes of the datasets, hazard bands and grid exposure layers (e.g. `method`, `types`, `type`, `rp`, `fn_curve`, `vulnerability`, `values`)
+- Uniform hazard and grid exposure layers from the settings (`value` in a `variables` entry): a layer with a constant value that is not in the file (for a categorized layer the value is the category, which must be in the category coordinate)
+- `vulnerability` entry per geometry file (`[[exposure]]`) linking it to a single vulnerability dataset
+- `close` method on the models to close the input data
 
 ### Changed
+- The calculation method is set per vulnerability dataset instead of globally
+- The method functions have a uniform signature: `fn_hazard(hazards, ...)` returns a tuple of hazard values and the reduction factor; `fn_impact(hazards, exposure, curves, fact)`
+- The hazard types needed (band `type`) are derived from the methods of the linked vulnerability datasets, so a hazard file can hold bands of several types (e.g. depth and duration)
+- Geometry risk output column naming: with a single impact type the expected annual damage column is now `ead` (previously `ead_damage`); with several impact types there is one `ead_<type>` column per type
+- `flood.level` can only be used with geometry exposure; linking it to a grid layer gives an error
 
 ### Deprecated
 
 ### Fixed
 - Vulnerability curves are no longer extrapolated: a water depth below the first curve depth gives the first damage fraction (no negative damage) and a depth above the last gives the last ([#205](https://github.com/Deltares/Delft-FIAT/issues/205))
+- Column type of the new geometry output columns (written as double, declared as float), which gave garbled output values
+- Geometry output finalizing could miss the results of the workers, which gave empty output files
+- Integer hazard bands (e.g. a flood duration stored as `int16`) are treated as floating point with the nodata value masked, instead of failing in the grid model or using the raw nodata value in the geometry model
 
 ### Removed
+- CSV vulnerability files; use a NetCDF vulnerability file
+- The global `method` setting; the method is set per vulnerability dataset (a leftover `method` entry in the settings file is ignored)
 
 ## v0.4.0 (2025-10-28)
 Improved CLI and settings file.

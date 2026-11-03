@@ -8,7 +8,13 @@ from fiat.log import Logger
 from fiat.settings import BaseSettings, GeomSettings, GridSettings, load_settings
 from fiat.settings.exposure import ExposureGeometry, ExposureGrid
 from fiat.settings.file import FileContext, InputFileModel
-from fiat.util import FLOOD_DEPTH
+from fiat.settings.hazard import Hazard
+from fiat.settings.variables import (
+    ExposureGridVariable,
+    HazardVariable,
+    VulnerabilityVariable,
+)
+from fiat.settings.vulnerability import Vulnerability
 
 
 def test_settings_input_file(testdata_dir: Path):
@@ -198,7 +204,7 @@ def test_settings_load_settings_geom(settings_files: Callable[[str], Path]):
     # Assert some content
     assert settings.type == "geom"
     assert isinstance(settings.exposure, list)
-    assert settings.method == FLOOD_DEPTH
+    assert not hasattr(settings, "method")
 
 
 def test_settings_load_settings_grid(settings_files: Callable[[str], Path]):
@@ -213,7 +219,7 @@ def test_settings_load_settings_grid(settings_files: Callable[[str], Path]):
     # Assert some content
     assert settings.type == "grid"
     assert isinstance(settings.exposure, ExposureGrid)
-    assert settings.method == FLOOD_DEPTH
+    assert not hasattr(settings, "method")
 
 
 def test_settings_load_settings_error(tmp_path: Path):
@@ -223,3 +229,98 @@ def test_settings_load_settings_error(tmp_path: Path):
         match=f"{Path(tmp_path, 'foo.toml').as_posix()} is not a valid file",
     ):
         _ = load_settings(filename=Path(tmp_path, "foo.toml"))
+
+
+def test_settings_variables_parse(settings_files: Callable[[str], Path]):
+    # Load settings with variables entries
+    settings = load_settings(settings_files("grid_multi_combined.toml"))
+
+    # Assert the content
+    assert isinstance(settings.exposure.variables[0], ExposureGridVariable)
+    assert settings.exposure.variables[0].vulnerability == ["direct", "indirect"]
+    assert settings.exposure.vulnerability == "default"
+    assert not hasattr(settings, "method")
+
+
+def test_settings_vulnerability_value_forbidden(vulnerability_path: Path):
+    # Assert value is not allowed on vulnerability variables
+    with pytest.raises(ValidationError, match="value"):
+        Vulnerability.model_validate(
+            {"file": vulnerability_path, "variables": [{"name": "a", "value": 1}]}
+        )
+
+
+def test_settings_exposure_variable_value_values():
+    # Uniform categorized layer
+    var = ExposureGridVariable(
+        name="landuse", type="categorized", value=1, values=["values"]
+    )
+    assert var.values == ["values"]
+    assert var.value == 1
+
+    # Values on a non categorized layer
+    with pytest.raises(ValidationError, match="values"):
+        ExposureGridVariable(name="foo", type="default", values=["values"])
+
+    # Unknown type
+    with pytest.raises(ValidationError, match="type"):
+        ExposureGridVariable(name="foo", type="other")
+
+
+def test_settings_specs(hazard_event_path: Path, vulnerability_path: Path):
+    # Hazard specs
+    hazard = Hazard(
+        file=hazard_event_path,
+        variables=[
+            HazardVariable(name="d", type="duration", rp=10, value=3.0),
+            HazardVariable(name="data", type="water_depth"),
+        ],
+    )
+    specs = hazard.specs()
+    assert specs["d"].attrs == {"type": "duration", "rp": 10}
+    assert specs["d"].value == 3.0
+    assert specs["data"].attrs == {"type": "water_depth"}
+    assert specs["data"].value is None
+
+    # Vulnerability specs
+    vulnerability = Vulnerability(
+        file=vulnerability_path,
+        variables=[
+            VulnerabilityVariable(
+                name="default",
+                method="flood.depth",
+                types={"depth_default": "water_depth"},
+            )
+        ],
+    )
+    specs = vulnerability.specs()
+    assert specs["default"].attrs == {
+        "method": "flood.depth",
+        "types": {"depth_default": "water_depth"},
+    }
+    assert specs["default"].value is None
+
+
+def test_settings_specs_exposure(testdata_dir: Path):
+    # Exposure grid specs
+    exposure = ExposureGrid(
+        file=Path(testdata_dir, "exposure", "spatial.nc"),
+        vulnerability=["default", "default_2d"],
+        variables=[
+            ExposureGridVariable(
+                name="exposure3",
+                type="default",
+                fn_curve="struct_1",
+                vulnerability="default_2d",
+                value=1500.0,
+            )
+        ],
+    )
+    specs = exposure.specs()
+    assert exposure.vulnerability == ["default", "default_2d"]
+    assert specs["exposure3"].attrs == {
+        "type": "default",
+        "fn_curve": "struct_1",
+        "vulnerability": "default_2d",
+    }
+    assert specs["exposure3"].value == 1500.0

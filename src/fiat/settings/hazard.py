@@ -6,7 +6,9 @@ from pydantic import (
     Field,
 )
 
+from fiat.driver.netcdf.reader import VariableSpec
 from fiat.settings.file import InputFileModel
+from fiat.settings.variables import HazardVariable, variable_specs
 
 __all__ = ["Hazard"]
 
@@ -39,3 +41,12 @@ class Hazard(InputFileModel):
         default=HazardSettings(),
         description="Settings for reading the hazard data.",
     )
+
+    variables: list[HazardVariable] = Field(
+        default=[],
+        description="Settings per hazard variable (band).",
+    )
+
+    def specs(self) -> dict[str, VariableSpec]:
+        """Return the variable specifications."""
+        return variable_specs(self.variables)

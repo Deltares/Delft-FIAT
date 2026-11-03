@@ -23,10 +23,10 @@ Scope rule: FIAT is the calculation core only. Pre- and post-processing belongs 
 | `src/fiat/` | The package (src layout) |
 | `src/fiat/model/` | `GeomModel`, `GridModel` (+ `base.py`, `*_worker.py`, `*_util.py`, `meta.py`) |
 | `src/fiat/settings/` | Pydantic settings: `GeomSettings`, `GridSettings`, `load_settings` |
-| `src/fiat/method/` | Calculation methods; `flood/depth.py`, `flood/level.py`, `ead.py` |
+| `src/fiat/method/` | Calculation methods; `flood/depth.py`, `flood/level.py`, `flood/depth_duration.py`, `flood/depth_duration_2d.py`, `ead.py` |
 | `src/fiat/driver/` | I/O: `csv`, `fgb` (FlatGeobuf), `geotiff`, `netcdf`, `handler.py`, `buffer.py`, `raster.pyx`, `vector.pyx` |
 | `src/fiat/gis/` | Geometry/grid ops (`geom.py`, `grid.py`, `overlay.py`, `_geom.pyx`) |
-| `src/fiat/_core/` | Cython kernels: `_interp`, `_overlay`, `_zonal` |
+| `src/fiat/_core/` | Cython kernels: `_interp` (`Interp1D`, `InterpND`), `_overlay`, `_zonal` |
 | `src/fiat/cli/` | argparse CLI (`main.py`, entry point `fiat.cli.main:main`) |
 | `src/fiat/log/` | Multiprocess-safe logging (spawn-based) |
 | `src/fiat/` (top-level modules) | `open.py` (public openers), `check.py` (input validation), `job.py`, `thread.py`, `container.py`, `error.py`, `typing.py`, `util.py` (constants/helpers), `version.py` |
@@ -41,9 +41,14 @@ Scope rule: FIAT is the calculation core only. Pre- and post-processing belongs 
    `GeomSettings` or `GridSettings` (`fiat.settings`, via `load_settings`). CLI
    `--set-entry`/`-d` can override entries.
 2. **Model** (`fiat.model`) is built from settings. `BaseModel.__init__` reads the
-   vulnerability table and hazard grid, then imports the calculation **method** module
-   dynamically (`fiat.method.<type>`, e.g. `flood`). It must satisfy
-   `fiat.typing.MethodType` (`fn_hazard`, `fn_impact`, column definitions).
+   vulnerability NetCDF and hazard grid, applying the `*.variables` settings as
+   per-variable specs (attribute overrides, uniform `value` layers). There is no global
+   `method` setting: each vulnerability dataset names its **method** (`method` attribute
+   or `[[vulnerability.variables]]`, e.g. `flood.depth`), imported dynamically as
+   `fiat.method.<method>`. Methods satisfy `fiat.typing.MethodType` (`TYPES`,
+   `AXIS_TYPES`, `NDATASETS`, `fn_hazard`, `fn_impact(hazards, exposure, curves, fact)`,
+   column definitions). `model/meta.py` resolves datasets → methods → hazard bands →
+   curves into a precompiled run plan before the run.
    - `GeomModel`: vector exposure (FlatGeobuf) overlaid with hazard, one asset at a time.
    - `GridModel`: raster exposure, same resolution/size/CRS as hazard, per-cell damage.
 3. **Execution**: work is chunked (`model/util.py`, `job.py`) and run by worker
@@ -72,14 +77,18 @@ GeomModel(settings).run()
 ## Data
 - **Settings**: TOML only.
 - **Exposure (geom)**: FlatGeobuf (`.fgb`) with a spatial index (hilbert R-tree). Columns:
-  `object_type` (optional), `ref` (reference height, needed for flood damage),
-  `fn_<type>_<component>` (vulnerability curve name) with matching
+  `object_type` (optional), `elevation` (object height, all flood methods), `reference`
+  (`flood.level` only), `fn_<type>_<component>` (curve id in the linked dataset) with matching
   `max_<type>_<component>` (maximum value). Multiple files allowed.
 - **Exposure (grid)**: GeoTIFF or NetCDF (GDAL-compliant), same grid as hazard.
-- **Hazard**: GeoTIFF / NetCDF flood depth or elevation maps. Event map, or several maps with
-  return periods (`rp`) for risk. Assets must not fall outside the hazard extent.
-- **Vulnerability**: CSV, first column water depth, other columns damage fractions (0-1) per
-  curve name. Header rows `#UNIT=<unit>` and `#METHOD` (e.g. `mean`, `max`) per curve.
+- **Hazard**: GeoTIFF / NetCDF bands with a `type` (e.g. `water_depth`, `water_level`,
+  `duration`) and, for risk, a return period (`rp`). Assets must not fall outside the
+  hazard extent.
+- **Vulnerability**: NetCDF (CSV is no longer supported) holding one or more datasets
+  (variables): a `curve_<name>` dimension with the curve ids, one or more strictly
+  increasing index dimensions with a hazard `type` attribute, and a `method` attribute.
+  Geom files link to one dataset (`[[exposure]].vulnerability`); grid layers may link to a
+  list. `[[vulnerability|hazard|exposure.variables]]` TOML entries override attributes.
 - Units (depth, reference height) must be consistent across hazard, exposure, vulnerability.
 - CRS is checked and non-matching inputs are reprojected to the model CRS.
 - Core libs: numpy, scipy, netcdf4, pyproj, pydantic, regex. No pandas/GDAL at runtime

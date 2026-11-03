@@ -1,15 +1,17 @@
 """Checks for the data of FIAT."""
 
+from importlib.util import find_spec
 from itertools import chain
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 from pyproj.crs import CRS
 
 from fiat.container import Container
 from fiat.error import FIATDataError
 from fiat.log import spawn_logger
-from fiat.util import get_crs_repr
+from fiat.util import FIAT_METHOD, get_crs_repr
 
 logger = spawn_logger(__name__)
 
@@ -210,6 +212,86 @@ def check_hazard_types(
 
 
 ## Exposure
+def check_exp_cat_uniform(
+    layer: str,
+    value: Any,
+    value_var: str,
+    categories: list[Any],
+) -> None:
+    """Check whether the category of a uniform categorized layer is known.
+
+    Parameters
+    ----------
+    layer : str
+        The name of the uniform categorized layer.
+    value : Any
+        The (constant) category of the layer.
+    value_var : str
+        The name of the category value variable.
+    categories : list
+        The categories from the category coordinate of the value variable.
+    """
+    if value not in categories:
+        raise FIATDataError(
+            f"Category {value} of uniform categorized layer '{layer}' is not in the \
+categories {categories} of category value variable '{value_var}'"
+        )
+
+
+def check_exp_cat_value(
+    layers: dict[str, list[str]],
+    uniform: list[str],
+) -> None:
+    """Check the category value variables of the categorized exposure layers.
+
+    Parameters
+    ----------
+    layers : dict[str, list[str]]
+        The category value variables per categorized layer.
+    uniform : list[str]
+        The names of the uniform (constant value) layers.
+    """
+    seen: dict[str, str] = {}
+    for layer, values in layers.items():
+        _uniform = [item for item in values if item in uniform]
+        if _uniform:
+            raise FIATDataError(
+                f"Category value variable(s) {_uniform} of categorized layer \
+'{layer}' can't be uniform layers"
+            )
+        for item in values:
+            if item in seen:
+                raise FIATDataError(
+                    f"Category value variable '{item}' is shared between \
+categorized layers '{seen[item]}' and '{layer}'"
+                )
+            seen[item] = layer
+
+
+def check_exp_cat_values(
+    layer: str,
+    values: list[str],
+    available: list[str],
+) -> None:
+    """Check whether the category value variables are in the exposure data.
+
+    Parameters
+    ----------
+    layer : str
+        The name of the categorized layer.
+    values : list[str]
+        The names of the category value variables.
+    available : list[str]
+        The names of the variables in the exposure data.
+    """
+    missing = [item for item in values if item not in available]
+    if missing:
+        raise FIATDataError(
+            f"Category value variable(s) {missing} of categorized layer \
+'{layer}' not found in the exposure data"
+        )
+
+
 def check_exp_columns(
     columns: tuple | list,
     mandatory_columns: tuple | list = [],
@@ -242,16 +324,249 @@ maximum value: {missing}"
         )
 
 
-def check_exp_grid_fn(
-    fn_list: tuple | list,
-    fn_available: tuple | list,
-) -> None:
-    """Check the impact functions mentioned in the exposure bands."""
-    _check = [item in fn_available for item in fn_list]
-    if not all(_check):
-        _missing = [item for item, b in zip(fn_list, _check) if not b]
-        msg = f"Unknown impact function identifier found in exposure grid: {_missing}"
-        raise FIATDataError(msg)
-
-
 ## Vulnerability
+def check_vuln_axes(
+    name: str,
+    dim: str,
+    values: np.ndarray,
+) -> None:
+    """Check whether an index axis of a vulnerability dataset is strictly increasing.
+
+    Parameters
+    ----------
+    name : str
+        The name of the vulnerability dataset.
+    dim : str
+        The name of the index dimension.
+    values : np.ndarray
+        The values of the index dimension.
+    """
+    if not np.all(np.diff(np.asarray(values, dtype=np.float64)) > 0):
+        raise FIATDataError(
+            f"Axis '{dim}' of vulnerability dataset '{name}' is not strictly \
+increasing"
+        )
+
+
+def check_vuln_axis_types(
+    name: str,
+    axis_types: list[str | None],
+    method_axis_types: list[str],
+    ndatasets: int,
+) -> None:
+    """Check the axis types of a vulnerability dataset against its method.
+
+    Parameters
+    ----------
+    name : str
+        The name of the vulnerability dataset.
+    axis_types : list[str | None]
+        The axis types of the index dimensions (None when unknown).
+    method_axis_types : list[str]
+        The axis types expected by the method (`AXIS_TYPES`).
+    ndatasets : int
+        The number of datasets the method combines (`NDATASETS`).
+    """
+    if ndatasets > 1:
+        valid = len(axis_types) == 1 and axis_types[0] in method_axis_types
+        expected = f"one of {method_axis_types}"
+    else:
+        valid = len(axis_types) == len(method_axis_types) and sorted(
+            axis_types, key=str
+        ) == sorted(method_axis_types, key=str)
+        expected = f"{method_axis_types}"
+    if not valid:
+        raise FIATDataError(
+            f"Axis types {axis_types} of vulnerability dataset '{name}' do not \
+match the method, expected {expected}"
+        )
+
+
+def check_vuln_categories(
+    layer: str,
+    categories: list[Any],
+    dataset: str,
+    available: list[Any],
+) -> None:
+    """Check whether the categories of a layer are curve ids of a dataset.
+
+    Parameters
+    ----------
+    layer : str
+        The name of the exposure layer.
+    categories : list
+        The categories of the layer (category 0 is ignored).
+    dataset : str
+        The name of the vulnerability dataset.
+    available : list
+        The curve ids of the vulnerability dataset.
+    """
+    missing = [item for item in categories if item != 0 and item not in available]
+    if missing:
+        raise FIATDataError(
+            f"Categories {missing} of exposure layer '{layer}' not found in \
+vulnerability dataset '{dataset}'"
+        )
+
+
+def check_vuln_curve_ids(
+    layer: str,
+    curve_id: Any,
+    dataset: str,
+    available: list[Any],
+) -> None:
+    """Check whether a curve id is present in a vulnerability dataset.
+
+    Parameters
+    ----------
+    layer : str
+        The name of the exposure layer.
+    curve_id : Any
+        The curve id.
+    dataset : str
+        The name of the vulnerability dataset.
+    available : list
+        The curve ids of the vulnerability dataset.
+    """
+    if curve_id not in available:
+        raise FIATDataError(
+            f"Curve id '{curve_id}' of exposure layer '{layer}' not found in \
+vulnerability dataset '{dataset}'"
+        )
+
+
+def check_vuln_grid_method(
+    layer: str,
+    method: str,
+    types: list[str],
+    axis_types: list[str],
+) -> None:
+    """Check whether a method can be used for a grid layer.
+
+    The grid calculations do not convert the hazard (`fn_hazard`), so the hazard
+    types have to equal the curve axis types.
+
+    Parameters
+    ----------
+    layer : str
+        The name of the exposure layer.
+    method : str
+        The name of the method.
+    types : list[str]
+        The hazard types of the method (`TYPES`).
+    axis_types : list[str]
+        The curve axis types of the method (`AXIS_TYPES`).
+    """
+    if list(types) != list(axis_types):
+        raise FIATDataError(
+            f"Method '{method}' of exposure layer '{layer}' needs a hazard \
+conversion ({types} -> {axis_types}), not supported for grid calculations"
+        )
+
+
+def check_vuln_group(
+    layer: str,
+    method: str,
+    ndatasets: int,
+    axis_types: list[str],
+    method_axis_types: list[str],
+) -> None:
+    """Check a group of vulnerability datasets combined by one method.
+
+    Parameters
+    ----------
+    layer : str
+        The name of the exposure layer.
+    method : str
+        The name of the method.
+    ndatasets : int
+        The number of datasets the method combines (`NDATASETS`).
+    axis_types : list[str]
+        The axis types of the datasets in the group.
+    method_axis_types : list[str]
+        The axis types expected by the method (`AXIS_TYPES`).
+    """
+    if len(axis_types) != ndatasets:
+        raise FIATDataError(
+            f"Exposure layer '{layer}' links {len(axis_types)} dataset(s) with \
+method '{method}', number of datasets should be {ndatasets}"
+        )
+    if len(set(axis_types)) != len(axis_types):
+        raise FIATDataError(
+            f"Exposure layer '{layer}' links datasets with duplicate axis types \
+{axis_types} for method '{method}'"
+        )
+    if set(axis_types) != set(method_axis_types):
+        raise FIATDataError(
+            f"Axis types {axis_types} of the datasets linked to exposure layer \
+'{layer}' do not match method '{method}', expected {method_axis_types}"
+        )
+
+
+def check_vuln_method(
+    name: str,
+    method: str | None,
+) -> None:
+    """Check whether a vulnerability dataset has a known method.
+
+    Parameters
+    ----------
+    name : str
+        The name of the vulnerability dataset.
+    method : str | None
+        The name of the method.
+    """
+    if method is None:
+        raise FIATDataError(f"Vulnerability dataset '{name}' has no method")
+    try:
+        spec = find_spec(f"{FIAT_METHOD}.{method}")
+    except ModuleNotFoundError:
+        spec = None
+    if spec is None:
+        raise FIATDataError(
+            f"Unknown method '{method}' for vulnerability dataset '{name}'"
+        )
+
+
+def check_vuln_types_keys(
+    name: str,
+    keys: list[str],
+    dims: list[str],
+) -> None:
+    """Check whether the axis type overrides refer to dimensions of a dataset.
+
+    Parameters
+    ----------
+    name : str
+        The name of the vulnerability dataset.
+    keys : list[str]
+        The dimension names in the types override.
+    dims : list[str]
+        The index dimensions of the vulnerability dataset.
+    """
+    missing = [item for item in keys if item not in dims]
+    if missing:
+        raise FIATDataError(
+            f"Types defined for unknown dimension(s) {missing} of vulnerability \
+dataset '{name}', chose from {dims}"
+        )
+
+
+def check_vuln_variables(
+    names: list[str],
+    available: list[str],
+) -> None:
+    """Check whether the vulnerability datasets are present.
+
+    Parameters
+    ----------
+    names : list[str]
+        The names of the requested vulnerability datasets.
+    available : list[str]
+        The names of the datasets in the vulnerability data.
+    """
+    missing = [item for item in names if item not in available]
+    if missing:
+        raise FIATDataError(
+            f"Vulnerability dataset(s) {missing} not found, chose from {available}"
+        )

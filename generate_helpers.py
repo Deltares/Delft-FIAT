@@ -16,9 +16,16 @@ fields = {
     "object_id": fgb.CT_INT,
     "object_name": fgb.CT_STRING,
     "elevation": fgb.CT_DOUBLE,
-    "fn_damage_structure": fgb.CT_STRING,
-    "max_damage_structure": fgb.CT_DOUBLE,
 }
+
+
+def _impact_fields(types: tuple[str, ...]) -> dict:
+    """Create the curve and maximum value columns per impact type."""
+    out = {}
+    for t in types:
+        out[f"fn_{t}_structure"] = fgb.CT_STRING
+        out[f"max_{t}_structure"] = fgb.CT_DOUBLE
+    return out
 
 
 def _polygon_wkt_to_arrays(wkt: str):
@@ -40,8 +47,13 @@ def fgb_writer(
     name: str,
     geoms,
     epsg: int | None = None,
+    types: tuple[str, ...] = ("damage",),
 ):
-    """Write a set of polygon WKTs to a FlatGeobuf file."""
+    """Write a set of polygon WKTs to a FlatGeobuf file.
+
+    Every impact type gets its own curve and maximum value column; the maximum
+    value of the n-th impact type is ``10**-n`` times that of the first.
+    """
     # Parse the crs
     crs_wkt, crs_org, crs_code = "", "", 0
     if epsg is not None:
@@ -50,10 +62,11 @@ def fgb_writer(
         crs_org, crs_code = "EPSG", epsg
 
     # Setup the writer
+    columns = fields | _impact_fields(types)
     writer = fgb.FlatGeobufWriter(
         path.as_posix(),
-        col_names=list(fields.keys()),
-        col_types=list(fields.values()),
+        col_names=list(columns.keys()),
+        col_types=list(columns.values()),
         geom_type=fgb.GT_POLYGON,
         name=name,
         crs_wkt=crs_wkt,
@@ -65,11 +78,14 @@ def fgb_writer(
     for idx, wkt in enumerate(geoms):
         dmc = "struct_1" if (idx + 1) % 2 != 0 else "struct_2"
         xy, ends = _polygon_wkt_to_arrays(wkt)
+        values = [idx + 1, f"fp_{idx + 1}", 0.0]
+        for n, _ in enumerate(types):
+            values += [dmc, (idx + 1) * 1000.0 / 10**n]
         writer.add_feature(
             xy,
             ends,
             None,
-            [idx + 1, f"fp_{idx + 1}", 0.0, dmc, (idx + 1) * 1000.0],
+            values,
         )
 
     # Wrap it up
