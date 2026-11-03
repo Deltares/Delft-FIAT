@@ -3,8 +3,7 @@ from pathlib import Path
 import numpy as np
 from pyproj import Transformer
 
-from fiat.driver import NetcdfReader, VariableSpec
-from fiat.driver.netcdf.reader import ConstantVariable
+from fiat.driver import NetcdfReader
 from fiat.gis.grid import default_transform, reproject, transform_bounds
 from fiat.open import open_grid
 from fiat.util import get_crs_repr
@@ -79,29 +78,18 @@ def test_reproject_keeps_attributes_risk(tmp_path: Path, hazard_risk_path: Path)
         assert int(ds.variables[name].get_attr("rp")) == rp
 
 
-def test_reproject_keeps_specs(tmp_path: Path, hazard_event_path: Path):
-    # Open the dataset with an override and a constant layer
-    src = open_grid(
-        hazard_event_path,
-        specs={
-            "data": VariableSpec(attrs={"type": "water_depth"}),
-            "dur": VariableSpec(attrs={"type": "duration"}, value=3.0),
-        },
-    )
+def test_reproject_skips_constants(tmp_path: Path, hazard_event_path: Path):
+    # Open the dataset with a constant layer
+    src = open_grid(hazard_event_path)
+    src.add_constant("dur", 3.0)
 
     # Call the function
     ds = reproject(src, dst_crs="EPSG:3857", output_dir=tmp_path)
 
-    # Assert the output
-    assert ds.names == ["data", "dur"]
+    # Assert the output, the constant layers are not part of the new reader
+    assert ds.names == ["data"]
     assert "dur" not in ds.src.variables
-    assert isinstance(ds.variables["dur"], ConstantVariable)
     assert ds.variables["data"].get_attr("type") == "water_depth"
-    assert ds.variables["dur"].get_attr("type") == "duration"
-    np.testing.assert_array_equal(
-        ds.variables["dur"].load(),
-        np.full(ds.profile.shape, 3.0),
-    )
 
 
 def test_reproject_resample(tmp_path: Path, hazard_event_repr: NetcdfReader):

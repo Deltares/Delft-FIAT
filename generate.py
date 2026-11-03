@@ -370,6 +370,82 @@ def create_hazard_duration_maps():
     ds = None
 
 
+RETURN_PERIODS = (2, 5, 10, 25)
+
+
+def vuln_1d(
+    name: str,
+    method: str = "flood.depth",
+    index: str = "depth",
+    type: str = "water_depth",
+) -> dict:
+    """Return the variable settings of a 1D vulnerability dataset."""
+    return {"name": name, "method": method, "types": {f"{index}_{name}": type}}
+
+
+def vuln_2d(name: str) -> dict:
+    """Return the variable settings of a 2D (depth x duration) dataset."""
+    return {
+        "name": name,
+        "method": "flood.depth_duration_2d",
+        "types": {f"depth_{name}": "water_depth", f"duration_{name}": "duration"},
+    }
+
+
+def haz_event() -> list[dict]:
+    """Return the hazard variable settings of the event map."""
+    return [{"name": "data", "type": "water_depth"}]
+
+
+def haz_risk() -> list[dict]:
+    """Return the hazard variable settings of the risk map."""
+    return [
+        {"name": f"{rp}Y", "type": "water_depth", "rp": rp} for rp in RETURN_PERIODS
+    ]
+
+
+def haz_event_duration() -> list[dict]:
+    """Return the hazard variable settings of the depth and duration event map."""
+    return [
+        {"name": "depth", "type": "water_depth"},
+        {"name": "duration", "type": "duration"},
+    ]
+
+
+def haz_risk_duration() -> list[dict]:
+    """Return the hazard variable settings of the depth and duration risk map."""
+    return [
+        {"name": f"{name}_{rp}Y", "type": type, "rp": rp}
+        for rp in RETURN_PERIODS
+        for name, type in (("depth", "water_depth"), ("duration", "duration"))
+    ]
+
+
+def exp_grid(default: str = "default", **links) -> list[dict]:
+    """Return the variable settings of the default layers of the exposure grid.
+
+    The layers are linked to the `default` vulnerability dataset, keyword arguments
+    set the link of a layer by its name.
+    """
+    return [
+        {
+            "name": name,
+            "type": "default",
+            "fn_curve": curve,
+            "vulnerability": links.get(name, default),
+        }
+        for name, curve in (("exposure1", "struct_1"), ("exposure2", "struct_2"))
+    ]
+
+
+def exp_values(**links) -> list[dict]:
+    """Return the variable settings of the category value variables."""
+    return [
+        {"name": name, "type": "values", "vulnerability": links.get(name, "default")}
+        for name in ("exposure_values", "exposure_values2")
+    ]
+
+
 def create_settings_geom():
     """Create exposure geometry model settings."""
     doc = {
@@ -382,17 +458,20 @@ def create_settings_geom():
         "output": [{"file": "spatial.fgb"}],
         "vulnerability": {
             "file": "curves.nc",
+            "variables": [vuln_1d("default")],
         },
         "hazard": {
             "file": "event_map.nc",
             "settings": {
                 "crs": "EPSG:4326",
             },
+            "variables": haz_event(),
         },
         "exposure": [
             {
                 "file": "exposure/spatial.fgb",
                 "area_method": "area",
+                "vulnerability": "default",
                 "settings": {
                     "crs": "EPSG:4326",
                 },
@@ -408,7 +487,9 @@ def create_settings_geom():
     doc2g = copy.deepcopy(doc)
     doc2g["output_dir"] = "output/geom_event_2g"
     doc2g["output"].append({"file": "spatial2.fgb"})
-    doc2g["exposure"].append({"file": "exposure/spatial2.fgb"})
+    doc2g["exposure"].append(
+        {"file": "exposure/spatial2.fgb", "vulnerability": "default"}
+    )
 
     with open(Path(p, "geom_event_2g.toml"), "w") as f:
         tomlkit.dump(doc2g, f)
@@ -426,6 +507,7 @@ def create_settings_geom():
     doc_r["output_dir"] = "output/geom_risk"
     doc_r["hazard"]["file"] = "risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
+    doc_r["hazard"]["variables"] = haz_risk()
 
     with open(Path(p, "geom_risk.toml"), "w") as f:
         tomlkit.dump(doc_r, f)
@@ -434,7 +516,9 @@ def create_settings_geom():
     doc_r2g = copy.deepcopy(doc_r)
     doc_r2g["output_dir"] = "output/geom_risk_2g"
     doc_r2g["output"].append({"file": "spatial2.fgb"})
-    doc_r2g["exposure"].append({"file": "exposure/spatial2.fgb"})
+    doc_r2g["exposure"].append(
+        {"file": "exposure/spatial2.fgb", "vulnerability": "default"}
+    )
 
     with open(Path(p, "geom_risk_2g.toml"), "w") as f:
         tomlkit.dump(doc_r2g, f)
@@ -452,18 +536,21 @@ def create_settings_grid():
         "output": {"file": "output.tif"},
         "vulnerability": {
             "file": "curves.nc",
+            "variables": [vuln_1d("default")],
         },
         "hazard": {
             "file": "event_map.nc",
             "settings": {
                 "crs": "EPSG:4326",
             },
+            "variables": haz_event(),
         },
         "exposure": {
             "file": "exposure/spatial.nc",
             "settings": {
                 "crs": "EPSG:4326",
             },
+            "variables": exp_grid(),
         },
     }
 
@@ -477,6 +564,7 @@ def create_settings_grid():
     doc_r["output_dir"] = "output/grid_risk"
     doc_r["hazard"]["file"] = "risk_map.nc"
     doc_r["hazard"]["return_periods"] = [2, 5, 10, 25]
+    doc_r["hazard"]["variables"] = haz_risk()
 
     with open(Path(p, "grid_risk.toml"), "w") as f:
         tomlkit.dump(doc_r, f)
@@ -494,6 +582,9 @@ def create_settings_grid():
     doc_c["output_dir"] = "output/grid_cat"
     doc_c["exposure"]["file"] = "exposure/spatial_cat.nc"
     doc_c["vulnerability"]["file"] = "curves_cat.nc"
+    doc_c["exposure"]["variables"] = [
+        {"name": "exposure", "type": "categorized"},
+    ] + exp_values()
 
     with open(Path(p, "grid_cat.toml"), "w") as f:
         tomlkit.dump(doc_c, f)
@@ -522,10 +613,10 @@ def create_settings_multi():
             "settings": {
                 "crs": "EPSG:4326",
             },
+            "variables": haz_event_duration(),
         },
         "exposure": {
             "file": "exposure/spatial.nc",
-            "vulnerability": "default",
             "settings": {
                 "crs": "EPSG:4326",
             },
@@ -534,61 +625,61 @@ def create_settings_multi():
 
     # Grid, multiple datasets combined in one method call
     doc = copy.deepcopy(base)
-    doc["exposure"]["variables"] = [
-        {"name": "exposure2", "vulnerability": ["direct", "indirect"]},
+    doc["vulnerability"]["variables"] = [
+        vuln_1d("default"),
+        vuln_1d("direct", method="flood.depth_duration"),
+        vuln_1d(
+            "indirect",
+            method="flood.depth_duration",
+            index="days",
+            type="duration",
+        ),
     ]
+    doc["exposure"]["variables"] = exp_grid(exposure2=["direct", "indirect"])
     dump(doc, "grid_multi_combined")
 
     # Grid, multiple datasets each their own method call
     doc = copy.deepcopy(base)
-    doc["exposure"]["variables"] = [
-        {"name": "exposure2", "vulnerability": ["default", "default_2d"]},
-    ]
+    doc["vulnerability"]["variables"] = [vuln_1d("default"), vuln_2d("default_2d")]
+    doc["exposure"]["variables"] = exp_grid(exposure2=["default", "default_2d"])
     dump(doc, "grid_multi_separate")
 
     # Grid, one 2D dataset
     doc = copy.deepcopy(base)
-    doc["exposure"]["vulnerability"] = "default_2d"
+    doc["vulnerability"]["variables"] = [vuln_2d("default_2d")]
+    doc["exposure"]["variables"] = exp_grid(default="default_2d")
     dump(doc, "grid_2d")
 
     # Grid, missing (unknown) hazard variable
     doc_m = copy.deepcopy(doc)
-    doc_m["hazard"]["variables"] = [{"name": "nope"}]
+    doc_m["hazard"]["variables"] = [{"name": "nope", "type": "water_depth"}]
     dump(doc_m, "grid_missing_variable")
 
-    # Grid, settings overriding the netcdf attributes
+    # Grid, settings with a deviating curve link
     doc_o = copy.deepcopy(doc)
-    doc_o["vulnerability"]["variables"] = [
-        {
-            "name": "default_2d",
-            "method": "flood.depth_duration_2d",
-            "types": {
-                "depth_default_2d": "water_depth",
-                "duration_default_2d": "duration",
-            },
-        },
-    ]
-    doc_o["hazard"]["variables"] = [
-        {"name": "depth", "type": "water_depth"},
-        {"name": "duration", "type": "duration"},
-    ]
     doc_o["exposure"]["variables"] = [
-        {"name": "exposure1", "fn_curve": "struct_2"},
+        {
+            "name": "exposure1",
+            "type": "default",
+            "fn_curve": "struct_2",
+            "vulnerability": "default_2d",
+        },
     ]
     dump(doc_o, "grid_override")
 
     # Grid, uniform hazard and exposure layers
     doc = copy.deepcopy(base)
     doc["hazard"]["file"] = "event_map.nc"
-    doc["hazard"]["variables"] = [
+    doc["hazard"]["variables"] = haz_event() + [
         {"name": "duration", "type": "duration", "value": 3.0},
     ]
-    doc["exposure"]["vulnerability"] = "default_2d"
-    doc["exposure"]["variables"] = [
+    doc["vulnerability"]["variables"] = [vuln_2d("default_2d")]
+    doc["exposure"]["variables"] = exp_grid(default="default_2d") + [
         {
             "name": "exposure3",
             "type": "default",
             "fn_curve": "struct_1",
+            "vulnerability": "default_2d",
             "value": 1500.0,
         },
     ]
@@ -599,29 +690,36 @@ def create_settings_multi():
     doc["risk"] = True
     doc["hazard"]["file"] = "risk_map.nc"
     doc["hazard"]["return_periods"] = [2, 5, 10, 25]
-    doc["hazard"]["variables"] = [
+    doc["hazard"]["variables"] = haz_risk() + [
         {"name": f"duration_{rp}Y", "type": "duration", "value": dur, "rp": rp}
-        for rp, dur in zip((2, 5, 10, 25), (1.0, 2.0, 3.0, 5.0))
+        for rp, dur in zip(RETURN_PERIODS, (1.0, 2.0, 3.0, 5.0))
     ]
-    doc["exposure"]["variables"] = [
-        {"name": "exposure2", "vulnerability": ["direct", "indirect"]},
+    doc["vulnerability"]["variables"] = [
+        vuln_1d("default"),
+        vuln_1d("direct", method="flood.depth_duration"),
+        vuln_1d(
+            "indirect",
+            method="flood.depth_duration",
+            index="days",
+            type="duration",
+        ),
     ]
+    doc["exposure"]["variables"] = exp_grid(exposure2=["direct", "indirect"])
     dump(doc, "grid_uniform_risk")
 
     # Grid, categorized with variables
     doc_c = copy.deepcopy(base)
     doc_c["vulnerability"]["file"] = "curves_cat.nc"
     doc_c["exposure"]["file"] = "exposure/spatial_cat.nc"
+    doc_c["vulnerability"]["variables"] = [vuln_1d("default"), vuln_2d("default_2d")]
     doc = copy.deepcopy(doc_c)
     doc["exposure"]["variables"] = [
         {
             "name": "exposure",
             "type": "categorized",
-            "vulnerability": "default",
             "values": ["exposure_values", "exposure_values2"],
         },
-        {"name": "exposure_values2", "vulnerability": "default_2d"},
-    ]
+    ] + exp_values(exposure_values2="default_2d")
     dump(doc, "grid_cat_variables")
 
     # Grid, categorized with a uniform categorized layer
@@ -638,12 +736,13 @@ def create_settings_multi():
             "value": 1,
             "values": ["exposure_values"],
         },
-    ]
+    ] + exp_values()
     dump(doc, "grid_cat_uniform")
 
     # Geometry, one 2D dataset
     doc_g = copy.deepcopy(base)
     doc_g["type"] = "geom"
+    doc_g["vulnerability"]["variables"] = [vuln_2d("default_2d")]
     doc_g["output"] = [{"file": "spatial.fgb"}]
     doc_g["exposure"] = [
         {
@@ -662,6 +761,7 @@ def create_settings_multi():
     doc["risk"] = True
     doc["hazard"]["file"] = "risk_map_duration.nc"
     doc["hazard"]["return_periods"] = [2, 5, 10, 25]
+    doc["hazard"]["variables"] = haz_risk_duration()
     doc["output"] = [{"file": "spatial_types.fgb"}]
     doc["exposure"][0]["file"] = "exposure/spatial_types.fgb"
     doc["exposure"][0]["impact_type"] = ["damage", "affected"]
@@ -670,7 +770,7 @@ def create_settings_multi():
     # Geometry, uniform hazard layer
     doc = copy.deepcopy(doc_g)
     doc["hazard"]["file"] = "event_map.nc"
-    doc["hazard"]["variables"] = [
+    doc["hazard"]["variables"] = haz_event() + [
         {"name": "duration", "type": "duration", "value": 3.0},
     ]
     dump(doc, "geom_uniform")

@@ -11,15 +11,19 @@ from fiat.check import (
     check_duplicate_columns,
     check_exp_cat_uniform,
     check_exp_cat_value,
+    check_exp_cat_value_settings,
     check_exp_cat_values,
     check_exp_columns,
     check_exp_derived_types,
+    check_exp_variables,
     check_geom_extent,
     check_grid_exact,
     check_hazard_identifier,
     check_hazard_rp,
     check_hazard_subsets,
     check_hazard_types,
+    check_hazard_variable_rp,
+    check_hazard_variables,
     check_input_data,
     check_internal_crs,
     check_vs_crs,
@@ -31,6 +35,7 @@ from fiat.check import (
     check_vuln_group,
     check_vuln_method,
     check_vuln_types_keys,
+    check_vuln_types_missing,
     check_vuln_variables,
 )
 from fiat.container import Container
@@ -734,3 +739,60 @@ def test_check_vuln_variables_fail():
 def test_check_vuln_variables_pass():
     # Known dataset
     check_vuln_variables(names=["default"], available=["default", "direct"])
+
+
+def test_check_vuln_types_missing_fail():
+    # An index dimension without a type
+    with pytest.raises(FIATDataError, match="duration_default"):
+        check_vuln_types_missing(
+            "default",
+            keys=["depth_default"],
+            dims=["depth_default", "duration_default"],
+        )
+
+
+def test_check_vuln_types_missing_pass():
+    # All index dimensions have a type
+    check_vuln_types_missing("default", keys=["depth_default"], dims=["depth_default"])
+
+
+def test_check_hazard_variables_fail():
+    # A variable that is not in the hazard data
+    with pytest.raises(FIATDataError, match=re.escape("['nope']")):
+        check_hazard_variables(["data", "nope"], available=["data"])
+
+
+def test_check_hazard_variables_pass():
+    # All variables in the hazard data
+    check_hazard_variables(["data"], available=["data", "other"])
+
+
+def test_check_hazard_variable_rp_fail():
+    # Variables without a return period
+    with pytest.raises(FIATDataError, match=re.escape("['a']")):
+        check_hazard_variable_rp(["a"])
+
+
+def test_check_hazard_variable_rp_pass():
+    # No variables without a return period
+    check_hazard_variable_rp([])
+
+
+def test_check_exp_cat_value_settings():
+    # A category value variable without an entry in the settings
+    with pytest.raises(FIATDataError, match=re.escape("['values2']")):
+        check_exp_cat_value_settings({"layer": ["values", "values2"]}, ["values"])
+
+    # All set
+    check_exp_cat_value_settings({"layer": ["values"]}, ["values", "other"])
+
+
+def test_check_exp_variables_fail():
+    # A variable that is not in the exposure data
+    with pytest.raises(FIATDataError, match=re.escape("['nope']")):
+        check_exp_variables(["exposure1", "nope"], available=["exposure1"])
+
+
+def test_check_exp_variables_pass():
+    # All variables in the exposure data
+    check_exp_variables(["exposure1"], available=["exposure1", "exposure2"])

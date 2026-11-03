@@ -8,13 +8,14 @@ import numpy as np
 import pytest
 
 from fiat._core import Interp1D, InterpND
-from fiat.driver import NetcdfReader, VariableSpec
+from fiat.driver import NetcdfReader
 from fiat.error import FIATDataError
 from fiat.model.meta import (
     ExposureGeomData,
     HazardMeta,
     RunMeta,
     VulnerabilityMeta,
+    _grid_layers,
     get_exposure_geom_meta,
     get_exposure_grid_datasets,
     get_exposure_grid_meta,
@@ -22,6 +23,11 @@ from fiat.model.meta import (
     get_method_types,
     get_run_meta,
     get_vulnerability_meta,
+)
+from fiat.settings.variables import (
+    ExposureGridVariable,
+    HazardVariable,
+    VulnerabilityVariable,
 )
 
 
@@ -46,10 +52,15 @@ def test_get_run_meta_cell_size():
 
 def test_get_vulnerability_meta(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     vulnerability_path: Path,
 ):
     # Call the function
-    meta = get_vulnerability_meta(open_reader(vulnerability_path), ["default"])
+    meta = get_vulnerability_meta(
+        open_reader(vulnerability_path),
+        [variables.vuln_1d()],
+        ["default"],
+    )
 
     # Assert the output
     assert list(meta.datasets.keys()) == ["default"]
@@ -64,10 +75,15 @@ def test_get_vulnerability_meta(
 
 def test_get_vulnerability_meta_cat(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     vulnerability_cat_path: Path,
 ):
     # Call the function
-    meta = get_vulnerability_meta(open_reader(vulnerability_cat_path), ["default"])
+    meta = get_vulnerability_meta(
+        open_reader(vulnerability_cat_path),
+        [variables.vuln_1d()],
+        ["default"],
+    )
 
     # Assert the output, integer curve ids
     assert meta.datasets["default"].curve_ids == [1, 2]
@@ -76,10 +92,15 @@ def test_get_vulnerability_meta_cat(
 
 def test_get_vulnerability_meta_2d(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     curves_2d_path: Path,
 ):
     # Call the function
-    meta = get_vulnerability_meta(open_reader(curves_2d_path), ["default"])
+    meta = get_vulnerability_meta(
+        open_reader(curves_2d_path),
+        [variables.vuln_2d()],
+        ["default"],
+    )
 
     # Assert the output
     ds = meta.datasets["default"]
@@ -90,11 +111,13 @@ def test_get_vulnerability_meta_2d(
 
 def test_get_vulnerability_meta_combined_order(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     curves_multi_path: Path,
 ):
     # Call the function with the datasets in a different order than the types
     meta = get_vulnerability_meta(
         open_reader(curves_multi_path),
+        variables.vuln_multi(),
         ["indirect", "direct"],
     )
 
@@ -108,51 +131,116 @@ def test_get_vulnerability_meta_combined_order(
 
 def test_get_vulnerability_meta_override(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     curves_multi_path: Path,
 ):
-    # Override the axis type via the specs
-    reader = open_reader(
-        curves_multi_path,
-        specs={
-            "indirect": VariableSpec(attrs={"types": {"days_indirect": "water_depth"}})
-        },
+    # The axis type of the settings
+    variable = variables.vuln_1d(
+        "indirect",
+        method="flood.depth",
+        index="days",
+        type="water_depth",
     )
 
     # Call the function
-    meta = get_vulnerability_meta(reader, ["indirect"])
+    meta = get_vulnerability_meta(
+        open_reader(curves_multi_path),
+        [variable],
+        ["indirect"],
+    )
 
     # Assert the output
     assert meta.datasets["indirect"].axis_types == ("water_depth",)
 
 
+def test_get_vulnerability_meta_ignores_file_attrs(
+    open_reader: Callable[..., NetcdfReader],
+    variables,
+    curves_multi_path: Path,
+):
+    # The file says flood.depth_duration (duration axis), the settings differ
+    reader = open_reader(curves_multi_path)
+    assert reader.variables["indirect"].get_attr("method") == "flood.depth_duration"
+    variable = variables.vuln_1d(
+        "indirect",
+        method="flood.level",
+        index="days",
+        type="water_depth",
+    )
+
+    # Call the function
+    meta = get_vulnerability_meta(reader, [variable], ["indirect"])
+
+    # Assert the settings are used
+    assert meta.datasets["indirect"].method == "flood.level"
+    assert meta.datasets["indirect"].axis_types == ("water_depth",)
+
+
 def test_get_vulnerability_meta_unknown(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     vulnerability_path: Path,
 ):
     # Call the function with an unknown dataset
     with pytest.raises(FIATDataError, match="nope"):
-        get_vulnerability_meta(open_reader(vulnerability_path), ["nope"])
+        get_vulnerability_meta(
+            open_reader(vulnerability_path),
+            [variables.vuln_1d()],
+            ["nope"],
+        )
+
+
+def test_get_vulnerability_meta_unlisted_dataset_raises(
+    open_reader: Callable[..., NetcdfReader],
+    variables,
+    curves_multi_path: Path,
+):
+    # The dataset is in the file but has no settings
+    with pytest.raises(FIATDataError, match="direct"):
+        get_vulnerability_meta(
+            open_reader(curves_multi_path),
+            [variables.vuln_1d()],
+            ["direct"],
+        )
+
+
+def test_get_vulnerability_meta_missing_axis_types_raises(
+    open_reader: Callable[..., NetcdfReader],
+    curves_2d_path: Path,
+):
+    # A 2D dataset with a type for one of its two index dimensions
+    variable = VulnerabilityVariable(
+        name="default",
+        method="flood.depth_duration_2d",
+        types={"depth_default": "water_depth"},
+    )
+
+    # Call the function
+    with pytest.raises(FIATDataError, match="duration_default"):
+        get_vulnerability_meta(open_reader(curves_2d_path), [variable], ["default"])
 
 
 def test_get_vulnerability_meta_axis_type_mismatch(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     curves_multi_path: Path,
     vulnerability_path: Path,
 ):
     # A duration axis under flood.depth
-    reader = open_reader(
-        curves_multi_path,
-        specs={"indirect": VariableSpec(attrs={"method": "flood.depth"})},
+    reader = open_reader(curves_multi_path)
+    variable = variables.vuln_1d(
+        "indirect",
+        method="flood.depth",
+        index="days",
+        type="duration",
     )
     with pytest.raises(FIATDataError, match="indirect"):
-        get_vulnerability_meta(reader, ["indirect"])
+        get_vulnerability_meta(reader, [variable], ["indirect"])
 
     # flood.level has a water_depth curve axis, so this passes
-    reader = open_reader(
-        vulnerability_path,
-        specs={"default": VariableSpec(attrs={"method": "flood.level"})},
-    )
-    meta = get_vulnerability_meta(reader, ["default"])
+    reader = open_reader(vulnerability_path)
+    variable = variables.vuln_1d(method="flood.level")
+    meta = get_vulnerability_meta(reader, [variable], ["default"])
     assert meta.datasets["default"].method == "flood.level"
     assert meta.datasets["default"].axis_types == ("water_depth",)
 
@@ -161,17 +249,19 @@ def test_get_vulnerability_meta_types_unknown_dim(
     open_reader: Callable[..., NetcdfReader],
     curves_multi_path: Path,
 ):
-    # Override the type of a dimension that is not in the dataset
-    reader = open_reader(
-        curves_multi_path,
-        specs={"direct": VariableSpec(attrs={"types": {"nope_direct": "water_depth"}})},
+    # Set the type of a dimension that is not in the dataset
+    variable = VulnerabilityVariable(
+        name="direct",
+        method="flood.depth_duration",
+        types={"nope_direct": "water_depth"},
     )
     with pytest.raises(FIATDataError, match="nope_direct"):
-        get_vulnerability_meta(reader, ["direct"])
+        get_vulnerability_meta(open_reader(curves_multi_path), [variable], ["direct"])
 
 
 def test_get_vulnerability_meta_axes_not_increasing(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     tmp_path: Path,
     vulnerability_path: Path,
 ):
@@ -183,11 +273,12 @@ def test_get_vulnerability_meta_axes_not_increasing(
 
     # Call the function
     with pytest.raises(FIATDataError, match="depth_default"):
-        get_vulnerability_meta(open_reader(p), ["default"])
+        get_vulnerability_meta(open_reader(p), [variables.vuln_1d()], ["default"])
 
 
 def test_get_vulnerability_meta_axis_reorder(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     tmp_path: Path,
     curves_2d_path: Path,
 ):
@@ -211,8 +302,12 @@ def test_get_vulnerability_meta_axis_reorder(
         new[:] = np.transpose(var[:], (1, 0, 2))
 
     # Call the function on the original and the reordered one
-    org = get_vulnerability_meta(open_reader(curves_2d_path), ["default"])
-    meta = get_vulnerability_meta(open_reader(p), ["default"])
+    org = get_vulnerability_meta(
+        open_reader(curves_2d_path),
+        [variables.vuln_2d()],
+        ["default"],
+    )
+    meta = get_vulnerability_meta(open_reader(p), [variables.vuln_2d()], ["default"])
 
     # Assert the output
     ds = meta.datasets["default"]
@@ -250,9 +345,14 @@ def test_get_method_types(
     assert get_method_types(meta) == ["water_level", "water_depth"]
 
 
-def test_get_hazard_meta(hazard_event_data: NetcdfReader):
+def test_get_hazard_meta(hazard_event_data: NetcdfReader, variables):
     # Call the function
-    meta = get_hazard_meta(hazard_event_data, risk=False, method_types=["water_depth"])
+    meta = get_hazard_meta(
+        hazard_event_data,
+        variables.haz_event(),
+        risk=False,
+        method_types=["water_depth"],
+    )
 
     # Assert the output
     assert meta.density is None
@@ -263,9 +363,14 @@ def test_get_hazard_meta(hazard_event_data: NetcdfReader):
     assert meta.types == ["water_depth"]
 
 
-def test_get_hazard_meta_risk(hazard_risk_data: NetcdfReader):
+def test_get_hazard_meta_risk(hazard_risk_data: NetcdfReader, variables):
     # Call the function
-    meta = get_hazard_meta(hazard_risk_data, risk=True, method_types=["water_depth"])
+    meta = get_hazard_meta(
+        hazard_risk_data,
+        variables.haz_risk(),
+        risk=True,
+        method_types=["water_depth"],
+    )
 
     # Assert the output
     np.testing.assert_array_almost_equal(
@@ -282,11 +387,13 @@ def test_get_hazard_meta_risk(hazard_risk_data: NetcdfReader):
 
 def test_get_hazard_meta_multi_type(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     event_map_duration_path: Path,
 ):
     # Call the function
     meta = get_hazard_meta(
         open_reader(event_map_duration_path),
+        variables.haz_event_duration(),
         risk=False,
         method_types=["water_depth", "duration"],
     )
@@ -299,11 +406,13 @@ def test_get_hazard_meta_multi_type(
 
 def test_get_hazard_meta_multi_type_risk(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     risk_map_duration_path: Path,
 ):
     # Call the function
     meta = get_hazard_meta(
         open_reader(risk_map_duration_path),
+        variables.haz_risk_duration(),
         risk=True,
         method_types=["water_depth", "duration"],
     )
@@ -316,21 +425,27 @@ def test_get_hazard_meta_multi_type_risk(
 
 def test_get_hazard_meta_uniform_risk(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     hazard_risk_path: Path,
 ):
     # Uniform duration layers per return period (rp as float like the settings)
-    specs = {
-        f"duration_{rp}": VariableSpec(
-            attrs={"type": "duration", "rp": float(rp)},
-            value=float(idx + 1),
+    hazard = open_reader(hazard_risk_path)
+    uniform = []
+    for idx, rp in enumerate([2, 5, 10, 25]):
+        hazard.add_constant(f"duration_{rp}", float(idx + 1))
+        uniform.append(
+            HazardVariable(
+                name=f"duration_{rp}",
+                type="duration",
+                rp=float(rp),
+                value=float(idx + 1),
+            )
         )
-        for idx, rp in enumerate([2, 5, 10, 25])
-    }
-    hazard = open_reader(hazard_risk_path, specs=specs)
 
     # Call the function
     meta = get_hazard_meta(
         hazard,
+        variables.haz_risk() + uniform,
         risk=True,
         method_types=["water_depth", "duration"],
     )
@@ -349,17 +464,107 @@ def test_get_hazard_meta_missing_type_rp(
     risk_map_duration_path: Path,
 ):
     # Remove one duration band by giving it another type
-    hazard = open_reader(
-        risk_map_duration_path,
-        specs={"duration_10Y": VariableSpec(attrs={"type": "other"})},
-    )
+    variables = [
+        HazardVariable(
+            name=f"{name}_{rp}Y",
+            type="other" if (name, rp) == ("duration", 10) else type,
+            rp=rp,
+        )
+        for rp in [2, 5, 10, 25]
+        for name, type in (("depth", "water_depth"), ("duration", "duration"))
+    ]
 
     # Call the function
     with pytest.raises(FIATDataError):
         get_hazard_meta(
-            hazard,
+            open_reader(risk_map_duration_path),
+            variables,
             risk=True,
             method_types=["water_depth", "duration"],
+        )
+
+
+def test_get_hazard_meta_unlisted_band_ignored(
+    open_reader: Callable[..., NetcdfReader],
+    risk_map_duration_path: Path,
+):
+    # List a subset of the bands that is not first or contiguous
+    hazard = open_reader(risk_map_duration_path)
+    assert hazard.names[3] == "duration_5Y"
+    listed = [
+        HazardVariable(name="duration_5Y", type="duration", rp=5),
+        HazardVariable(name="depth_25Y", type="water_depth", rp=25),
+        HazardVariable(name="duration_25Y", type="duration", rp=25),
+        HazardVariable(name="depth_5Y", type="water_depth", rp=5),
+    ]
+
+    # Call the function
+    meta = get_hazard_meta(
+        hazard,
+        listed,
+        risk=True,
+        method_types=["water_depth", "duration"],
+    )
+
+    # Assert the indices are those of the bands in the hazard data
+    assert meta.ids == ["25", "5"]
+    assert meta.indices_run == [[6, 7], [2, 3]]
+    assert meta.indices_type == [[6, 2], [3, 7]]
+
+
+def test_get_hazard_meta_ignores_file_attrs(
+    hazard_event_data: NetcdfReader,
+):
+    # The file says water_depth, the settings duration
+    assert hazard_event_data.variables["data"].get_attr("type") == "water_depth"
+    listed = [HazardVariable(name="data", type="duration")]
+
+    # Call the function
+    meta = get_hazard_meta(
+        hazard_event_data,
+        listed,
+        risk=False,
+        method_types=["duration"],
+    )
+
+    # Assert the settings are used
+    assert meta.indices_run == [[0]]
+    with pytest.raises(FIATDataError, match="water_depth"):
+        get_hazard_meta(
+            hazard_event_data,
+            listed,
+            risk=False,
+            method_types=["water_depth"],
+        )
+
+
+def test_get_hazard_meta_risk_missing_rp_raises(
+    hazard_risk_data: NetcdfReader,
+):
+    # One of the variables has no return period
+    listed = [
+        HazardVariable(name=name, type="water_depth", rp=None if idx == 1 else rp)
+        for idx, (name, rp) in enumerate(zip(hazard_risk_data.names, [2, 5, 10, 25]))
+    ]
+
+    # Call the function
+    with pytest.raises(FIATDataError, match=hazard_risk_data.names[1]):
+        get_hazard_meta(
+            hazard_risk_data,
+            listed,
+            risk=True,
+            method_types=["water_depth"],
+        )
+
+
+def test_get_hazard_meta_unknown_variable(hazard_event_data: NetcdfReader):
+    # A listed variable that is not in the hazard data
+    with pytest.raises(FIATDataError, match="nope"):
+        get_hazard_meta(
+            hazard_event_data,
+            [HazardVariable(name="nope", type="water_depth")],
+            risk=False,
+            method_types=["water_depth"],
         )
 
 
@@ -506,6 +711,7 @@ def test_get_exposure_geom_meta_risk_depth(
 def test_get_exposure_geom_meta_risk(
     exposure_geom_types_data_run: ExposureGeomData,
     run_risk_meta: RunMeta,
+    variables,
     risk_map_duration_path: Path,
     vulnerability_multi_meta: VulnerabilityMeta,
 ):
@@ -513,6 +719,7 @@ def test_get_exposure_geom_meta_risk(
     with NetcdfReader(risk_map_duration_path) as hazard:
         hazard_meta = get_hazard_meta(
             hazard,
+            variables.haz_risk_duration(),
             risk=True,
             method_types=["water_depth", "duration"],
         )
@@ -585,58 +792,122 @@ def test_get_exposure_geom_meta_risk_types(
 
 
 def test_get_exposure_grid_datasets(
+    variables,
     exposure_grid_data: NetcdfReader,
     exposure_grid_combined_data: NetcdfReader,
     exposure_grid_cat_data: NetcdfReader,
     exposure_grid_cat_variables_data: NetcdfReader,
 ):
     # Only the default
-    assert get_exposure_grid_datasets(exposure_grid_data, default="default") == [
-        "default"
-    ]
+    assert get_exposure_grid_datasets(
+        exposure_grid_data,
+        variables.exp_grid(),
+    ) == ["default"]
     # Layer links from the settings, the default first via exposure1
     assert get_exposure_grid_datasets(
         exposure_grid_combined_data,
-        default=["default"],
+        variables.exp_grid_combined(),
     ) == ["default", "direct", "indirect"]
-    # Categorized via discovery, the default for both value variables
-    assert get_exposure_grid_datasets(exposure_grid_cat_data, default="foo") == ["foo"]
-    # Value variable link over the layer link
+    # Categorized, the links of the category value variables
+    assert get_exposure_grid_datasets(
+        exposure_grid_cat_data,
+        variables.exp_cat_default(),
+    ) == ["default"]
+    # Different links per category value variable
     assert get_exposure_grid_datasets(
         exposure_grid_cat_variables_data,
-        default="foo",
+        variables.exp_cat_variables(),
     ) == ["default", "default_2d"]
 
 
-def test_get_exposure_grid_datasets_attribute(
+def test_get_exposure_grid_datasets_ignores_file_attrs(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     tmp_path: Path,
     exposure_grid_path: Path,
 ):
-    # Copy of the exposure with a link only set as a netcdf attribute
+    # Copy of the exposure with a link set as a netcdf attribute
     p = Path(tmp_path, "spatial.nc")
     shutil.copy2(exposure_grid_path, p)
     with nc4.Dataset(p, "a") as ds:
         ds["exposure2"].setncattr("vulnerability", "default_2d")
 
+    # The attribute is not used, the settings are
+    assert get_exposure_grid_datasets(
+        open_reader(p),
+        variables.exp_grid(),
+    ) == ["default"]
+    assert get_exposure_grid_datasets(
+        open_reader(p),
+        variables.exp_grid(exposure2="direct"),
+    ) == ["default", "direct"]
+
+
+def test_grid_layers_unlisted_variable_ignored(
+    variables,
+    exposure_grid_data: NetcdfReader,
+):
+    # Only list the second layer
+    listed = variables.exp_grid()[1:]
+
     # Call the function
-    datasets = get_exposure_grid_datasets(open_reader(p), default="default")
+    layers = _grid_layers(exposure_grid_data, listed)
 
-    # Assert the output
-    assert datasets == ["default", "default_2d"]
+    # Assert the layer index is the one of the exposure data
+    assert layers == [(1, None, ["default"])]
 
-    # The settings override the attribute
-    datasets = get_exposure_grid_datasets(
-        open_reader(
-            p,
-            specs={"exposure2": VariableSpec(attrs={"vulnerability": "direct"})},
+
+def test_grid_layers_ignores_file_attrs(
+    variables,
+    exposure_grid_data: NetcdfReader,
+):
+    # The file says exposure1 is of type 'default' with curve 'struct_1'
+    assert exposure_grid_data.variables["exposure1"].get_attr("type") == "default"
+
+    # The settings say it is categorized (value variables by dimension: none)
+    listed = [
+        ExposureGridVariable(
+            name="exposure1", type="categorized", values=["exposure2"]
         ),
-        default="default",
-    )
-    assert datasets == ["default", "direct"]
+        ExposureGridVariable(name="exposure2", type="values", vulnerability="default"),
+    ]
+    layers = _grid_layers(exposure_grid_data, listed)
+
+    # Assert the settings are used
+    assert layers == [(0, 1, ["default"])]
+
+
+def test_grid_layers_no_layers(variables, exposure_grid_data: NetcdfReader):
+    # Nothing listed that is a layer
+    with pytest.raises(FIATDataError, match="No exposure layers"):
+        _grid_layers(
+            exposure_grid_data,
+            [
+                ExposureGridVariable(
+                    name="exposure1", type="values", vulnerability="default"
+                )
+            ],
+        )
+
+
+def test_grid_layers_unknown_variable(variables, exposure_grid_data: NetcdfReader):
+    # A listed layer that is not in the exposure data
+    with pytest.raises(FIATDataError, match="nope"):
+        _grid_layers(
+            exposure_grid_data,
+            [
+                ExposureGridVariable(
+                    name="nope",
+                    type="default",
+                    fn_curve="struct_1",
+                    vulnerability="default",
+                )
+            ],
+        )
 
 
 def test_get_exposure_grid_meta(
+    variables,
     exposure_grid_data: NetcdfReader,
     run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
@@ -645,10 +916,10 @@ def test_get_exposure_grid_meta(
     # Call the function
     meta = get_exposure_grid_meta(
         exposure=exposure_grid_data,
+        variables=variables.exp_grid(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_meta,
-        default="default",
     )
 
     # Assert the output
@@ -671,6 +942,7 @@ def test_get_exposure_grid_meta(
 
 
 def test_get_exposure_grid_meta_combined(
+    variables,
     exposure_grid_combined_data: NetcdfReader,
     run_meta: RunMeta,
     hazard_meta_duration: HazardMeta,
@@ -679,10 +951,10 @@ def test_get_exposure_grid_meta_combined(
     # Call the function
     meta = get_exposure_grid_meta(
         exposure=exposure_grid_combined_data,
+        variables=variables.exp_grid_combined(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_multi_meta,
-        default="default",
     )
 
     # Assert the output, one combined unit for exposure2
@@ -702,26 +974,22 @@ def test_get_exposure_grid_meta_combined(
 
 def test_get_exposure_grid_meta_combined_order(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     exposure_grid_path: Path,
     run_meta: RunMeta,
     hazard_meta_duration: HazardMeta,
     vulnerability_multi_meta: VulnerabilityMeta,
 ):
     # Datasets listed in reverse order
-    exposure = open_reader(
-        exposure_grid_path,
-        specs={
-            "exposure2": VariableSpec(attrs={"vulnerability": ["indirect", "direct"]})
-        },
-    )
+    exposure = open_reader(exposure_grid_path)
 
     # Call the function
     meta = get_exposure_grid_meta(
         exposure=exposure,
+        variables=variables.exp_grid(exposure2=["indirect", "direct"]),
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_multi_meta,
-        default="default",
     )
 
     # Assert the output, ordered by axis type
@@ -732,6 +1000,7 @@ def test_get_exposure_grid_meta_combined_order(
 
 
 def test_get_exposure_grid_meta_separate(
+    variables,
     exposure_grid_separate_data: NetcdfReader,
     run_meta: RunMeta,
     hazard_meta_duration: HazardMeta,
@@ -740,10 +1009,10 @@ def test_get_exposure_grid_meta_separate(
     # Call the function
     meta = get_exposure_grid_meta(
         exposure=exposure_grid_separate_data,
+        variables=variables.exp_grid_separate(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_multi_meta,
-        default="default",
     )
 
     # Assert the output, two units for exposure2
@@ -767,6 +1036,7 @@ def test_get_exposure_grid_meta_separate(
 
 
 def test_get_exposure_grid_meta_combined_duplicate_type(
+    variables,
     exposure_grid_combined_data: NetcdfReader,
     run_meta: RunMeta,
     hazard_meta_duration: HazardMeta,
@@ -787,14 +1057,15 @@ def test_get_exposure_grid_meta_combined_duplicate_type(
     with pytest.raises(FIATDataError, match="duplicate axis types"):
         get_exposure_grid_meta(
             exposure=exposure_grid_combined_data,
+            variables=variables.exp_grid_combined(),
             run_meta=run_meta,
             hazard_meta=hazard_meta_duration,
             vulnerability_meta=vuln,
-            default="default",
         )
 
 
 def test_get_exposure_grid_meta_cat(
+    variables,
     exposure_grid_cat_data: NetcdfReader,
     run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
@@ -803,10 +1074,10 @@ def test_get_exposure_grid_meta_cat(
     # Call the function
     meta = get_exposure_grid_meta(
         exposure=exposure_grid_cat_data,
+        variables=variables.exp_cat_default(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_cat_meta,
-        default="default",
     )
 
     # Assert the output, two category value variables found via the dimension
@@ -822,18 +1093,19 @@ def test_get_exposure_grid_meta_cat(
 
 
 def test_get_exposure_grid_meta_cat_links(
+    variables,
     exposure_grid_cat_variables_data: NetcdfReader,
     run_meta: RunMeta,
     hazard_meta_duration: HazardMeta,
     vulnerability_cat_meta: VulnerabilityMeta,
 ):
-    # Call the function, the default differs from the layer link
+    # Call the function, the category value variables have different links
     meta = get_exposure_grid_meta(
         exposure=exposure_grid_cat_variables_data,
+        variables=variables.exp_cat_variables(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_cat_meta,
-        default="default_2d",
     )
 
     # Assert the output
@@ -851,6 +1123,7 @@ def test_get_exposure_grid_meta_cat_links(
 
 
 def test_get_exposure_grid_meta_cat_names(
+    variables,
     exposure_grid_cat_variables_data: NetcdfReader,
     run_meta: RunMeta,
     hazard_meta_duration: HazardMeta,
@@ -859,10 +1132,10 @@ def test_get_exposure_grid_meta_cat_names(
     # Call the function
     meta = get_exposure_grid_meta(
         exposure=exposure_grid_cat_variables_data,
+        variables=variables.exp_cat_variables(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_cat_meta,
-        default="default",
     )
 
     # Assert the output
@@ -873,31 +1146,30 @@ def test_get_exposure_grid_meta_cat_names(
 
 def test_get_exposure_grid_meta_cat_several_units(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     exposure_grid_cat_path: Path,
     run_meta: RunMeta,
     hazard_meta_duration: HazardMeta,
     vulnerability_cat_meta: VulnerabilityMeta,
 ):
     # One value variable linked to two separate datasets
-    exposure = open_reader(
-        exposure_grid_cat_path,
-        specs={
-            "exposure": VariableSpec(
-                attrs={"type": "categorized", "values": ["exposure_values"]}
-            ),
-            "exposure_values": VariableSpec(
-                attrs={"vulnerability": ["default", "default_2d"]}
-            ),
-        },
-    )
+    exposure = open_reader(exposure_grid_cat_path)
+    listed = [
+        variables.exp_cat(values=["exposure_values"]),
+        ExposureGridVariable(
+            name="exposure_values",
+            type="values",
+            vulnerability=["default", "default_2d"],
+        ),
+    ]
 
     # Call the function
     meta = get_exposure_grid_meta(
         exposure=exposure,
+        variables=listed,
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_cat_meta,
-        default="default",
     )
 
     # Assert the output
@@ -909,6 +1181,7 @@ def test_get_exposure_grid_meta_cat_several_units(
 
 
 def test_get_exposure_grid_meta_cat_uniform(
+    variables,
     exposure_grid_cat_uniform_data: NetcdfReader,
     run_meta: RunMeta,
     hazard_meta_duration: HazardMeta,
@@ -917,10 +1190,10 @@ def test_get_exposure_grid_meta_cat_uniform(
     # Call the function
     meta = get_exposure_grid_meta(
         exposure=exposure_grid_cat_uniform_data,
+        variables=variables.exp_cat_uniform(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_cat_meta,
-        default="default",
     )
 
     # Assert the output
@@ -933,6 +1206,7 @@ def test_get_exposure_grid_meta_cat_uniform(
 
 
 def test_get_exposure_grid_meta_cat_missing_category(
+    variables,
     open_reader: Callable[..., NetcdfReader],
     tmp_path: Path,
     vulnerability_cat_path: Path,
@@ -947,38 +1221,38 @@ def test_get_exposure_grid_meta_cat_missing_category(
     shutil.copy2(vulnerability_cat_path, p)
     with nc4.Dataset(p, "a") as ds:
         ds["curve_default"][:] = [1, 3]
-    vuln = get_vulnerability_meta(open_reader(p), ["default"])
+    vuln = get_vulnerability_meta(open_reader(p), [variables.vuln_1d()], ["default"])
 
     # Call the function
     with pytest.raises(FIATDataError, match=r"Categories \[2\]"):
         get_exposure_grid_meta(
             exposure=exposure_grid_cat_data,
+            variables=variables.exp_cat_default(),
             run_meta=run_meta,
             hazard_meta=hazard_meta_run,
             vulnerability_meta=vuln,
-            default="default",
         )
 
     # Uniform categorized layer with a category not in the dataset
-    exposure = open_reader(
-        exposure_grid_cat_path,
-        specs={
-            "exposure": VariableSpec(
-                attrs={"type": "categorized", "values": ["exposure_values2"]}
-            ),
-            "exposure_uniform": VariableSpec(
-                attrs={"type": "categorized", "values": ["exposure_values"]},
-                value=7,
-            ),
-        },
-    )
+    exposure = open_reader(exposure_grid_cat_path)
+    exposure.add_constant("exposure_uniform", 7)
+    listed = [
+        variables.exp_cat(values=["exposure_values2"]),
+        ExposureGridVariable(
+            name="exposure_uniform",
+            type="categorized",
+            value=7,
+            values=["exposure_values"],
+        ),
+        *variables.exp_values(),
+    ]
     with pytest.raises(FIATDataError, match=r"Category 7 .* not in the categories"):
         get_exposure_grid_meta(
             exposure=exposure,
+            variables=listed,
             run_meta=run_meta,
             hazard_meta=hazard_meta_run,
             vulnerability_meta=vulnerability_cat_meta,
-            default="default",
         )
 
     # Also when the dataset itself does have a curve for that category
@@ -995,15 +1269,16 @@ def test_get_exposure_grid_meta_cat_missing_category(
     with pytest.raises(FIATDataError, match=r"Category 7 .* not in the categories"):
         get_exposure_grid_meta(
             exposure=exposure,
+            variables=listed,
             run_meta=run_meta,
             hazard_meta=hazard_meta_run,
             vulnerability_meta=vuln,
-            default="default",
         )
 
 
 def test_get_exposure_grid_meta_cat_uniform_no_category_dim(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     exposure_grid_cat_path: Path,
     run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
@@ -1011,106 +1286,162 @@ def test_get_exposure_grid_meta_cat_uniform_no_category_dim(
 ):
     # Uniform categorized layer with a (spatial) value variable without a single
     # category dimension
-    exposure = open_reader(
-        exposure_grid_cat_path,
-        specs={
-            "exposure_uniform": VariableSpec(
-                attrs={"type": "categorized", "values": ["exposure"]},
-                value=1,
-            ),
-        },
-    )
+    exposure = open_reader(exposure_grid_cat_path)
+    exposure.add_constant("exposure_uniform", 1)
+    listed = [
+        ExposureGridVariable(
+            name="exposure_uniform",
+            type="categorized",
+            value=1,
+            values=["exposure"],
+        ),
+        ExposureGridVariable(name="exposure", type="values", vulnerability="default"),
+    ]
     with pytest.raises(FIATDataError, match="no single category dimension"):
         get_exposure_grid_meta(
             exposure=exposure,
+            variables=listed,
             run_meta=run_meta,
             hazard_meta=hazard_meta_run,
             vulnerability_meta=vulnerability_cat_meta,
-            default="default",
+        )
+
+
+def test_get_exposure_grid_meta_cat_values_not_in_settings(
+    open_reader: Callable[..., NetcdfReader],
+    variables,
+    exposure_grid_cat_path: Path,
+    run_meta: RunMeta,
+    hazard_meta_run: HazardMeta,
+    vulnerability_cat_meta: VulnerabilityMeta,
+):
+    exposure = open_reader(exposure_grid_cat_path)
+
+    # Category value variables (discovered) without an entry in the settings
+    with pytest.raises(FIATDataError, match="exposure_values.*type 'values'"):
+        get_exposure_grid_meta(
+            exposure=exposure,
+            variables=[variables.exp_cat()],
+            run_meta=run_meta,
+            hazard_meta=hazard_meta_run,
+            vulnerability_meta=vulnerability_cat_meta,
+        )
+
+    # Only one of the set category value variables has an entry
+    with pytest.raises(FIATDataError, match="exposure_values2"):
+        get_exposure_grid_meta(
+            exposure=exposure,
+            variables=[
+                variables.exp_cat(values=["exposure_values", "exposure_values2"]),
+                *variables.exp_values("exposure_values"),
+            ],
+            run_meta=run_meta,
+            hazard_meta=hazard_meta_run,
+            vulnerability_meta=vulnerability_cat_meta,
+        )
+
+    # An entry that is not of type 'values'
+    with pytest.raises(FIATDataError, match="exposure_values"):
+        get_exposure_grid_meta(
+            exposure=exposure,
+            variables=[
+                variables.exp_cat(values=["exposure_values"]),
+                ExposureGridVariable(
+                    name="exposure_values",
+                    type="default",
+                    fn_curve=1,
+                    vulnerability="default",
+                ),
+            ],
+            run_meta=run_meta,
+            hazard_meta=hazard_meta_run,
+            vulnerability_meta=vulnerability_cat_meta,
         )
 
 
 def test_get_exposure_grid_meta_cat_values_missing(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     exposure_grid_cat_path: Path,
     run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
     vulnerability_cat_meta: VulnerabilityMeta,
 ):
     # Unknown category value variable
-    exposure = open_reader(
-        exposure_grid_cat_path,
-        specs={"exposure": VariableSpec(attrs={"values": ["nope"]})},
-    )
+    exposure = open_reader(exposure_grid_cat_path)
 
     # Call the function
     with pytest.raises(FIATDataError, match="nope"):
         get_exposure_grid_meta(
             exposure=exposure,
+            variables=[variables.exp_cat(values=["nope"])],
             run_meta=run_meta,
             hazard_meta=hazard_meta_run,
             vulnerability_meta=vulnerability_cat_meta,
-            default="default",
         )
 
 
 def test_get_exposure_grid_meta_cat_value_uniform(
     open_reader: Callable[..., NetcdfReader],
+    variables,
     exposure_grid_cat_path: Path,
     run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
     vulnerability_cat_meta: VulnerabilityMeta,
 ):
     # A category value variable defined by a value
-    exposure = open_reader(
-        exposure_grid_cat_path,
-        specs={
-            "exposure": VariableSpec(
-                attrs={"values": ["exposure_values", "exposure_const"]}
-            ),
-            "exposure_const": VariableSpec(
-                attrs={"type": "default", "fn_curve": 1},
-                value=5.0,
-            ),
-        },
-    )
+    exposure = open_reader(exposure_grid_cat_path)
+    exposure.add_constant("exposure_const", 5.0)
+    listed = [
+        variables.exp_cat(values=["exposure_values", "exposure_const"]),
+        ExposureGridVariable(
+            name="exposure_const",
+            type="default",
+            fn_curve=1,
+            vulnerability="default",
+            value=5.0,
+        ),
+    ]
     with pytest.raises(FIATDataError, match="can't be uniform layers"):
         get_exposure_grid_meta(
             exposure=exposure,
+            variables=listed,
             run_meta=run_meta,
             hazard_meta=hazard_meta_run,
             vulnerability_meta=vulnerability_cat_meta,
-            default="default",
         )
 
     # A category value variable shared by two categorized layers
-    exposure = open_reader(
-        exposure_grid_cat_path,
-        specs={
-            "exposure_uniform": VariableSpec(
-                attrs={"type": "categorized", "values": ["exposure_values"]},
-                value=1,
-            ),
-        },
-    )
+    exposure = open_reader(exposure_grid_cat_path)
+    exposure.add_constant("exposure_uniform", 1)
+    listed = [
+        variables.exp_cat(),
+        ExposureGridVariable(
+            name="exposure_uniform",
+            type="categorized",
+            value=1,
+            values=["exposure_values"],
+        ),
+    ]
     with pytest.raises(FIATDataError, match="is shared between"):
         get_exposure_grid_meta(
             exposure=exposure,
+            variables=listed,
             run_meta=run_meta,
             hazard_meta=hazard_meta_run,
             vulnerability_meta=vulnerability_cat_meta,
-            default="default",
         )
 
 
 def test_get_exposure_grid_meta_level_error(
+    variables,
     exposure_grid_data: NetcdfReader,
     run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
 ):
-    # Method needing a hazard conversion, like a method="flood.level" spec on
-    # 'default' (see test_get_vulnerability_meta_axis_type_mismatch)
+    # Method needing a hazard conversion, like method="flood.level" on 'default'
+    # (see test_get_vulnerability_meta_axis_type_mismatch)
     vuln = VulnerabilityMeta(
         datasets={
             "default": replace(
@@ -1123,10 +1454,10 @@ def test_get_exposure_grid_meta_level_error(
     with pytest.raises(FIATDataError, match="flood.level"):
         get_exposure_grid_meta(
             exposure=exposure_grid_data,
+            variables=variables.exp_grid(),
             run_meta=run_meta,
             hazard_meta=hazard_meta_run,
             vulnerability_meta=vuln,
-            default="default",
         )
 
 
@@ -1138,23 +1469,29 @@ def test_get_exposure_grid_meta_unknown_curve(
     vulnerability_meta: VulnerabilityMeta,
 ):
     # Curve not in the linked dataset
-    exposure = open_reader(
-        exposure_grid_path,
-        specs={"exposure1": VariableSpec(attrs={"fn_curve": "nope"})},
-    )
+    exposure = open_reader(exposure_grid_path)
+    listed = [
+        ExposureGridVariable(
+            name="exposure1",
+            type="default",
+            fn_curve="nope",
+            vulnerability="default",
+        )
+    ]
 
     # Call the function
     with pytest.raises(FIATDataError, match="nope"):
         get_exposure_grid_meta(
             exposure=exposure,
+            variables=listed,
             run_meta=run_meta,
             hazard_meta=hazard_meta_run,
             vulnerability_meta=vulnerability_meta,
-            default="default",
         )
 
 
 def test_get_exposure_grid_meta_unknown_dataset(
+    variables,
     exposure_grid_data: NetcdfReader,
     run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
@@ -1164,14 +1501,15 @@ def test_get_exposure_grid_meta_unknown_dataset(
     with pytest.raises(FIATDataError, match="nope"):
         get_exposure_grid_meta(
             exposure=exposure_grid_data,
+            variables=variables.exp_grid(default="nope"),
             run_meta=run_meta,
             hazard_meta=hazard_meta_run,
             vulnerability_meta=vulnerability_meta,
-            default="nope",
         )
 
 
 def test_get_exposure_grid_meta_risk(
+    variables,
     exposure_grid_data: NetcdfReader,
     run_risk_meta: RunMeta,
     hazard_risk_meta_run: HazardMeta,
@@ -1180,10 +1518,10 @@ def test_get_exposure_grid_meta_risk(
     # Call the function
     meta = get_exposure_grid_meta(
         exposure=exposure_grid_data,
+        variables=variables.exp_grid(),
         run_meta=run_risk_meta,
         hazard_meta=hazard_risk_meta_run,
         vulnerability_meta=vulnerability_meta,
-        default="default",
     )
 
     # Assert the output

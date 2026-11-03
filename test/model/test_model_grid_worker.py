@@ -149,6 +149,7 @@ def test_array_worker_risk(
 
 
 def test_array_worker_combined(
+    variables,
     run_meta: RunMeta,
     hazard_event_duration_data: NetcdfReader,
     hazard_meta_duration: HazardMeta,
@@ -158,10 +159,10 @@ def test_array_worker_combined(
     # Get the meta
     meta = get_exposure_grid_meta(
         exposure_grid_combined_data,
+        variables.exp_grid_combined(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_multi_meta,
-        default="default",
     )
     d = _nodata_nan(hazard_event_duration_data[0])
     t = _nodata_nan(hazard_event_duration_data[1])
@@ -194,6 +195,7 @@ def test_array_worker_combined(
 
 
 def test_array_worker_2d(
+    variables,
     run_meta: RunMeta,
     hazard_event_duration_data: NetcdfReader,
     hazard_meta_duration: HazardMeta,
@@ -203,10 +205,10 @@ def test_array_worker_2d(
     # Get the meta
     meta = get_exposure_grid_meta(
         exposure_grid_data,
+        variables.exp_grid(default="default_2d"),
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_multi_meta,
-        default="default_2d",
     )
     d = _nodata_nan(hazard_event_duration_data[0])
     t = _nodata_nan(hazard_event_duration_data[1])
@@ -231,6 +233,7 @@ def test_array_worker_2d(
 
 
 def test_array_worker_combined_nan(
+    variables,
     tmp_path: Path,
     open_reader: Callable[..., NetcdfReader],
     event_map_duration_path: Path,
@@ -250,10 +253,10 @@ def test_array_worker_combined_nan(
     # Only the combined unit
     meta = get_exposure_grid_meta(
         exposure_grid_combined_data,
+        variables.exp_grid_combined(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_multi_meta,
-        default="default",
     )
     meta = ExposureGridMeta(
         index_ead=None,
@@ -284,6 +287,7 @@ def test_array_worker_combined_nan(
 
 
 def test_array_worker_int_duration_nodata(
+    variables,
     open_reader: Callable[..., NetcdfReader],
     event_map_duration_path: Path,
     int16_nc_copy: Callable[[Path, str], Path],
@@ -303,10 +307,10 @@ def test_array_worker_int_duration_nodata(
 
     meta = get_exposure_grid_meta(
         exposure_grid_combined_data,
+        variables.exp_grid_combined(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_multi_meta,
-        default="default",
     )
     d = _nodata_nan(hazard_event_duration_data[0])
     t = _nodata_nan(hazard_event_duration_data[1])
@@ -337,6 +341,7 @@ def test_array_worker_int_duration_nodata(
 
 
 def test_array_worker_cat_uniform(
+    variables,
     run_meta: RunMeta,
     hazard_event_duration_data: NetcdfReader,
     hazard_meta_duration: HazardMeta,
@@ -346,10 +351,10 @@ def test_array_worker_cat_uniform(
     # Get the meta
     meta = get_exposure_grid_meta(
         exposure_grid_cat_uniform_data,
+        variables.exp_cat_uniform(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_duration,
         vulnerability_meta=vulnerability_cat_meta,
-        default="default",
     )
     d = _nodata_nan(hazard_event_duration_data[0])
 

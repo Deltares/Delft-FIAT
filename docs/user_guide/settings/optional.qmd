@@ -58,13 +58,13 @@ Here we provide an overview of all optional/ non essential settings that the use
 - `settings.crs`: Projection of the hazard data if it cannot be inferred from the dataset itself.
 
 #### Variables
-The variables of the input data (vulnerability datasets, hazard bands and gridded exposure layers) can be specified with a `variables` entry per variable. These entries override the attributes of the variables in the files. Every `name` must exist in its file, unless the entry defines a uniform layer with `value` (hazard and grid exposure only). A `value` entry must name a variable that is not in the file and must have a `type`.
+The variables of the input data (vulnerability datasets, hazard bands and gridded exposure layers) that are used are specified with a `variables` entry per variable; at least one entry is required for each of them. These entries are the **only** source of the attributes of the variables: attributes in the files (e.g. `type`, `rp`, `method`) are not read, and variables of a file without an entry are ignored. Every `name` must exist in its file, unless the entry defines a uniform layer with `value` (hazard and grid exposure only). A `value` entry must name a variable that is not in the file.
 
 ##### [[hazard.variables]]
 
 - `name`: Name of the band (variable).
-- `type`: The hazard type, e.g. 'water_depth' or 'duration'.
-- `rp`: The return period of the band.
+- `type`: The hazard type, e.g. 'water_depth' or 'duration' (required).
+- `rp`: The return period of the band (required for every band when `risk` is true).
 - `value`: Constant value of a uniform layer that is not in the file.
 
 See [hazard data](../data/hazard.qmd#settings).
@@ -74,9 +74,9 @@ See [hazard data](../data/hazard.qmd#settings).
 Only for the grid model.
 
 - `name`: Name of the layer (variable).
-- `type`: The exposure type, either 'default' or 'categorized'.
+- `type`: The exposure type (required): 'default' or 'categorized' for a layer, 'values' for a category-value variable.
 - `vulnerability`: The vulnerability dataset(s) linked to this variable, a name or a list of names.
-- `fn_curve`: The curve id looked up in the linked vulnerability dataset(s).
+- `fn_curve`: The curve id looked up in the linked vulnerability dataset(s) (required for type 'default').
 - `values`: The category-value variables of a categorized layer.
 - `value`: Constant value of a uniform layer that is not in the file.
 
@@ -85,8 +85,8 @@ See [grid exposure data](../data/exposure/grid.qmd#settings).
 ##### [[vulnerability.variables]]
 
 - `name`: Name of the vulnerability dataset (variable).
-- `method`: The calculation method of the dataset, e.g. 'flood.depth'.
-- `types`: The hazard type per index dimension of the dataset, e.g. `{ depth_default = "water_depth" }`.
+- `method`: The calculation method of the dataset, e.g. 'flood.depth' (required).
+- `types`: The hazard type per index dimension of the dataset, e.g. `{ depth_default = "water_depth" }` (required).
 
 See [vulnerability data](../data/vulnerability.qmd#settings).
 

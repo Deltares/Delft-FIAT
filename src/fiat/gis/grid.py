@@ -199,7 +199,7 @@ def reproject(
 
     # Loop though the variables
     for var, var_obj in ds.variables.items():
-        # Constant layers are recreated from the specifications
+        # Constant layers are added again by the model
         if isinstance(var_obj, ConstantVariable):
             continue
         # Create the spatial data variable
@@ -236,4 +236,4 @@ def reproject(
     write_ds.close()
     write_ds = None
 
-    return NetcdfReader(write_path, specs=ds.specs)
+    return NetcdfReader(write_path)

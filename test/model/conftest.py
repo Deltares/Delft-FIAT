@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from pyproj import CRS
 
-from fiat.driver import FlatGeobufReader, NetcdfReader, NetcdfWriter, VariableSpec
+from fiat.driver import FlatGeobufReader, NetcdfReader, NetcdfWriter
 from fiat.method.ead import fn_density
 from fiat.model.meta import (
     ExposureGeomData,
@@ -21,7 +21,144 @@ from fiat.model.meta import (
     get_vulnerability_meta,
 )
 from fiat.open import open_geom
-from fiat.util import DEFAULT, VULNERABILITY
+from fiat.settings.variables import (
+    ExposureGridVariable,
+    HazardVariable,
+    VulnerabilityVariable,
+)
+from fiat.util import DEFAULT
+
+
+## Variable settings, like the ones in the generated settings files
+class Vars:
+    RPS = (2, 5, 10, 25)
+
+    @staticmethod
+    def vuln_1d(
+        name: str = DEFAULT,
+        method: str = "flood.depth",
+        index: str = "depth",
+        type: str = "water_depth",
+    ) -> VulnerabilityVariable:
+        return VulnerabilityVariable(
+            name=name, method=method, types={f"{index}_{name}": type}
+        )
+
+    @staticmethod
+    def vuln_2d(name: str = DEFAULT) -> VulnerabilityVariable:
+        return VulnerabilityVariable(
+            name=name,
+            method="flood.depth_duration_2d",
+            types={f"depth_{name}": "water_depth", f"duration_{name}": "duration"},
+        )
+
+    @staticmethod
+    def vuln_multi() -> list[VulnerabilityVariable]:
+        return [
+            Vars.vuln_1d(),
+            Vars.vuln_2d("default_2d"),
+            Vars.vuln_1d("direct", method="flood.depth_duration"),
+            Vars.vuln_1d(
+                "indirect",
+                method="flood.depth_duration",
+                index="days",
+                type="duration",
+            ),
+        ]
+
+    @staticmethod
+    def haz_event() -> list[HazardVariable]:
+        return [HazardVariable(name="data", type="water_depth")]
+
+    @staticmethod
+    def haz_risk() -> list[HazardVariable]:
+        return [
+            HazardVariable(name=f"{rp}Y", type="water_depth", rp=rp) for rp in Vars.RPS
+        ]
+
+    @staticmethod
+    def haz_event_duration() -> list[HazardVariable]:
+        return [
+            HazardVariable(name="depth", type="water_depth"),
+            HazardVariable(name="duration", type="duration"),
+        ]
+
+    @staticmethod
+    def haz_risk_duration() -> list[HazardVariable]:
+        return [
+            HazardVariable(name=f"{name}_{rp}Y", type=type, rp=rp)
+            for rp in Vars.RPS
+            for name, type in (("depth", "water_depth"), ("duration", "duration"))
+        ]
+
+    @staticmethod
+    def exp_grid(default: str = DEFAULT, **links) -> list[ExposureGridVariable]:
+        return [
+            ExposureGridVariable(
+                name=name,
+                type=DEFAULT,
+                fn_curve=curve,
+                vulnerability=links.get(name, default),
+            )
+            for name, curve in (("exposure1", "struct_1"), ("exposure2", "struct_2"))
+        ]
+
+    @staticmethod
+    def exp_cat(**kwargs) -> ExposureGridVariable:
+        return ExposureGridVariable(name="exposure", type="categorized", **kwargs)
+
+    @staticmethod
+    def exp_cat_default() -> list[ExposureGridVariable]:
+        # Like grid_cat.toml
+        return [Vars.exp_cat()] + Vars.exp_values()
+
+    @staticmethod
+    def exp_values(*names: str, **links) -> list[ExposureGridVariable]:
+        return [
+            ExposureGridVariable(
+                name=name,
+                type="values",
+                vulnerability=links.get(name, DEFAULT),
+            )
+            for name in names or ("exposure_values", "exposure_values2")
+        ]
+
+    @staticmethod
+    def exp_grid_combined() -> list[ExposureGridVariable]:
+        # Like grid_multi_combined.toml
+        return Vars.exp_grid(exposure2=["direct", "indirect"])
+
+    @staticmethod
+    def exp_grid_separate() -> list[ExposureGridVariable]:
+        # Like grid_multi_separate.toml
+        return Vars.exp_grid(exposure2=[DEFAULT, "default_2d"])
+
+    @staticmethod
+    def exp_cat_variables() -> list[ExposureGridVariable]:
+        # Like grid_cat_variables.toml
+        return [
+            Vars.exp_cat(values=["exposure_values", "exposure_values2"]),
+            *Vars.exp_values(exposure_values2="default_2d"),
+        ]
+
+    @staticmethod
+    def exp_cat_uniform() -> list[ExposureGridVariable]:
+        # Like grid_cat_uniform.toml
+        return [
+            Vars.exp_cat(values=["exposure_values2"]),
+            ExposureGridVariable(
+                name="exposure_uniform",
+                type="categorized",
+                value=1,
+                values=["exposure_values"],
+            ),
+            *Vars.exp_values(),
+        ]
+
+
+@pytest.fixture(scope="session")
+def variables() -> type[Vars]:
+    return Vars
 
 
 ## Structures
@@ -210,10 +347,10 @@ def exposure_grid_cat_meta_run(
 ) -> ExposureGridMeta:
     return get_exposure_grid_meta(
         exposure_grid_cat_data,
+        Vars.exp_cat_default(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_cat_meta,
-        default=DEFAULT,
     )
 
 
@@ -226,10 +363,10 @@ def exposure_grid_meta_run(
 ) -> ExposureGridMeta:
     return get_exposure_grid_meta(
         exposure_grid_data,
+        Vars.exp_grid(),
         run_meta=run_meta,
         hazard_meta=hazard_meta_run,
         vulnerability_meta=vulnerability_meta,
-        default=DEFAULT,
     )
 
 
@@ -242,10 +379,10 @@ def exposure_grid_risk_meta_run(
 ) -> ExposureGridMeta:
     return get_exposure_grid_meta(
         exposure_grid_data,
+        Vars.exp_grid(),
         run_meta=run_risk_meta,
         hazard_meta=hazard_risk_meta_run,
         vulnerability_meta=vulnerability_meta,
-        default=DEFAULT,
     )
 
 
@@ -254,12 +391,7 @@ def exposure_grid_combined_data(
     exposure_grid_path: Path,
 ) -> Generator[NetcdfReader, None, None]:
     # Like grid_multi_combined.toml
-    ds = NetcdfReader(
-        exposure_grid_path,
-        specs={
-            "exposure2": VariableSpec(attrs={VULNERABILITY: ["direct", "indirect"]})
-        },
-    )
+    ds = NetcdfReader(exposure_grid_path)
     ds.load()
     yield ds
     ds.close()
@@ -270,12 +402,7 @@ def exposure_grid_separate_data(
     exposure_grid_path: Path,
 ) -> Generator[NetcdfReader, None, None]:
     # Like grid_multi_separate.toml
-    ds = NetcdfReader(
-        exposure_grid_path,
-        specs={
-            "exposure2": VariableSpec(attrs={VULNERABILITY: [DEFAULT, "default_2d"]})
-        },
-    )
+    ds = NetcdfReader(exposure_grid_path)
     ds.load()
     yield ds
     ds.close()
@@ -286,19 +413,7 @@ def exposure_grid_cat_variables_data(
     exposure_grid_cat_path: Path,
 ) -> Generator[NetcdfReader, None, None]:
     # Like grid_cat_variables.toml
-    ds = NetcdfReader(
-        exposure_grid_cat_path,
-        specs={
-            "exposure": VariableSpec(
-                attrs={
-                    "type": "categorized",
-                    VULNERABILITY: DEFAULT,
-                    "values": ["exposure_values", "exposure_values2"],
-                }
-            ),
-            "exposure_values2": VariableSpec(attrs={VULNERABILITY: "default_2d"}),
-        },
-    )
+    ds = NetcdfReader(exposure_grid_cat_path)
     ds.load()
     yield ds
     ds.close()
@@ -309,18 +424,8 @@ def exposure_grid_cat_uniform_data(
     exposure_grid_cat_path: Path,
 ) -> Generator[NetcdfReader, None, None]:
     # Like grid_cat_uniform.toml
-    ds = NetcdfReader(
-        exposure_grid_cat_path,
-        specs={
-            "exposure": VariableSpec(
-                attrs={"type": "categorized", "values": ["exposure_values2"]}
-            ),
-            "exposure_uniform": VariableSpec(
-                attrs={"type": "categorized", "values": ["exposure_values"]},
-                value=1,
-            ),
-        },
-    )
+    ds = NetcdfReader(exposure_grid_cat_path)
+    ds.add_constant("exposure_uniform", 1)
     ds.load()
     yield ds
     ds.close()
@@ -341,6 +446,7 @@ def hazard_meta_duration(event_map_duration_path: Path) -> HazardMeta:
     with NetcdfReader(event_map_duration_path) as ds:
         return get_hazard_meta(
             ds,
+            Vars.haz_event_duration(),
             risk=False,
             method_types=["water_depth", "duration"],
         )
@@ -391,13 +497,17 @@ def run_risk_meta() -> RunMeta:
 @pytest.fixture(scope="session")
 def vulnerability_meta(vulnerability_path: Path) -> VulnerabilityMeta:
     with NetcdfReader(vulnerability_path) as ds:
-        return get_vulnerability_meta(ds, names=[DEFAULT])
+        return get_vulnerability_meta(ds, [Vars.vuln_1d()], names=[DEFAULT])
 
 
 @pytest.fixture(scope="session")
 def vulnerability_cat_meta(vulnerability_cat_path: Path) -> VulnerabilityMeta:
     with NetcdfReader(vulnerability_cat_path) as ds:
-        return get_vulnerability_meta(ds, names=[DEFAULT, "default_2d"])
+        return get_vulnerability_meta(
+            ds,
+            [Vars.vuln_1d(), Vars.vuln_2d("default_2d")],
+            names=[DEFAULT, "default_2d"],
+        )
 
 
 @pytest.fixture(scope="session")
@@ -405,6 +515,7 @@ def vulnerability_multi_meta(curves_multi_path: Path) -> VulnerabilityMeta:
     with NetcdfReader(curves_multi_path) as ds:
         return get_vulnerability_meta(
             ds,
+            Vars.vuln_multi(),
             names=[DEFAULT, "default_2d", "direct", "indirect"],
         )
 
@@ -412,7 +523,7 @@ def vulnerability_multi_meta(curves_multi_path: Path) -> VulnerabilityMeta:
 @pytest.fixture(scope="session")
 def vulnerability_2d_meta(curves_2d_path: Path) -> VulnerabilityMeta:
     with NetcdfReader(curves_2d_path) as ds:
-        return get_vulnerability_meta(ds, names=[DEFAULT])
+        return get_vulnerability_meta(ds, [Vars.vuln_2d()], names=[DEFAULT])
 
 
 # Aliases of the old fixture names, used by the grid/geom meta and worker tests

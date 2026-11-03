@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from importlib import import_module
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 
 import numpy as np
 
@@ -11,12 +11,16 @@ from fiat._core import Interp1D, InterpND
 from fiat.check import (
     check_exp_cat_uniform,
     check_exp_cat_value,
+    check_exp_cat_value_settings,
     check_exp_cat_values,
     check_exp_columns,
     check_exp_derived_types,
+    check_exp_variables,
     check_hazard_identifier,
     check_hazard_rp,
     check_hazard_types,
+    check_hazard_variable_rp,
+    check_hazard_variables,
     check_vuln_axes,
     check_vuln_axis_types,
     check_vuln_categories,
@@ -25,6 +29,7 @@ from fiat.check import (
     check_vuln_group,
     check_vuln_method,
     check_vuln_types_keys,
+    check_vuln_types_missing,
     check_vuln_variables,
 )
 from fiat.driver import NetcdfReader
@@ -32,20 +37,20 @@ from fiat.driver.netcdf.reader import ConstantVariable
 from fiat.error import FIATDataError
 from fiat.method.ead import fn_density
 from fiat.model.geom_util import discover_exp_columns, generate_output_columns
+from fiat.settings.variables import (
+    ExposureGridVariable,
+    HazardVariable,
+    VulnerabilityVariable,
+)
 from fiat.util import (
     CATEGORIZED,
     CURVE,
     DEFAULT,
     EAD,
     FIAT_METHOD,
-    FN__CURVE,
-    METHOD,
     RP,
     TOTAL,
-    TYPE,
-    TYPES,
     VALUES,
-    VULNERABILITY,
 )
 
 
@@ -106,6 +111,7 @@ class VulnerabilityMeta:
 
 def get_vulnerability_meta(
     vulnerability: NetcdfReader,
+    variables: Sequence[VulnerabilityVariable],
     names: list[str],
 ) -> VulnerabilityMeta:
     """Obtain the metadata from the vulnerability datasets.
@@ -114,8 +120,11 @@ def get_vulnerability_meta(
     ----------
     vulnerability : NetcdfReader
         The vulnerability data.
+    variables : Sequence[VulnerabilityVariable]
+        The settings of the vulnerability datasets (variables).
     names : list[str]
-        The names of the vulnerability datasets (variables) to use.
+        The names of the vulnerability datasets (variables) to use, these must be
+        among the `variables`.
 
     Returns
     -------
@@ -124,6 +133,8 @@ def get_vulnerability_meta(
     """
     if isinstance(names, str):
         names = [names]
+    settings = {item.name: item for item in variables}
+    check_vuln_variables(names, list(settings))
     check_vuln_variables(names, vulnerability.names)
 
     datasets = {}
@@ -131,7 +142,7 @@ def get_vulnerability_meta(
         var = vulnerability.variables[name]
 
         # Get the method
-        method_name = var.get_attr_lazy(METHOD)
+        method_name = settings[name].method
         check_vuln_method(name, method_name)
         method = import_module(f"{FIAT_METHOD}.{method_name}")
 
@@ -148,13 +159,11 @@ dataset '{name}'"
             )
         index_dims = [item for item in dims if item != curve_dim]
 
-        # Get the axis types, settings first, then the dimension attribute
-        types = var.get_attr_lazy(TYPES) or {}
+        # Get the axis types from the settings
+        types = settings[name].types or {}
         check_vuln_types_keys(name, list(types.keys()), index_dims)
-        axis_types: list[str | None] = [
-            types.get(dim) or vulnerability.dims[dim].__dict__.get(TYPE)
-            for dim in index_dims
-        ]
+        check_vuln_types_missing(name, list(types.keys()), index_dims)
+        axis_types = [types[dim] for dim in index_dims]
         check_vuln_axis_types(
             name,
             axis_types=axis_types,
@@ -252,6 +261,7 @@ def _hazard_id(value: Any) -> str:
 
 def get_hazard_meta(
     hazard: NetcdfReader,
+    variables: Sequence[HazardVariable],
     risk: bool,
     method_types: list[str],
 ) -> HazardMeta:
@@ -261,6 +271,9 @@ def get_hazard_meta(
     ----------
     hazard : NetcdfReader
         The hazard data.
+    variables : Sequence[HazardVariable]
+        The settings of the hazard variables (bands), other variables in the hazard
+        data are ignored.
     risk : bool
         Whether it is a risk calculation (bands identified by their return period).
     method_types : list[str]
@@ -270,10 +283,15 @@ def get_hazard_meta(
     -------
     HazardMeta
         The hazard metadata, `indices_run` holding per hazard identifier the band
-        indices ordered like `types`.
+        indices (of the hazard data) ordered like `types`.
     """
-    # Get the types from the metadata
-    types = [band.get_attr(TYPE) for band in hazard]
+    # Positions of the listed variables in the hazard data
+    names = hazard.names
+    check_hazard_variables([item.name for item in variables], names)
+    positions = [names.index(item.name) for item in variables]
+
+    # Get the types from the settings (indices are positions in the settings)
+    types = [item.type for item in variables]
     # Check the typing
     indices_type = check_hazard_types(
         types,
@@ -287,8 +305,9 @@ def get_hazard_meta(
 
     # If identifier is not None
     if identifier is not None:
+        check_hazard_variable_rp([item.name for item in variables if item.rp is None])
         ids, ids_list = check_hazard_identifier(
-            [_hazard_id(band.get_attr_lazy(identifier)) for band in hazard],
+            [_hazard_id(item.rp) for item in variables],
             indices_type=indices_type,
         )
 
@@ -299,11 +318,15 @@ def get_hazard_meta(
         rp = check_hazard_rp(ids)
         d = fn_density(rp)
 
-    # Set the grouped indices
+    # Set the grouped indices, now as indices of the hazard data
     indices_run = [
-        [indices_type[idx][item.index(idi)] for idx, item in enumerate(ids_list)]
+        [
+            positions[indices_type[idx][item.index(idi)]]
+            for idx, item in enumerate(ids_list)
+        ]
         for idi in ids
     ]
+    indices_type = [[positions[idx] for idx in item] for item in indices_type]
 
     # Fill in the meta
     meta = HazardMeta(
@@ -651,72 +674,69 @@ def _grid_unit_name(
 
 def _grid_layers(
     exposure: NetcdfReader,
-    default: str | list[str],
+    variables: Sequence[ExposureGridVariable],
 ) -> list[tuple[int, int | None, list[str]]]:
     """Return the calculation layers of the exposure grid with their datasets.
 
     Every default layer is returned as (layer index, None, linked datasets); every
     categorized layer once per category value variable as (layer index, value
-    variable index, linked datasets). The links resolve as: value variable \
-(categorized only) -> layer -> `default`.
+    variable index, linked datasets). The links are those of the layer (default)
+    or of the category value variable (categorized). The indices are those of the
+    exposure data, variables without settings are ignored.
     """
     names = exposure.names
-    default = _as_list(default)
-    uniform = [item.name for item in exposure if isinstance(item, ConstantVariable)]
+    settings = {item.name: item for item in variables}
+    check_exp_variables(list(settings), names)
+    uniform = [item.name for item in variables if item.value is not None]
 
     # Sort out the categorized layers and their category value variables
-    indices_cat = [
-        idx
-        for idx, item in enumerate(exposure)
-        if item.get_attr_lazy(TYPE) == CATEGORIZED
-    ]
+    layers_cat = [item for item in variables if item.type == CATEGORIZED]
     cat_values: dict[str, list[str]] = {}
-    for idx in indices_cat:
-        layer = names[idx]
-        values = exposure[idx].get_attr_lazy(VALUES)
+    for item in layers_cat:
+        layer = item.name
+        values = item.values
         if values is not None:
-            values = _as_list(values)
             check_exp_cat_values(layer, values=values, available=names)
         else:
-            values = [item.name for item in exposure if item.has_as_dim(f"{layer}_cat")]
+            values = [var.name for var in exposure if var.has_as_dim(f"{layer}_cat")]
         cat_values[layer] = values
     check_exp_cat_value(cat_values, uniform=uniform)
+    check_exp_cat_value_settings(
+        cat_values,
+        listed=[item.name for item in variables if item.type == VALUES],
+    )
 
     # The default calculation layers
     out: list[tuple[int, int | None, list[str]]] = [
-        (idx, None, _as_list(item.get_attr_lazy(VULNERABILITY)) or default)
-        for idx, item in enumerate(exposure)
-        if item.get_attr_lazy(TYPE) == DEFAULT
+        (names.index(item.name), None, _as_list(item.vulnerability))
+        for item in variables
+        if item.type == DEFAULT
     ]
 
     # The categorized layers per category value variable
-    for idx in indices_cat:
-        layer_links = _as_list(exposure[idx].get_attr_lazy(VULNERABILITY)) or default
-        for value_var in cat_values[names[idx]]:
-            value_index = names.index(value_var)
-            links = (
-                _as_list(exposure[value_index].get_attr_lazy(VULNERABILITY))
-                or layer_links
-            )
-            out.append((idx, value_index, links))
+    for item in layers_cat:
+        for value_var in cat_values[item.name]:
+            links = _as_list(settings[value_var].vulnerability)
+            out.append((names.index(item.name), names.index(value_var), links))
+    if not out:
+        raise FIATDataError(
+            "No exposure layers found, set them as variables of the exposure grid"
+        )
     return out
 
 
 def get_exposure_grid_datasets(
     exposure: NetcdfReader,
-    default: str | list[str],
+    variables: Sequence[ExposureGridVariable],
 ) -> list[str]:
     """Return the vulnerability datasets linked to the exposure grid.
-
-    The links are taken from the exposure data (settings applied), so links set \
-only via the `vulnerability` attribute in the file are included.
 
     Parameters
     ----------
     exposure : NetcdfReader
         The exposure data.
-    default : str | list[str]
-        The vulnerability dataset(s) for layers without their own link.
+    variables : Sequence[ExposureGridVariable]
+        The settings of the exposure variables (layers).
 
     Returns
     -------
@@ -724,17 +744,17 @@ only via the `vulnerability` attribute in the file are included.
         The unique names of the linked datasets, in order of appearance.
     """
     names: dict[str, None] = {}
-    for _, _, links in _grid_layers(exposure, default=default):
+    for _, _, links in _grid_layers(exposure, variables):
         names.update(dict.fromkeys(links))
     return list(names)
 
 
 def get_exposure_grid_meta(
     exposure: NetcdfReader,
+    variables: Sequence[ExposureGridVariable],
     run_meta: RunMeta,
     hazard_meta: HazardMeta,
     vulnerability_meta: VulnerabilityMeta,
-    default: str | list[str],
 ) -> ExposureGridMeta:
     """Obtain the run plan (calculation units) for the exposure grid.
 
@@ -742,14 +762,14 @@ def get_exposure_grid_meta(
     ----------
     exposure : NetcdfReader
         The exposure data.
+    variables : Sequence[ExposureGridVariable]
+        The settings of the exposure variables (layers).
     run_meta : RunMeta
         The run metadata.
     hazard_meta : HazardMeta
         The hazard metadata.
     vulnerability_meta : VulnerabilityMeta
         The vulnerability metadata.
-    default : str | list[str]
-        The vulnerability dataset(s) for layers without their own link.
 
     Returns
     -------
@@ -757,7 +777,8 @@ def get_exposure_grid_meta(
         The exposure grid metadata.
     """
     names = exposure.names
-    layers = _grid_layers(exposure, default=default)
+    settings = {item.name: item for item in variables}
+    layers = _grid_layers(exposure, variables)
 
     # Set up the units without output indices, together with their names
     units: list[GridUnit] = []
@@ -770,7 +791,7 @@ def get_exposure_grid_meta(
 
         # Default layer, a single curve id looked up in every linked dataset
         if value_index is None:
-            fn = var.get_attr(FN__CURVE)
+            fn = settings[layer].fn_curve
             for _, group in groups:
                 for ds in group:
                     check_vuln_curve_ids(

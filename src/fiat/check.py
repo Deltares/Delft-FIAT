@@ -185,6 +185,42 @@ multiple datasets (subsets). Chose one of the following subsets: {keys}"
         raise FIATDataError(msg)
 
 
+def check_hazard_variable_rp(
+    missing: list[str],
+) -> None:
+    """Check whether all the hazard variables have a return period.
+
+    Applies to risk calculations.
+
+    Parameters
+    ----------
+    missing : list[str]
+        The names of the hazard variables without a return period.
+    """
+    if missing:
+        raise FIATDataError(
+            f"Return period (rp) not set for hazard variable(s) {missing}"
+        )
+
+
+def check_hazard_variables(
+    names: list[str],
+    available: list[str],
+) -> None:
+    """Check whether the hazard variables are present in the hazard data.
+
+    Parameters
+    ----------
+    names : list[str]
+        The names of the hazard variables from the settings.
+    available : list[str]
+        The names of the variables in the hazard data.
+    """
+    missing = [item for item in names if item not in available]
+    if missing:
+        raise FIATDataError(f"Hazard variable(s) {missing} not found")
+
+
 def check_hazard_types(
     types: list,
     mandatory_types: list,
@@ -290,6 +326,46 @@ def check_exp_cat_values(
             f"Category value variable(s) {missing} of categorized layer \
 '{layer}' not found in the exposure data"
         )
+
+
+def check_exp_variables(
+    names: list[str],
+    available: list[str],
+) -> None:
+    """Check whether the exposure variables are present in the exposure data.
+
+    Parameters
+    ----------
+    names : list[str]
+        The names of the exposure variables from the settings.
+    available : list[str]
+        The names of the variables in the exposure data.
+    """
+    missing = [item for item in names if item not in available]
+    if missing:
+        raise FIATDataError(f"Exposure variable(s) {missing} not found")
+
+
+def check_exp_cat_value_settings(
+    layers: dict[str, list[str]],
+    listed: list[str],
+) -> None:
+    """Check whether the category value variables are set in the settings.
+
+    Parameters
+    ----------
+    layers : dict[str, list[str]]
+        The category value variables per categorized layer.
+    listed : list[str]
+        The names of the exposure variables of type 'values' in the settings.
+    """
+    for layer, values in layers.items():
+        missing = [item for item in values if item not in listed]
+        if missing:
+            raise FIATDataError(
+                f"Category value variable(s) {missing} of categorized layer \
+'{layer}' not set as variables of type 'values' in the settings"
+            )
 
 
 def check_exp_columns(
@@ -549,6 +625,30 @@ def check_vuln_types_keys(
         raise FIATDataError(
             f"Types defined for unknown dimension(s) {missing} of vulnerability \
 dataset '{name}', chose from {dims}"
+        )
+
+
+def check_vuln_types_missing(
+    name: str,
+    keys: list[str],
+    dims: list[str],
+) -> None:
+    """Check whether every index dimension of a dataset has an axis type.
+
+    Parameters
+    ----------
+    name : str
+        The name of the vulnerability dataset.
+    keys : list[str]
+        The dimension names in the types setting.
+    dims : list[str]
+        The index dimensions of the vulnerability dataset.
+    """
+    missing = [item for item in dims if item not in keys]
+    if missing:
+        raise FIATDataError(
+            f"No type set for dimension(s) {missing} of vulnerability dataset \
+'{name}', set them with 'types' in the variable settings"
         )
 
 

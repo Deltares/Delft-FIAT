@@ -43,7 +43,9 @@ def test_gridmodel_read_exposure(model_settings: Callable[[str], GridSettings]):
     m.close()
 
 
-def test_gridmodel_read_exposure_specs(model_settings: Callable[[str], GridSettings]):
+def test_gridmodel_read_exposure_constants(
+    model_settings: Callable[[str], GridSettings],
+):
     # Create the object, the settings define a uniform exposure layer
     m = GridModel(model_settings("grid_uniform.toml"))
 
@@ -52,13 +54,50 @@ def test_gridmodel_read_exposure_specs(model_settings: Callable[[str], GridSetti
     var = m.exposure.variables["exposure3"]
     assert isinstance(var, ConstantVariable)
     assert var.value == 1500.0
-    assert var.get_attr("fn_curve") == "struct_1"
     m.close()
 
-    # The settings override an attribute
-    m = GridModel(model_settings("grid_override.toml"))
-    assert m.exposure.variables["exposure1"].get_attr("fn_curve") == "struct_2"
+
+def test_gridmodel_read_exposure_unlisted_ignored(
+    model_settings: Callable[[str], GridSettings],
+):
+    # Only list one of the two layers in the file
+    settings = model_settings("grid_event.toml")
+    settings.update(
+        exposure={
+            **settings.to_dict()["exposure"],
+            "variables": settings.to_dict()["exposure"]["variables"][:1],
+        }
+    )
+    m = GridModel(settings)
+
+    # Assert the file has both, the model uses the listed one
+    assert m.exposure.names == ["exposure1", "exposure2"]
+    assert [item.name for item in m.settings.exposure.variables] == ["exposure1"]
     m.close()
+
+
+def test_gridmodel_read_exposure_missing_variable(
+    model_settings: Callable[[str], GridSettings],
+):
+    # A listed layer that is not in the file
+    settings = model_settings("grid_event.toml")
+    settings.update(
+        exposure={
+            **settings.to_dict()["exposure"],
+            "variables": [
+                {
+                    "name": "nope",
+                    "type": "default",
+                    "fn_curve": "struct_1",
+                    "vulnerability": "default",
+                }
+            ],
+        }
+    )
+
+    # Assert the error
+    with pytest.raises(FIATDataError, match="nope"):
+        GridModel(settings)
 
 
 def test_gridmodel_read_exposure_reproj(
@@ -134,26 +173,23 @@ def test_gridmodel_run_fail(
     m.close()
 
 
-def test_gridmodel_run_attribute_link(
+def test_gridmodel_run_ignores_file_attributes(
     tmp_path: Path,
     exposure_grid_path: Path,
     model_settings: Callable[[str], GridSettings],
 ):
-    # Copy of the exposure with a vulnerability link only set as an attribute
+    # Copy of the exposure with attributes in the file that disagree with the settings
     p = Path(tmp_path, "spatial.nc")
     shutil.copy2(exposure_grid_path, p)
     with nc4.Dataset(p, "a") as ds:
-        ds["exposure2"].setncattr("vulnerability", "default_2d")
+        ds["exposure2"].setncattr("vulnerability", "nope")
+        ds["exposure2"].setncattr("fn_curve", "nope")
 
-    # Settings without any link to 'default_2d'
+    # The settings link everything to 'default_2d'
     settings = model_settings("grid_2d.toml")
     settings.update(
         output_dir=Path(tmp_path, "output"),
-        exposure={
-            "file": p.as_posix(),
-            "vulnerability": "default",
-            "settings": {"crs": "EPSG:4326"},
-        },
+        exposure={**settings.to_dict()["exposure"], "file": p.as_posix()},
     )
     m = GridModel(settings)
     m.run()
@@ -174,7 +210,13 @@ def test_gridmodel_run_level_error(
     settings.update(
         vulnerability={
             "file": settings.vulnerability.file.as_posix(),
-            "variables": [{"name": "default", "method": "flood.level"}],
+            "variables": [
+                {
+                    "name": "default",
+                    "method": "flood.level",
+                    "types": {"depth_default": "water_depth"},
+                }
+            ],
         },
         hazard={
             "file": settings.hazard.file.as_posix(),
@@ -186,4 +228,30 @@ def test_gridmodel_run_level_error(
     # Assert the error before the run
     with pytest.raises(FIATDataError, match="flood.level"):
         m.run()
+    m.close()
+
+
+@pytest.mark.parametrize("base", ["hazard", "exposure"])
+def test_gridmodel_run_equal_grid_reapplies_constants(
+    base: str,
+    caplog: Logger,
+    tmp_path: Path,
+    model_settings: Callable[[str], GridSettings],
+):
+    # Uniform layers in both datasets and a hazard grid that differs from the exposure
+    settings = model_settings("grid_uniform.toml")
+    data = settings.to_dict()
+    settings.update(
+        output_dir=Path(tmp_path, "output"),
+        hazard={**data["hazard"], "file": "event_map_highres.nc"},
+        grid={"base": base},
+    )
+    m = GridModel(settings)
+    m.run()
+
+    # Assert the run, the constant layers are part of the reprojected data
+    assert "Model run is done!" in caplog.text
+    assert isinstance(m.hazard.variables["duration"], ConstantVariable)
+    assert isinstance(m.exposure.variables["exposure3"], ConstantVariable)
+    assert m.hazard.profile.shape == m.exposure.profile.shape
     m.close()

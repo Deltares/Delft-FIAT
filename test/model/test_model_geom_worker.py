@@ -8,7 +8,7 @@ from typing import Callable
 import netCDF4 as nc4
 import numpy as np
 
-from fiat.driver import FlatGeobufReader, NetcdfReader, VariableSpec, fgb
+from fiat.driver import FlatGeobufReader, NetcdfReader, fgb
 from fiat.gis import overlay
 from fiat.method import flood
 from fiat.method.ead import fn_ead
@@ -24,6 +24,7 @@ from fiat.model.meta import (
     get_hazard_meta,
 )
 from fiat.open import open_geom
+from fiat.settings.variables import HazardVariable
 
 
 def _feature_by_id(layer, object_id):
@@ -268,20 +269,18 @@ def test_geom_worker_uniform_hazard(
     tmp_path: Path,
     open_reader: Callable[..., NetcdfReader],
     hazard_event_path: Path,
+    variables,
     run_meta: RunMeta,
     vulnerability_multi_meta: VulnerabilityMeta,
     exposure_geom_data: FlatGeobufReader,
     exposure_geom_data_run: ExposureGeomData,
 ):
     # Like geom_uniform.toml, a uniform duration layer
-    hazard = open_reader(
-        hazard_event_path,
-        specs={
-            "duration": VariableSpec(attrs={"type": "duration"}, value=3.0),
-        },
-    )
+    hazard = open_reader(hazard_event_path)
+    hazard.add_constant("duration", 3.0)
     hazard_meta = get_hazard_meta(
         hazard,
+        variables.haz_event() + [HazardVariable(name="duration", type="duration")],
         risk=False,
         method_types=["water_depth", "duration"],
     )

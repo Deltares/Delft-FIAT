@@ -15,7 +15,7 @@ When providing a polygon or line geometry file, a user can choose to use the *ar
 Assets cannot be partially or fully outside the hazard map extent! FIAT will stop if it detects any.
 :::
 
-Each geometry file is linked to exactly **one** vulnerability dataset via the `vulnerability` entry of its `[[exposure]]` entry (a single name, by default `default`). The dataset may hold 1D or 2D curves; its [method](../vulnerability.qmd#methods) determines the needed hazard types and columns. Methods that combine several datasets (e.g. `flood.depth_duration`) can not be used for geometries.
+Each geometry file is linked to exactly **one** vulnerability dataset via the `vulnerability` entry of its `[[exposure]]` entry (a single name, required, even when it is the dataset named `default`). The dataset may hold 1D or 2D curves; its [method](../vulnerability.qmd#methods) determines the needed hazard types and columns. Methods that combine several datasets (e.g. `flood.depth_duration`) can not be used for geometries.
 
 ```toml
 [[exposure]]

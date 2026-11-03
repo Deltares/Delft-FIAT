@@ -6,16 +6,17 @@ title: "What's new?"
 These are the unreleased changes.
 
 ### Added
-- Vulnerability datasets in a NetCDF file: one file can hold several datasets (variables), each with its own calculation method (`method` attribute) and a hazard type per curve axis (`type` attribute on the index dimensions)
+- Vulnerability datasets in a NetCDF file: one file can hold several datasets (variables), each with its own calculation method (`method`) and a hazard type per curve axis (`types`), both set in the settings
 - Grid exposure layers can be linked to several vulnerability datasets (`vulnerability` as a list), either combined in one calculation or as separate calculations, all added to the total
 - Vulnerability datasets with curves over two or more hazard axes (e.g. depth and duration), interpolated with the new multilinear interpolator `InterpND`
 - Methods `flood.depth_duration` (a water depth and a flood duration dataset combined, grid only) and `flood.depth_duration_2d` (one 2D depth-duration dataset)
-- `[[vulnerability.variables]]`, `[[hazard.variables]]` and `[[exposure.variables]]` settings to set or override the attributes of the datasets, hazard bands and grid exposure layers (e.g. `method`, `types`, `type`, `rp`, `fn_curve`, `vulnerability`, `values`)
+- `[[vulnerability.variables]]`, `[[hazard.variables]]` and `[[exposure.variables]]` settings to set the attributes of the datasets, hazard bands and grid exposure layers (e.g. `method`, `types`, `type`, `rp`, `fn_curve`, `vulnerability`, `values`)
 - Uniform hazard and grid exposure layers from the settings (`value` in a `variables` entry): a layer with a constant value that is not in the file (for a categorized layer the value is the category, which must be in the category coordinate)
 - `vulnerability` entry per geometry file (`[[exposure]]`) linking it to a single vulnerability dataset
 - `close` method on the models to close the input data
 
 ### Changed
+- **Breaking**: the `[[vulnerability.variables]]`, `[[hazard.variables]]` and `[[exposure.variables]]` settings are the only source of the attributes of the variables (`type`, `rp`, `method`, `types`, `vulnerability`, `values`, `fn_curve`). Attributes in the input files are no longer read and variables of the files without an entry in the settings are ignored; the `variables` of the hazard, vulnerability and grid exposure settings (at least one each), `type` (hazard and exposure; category-value variables use `type = "values"` and must always be listed), `vulnerability` (default exposure layers and category-value variables, not for the categorized layer itself; also required per geometry file; the grid `[exposure]` `vulnerability` setting is removed), `method` and `types` (vulnerability), `fn_curve` (default exposure layers) and, for risk, `rp` (hazard) are required
 - The calculation method is set per vulnerability dataset instead of globally
 - The method functions have a uniform signature: `fn_hazard(hazards, ...)` returns a tuple of hazard values and the reduction factor; `fn_impact(hazards, exposure, curves, fact)`
 - The hazard types needed (band `type`) are derived from the methods of the linked vulnerability datasets, so a hazard file can hold bands of several types (e.g. depth and duration)

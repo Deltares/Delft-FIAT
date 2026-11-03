@@ -166,10 +166,12 @@ class GeomModel(BaseModel):
         # One dataset per exposure file, the hazard types from all their methods
         vulnerability_meta = get_vulnerability_meta(
             self.vulnerability,
+            self.settings.vulnerability.variables,
             names=list(dict.fromkeys(item.vulnerability for item in self.exposure)),
         )
         hazard_meta = get_hazard_meta(
             self.hazard,
+            self.settings.hazard.variables,
             risk=self.risk,
             method_types=get_method_types(vulnerability_meta),
         )

@@ -15,6 +15,7 @@ from fiat.check import (
 from fiat.driver import NetcdfReader
 from fiat.gis import grid
 from fiat.log import spawn_logger
+from fiat.model.util import apply_constants
 from fiat.open import open_grid
 from fiat.settings import GeomSettings, GridSettings
 from fiat.util import (
@@ -157,8 +158,7 @@ class BaseModel(metaclass=ABCMeta):
 
         # Get the kwargs from the model settings
         kwargs = self.settings.hazard.settings.model_dump(exclude_none=True)
-        # Read the data, the variable specifications from the settings applied
-        data = open_grid(file, specs=self.settings.hazard.specs(), **kwargs)
+        data = open_grid(file, **kwargs)
 
         # checks
         logger.info("Executing hazard checks...")
@@ -188,6 +188,9 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
                 method=_resalg,
             )
 
+        # Check the listed variables and add the constant layers
+        apply_constants(data, self.settings.hazard.variables)
+
         # When all is done, add it
         self._hazard = data
 
@@ -197,11 +200,11 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         file = self.settings.vulnerability.file
         logger.info(f"Reading vulnerability curves ('{file.name}')")
 
-        # Read the data, the variable specifications from the settings applied
-        data = open_grid(file, specs=self.settings.vulnerability.specs())
+        data = open_grid(file)
 
         ## checks
         logger.info("Executing vulnerability checks...")
+        apply_constants(data, self.settings.vulnerability.variables)
 
         # When all is done, add it
         self._vulnerability = data

@@ -24,7 +24,7 @@ from fiat.model.meta import (
     get_run_meta,
     get_vulnerability_meta,
 )
-from fiat.model.util import create_2d_windows
+from fiat.model.util import apply_constants, create_2d_windows
 from fiat.open import open_grid
 from fiat.settings import GridSettings
 from fiat.util import (
@@ -85,9 +85,8 @@ class GridModel(BaseModel):
         file = self.settings.exposure.file
         kwargs = self.settings.exposure.settings.model_dump(exclude_none=True)
 
-        # Read the file, the variable specifications from the settings applied
         logger.info(f"Reading exposure grid ('{file.name}')")
-        data = open_grid(file, specs=self.settings.exposure.specs(), **kwargs)
+        data = open_grid(file, **kwargs)
         ## checks
         logger.info("Executing exposure data checks...")
 
@@ -107,6 +106,9 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             _resalg = self.settings.exposure.resalg
             data = grid.reproject(data, self.crs.to_wkt(), _resalg)
 
+        # Check the listed variables and add the constant layers
+        apply_constants(data, self.settings.exposure.variables)
+
         ## When all is done, add it
         self._exposure = data
 
@@ -125,25 +127,35 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         )
 
         # Check for equal hazard and exposure grids
-        self._hazard, self._exposure = equal_grid(
+        hazard, exposure = equal_grid(
             self.hazard,
             self.exposure,
             base=self.settings.grid.base,
         )
+        # A reprojected dataset is a new reader, add the constant layers again
+        if hazard is not self.hazard:
+            apply_constants(hazard, self.settings.hazard.variables)
+        if exposure is not self.exposure:
+            apply_constants(exposure, self.settings.exposure.variables)
+        self._hazard, self._exposure = hazard, exposure
 
         # Setup the basic metadata
         run_meta = get_run_meta(
             cell_size=self.hazard.get_attr_lazy("area_sqm") or 1.0,
             risk=self.risk,
         )
-        # The linked datasets from the exposure data, i.e. settings and attributes
-        default = self.settings.exposure.vulnerability
+        # The datasets linked by the exposure variables
         vulnerability_meta = get_vulnerability_meta(
             self.vulnerability,
-            names=get_exposure_grid_datasets(self.exposure, default=default),
+            self.settings.vulnerability.variables,
+            names=get_exposure_grid_datasets(
+                self.exposure,
+                self.settings.exposure.variables,
+            ),
         )
         hazard_meta = get_hazard_meta(
             self.hazard,
+            self.settings.hazard.variables,
             risk=run_meta.risk,
             method_types=get_method_types(vulnerability_meta),
         )
@@ -151,10 +163,10 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         # Get the exposure meta
         exposure_meta = get_exposure_grid_meta(
             self.exposure,
+            self.settings.exposure.variables,
             run_meta=run_meta,
             hazard_meta=hazard_meta,
             vulnerability_meta=vulnerability_meta,
-            default=default,
         )
 
         # The tile size is also the parallel write granularity. Default to a

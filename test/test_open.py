@@ -2,17 +2,13 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from pyproj.crs import CRS
 
 from fiat.driver import (
     FlatGeobufReader,
-    GeotiffReader,
     NetcdfReader,
-    VariableSpec,
 )
 from fiat.driver.csv import Table
-from fiat.driver.geotiff import GeotiffWriter
-from fiat.error import DriverNotFoundError, FIATDataError
+from fiat.error import DriverNotFoundError
 from fiat.open import open_csv, open_geom, open_grid
 
 
@@ -174,27 +170,3 @@ def test_open_grid_write(tmp_path: Path):
     # Assert some simple stuff
     assert ds.closed is False
     assert ds.src is not None
-
-
-def test_open_grid_geotiff_specs(tmp_path: Path):
-    # Write a tiny GeoTIFF to open
-    p = Path(tmp_path, "tmp.tif")
-    w = GeotiffWriter(p)
-    w.create_spatial_dims(np.array([1.5, 0.5]), np.array([0.5, 1.5]))
-    w.set_spatial_ref(CRS.from_user_input("EPSG:4326"))
-    w.create_spatial_variable("band1")
-    w.variables["band1"].set(np.ones((2, 2), dtype="f4"), origin=(0, 0))
-    w.close()
-
-    # No or empty specifications are ignored
-    for specs in (None, {}):
-        ds = open_grid(p, specs=specs)
-        assert isinstance(ds, GeotiffReader)
-        ds.close()
-
-    # Non empty specifications are not supported for GeoTIFF
-    with pytest.raises(
-        FIATDataError,
-        match="only supported for NetCDF files",
-    ):
-        _ = open_grid(p, specs={"band1": VariableSpec(attrs={"type": "water_depth"})})

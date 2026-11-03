@@ -161,6 +161,18 @@ exceeds machine thread count ('{max_threads}')"
         return value
 
     @model_validator(mode="after")
+    def validate_hazard_rp(self):
+        """Validate that all hazard variables have a return period for risk."""
+        if self.risk:
+            missing = [item.name for item in self.hazard.variables if item.rp is None]
+            if missing:
+                raise ValueError(
+                    f"Return period (rp) required for hazard variable(s) {missing} \
+in a risk calculation"
+                )
+        return self
+
+    @model_validator(mode="after")
     def set_settings_context(self, info: ValidationInfo):
         self._context = info.context or DEFAULT_CONTEXT
         return self

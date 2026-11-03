@@ -43,16 +43,16 @@ def test_basemodel_general_properties(model_settings: Callable[[str], GeomSettin
 
 def test_basemodel_risk(model_settings: Callable[[str], GeomSettings]):
     # Create the object
-    m = BaseModel(model_settings("geom_event.toml"))
+    m = BaseModel(model_settings("geom_risk.toml"))
     # Assert the current state
-    assert not m.risk
+    assert m.risk
 
     # Set the mode
-    m.risk = True
+    m.risk = False
 
     # Assert the state
-    assert m.risk
-    assert m.settings.risk
+    assert not m.risk
+    assert not m.settings.risk
     m.close()
 
 
@@ -82,14 +82,13 @@ def test_basemodel_read_hazard(model_settings: Callable[[str], GeomSettings]):
     m.close()
 
 
-def test_basemodel_read_hazard_specs(model_settings: Callable[[str], GridSettings]):
+def test_basemodel_read_hazard_constants(model_settings: Callable[[str], GridSettings]):
     # Create the object, the settings define a uniform duration layer
     m = BaseModel(model_settings("grid_uniform.toml"))
 
     # Assert the state
     assert m.hazard.names == ["data", "duration"]
     assert isinstance(m.hazard.variables["duration"], ConstantVariable)
-    assert m.hazard.variables["duration"].get_attr("type") == "duration"
     m.close()
 
 
@@ -137,19 +136,15 @@ def test_basemodel_read_vulnerability(model_settings: Callable[[str], GeomSettin
     m.close()
 
 
-def test_basemodel_read_vulnerability_specs(
+def test_basemodel_read_vulnerability_variables(
     model_settings: Callable[[str], GridSettings],
 ):
-    # Create the object, the settings override the method and the axis types
+    # Create the object, the settings list the datasets that are used
     m = BaseModel(model_settings("grid_override.toml"))
 
     # Assert the state
-    var = m.vulnerability.variables["default_2d"]
-    assert var.get_attr("method") == "flood.depth_duration_2d"
-    assert var.get_attr("types") == {
-        "depth_default_2d": "water_depth",
-        "duration_default_2d": "duration",
-    }
+    assert [item.name for item in m.settings.vulnerability.variables] == ["default_2d"]
+    assert "default_2d" in m.vulnerability.names
     m.close()
 
 
@@ -183,6 +178,6 @@ def test_basemodel_missing_variable(
     with pytest.raises(FIATDataError, match="nope"):
         BaseModel(model_settings("grid_missing_variable.toml"))
 
-    # Assert the vulnerability data that had been read is closed
-    assert len(opened) == 1
-    assert opened[0].closed
+    # Assert the vulnerability and hazard data that had been read are closed
+    assert len(opened) == 2
+    assert all(item.closed for item in opened)

@@ -284,8 +284,20 @@ def mp_queue() -> Queue:
 @pytest.fixture
 def settings_dummy() -> dict[str, Any]:
     return {
-        "hazard": {"file": "event_map.nc"},
-        "vulnerability": {"file": "curves.nc"},
+        "hazard": {
+            "file": "event_map.nc",
+            "variables": [{"name": "data", "type": "water_depth"}],
+        },
+        "vulnerability": {
+            "file": "curves.nc",
+            "variables": [
+                {
+                    "name": "default",
+                    "method": "flood.depth",
+                    "types": {"depth_default": "water_depth"},
+                }
+            ],
+        },
     }
 
 

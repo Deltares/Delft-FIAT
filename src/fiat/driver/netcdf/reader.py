@@ -1,36 +1,17 @@
 """NetCDF reader."""
 
 import weakref
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 import netCDF4 as nc4
 import numpy as np
 
 from fiat.driver.raster import GridProfile
-from fiat.error import FIATDataError
 
-__all__ = ["ConstantVariable", "NetcdfReader", "NetcdfVariable", "VariableSpec"]
+__all__ = ["ConstantVariable", "NetcdfReader", "NetcdfVariable"]
 
 YDIMS = ["y", "lat", "latitude"]
 XDIMS = ["x", "lon", "long", "longitude"]
-
-
-@dataclass
-class VariableSpec:
-    """Specification of a variable from the settings.
-
-    Parameters
-    ----------
-    attrs : dict[str, Any], optional
-        Attributes overriding those of the variable in the file.
-    value : float | None, optional
-        Constant value of a uniform layer that is not in the file, by default None.
-    """
-
-    attrs: dict[str, Any] = field(default_factory=dict)
-    value: float | None = None
 
 
 def check_state(m):
@@ -55,7 +36,6 @@ class NetcdfVariable:
         # Attributes
         self._dims: list[str] = None
         self._nodata: float | None = None
-        self._overrides: dict[str, Any] = {}
         self._spatial: bool = False
 
         # Held data in memory
@@ -95,7 +75,6 @@ class NetcdfVariable:
         obj._obj_ref = weakref.ref(ref, obj._cleanup)
         obj._obj = var
         obj._nodata = None
-        obj._overrides = {}
         obj._data = None
 
         obj._discover_attributes()
@@ -166,14 +145,10 @@ class NetcdfVariable:
     ## Get methods
     def get_attr(self, var: str):
         """Get an attribute from the netcdf variable."""
-        if var in self._overrides:
-            return self._overrides[var]
         return self._obj.getncattr(name=var)
 
     def get_attr_lazy(self, var: str):
         """Get an attribute in a forgiving manner."""
-        if var in self._overrides:
-            return self._overrides[var]
         return self._obj.__dict__.get(var, None)
 
     def has_as_dim(self, dim: str):
@@ -208,7 +183,6 @@ class ConstantVariable(NetcdfVariable):
         cls,
         name: str,
         value: float,
-        attrs: dict[str, Any],
         shape: tuple[int, int],
         dims: tuple[str, str] = ("y", "x"),
     ):
@@ -220,8 +194,6 @@ class ConstantVariable(NetcdfVariable):
             The name of the variable.
         value : float
             The constant value.
-        attrs : dict[str, Any]
-            The attributes of the variable.
         shape : tuple[int, int]
             The shape of the full grid as (ny, nx).
         dims : tuple[str, str], optional
@@ -234,7 +206,6 @@ class ConstantVariable(NetcdfVariable):
         obj._dims = tuple(dims)
         obj._name = name
         obj._nodata = None
-        obj._overrides = dict(attrs)
         obj._shape = tuple(shape)
         obj._spatial = True
         obj._value = value
@@ -280,15 +251,12 @@ class ConstantVariable(NetcdfVariable):
 
     ## Get methods
     def get_attr(self, var: str):
-        """Get an attribute from the variable specification."""
-        try:
-            return self._overrides[var]
-        except KeyError:
-            raise AttributeError(f"Attribute '{var}' not found for '{self._name}'")
+        """Raise, a constant variable has no attributes."""
+        raise AttributeError(f"Attribute '{var}' not found for '{self._name}'")
 
     def get_attr_lazy(self, var: str):
-        """Get an attribute in a forgiving manner."""
-        return self._overrides.get(var, None)
+        """Return None, a constant variable has no attributes."""
+        return None
 
     def has_as_dim(self, dim: str):
         """Return whether this var has a certain dimension."""
@@ -316,10 +284,6 @@ class NetcdfReader:
         By default None.
     mask : bool, optional
         Kept for API compatibility (netCDF4 auto-masking is disabled).
-    specs : dict[str, VariableSpec] | None, optional
-        Variable specifications from the settings. Their attributes override those
-        in the file and specifications with a value add constant spatial layers.
-        By default None.
     """
 
     def __init__(
@@ -327,7 +291,6 @@ class NetcdfReader:
         file: Path | str,
         crs: str | None = None,
         mask: bool = True,
-        specs: dict[str, VariableSpec] | None = None,
     ):
         # State and pathing
         self._closed = False
@@ -345,7 +308,6 @@ class NetcdfReader:
         # Attributes
         self._crs: str | None = crs
         self._mask: bool = mask
-        self._specs: dict[str, VariableSpec] = dict(specs or {})
         self._variables: list[NetcdfVariable] = []
         self.dims: dict[str, nc4.Variable] = {}
         self.profile: GridProfile | None = None
@@ -359,7 +321,6 @@ class NetcdfReader:
             self._discover_variables()
             self._discover_spatial_dims()
             self._discover_dims()
-            self._apply_specs()
         except BaseException:
             self.close()
             raise
@@ -380,53 +341,23 @@ class NetcdfReader:
         return iter(self._variables)
 
     def __reduce__(self):
-        return self.__class__, (
-            self.path,
-            self._crs,
-            self._mask,
-            self._specs,
-        )
+        # The constant layers are the only state that is not in the file
+        constants = [
+            item for item in self._variables if isinstance(item, ConstantVariable)
+        ]
+        return self.__class__, (self.path, self._crs, self._mask), constants
+
+    def __setstate__(self, constants: list["ConstantVariable"]):
+        for item in constants:
+            self._add_variable(item)
 
     def __repr__(self):
         return self.src.__repr__()
 
     # Internals
-    def _apply_specs(self) -> None:
-        """Apply the variable specifications to the variables."""
-        name = self.path.name
-        missing = [
-            var
-            for var, spec in self._specs.items()
-            if spec.value is None and var not in self.variables
-        ]
-        if missing:
-            raise FIATDataError(f"'{name}': variable(s) {missing} not found")
-
-        for var, spec in self._specs.items():
-            if spec.value is None:
-                self.variables[var]._overrides = dict(spec.attrs)
-                continue
-            # Constant layers
-            if var in self.variables:
-                raise FIATDataError(
-                    f"'{name}': variable '{var}' exists, can't define it by a value"
-                )
-            if "type" not in spec.attrs:
-                raise FIATDataError(
-                    f"'{name}': variable '{var}' defined by a value has no type"
-                )
-            if self.profile is None:
-                raise FIATDataError(
-                    f"'{name}': no spatial dimensions for variable '{var}' "
-                    "defined by a value"
-                )
-            self.variables[var] = ConstantVariable._create(
-                name=var,
-                value=spec.value,
-                attrs=spec.attrs,
-                shape=self.profile.shape,
-                dims=(self.ydim.name, self.xdim.name),
-            )
+    def _add_variable(self, var: NetcdfVariable) -> None:
+        """Add a variable to the reader."""
+        self.variables[var.name] = var
         self._variables = list(self.variables.values())
 
     def _discover_reference(self) -> None:
@@ -493,11 +424,6 @@ class NetcdfReader:
         return list(self.variables.keys())
 
     @property
-    def specs(self) -> dict[str, VariableSpec]:
-        """Return the variable specifications."""
-        return self._specs
-
-    @property
     @check_state
     def size(self) -> int:
         """Return the number of data variables."""
@@ -527,6 +453,25 @@ class NetcdfReader:
         """Load spatial variables into memory."""
         for var in self._variables:
             _ = var.load(*window)
+
+    def add_constant(self, name: str, value: float) -> None:
+        """Add a uniform spatial layer with a constant value.
+
+        Parameters
+        ----------
+        name : str
+            The name of the layer.
+        value : float
+            The constant value.
+        """
+        self._add_variable(
+            ConstantVariable._create(
+                name=name,
+                value=value,
+                shape=self.profile.shape,
+                dims=(self.ydim.name, self.xdim.name),
+            )
+        )
 
     ## Get methods
     def get_attr(self, var: str):

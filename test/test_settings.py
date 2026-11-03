@@ -41,13 +41,21 @@ def test_settings_exposure_geom(testdata_dir: Path):
         file=Path(testdata_dir, "exposure", "spatial.fgb"),
         area_method="area",
         zonal_method="min",
+        vulnerability="default",
     )
 
     _ = ExposureGeometry(
         file=Path(testdata_dir, "exposure", "spatial.fgb"),
         area_method="centroid",
         zonal_method="mean",
+        vulnerability="default",
     )
+
+
+def test_settings_exposure_geom_vulnerability_required(testdata_dir: Path):
+    # The link to the vulnerability dataset is required
+    with pytest.raises(ValidationError, match="vulnerability"):
+        _ = ExposureGeometry(file=Path(testdata_dir, "exposure", "spatial.fgb"))
 
 
 def test_settings_exposure_geom_fail_area(testdata_dir: Path):
@@ -57,7 +65,9 @@ def test_settings_exposure_geom_fail_area(testdata_dir: Path):
         match="1 validation error for ExposureGeometry\narea_method",
     ):
         _ = ExposureGeometry(
-            file=Path(testdata_dir, "exposure", "spatial.fgb"), area_method="foo"
+            file=Path(testdata_dir, "exposure", "spatial.fgb"),
+            area_method="foo",
+            vulnerability="default",
         )
 
 
@@ -68,7 +78,9 @@ def test_settings_exposure_geom_fail_zonal(testdata_dir: Path):
         match="1 validation error for ExposureGeometry\nzonal_method",
     ):
         _ = ExposureGeometry(
-            file=Path(testdata_dir, "exposure", "spatial.fgb"), zonal_method="foo"
+            file=Path(testdata_dir, "exposure", "spatial.fgb"),
+            zonal_method="foo",
+            vulnerability="default",
         )
 
 
@@ -181,7 +193,17 @@ def test_settings_base_from_toml(settings_files: Callable[[str], Path]):
 
 def test_settings_grid_output(testdata_dir: Path, settings_dummy: dict[str, Any]):
     settings_dummy["type"] = "grid"
-    settings_dummy["exposure"] = {"file": "exposure/spatial.nc"}
+    settings_dummy["exposure"] = {
+        "file": "exposure/spatial.nc",
+        "variables": [
+            {
+                "name": "exposure1",
+                "type": "default",
+                "fn_curve": "struct_1",
+                "vulnerability": "default",
+            }
+        ],
+    }
     # Load settings without specifying an output file
     settings = GridSettings.model_validate(
         settings_dummy,
@@ -236,9 +258,8 @@ def test_settings_variables_parse(settings_files: Callable[[str], Path]):
     settings = load_settings(settings_files("grid_multi_combined.toml"))
 
     # Assert the content
-    assert isinstance(settings.exposure.variables[0], ExposureGridVariable)
-    assert settings.exposure.variables[0].vulnerability == ["direct", "indirect"]
-    assert settings.exposure.vulnerability == "default"
+    assert isinstance(settings.exposure.variables[1], ExposureGridVariable)
+    assert settings.exposure.variables[1].vulnerability == ["direct", "indirect"]
     assert not hasattr(settings, "method")
 
 
@@ -267,8 +288,22 @@ def test_settings_exposure_variable_value_values():
         ExposureGridVariable(name="foo", type="other")
 
 
-def test_settings_specs(hazard_event_path: Path, vulnerability_path: Path):
-    # Hazard specs
+def test_settings_variable_required_fields(hazard_event_path: Path):
+    # A hazard variable needs a type
+    with pytest.raises(ValidationError, match="type"):
+        HazardVariable(name="data")
+
+    # A vulnerability variable needs a method and types
+    with pytest.raises(ValidationError, match="method"):
+        VulnerabilityVariable(name="default", types={"depth_default": "water_depth"})
+    with pytest.raises(ValidationError, match="types"):
+        VulnerabilityVariable(name="default", method="flood.depth")
+
+    # A default exposure layer needs a curve id
+    with pytest.raises(ValidationError, match="fn_curve"):
+        ExposureGridVariable(name="exposure1", type="default", vulnerability="default")
+
+    # The variables are as set
     hazard = Hazard(
         file=hazard_event_path,
         variables=[
@@ -276,51 +311,64 @@ def test_settings_specs(hazard_event_path: Path, vulnerability_path: Path):
             HazardVariable(name="data", type="water_depth"),
         ],
     )
-    specs = hazard.specs()
-    assert specs["d"].attrs == {"type": "duration", "rp": 10}
-    assert specs["d"].value == 3.0
-    assert specs["data"].attrs == {"type": "water_depth"}
-    assert specs["data"].value is None
+    assert hazard.variables[0].rp == 10
+    assert hazard.variables[0].value == 3.0
+    assert hazard.variables[1].rp is None
 
-    # Vulnerability specs
-    vulnerability = Vulnerability(
-        file=vulnerability_path,
-        variables=[
-            VulnerabilityVariable(
-                name="default",
-                method="flood.depth",
-                types={"depth_default": "water_depth"},
-            )
-        ],
+
+def test_settings_variables_required(
+    hazard_event_path: Path,
+    vulnerability_path: Path,
+    testdata_dir: Path,
+):
+    # The variables are required and can not be empty
+    for cls, file in (
+        (Hazard, hazard_event_path),
+        (Vulnerability, vulnerability_path),
+        (ExposureGrid, Path(testdata_dir, "exposure", "spatial.nc")),
+    ):
+        with pytest.raises(ValidationError, match="variables"):
+            cls(file=file)
+        with pytest.raises(ValidationError, match="variables"):
+            cls(file=file, variables=[])
+
+
+def test_settings_exposure_variable_type_required():
+    # The type is required and must be known
+    with pytest.raises(ValidationError, match="type"):
+        ExposureGridVariable(name="exposure_values", vulnerability="default")
+    var = ExposureGridVariable(
+        name="exposure_values", type="values", vulnerability="default"
     )
-    specs = vulnerability.specs()
-    assert specs["default"].attrs == {
-        "method": "flood.depth",
-        "types": {"depth_default": "water_depth"},
-    }
-    assert specs["default"].value is None
+    assert var.type == "values"
 
 
-def test_settings_specs_exposure(testdata_dir: Path):
-    # Exposure grid specs
-    exposure = ExposureGrid(
-        file=Path(testdata_dir, "exposure", "spatial.nc"),
-        vulnerability=["default", "default_2d"],
-        variables=[
-            ExposureGridVariable(
-                name="exposure3",
-                type="default",
-                fn_curve="struct_1",
-                vulnerability="default_2d",
-                value=1500.0,
-            )
-        ],
-    )
-    specs = exposure.specs()
-    assert exposure.vulnerability == ["default", "default_2d"]
-    assert specs["exposure3"].attrs == {
-        "type": "default",
-        "fn_curve": "struct_1",
-        "vulnerability": "default_2d",
-    }
-    assert specs["exposure3"].value == 1500.0
+def test_settings_exposure_variable_vulnerability():
+    # Required for the layers (default) and the category value variables
+    with pytest.raises(ValidationError, match="'vulnerability' is required"):
+        ExposureGridVariable(name="exposure1", type="default", fn_curve="struct_1")
+    with pytest.raises(ValidationError, match="'vulnerability' is required"):
+        ExposureGridVariable(name="exposure_values", type="values")
+
+    # Not applicable to the categorized layer itself
+    with pytest.raises(ValidationError, match="not allowed"):
+        ExposureGridVariable(
+            name="exposure", type="categorized", vulnerability="default"
+        )
+    ExposureGridVariable(name="exposure", type="categorized")
+
+
+def test_settings_risk_requires_rp(settings_files: Callable[[str], Path]):
+    # Load the risk settings and drop a return period from a hazard variable
+    settings = load_settings(settings_files("grid_risk.toml"))
+    data = settings.to_dict()
+    assert data["risk"]
+    del data["hazard"]["variables"][0]["rp"]
+
+    # Assert the validation error
+    with pytest.raises(ValidationError, match="Return period"):
+        GridSettings.model_validate(data, context=settings.context)
+
+    # Not needed for an event
+    data["risk"] = False
+    GridSettings.model_validate(data, context=settings.context)

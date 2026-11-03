@@ -6,8 +6,7 @@ import numpy as np
 import pytest
 from pyproj.crs import CRS
 
-from fiat.driver.netcdf import NetcdfReader, NetcdfWriter, VariableSpec
-from fiat.error import FIATDataError
+from fiat.driver.netcdf import NetcdfReader, NetcdfWriter
 from fiat.util import get_crs_repr
 
 
@@ -268,34 +267,31 @@ def test_netcdf_reduce(hazard_event_path: Path):
     assert obj.size == 1
 
 
-def test_reader_specs_override(hazard_event_path: Path):
-    # Open the dataset with an attribute override
-    ds = NetcdfReader(
-        hazard_event_path,
-        specs={"data": VariableSpec(attrs={"type": "duration"})},
-    )
-
-    # Assert the override
-    assert ds.variables["data"].get_attr("type") == "duration"
-    assert ds.variables["data"].get_attr_lazy("type") == "duration"
-    assert "data" in ds.specs
+def test_reader_attrs_from_file(hazard_event_path: Path):
+    # The attributes are those of the file
+    ds = NetcdfReader(hazard_event_path)
+    assert ds.variables["data"].get_attr("type") == "water_depth"
+    assert ds.variables["data"].get_attr_lazy("type") == "water_depth"
+    assert ds.variables["data"].get_attr_lazy("foo") is None
 
 
-def test_reader_specs_constant(hazard_event_path: Path):
-    # Open the dataset with a constant layer
-    ds = NetcdfReader(
-        hazard_event_path,
-        specs={"dur": VariableSpec(attrs={"type": "duration"}, value=3.0)},
-    )
+def test_reader_add_constant(hazard_event_path: Path):
+    # Add a constant layer
+    ds = NetcdfReader(hazard_event_path)
+    ds.add_constant("dur", 3.0)
 
     # Assert the constant layer
     assert "dur" in ds.names
     assert ds.size == 2
+    assert ds[1] is ds.variables["dur"]
     var = ds.variables["dur"]
     assert var.is_spatial
     assert var.nodata is None
     assert var.dims == (ds.ydim.name, ds.xdim.name)
-    assert var.get_attr("type") == "duration"
+    # A constant layer has no attributes
+    assert var.get_attr_lazy("type") is None
+    with pytest.raises(AttributeError):
+        var.get_attr("type")
     assert not var.has_as_dim("y")
     np.testing.assert_array_equal(
         var.load(slice(0, 2), slice(0, 3)),
@@ -305,83 +301,16 @@ def test_reader_specs_constant(hazard_event_path: Path):
     assert var.load().dtype == np.float32
 
 
-def test_reader_specs_missing(hazard_event_path: Path):
-    # A spec on an unknown variable without a value
-    with pytest.raises(FIATDataError, match="not found"):
-        NetcdfReader(
-            hazard_event_path,
-            specs={"foo": VariableSpec(attrs={"type": "water_depth"})},
-        )
-
-
-def test_reader_specs_value_existing(hazard_event_path: Path):
-    # A spec with a value on an existing variable
-    with pytest.raises(FIATDataError):
-        NetcdfReader(
-            hazard_event_path,
-            specs={"data": VariableSpec(attrs={"type": "water_depth"}, value=1.0)},
-        )
-
-
-def test_reader_specs_value_no_type(hazard_event_path: Path):
-    # A spec with a value but without a type
-    with pytest.raises(FIATDataError):
-        NetcdfReader(
-            hazard_event_path,
-            specs={"dur": VariableSpec(value=3.0)},
-        )
-
-
-def test_reader_specs_error_closes(
-    monkeypatch: pytest.MonkeyPatch,
-    hazard_event_path: Path,
-):
-    # Keep track of the opened netcdf dataset
-    opened = []
-    dataset = nc4.Dataset
-
-    def _dataset(*args, **kwargs):
-        opened.append(dataset(*args, **kwargs))
-        return opened[-1]
-
-    monkeypatch.setattr(nc4, "Dataset", _dataset)
-
-    # A failing spec validation closes the dataset before raising
-    with pytest.raises(FIATDataError, match="not found"):
-        NetcdfReader(
-            hazard_event_path,
-            specs={"foo": VariableSpec(attrs={"type": "water_depth"})},
-        )
-    assert len(opened) == 1
-    assert not opened[0].isopen()
-
-
-def test_reader_specs_value_no_spatial(vulnerability_path: Path):
-    # A spec with a value on a dataset without spatial dimensions
-    with pytest.raises(FIATDataError):
-        NetcdfReader(
-            vulnerability_path,
-            specs={"dur": VariableSpec(attrs={"type": "duration"}, value=3.0)},
-        )
-
-
-def test_reader_specs_pickle(hazard_event_path: Path):
-    # Open the dataset with an override and a constant layer
-    ds = NetcdfReader(
-        hazard_event_path,
-        specs={
-            "data": VariableSpec(attrs={"type": "water_depth"}),
-            "dur": VariableSpec(attrs={"type": "duration"}, value=3.0),
-        },
-    )
+def test_reader_pickle_keeps_constants(hazard_event_path: Path):
+    # Open the dataset with a constant layer
+    ds = NetcdfReader(hazard_event_path)
+    ds.add_constant("dur", 3.0)
 
     # Rebuild using pickle
     obj = pickle.loads(pickle.dumps(ds))
 
-    # Assert the specs survived
+    # Assert the constant layer survived
     assert obj.names == ["data", "dur"]
-    assert obj.variables["data"].get_attr("type") == "water_depth"
-    assert obj.variables["dur"].get_attr("type") == "duration"
     np.testing.assert_array_equal(
         obj.variables["dur"].load(slice(0, 2), slice(0, 2)),
         np.full((2, 2), 3.0),
