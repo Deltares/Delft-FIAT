@@ -36,7 +36,7 @@ jobs:
 
       - name: Upload coverage
         if: inputs.os == 'ubuntu-latest' && inputs.python-version == '314'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: code-coverage
           path: coverage.xml
