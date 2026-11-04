@@ -5,9 +5,16 @@ import pytest
 from pydantic import ValidationError
 
 from fiat.log import Logger
-from fiat.settings import BaseSettings, GeomSettings, GridSettings, load_settings
+from fiat.settings import (
+    CURRENT_FORMAT_VERSION,
+    BaseSettings,
+    GeomSettings,
+    GridSettings,
+    load_settings,
+)
 from fiat.settings.exposure import ExposureGeometry, ExposureGrid
 from fiat.settings.file import FileContext, InputFileModel
+from fiat.settings.upgrade import SUPPORTED_UPGRADES, upgrade_to_latest
 from fiat.util import FLOOD_DEPTH
 
 
@@ -223,3 +230,125 @@ def test_settings_load_settings_error(tmp_path: Path):
         match=f"{Path(tmp_path, 'foo.toml').as_posix()} is not a valid file",
     ):
         _ = load_settings(filename=Path(tmp_path, "foo.toml"))
+def test_settings_base_format_version_current(
+    testdata_dir: Path, settings_dummy: dict[str, Any]
+):
+    settings_dummy["format_version"] = CURRENT_FORMAT_VERSION
+    settings = BaseSettings.model_validate(
+        settings_dummy,
+        context=FileContext(config_dir=testdata_dir),
+    )
+    assert settings.format_version == CURRENT_FORMAT_VERSION
+
+
+def test_settings_base_format_version_missing(
+    caplog: Logger, testdata_dir: Path, settings_dummy: dict[str, Any]
+):
+    settings_dummy.pop("format_version", None)
+    settings = BaseSettings.model_validate(
+        settings_dummy,
+        context=FileContext(config_dir=testdata_dir),
+    )
+
+    # Treated as v0 and upgraded
+    assert settings.format_version == CURRENT_FORMAT_VERSION
+    assert "Format version not specified" in caplog.text
+    assert "Format version 0 is deprecated" in caplog.text
+
+
+def test_settings_base_format_version_v0_upgrade(
+    caplog: Logger, testdata_dir: Path, settings_dummy: dict[str, Any]
+):
+    settings_dummy["format_version"] = 0
+    settings = BaseSettings.model_validate(
+        settings_dummy,
+        context=FileContext(config_dir=testdata_dir),
+    )
+
+    assert settings.format_version == CURRENT_FORMAT_VERSION
+    assert "Format version 0 is deprecated" in caplog.text
+    assert "Format version not specified" not in caplog.text
+
+
+def test_settings_base_format_version_input_not_mutated(
+    testdata_dir: Path, settings_dummy: dict[str, Any]
+):
+    settings_dummy.pop("format_version", None)
+    before = dict(settings_dummy)
+    _ = BaseSettings.model_validate(
+        settings_dummy,
+        context=FileContext(config_dir=testdata_dir),
+    )
+    assert settings_dummy == before
+
+
+@pytest.mark.parametrize("version", [-1, 99])
+def test_settings_base_format_version_unsupported(
+    testdata_dir: Path, settings_dummy: dict[str, Any], version: int
+):
+    settings_dummy["format_version"] = version
+    with pytest.raises(
+        ValidationError,
+        match=f"Unsupported format version: {version}",
+    ):
+        _ = BaseSettings.model_validate(
+            settings_dummy,
+            context=FileContext(config_dir=testdata_dir),
+        )
+
+
+@pytest.mark.parametrize("version", ["1", 1.0, True])
+def test_settings_base_format_version_wrong_type(
+    testdata_dir: Path, settings_dummy: dict[str, Any], version: Any
+):
+    settings_dummy["format_version"] = version
+    with pytest.raises(ValidationError, match="Unsupported format version"):
+        _ = BaseSettings.model_validate(
+            settings_dummy,
+            context=FileContext(config_dir=testdata_dir),
+        )
+
+
+def test_settings_base_format_version_does_not_touch_threads(
+    testdata_dir: Path, settings_dummy: dict[str, Any]
+):
+    # Regression: the validator was once attached to `threads` by mistake
+    settings_dummy["threads"] = 2
+    settings = BaseSettings.model_validate(
+        settings_dummy,
+        context=FileContext(config_dir=testdata_dir),
+    )
+    assert settings.threads == 2
+
+
+def test_settings_base_format_version_to_dict(
+    testdata_dir: Path, settings_dummy: dict[str, Any]
+):
+    settings = BaseSettings.model_validate(
+        settings_dummy,
+        context=FileContext(config_dir=testdata_dir),
+    )
+    assert settings.to_dict()["format_version"] == CURRENT_FORMAT_VERSION
+
+
+def test_settings_base_format_version_update(
+    testdata_dir: Path, settings_dummy: dict[str, Any]
+):
+    settings = BaseSettings.model_validate(
+        settings_dummy,
+        context=FileContext(config_dir=testdata_dir),
+    )
+    with pytest.raises(ValidationError, match="Unsupported format version: 99"):
+        settings.update(format_version=99)
+
+
+def test_upgrade_to_latest_noop():
+    data = {"format_version": CURRENT_FORMAT_VERSION, "threads": 1}
+    assert upgrade_to_latest(data) == data
+
+
+def test_upgrade_to_latest_stuck(monkeypatch: pytest.MonkeyPatch):
+    # An upgrade function that doesn't advance the version must not loop forever
+    monkeypatch.setitem(SUPPORTED_UPGRADES, 0, lambda d: dict(d))
+    with pytest.raises(RuntimeError, match="did not advance"):
+        upgrade_to_latest({"format_version": 0})
