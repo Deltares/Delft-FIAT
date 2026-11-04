@@ -6,6 +6,7 @@ logger = spawn_logger(__name__)
 
 CURRENT_FORMAT_VERSION = 1
 
+
 def upgrade_settings_v0_to_v1(data: dict) -> dict:
     """Upgrade a copy of the settings dict from version 0 to version 1."""
     logger.warning(

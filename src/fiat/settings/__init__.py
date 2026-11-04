@@ -43,6 +43,7 @@ __all__ = ["GeomSettings", "GridSettings"]
 
 logger = spawn_logger(__name__)
 
+
 class ModelGeom(BaseModel):
     """Settings for the geometry based model."""
 
@@ -101,7 +102,7 @@ class BaseSettings(BaseModel):
         description=(
             "Method to use for the model. Can be either 'flood.depth' or"
             " 'flood.level'.",
-        )
+        ),
     )
 
     output_dir: Path = Field(

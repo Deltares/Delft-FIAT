@@ -230,6 +230,8 @@ def test_settings_load_settings_error(tmp_path: Path):
         match=f"{Path(tmp_path, 'foo.toml').as_posix()} is not a valid file",
     ):
         _ = load_settings(filename=Path(tmp_path, "foo.toml"))
+
+
 def test_settings_base_format_version_current(
     testdata_dir: Path, settings_dummy: dict[str, Any]
 ):
