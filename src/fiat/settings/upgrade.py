@@ -6,10 +6,17 @@ from fiat.log import spawn_logger
 
 logger = spawn_logger(__name__)
 
+__all__ = [
+    "CURRENT_FORMAT_VERSION", 
+    "SUPPORTED_UPGRADES", 
+    "SUPPORTED_VERSIONS", 
+    "upgrade_to_latest",
+]
+
 CURRENT_FORMAT_VERSION = 1
 
 
-def upgrade_settings_v0_to_v1(data: dict) -> dict:
+def _upgrade_settings_v0_to_v1(data: dict) -> dict:
     """Upgrade a copy of the settings dict from version 0 to version 1."""
     msg = (
         "Format version 0 is deprecated and support will be dropped "
@@ -22,7 +29,7 @@ def upgrade_settings_v0_to_v1(data: dict) -> dict:
 
 
 # <format_version before upgrade>: <upgrade_function>
-SUPPORTED_UPGRADES = {0: upgrade_settings_v0_to_v1}
+SUPPORTED_UPGRADES = {0: _upgrade_settings_v0_to_v1}
 SUPPORTED_VERSIONS = (*sorted(SUPPORTED_UPGRADES), CURRENT_FORMAT_VERSION)
 
 
