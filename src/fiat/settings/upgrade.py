@@ -7,9 +7,9 @@ from fiat.log import spawn_logger
 logger = spawn_logger(__name__)
 
 __all__ = [
-    "CURRENT_FORMAT_VERSION", 
-    "SUPPORTED_UPGRADES", 
-    "SUPPORTED_VERSIONS", 
+    "CURRENT_FORMAT_VERSION",
+    "SUPPORTED_UPGRADES",
+    "SUPPORTED_VERSIONS",
     "upgrade_to_latest",
 ]
 
