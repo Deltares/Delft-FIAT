@@ -1,5 +1,7 @@
 """Upgrade settings format to the latest version."""
 
+import warnings
+
 from fiat.log import spawn_logger
 
 logger = spawn_logger(__name__)
@@ -9,10 +11,12 @@ CURRENT_FORMAT_VERSION = 1
 
 def upgrade_settings_v0_to_v1(data: dict) -> dict:
     """Upgrade a copy of the settings dict from version 0 to version 1."""
-    logger.warning(
+    msg = (
         "Format version 0 is deprecated and support will be dropped "
         "in a future version."
     )
+    logger.warning(msg)
+    warnings.warn(msg, DeprecationWarning)
     # Perform any additional migration steps for version 0 to 1 here
     return {**data, "format_version": 1}
 
