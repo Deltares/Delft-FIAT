@@ -23,7 +23,6 @@ from fiat.check import (
     check_hazard_variables,
     check_vuln_axes,
     check_vuln_axis_types,
-    check_vuln_categories,
     check_vuln_curve_ids,
     check_vuln_grid_method,
     check_vuln_group,
@@ -676,14 +675,7 @@ def _grid_layers(
     exposure: NetcdfReader,
     variables: Sequence[ExposureGridVariable],
 ) -> list[tuple[int, int | None, list[str]]]:
-    """Return the calculation layers of the exposure grid with their datasets.
-
-    Every default layer is returned as (layer index, None, linked datasets); every
-    categorized layer once per category value variable as (layer index, value
-    variable index, linked datasets). The links are those of the layer (default)
-    or of the category value variable (categorized). The indices are those of the
-    exposure data, variables without settings are ignored.
-    """
+    """Return the calculation layers of the exposure grid with their datasets."""
     names = exposure.names
     settings = {item.name: item for item in variables}
     check_exp_variables(list(settings), names)
@@ -825,19 +817,13 @@ def get_exposure_grid_meta(
                 categories=categories,
             )
             categories = [var.value]
-        ids = _grid_category_ids(layer, categories)
-        for _, group in groups:
-            for ds in group:
-                check_vuln_categories(
-                    layer,
-                    categories=categories,
-                    dataset=ds.name,
-                    available=ds.curve_ids,
-                )
         for method_name, group in groups:
             units.append(
                 GridUnit(
-                    curves={cat: tuple(ds.fn[cat] for ds in group) for cat in ids},
+                    curves={
+                        int(cat): tuple(ds.fn[cat] for ds in group)
+                        for cat in group[0].curve_ids
+                    },
                     exp_index=idx,
                     hazard_indices=_hazard_indices(method_name, hazard_meta),
                     method=method_name,
