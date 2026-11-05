@@ -20,6 +20,7 @@ Here we provide an overview of all optional/ non essential settings that the use
 | **[[hazard.variables]]**                      |             |               |
 | [name, type, rp, value](#hazard.variables)    |             | -             |
 | **[[exposure]]** (geom)                       |             |               |
+| **[exposure.variables]** (geom)               |             |               |
 | [area_method](#exposure-geom)                 | string      | centroid      |
 | [impact_type](#exposure-geom)                 | list        | ['damage']    |
 | [zonal_method](#exposure-geom)                | string      | mean          |
@@ -92,11 +93,11 @@ See [vulnerability data](../data/vulnerability.qmd#settings).
 
 #### [exposure] (geom) {#exposure-geom}
 
-- `area_method`: The method of extracting hazard values based on the exposure geometry. Choose 'centroid' or 'area'.
+- `variables.area_method`: The method of extracting hazard values based on the exposure geometry. Choose 'centroid' or 'area'.
 
-- `impact_type`: Types of impact. This could be monetary damages ('damage'), affected people ('affected') etc.
+- `variables.impact_type`: Types of impact, a name or a list of names. This could be monetary damages ('damage'), affected people ('affected') etc.
 
-- `zonal_method`: The method of aggregating the hazard values of an asset when `area_method` is set to 'area'. Choose 'mean', 'max' or 'min'.
+- `variables.zonal_method`: The method of aggregating the hazard values of an asset when `area_method` is set to 'area'. Choose 'mean', 'max' or 'min'.
 
 - `settings.crs`: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.
 

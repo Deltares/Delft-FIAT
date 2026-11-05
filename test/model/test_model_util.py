@@ -10,7 +10,8 @@ from fiat.model.util import (
     create_2d_chunks,
     create_2d_windows,
 )
-from fiat.settings.variables import HazardVariable, VulnerabilityVariable
+from fiat.settings.hazard import HazardVariable
+from fiat.settings.vulnerability import VulnerabilityVariable
 
 
 def test_create_1d_chunks_few():

@@ -27,6 +27,7 @@ File paths in the settings can be relative to the settings.toml file or absolute
 | [file](#hazard)                | string  | Yes      |                 |
 | **[[exposure]]** (geom)        |         |          |                 |
 | [file](#exposure)              | string  | Yes      |                 |
+| **[exposure.variables]** (geom) |        |          |                 |
 | [vulnerability](#exposure)     | string  | Yes      |                 |
 | **[exposure]** (grid)          |         |          |                 |
 | [file](#exposure)              | string  | Yes      |                 |
@@ -51,7 +52,7 @@ File paths in the settings can be relative to the settings.toml file or absolute
 For the geometry model (`type = "geom"`), every geometry file gets its own `[[exposure]]` entry:
 
 - `file`: The path to the exposure vector file (recommended to be within the [exposure directory](../data/index.qmd)) with the [assets](../data/exposure/geometry.qmd).
-- `vulnerability`: The name of the (single) [vulnerability dataset](../data/vulnerability.qmd#linking-exposure-to-datasets) linked to this file.
+- `variables.vulnerability`: The name of the (single) [vulnerability dataset](../data/vulnerability.qmd#linking-exposure-to-datasets) linked to this file. The `[exposure.variables]` table of every entry is required.
 
 For the grid model (`type = "grid"`), there is a single `[exposure]` section:
 
@@ -82,6 +83,8 @@ file = "hazard/event_map.nc"
 
 [[exposure]]
 file = "exposure/buildings.fgb"
+
+[exposure.variables]
 vulnerability = "default"
 
 [vulnerability]

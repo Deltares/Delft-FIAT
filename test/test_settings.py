@@ -6,15 +6,15 @@ from pydantic import ValidationError
 
 from fiat.log import Logger
 from fiat.settings import BaseSettings, GeomSettings, GridSettings, load_settings
-from fiat.settings.exposure import ExposureGeometry, ExposureGrid
-from fiat.settings.file import FileContext, InputFileModel
-from fiat.settings.hazard import Hazard
-from fiat.settings.variables import (
+from fiat.settings.exposure import (
+    ExposureGeometry,
+    ExposureGeometryVariable,
+    ExposureGrid,
     ExposureGridVariable,
-    HazardVariable,
-    VulnerabilityVariable,
 )
-from fiat.settings.vulnerability import Vulnerability
+from fiat.settings.file import FileContext, InputFileModel
+from fiat.settings.hazard import Hazard, HazardVariable
+from fiat.settings.vulnerability import Vulnerability, VulnerabilityVariable
 
 
 def test_settings_input_file(testdata_dir: Path):
@@ -39,49 +39,63 @@ def test_settings_exposure_geom(testdata_dir: Path):
     # Setup the exposure with valid input
     _ = ExposureGeometry(
         file=Path(testdata_dir, "exposure", "spatial.fgb"),
-        area_method="area",
-        zonal_method="min",
-        vulnerability="default",
+        variables=ExposureGeometryVariable(
+            area_method="area",
+            zonal_method="min",
+            vulnerability="default",
+        ),
     )
 
     _ = ExposureGeometry(
         file=Path(testdata_dir, "exposure", "spatial.fgb"),
-        area_method="centroid",
-        zonal_method="mean",
-        vulnerability="default",
+        variables=ExposureGeometryVariable(
+            area_method="centroid",
+            zonal_method="mean",
+            vulnerability="default",
+        ),
     )
 
 
-def test_settings_exposure_geom_vulnerability_required(testdata_dir: Path):
-    # The link to the vulnerability dataset is required
-    with pytest.raises(ValidationError, match="vulnerability"):
+def test_settings_exposure_geom_variables_required(testdata_dir: Path):
+    # The variables are required
+    with pytest.raises(ValidationError, match="variables"):
         _ = ExposureGeometry(file=Path(testdata_dir, "exposure", "spatial.fgb"))
 
 
-def test_settings_exposure_geom_fail_area(testdata_dir: Path):
+def test_settings_exposure_geom_vulnerability_required():
+    # The link to the vulnerability dataset is required
+    with pytest.raises(ValidationError, match="vulnerability"):
+        _ = ExposureGeometryVariable()
+
+
+def test_settings_exposure_geom_impact_type():
+    # A single impact type is turned into a list
+    var = ExposureGeometryVariable(impact_type="affected", vulnerability="default")
+    assert var.impact_type == ["affected"]
+
+    # A list is kept as is
+    var = ExposureGeometryVariable(
+        impact_type=["damage", "affected"], vulnerability="default"
+    )
+    assert var.impact_type == ["damage", "affected"]
+
+
+def test_settings_exposure_geom_fail_area():
     # Setup the exposure with invalid area method
     with pytest.raises(
         ValidationError,
-        match="1 validation error for ExposureGeometry\narea_method",
+        match="1 validation error for ExposureGeometryVariable\narea_method",
     ):
-        _ = ExposureGeometry(
-            file=Path(testdata_dir, "exposure", "spatial.fgb"),
-            area_method="foo",
-            vulnerability="default",
-        )
+        _ = ExposureGeometryVariable(area_method="foo", vulnerability="default")
 
 
-def test_settings_exposure_geom_fail_zonal(testdata_dir: Path):
+def test_settings_exposure_geom_fail_zonal():
     # Setup the exposure with invalid zonal method
     with pytest.raises(
         ValidationError,
-        match="1 validation error for ExposureGeometry\nzonal_method",
+        match="1 validation error for ExposureGeometryVariable\nzonal_method",
     ):
-        _ = ExposureGeometry(
-            file=Path(testdata_dir, "exposure", "spatial.fgb"),
-            zonal_method="foo",
-            vulnerability="default",
-        )
+        _ = ExposureGeometryVariable(zonal_method="foo", vulnerability="default")
 
 
 def test_settings_base(testdata_dir: Path, settings_dummy: dict[str, Any]):

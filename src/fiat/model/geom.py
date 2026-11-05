@@ -104,8 +104,9 @@ class GeomModel(BaseModel):
 
         # Move though the found paths
         for element in self.settings.exposure:
-            # Get the file path and the reading kwargs
+            # Get the file path, the variables and the reading kwargs
             file = element.file
+            variables = element.variables
             kwargs = element.settings.model_dump(exclude_none=True)
 
             # Read the file
@@ -133,12 +134,12 @@ class GeomModel(BaseModel):
             # Set the data
             self._exposure.set(
                 ExposureGeomData(
-                    area_method=element.area_method,
+                    area_method=variables.area_method,
                     data=data,
-                    impact_types=element.impact_type,
+                    impact_types=variables.impact_type,
                     path=file,
-                    vulnerability=element.vulnerability,
-                    zonal_method=element.zonal_method,
+                    vulnerability=variables.vulnerability,
+                    zonal_method=variables.zonal_method,
                 )
             )
 

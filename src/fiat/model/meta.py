@@ -36,11 +36,9 @@ from fiat.driver.netcdf.reader import ConstantVariable
 from fiat.error import FIATDataError
 from fiat.method.ead import fn_density
 from fiat.model.geom_util import discover_exp_columns, generate_output_columns
-from fiat.settings.variables import (
-    ExposureGridVariable,
-    HazardVariable,
-    VulnerabilityVariable,
-)
+from fiat.settings.exposure import ExposureGridVariable
+from fiat.settings.hazard import HazardVariable
+from fiat.settings.vulnerability import VulnerabilityVariable
 from fiat.util import (
     CATEGORIZED,
     CURVE,

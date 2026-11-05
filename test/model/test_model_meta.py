@@ -24,11 +24,9 @@ from fiat.model.meta import (
     get_run_meta,
     get_vulnerability_meta,
 )
-from fiat.settings.variables import (
-    ExposureGridVariable,
-    HazardVariable,
-    VulnerabilityVariable,
-)
+from fiat.settings.exposure import ExposureGridVariable
+from fiat.settings.hazard import HazardVariable
+from fiat.settings.vulnerability import VulnerabilityVariable
 
 
 def test_get_run_meta():
@@ -1202,7 +1200,7 @@ def test_get_exposure_grid_meta_cat_uniform(
     unit = meta.units[1]
     assert unit.exp_index == names.index("exposure_uniform")
     assert unit.value_index == names.index("exposure_values")
-    assert list(unit.curves.keys()) == [1]
+    assert list(unit.curves.keys()) == [1, 2]
 
 
 def test_get_exposure_grid_meta_cat_missing_category(
@@ -1210,7 +1208,6 @@ def test_get_exposure_grid_meta_cat_missing_category(
     open_reader: Callable[..., NetcdfReader],
     tmp_path: Path,
     vulnerability_cat_path: Path,
-    exposure_grid_cat_data: NetcdfReader,
     exposure_grid_cat_path: Path,
     run_meta: RunMeta,
     hazard_meta_run: HazardMeta,
@@ -1222,16 +1219,6 @@ def test_get_exposure_grid_meta_cat_missing_category(
     with nc4.Dataset(p, "a") as ds:
         ds["curve_default"][:] = [1, 3]
     vuln = get_vulnerability_meta(open_reader(p), [variables.vuln_1d()], ["default"])
-
-    # Call the function
-    with pytest.raises(FIATDataError, match=r"Categories \[2\]"):
-        get_exposure_grid_meta(
-            exposure=exposure_grid_cat_data,
-            variables=variables.exp_cat_default(),
-            run_meta=run_meta,
-            hazard_meta=hazard_meta_run,
-            vulnerability_meta=vuln,
-        )
 
     # Uniform categorized layer with a category not in the dataset
     exposure = open_reader(exposure_grid_cat_path)

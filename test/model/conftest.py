@@ -21,11 +21,9 @@ from fiat.model.meta import (
     get_vulnerability_meta,
 )
 from fiat.open import open_geom
-from fiat.settings.variables import (
-    ExposureGridVariable,
-    HazardVariable,
-    VulnerabilityVariable,
-)
+from fiat.settings.exposure import ExposureGridVariable
+from fiat.settings.hazard import HazardVariable
+from fiat.settings.vulnerability import VulnerabilityVariable
 from fiat.util import DEFAULT
 
 

@@ -470,8 +470,7 @@ def create_settings_geom():
         "exposure": [
             {
                 "file": "exposure/spatial.fgb",
-                "area_method": "area",
-                "vulnerability": "default",
+                "variables": {"area_method": "area", "vulnerability": "default"},
                 "settings": {
                     "crs": "EPSG:4326",
                 },
@@ -488,7 +487,7 @@ def create_settings_geom():
     doc2g["output_dir"] = "output/geom_event_2g"
     doc2g["output"].append({"file": "spatial2.fgb"})
     doc2g["exposure"].append(
-        {"file": "exposure/spatial2.fgb", "vulnerability": "default"}
+        {"file": "exposure/spatial2.fgb", "variables": {"vulnerability": "default"}}
     )
 
     with open(Path(p, "geom_event_2g.toml"), "w") as f:
@@ -517,7 +516,7 @@ def create_settings_geom():
     doc_r2g["output_dir"] = "output/geom_risk_2g"
     doc_r2g["output"].append({"file": "spatial2.fgb"})
     doc_r2g["exposure"].append(
-        {"file": "exposure/spatial2.fgb", "vulnerability": "default"}
+        {"file": "exposure/spatial2.fgb", "variables": {"vulnerability": "default"}}
     )
 
     with open(Path(p, "geom_risk_2g.toml"), "w") as f:
@@ -747,8 +746,7 @@ def create_settings_multi():
     doc_g["exposure"] = [
         {
             "file": "exposure/spatial.fgb",
-            "area_method": "area",
-            "vulnerability": "default_2d",
+            "variables": {"area_method": "area", "vulnerability": "default_2d"},
             "settings": {
                 "crs": "EPSG:4326",
             },
@@ -764,7 +762,7 @@ def create_settings_multi():
     doc["hazard"]["variables"] = haz_risk_duration()
     doc["output"] = [{"file": "spatial_types.fgb"}]
     doc["exposure"][0]["file"] = "exposure/spatial_types.fgb"
-    doc["exposure"][0]["impact_type"] = ["damage", "affected"]
+    doc["exposure"][0]["variables"]["impact_type"] = ["damage", "affected"]
     dump(doc, "geom_2d_risk")
 
     # Geometry, uniform hazard layer

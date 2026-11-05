@@ -24,7 +24,7 @@ from fiat.model.meta import (
     get_hazard_meta,
 )
 from fiat.open import open_geom
-from fiat.settings.variables import HazardVariable
+from fiat.settings.hazard import HazardVariable
 
 
 def _feature_by_id(layer, object_id):

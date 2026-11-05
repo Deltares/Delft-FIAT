@@ -7,7 +7,7 @@ from pydantic import (
 )
 
 from fiat.settings.file import InputFileModel
-from fiat.settings.variables import HazardVariable
+from fiat.settings.variables import Variable
 
 __all__ = ["Hazard"]
 
@@ -23,17 +23,31 @@ class HazardSettings(BaseModel):
     )
 
 
+class HazardVariable(Variable):
+    """Settings for a variable (band) of the hazard dataset."""
+
+    rp: float | None = Field(
+        default=None,
+        description="The return period of the hazard band (required for risk).",
+    )
+
+    type: str = Field(
+        default=...,
+        description="The hazard type, e.g. 'water_depth' or 'duration'.",
+    )
+
+    value: float | None = Field(
+        default=None,
+        description="Constant value of a uniform layer that is not in the file.",
+    )
+
+
 class Hazard(InputFileModel):
     """Hazard settings for the FIAT model."""
 
     resalg: str = Field(
         default="nearest",
         description="Resampling method when reprojecting.",
-    )
-
-    rp: list[float] | None = Field(
-        default=None,
-        description="Return periods for the hazard values.",
     )
 
     settings: HazardSettings = Field(
