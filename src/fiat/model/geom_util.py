@@ -6,7 +6,7 @@ from itertools import product
 from pathlib import Path
 from typing import Any
 
-from fiat.driver.fgb import CT_FLOAT
+from fiat.driver.fgb import CT_DOUBLE
 from fiat.driver.vector import VectorProfile
 from fiat.gis import overlay
 from fiat.util import AREA, CENTROID, FN, MAX, TOTAL, re_filter
@@ -101,7 +101,7 @@ def set_finalizing_params(
         "name": Path(output_path).stem,
         "geom_type": profile.geom_type,
         "col_names": list(profile.fields) + list(exposure_meta.new),
-        "col_types": list(profile.dtypes) + [CT_FLOAT] * len(exposure_meta.new),
+        "col_types": list(profile.dtypes) + [CT_DOUBLE] * len(exposure_meta.new),
         "crs_wkt": profile.crs_wkt,
         "crs_org": profile.crs_org,
         "crs_code": profile.crs_code,
