@@ -2,7 +2,6 @@
 
 import copy
 import re
-from itertools import product
 from pathlib import Path
 from typing import Any
 
@@ -71,7 +70,24 @@ def generate_output_columns(
     hazard_ids: tuple | list,
     extra: tuple | list = [],
 ) -> list[str]:
-    """Generate the output columns."""
+    """Generate the output columns.
+
+    Parameters
+    ----------
+    columns : list
+        The hazard columns (per hazard identifier).
+    exposure_types : dict
+        The exposure column suffixes per impact type.
+    hazard_ids : tuple | list
+        The hazard identifiers.
+    extra : tuple | list, optional
+        Extra columns appended as-is (e.g. the ead columns), by default [].
+
+    Returns
+    -------
+    list[str]
+        The output column names.
+    """
     columns = copy.deepcopy(columns)
 
     # Loop over the exposure types
@@ -84,7 +100,7 @@ def generate_output_columns(
     for name in hazard_ids:
         add = [f"{item}_{name}" for item in columns]
         out += add
-    out += [f"{x}_{y}" for x, y in product(extra, exposure_types.keys())]
+    out += list(extra)
 
     # Return the output meta
     return out

@@ -8,7 +8,7 @@ import numpy as np
 
 from fiat.driver.raster import GridProfile
 
-__all__ = ["NetcdfReader", "NetcdfVariable"]
+__all__ = ["ConstantVariable", "NetcdfReader", "NetcdfVariable"]
 
 YDIMS = ["y", "lat", "latitude"]
 XDIMS = ["x", "lon", "long", "longitude"]
@@ -34,6 +34,7 @@ class NetcdfVariable:
         self._obj: nc4.Variable | None = None
 
         # Attributes
+        self._dims: list[str] = None
         self._nodata: float | None = None
         self._spatial: bool = False
 
@@ -55,6 +56,9 @@ class NetcdfVariable:
         self._obj = None
 
     def _discover_attributes(self):
+        # The dimensions
+        self._dims = self._obj.dimensions
+        # The nodata variable
         self._nodata = self._obj.__dict__.get("_FillValue")
         # Spatial flag
         yflag = not set(YDIMS).isdisjoint(self._obj.dimensions)
@@ -78,6 +82,11 @@ class NetcdfVariable:
         return obj
 
     ## Properties
+    @property
+    def dims(self) -> tuple[str, ...] | None:
+        """Return the dimensions of the variable."""
+        return self._dims
+
     @property
     def data(self) -> np.ndarray | None:
         """Return the in memory data."""
@@ -160,6 +169,109 @@ class NetcdfVariable:
         ] = data
 
 
+class ConstantVariable(NetcdfVariable):
+    """Uniform spatial layer with a constant value, not present in the file."""
+
+    def __repr__(self):
+        return (
+            f"<{self.__class__.__name__} '{self._name}' "
+            f"value={self._value} shape={self._shape}>"
+        )
+
+    @classmethod
+    def _create(
+        cls,
+        name: str,
+        value: float,
+        shape: tuple[int, int],
+        dims: tuple[str, str] = ("y", "x"),
+    ):
+        """Create a constant variable.
+
+        Parameters
+        ----------
+        name : str
+            The name of the variable.
+        value : float
+            The constant value.
+        shape : tuple[int, int]
+            The shape of the full grid as (ny, nx).
+        dims : tuple[str, str], optional
+            The names of the spatial dimensions as (ydim, xdim).
+        """
+        obj = NetcdfVariable.__new__(cls)
+        obj._obj_ref = None
+        obj._obj = None
+        obj._data = None
+        obj._dims = tuple(dims)
+        obj._name = name
+        obj._nodata = None
+        obj._shape = tuple(shape)
+        obj._spatial = True
+        obj._value = value
+        return obj
+
+    ## Properties
+    @property
+    def dtype(self) -> np.dtype:
+        """Return the data type of the variable."""
+        return np.dtype(np.float32)
+
+    @property
+    def name(self) -> str:
+        """Return the name of the variable."""
+        return self._name
+
+    @property
+    def value(self) -> float:
+        """Return the constant value."""
+        return self._value
+
+    ## I/O methods
+    def load(
+        self,
+        *window: tuple[slice, ...],
+    ) -> np.ndarray:
+        """Create a window of the constant layer in memory.
+
+        Parameters
+        ----------
+        window : tuple[slice, ...], optional
+            The window to create. When no extend is provided, the full grid is created.
+        """
+        shape = tuple(
+            len(range(*sl.indices(n)))
+            for sl, n in zip(
+                window + (slice(None),) * (len(self._shape) - len(window)),
+                self._shape,
+            )
+        )
+        self._data = np.full(shape, self._value, dtype=np.float32)
+        return self._data
+
+    ## Get methods
+    def get_attr(self, var: str):
+        """Raise, a constant variable has no attributes."""
+        raise AttributeError(f"Attribute '{var}' not found for '{self._name}'")
+
+    def get_attr_lazy(self, var: str):
+        """Return None, a constant variable has no attributes."""
+        return None
+
+    def has_as_dim(self, dim: str):
+        """Return whether this var has a certain dimension."""
+        return False
+
+    ## Mutating methods
+    def set(
+        self,
+        data: np.ndarray,
+        origin: tuple[float],
+    ):
+        """Not supported for a constant variable."""
+        raise ValueError(f"Can't set data of constant variable '{self._name}'")
+
+
 class NetcdfReader:
     """Read-only NetCDF grid driver.
 
@@ -195,15 +307,23 @@ class NetcdfReader:
 
         # Attributes
         self._crs: str | None = crs
+        self._mask: bool = mask
         self._variables: list[NetcdfVariable] = []
+        self.dims: dict[str, nc4.Variable] = {}
         self.profile: GridProfile | None = None
         self.reference: nc4.Variable | None = None
         self.xdim: nc4.Variable | None = None
         self.ydim: nc4.Variable | None = None
         self.variables: dict[str, NetcdfVariable] = {}
 
-        self._discover_variables()
-        self._discover_spatial_dims()
+        # Close the dataset when the discovery or validation fails
+        try:
+            self._discover_variables()
+            self._discover_spatial_dims()
+            self._discover_dims()
+        except BaseException:
+            self.close()
+            raise
 
     def __del__(self): ...
 
@@ -221,15 +341,25 @@ class NetcdfReader:
         return iter(self._variables)
 
     def __reduce__(self):
-        return self.__class__, (
-            self.path,
-            self._crs,
-        )
+        # The constant layers are the only state that is not in the file
+        constants = [
+            item for item in self._variables if isinstance(item, ConstantVariable)
+        ]
+        return self.__class__, (self.path, self._crs, self._mask), constants
+
+    def __setstate__(self, constants: list["ConstantVariable"]):
+        for item in constants:
+            self._add_variable(item)
 
     def __repr__(self):
         return self.src.__repr__()
 
     # Internals
+    def _add_variable(self, var: NetcdfVariable) -> None:
+        """Add a variable to the reader."""
+        self.variables[var.name] = var
+        self._variables = list(self.variables.values())
+
     def _discover_reference(self) -> None:
         """Discover the spatial reference variable."""
         try:
@@ -249,13 +379,23 @@ class NetcdfReader:
                 return None
         return self._crs
 
+    def _discover_dims(self) -> None:
+        """Discover non spatial dimensions."""
+        spatial_dims = [
+            item.name for item in [self.ydim, self.xdim] if item is not None
+        ]
+        for dim in self.src.dimensions:
+            if dim in spatial_dims:
+                continue
+            self.dims[dim] = self.src.variables[dim]
+
     def _discover_spatial_dims(self) -> None:
         """Discover the spatial dimensions of the dataset and build the profile."""
         try:
             yvar = next(item for item in YDIMS if item in self.src.dimensions)
             xvar = next(item for item in XDIMS if item in self.src.dimensions)
         except StopIteration:
-            raise ValueError("Couldn't derive the spatial dimensions")
+            return
 
         # Set data and metadata
         self.ydim = self.src.variables[yvar]
@@ -313,6 +453,25 @@ class NetcdfReader:
         """Load spatial variables into memory."""
         for var in self._variables:
             _ = var.load(*window)
+
+    def add_constant(self, name: str, value: float) -> None:
+        """Add a uniform spatial layer with a constant value.
+
+        Parameters
+        ----------
+        name : str
+            The name of the layer.
+        value : float
+            The constant value.
+        """
+        self._add_variable(
+            ConstantVariable._create(
+                name=name,
+                value=value,
+                shape=self.profile.shape,
+                dims=(self.ydim.name, self.xdim.name),
+            )
+        )
 
     ## Get methods
     def get_attr(self, var: str):

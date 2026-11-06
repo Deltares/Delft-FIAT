@@ -8,7 +8,7 @@ from pyproj import Transformer
 from pyproj.crs import CRS
 from scipy.interpolate import RegularGridInterpolator
 
-from fiat.driver import NetcdfReader, NetcdfWriter
+from fiat.driver import ConstantVariable, NetcdfReader, NetcdfWriter
 
 
 def transform_bounds(
@@ -199,8 +199,18 @@ def reproject(
 
     # Loop though the variables
     for var, var_obj in ds.variables.items():
+        # Constant layers are added again by the model
+        if isinstance(var_obj, ConstantVariable):
+            continue
         # Create the spatial data variable
         write_ds.create_spatial_variable(var)
+        # Copy the attributes, the writer manages the nodata and grid mapping
+        attrs = {
+            key: value
+            for key, value in ds.src.variables[var].__dict__.items()
+            if key not in ("_FillValue", "grid_mapping")
+        }
+        write_ds.src.variables[var].setncatts(attrs)
         # Get the data
         data = var_obj.load()
         data[data == var_obj.nodata] = np.nan

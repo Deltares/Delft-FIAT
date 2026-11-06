@@ -5,8 +5,8 @@ hottest numeric paths of the model workers. The public Python API of FIAT
 imports from here directly.
 """
 
-from ._interp import Interp1D
+from ._interp import Interp1D, InterpND
 from ._overlay import cell_mask, clip_masked
 from ._zonal import zonal_reduce
 
-__all__ = ["Interp1D", "cell_mask", "clip_masked", "zonal_reduce"]
+__all__ = ["Interp1D", "InterpND", "cell_mask", "clip_masked", "zonal_reduce"]

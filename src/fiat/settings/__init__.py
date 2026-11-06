@@ -22,7 +22,6 @@ from fiat.log.util import LogLevels
 from fiat.util import (
     EXPOSURE,
     FILE,
-    FLOOD_DEPTH,
     HAZARD,
     OUTPUT,
     generic_file_check,
@@ -82,12 +81,6 @@ class BaseSettings(BaseModel):
 
     # Model wide settings
     loglevel: str = Field(default="INFO", description="The logging level of FIAT.")
-
-    method: str = Field(
-        default=FLOOD_DEPTH,
-        description="Method to use for the model. \
-Can be either 'flood.depth' or 'flood.level'.",
-    )
 
     output_dir: Path = Field(
         default=Path("output"),
@@ -166,6 +159,18 @@ exceeds machine thread count ('{max_threads}')"
             )
             value = min(max_threads, value)
         return value
+
+    @model_validator(mode="after")
+    def validate_hazard_rp(self):
+        """Validate that all hazard variables have a return period for risk."""
+        if self.risk:
+            missing = [item.name for item in self.hazard.variables if item.rp is None]
+            if missing:
+                raise ValueError(
+                    f"Return period (rp) required for hazard variable(s) {missing} \
+in a risk calculation"
+                )
+        return self
 
     @model_validator(mode="after")
     def set_settings_context(self, info: ValidationInfo):

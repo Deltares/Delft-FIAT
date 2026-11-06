@@ -1,6 +1,5 @@
 """Base model of FIAT."""
 
-import importlib
 import tomllib
 from abc import ABCMeta, abstractmethod
 from multiprocessing import get_context
@@ -10,18 +9,16 @@ from pathlib import Path
 from pyproj.crs import CRS
 
 from fiat.check import (
-    check_duplicate_columns,
     check_internal_crs,
     check_vs_crs,
 )
-from fiat.driver import NetcdfReader, Table
+from fiat.driver import NetcdfReader
 from fiat.gis import grid
 from fiat.log import spawn_logger
-from fiat.open import open_csv, open_grid
+from fiat.model.util import apply_constants
+from fiat.open import open_grid
 from fiat.settings import GeomSettings, GridSettings
-from fiat.typing import MethodType
 from fiat.util import (
-    FIAT_METHOD,
     generic_directory_check,
     get_crs_repr,
 )
@@ -47,12 +44,7 @@ class BaseModel(metaclass=ABCMeta):
         ## Declarations
         # Model data
         self._hazard: NetcdfReader | None = None
-        self._vulnerability: Table | None = None
-
-        # Type of calculations
-        self._method: MethodType = importlib.import_module(
-            f"{FIAT_METHOD}.{self.settings.method}",
-        )
+        self._vulnerability: NetcdfReader | None = None
 
         # Threading stuff
         self.ctx = get_context("spawn")
@@ -60,8 +52,12 @@ class BaseModel(metaclass=ABCMeta):
 
         ## Call the necessary methods at init
         logger.info(f"Using number of threads: {self.settings.threads}")
-        self._read_vulnerability()
-        self._read_hazard()
+        try:
+            self._read_vulnerability()
+            self._read_hazard()
+        except BaseException:
+            self.close()
+            raise
 
     def __repr__(self):
         return f"<{self.__class__.__name__} object at {id(self):#018x}>"
@@ -93,11 +89,6 @@ class BaseModel(metaclass=ABCMeta):
     def hazard(self) -> NetcdfReader | None:
         """Return the hazard data."""
         return self._hazard
-
-    @property
-    def method(self) -> MethodType:
-        """Return the current method module."""
-        return self._method
 
     @property
     def risk(self) -> bool:
@@ -134,7 +125,7 @@ class BaseModel(metaclass=ABCMeta):
         return self.settings.type
 
     @property
-    def vulnerability(self) -> Table | None:
+    def vulnerability(self) -> NetcdfReader | None:
         """Return the vulnerability data."""
         return self._vulnerability
 
@@ -151,6 +142,13 @@ class BaseModel(metaclass=ABCMeta):
 
         return obj
 
+    ## I/O
+    def close(self) -> None:
+        """Close the model data."""
+        for data in (self._hazard, self._vulnerability):
+            if data is not None and not data.closed:
+                data.close()
+
     ## Read data methods
     def _read_hazard(self) -> None:
         """Read the hazard data."""
@@ -160,7 +158,6 @@ class BaseModel(metaclass=ABCMeta):
 
         # Get the kwargs from the model settings
         kwargs = self.settings.hazard.settings.model_dump(exclude_none=True)
-        # Read the data
         data = open_grid(file, **kwargs)
 
         # checks
@@ -191,6 +188,9 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
                 method=_resalg,
             )
 
+        # Check the listed variables and add the constant layers
+        apply_constants(data, self.settings.hazard.variables)
+
         # When all is done, add it
         self._hazard = data
 
@@ -200,16 +200,11 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         file = self.settings.vulnerability.file
         logger.info(f"Reading vulnerability curves ('{file.name}')")
 
-        # Get the kwargs from the model settings
-        kwargs = self.settings.vulnerability.settings.model_dump(exclude_none=True)
-        # Read the data
-        data = open_csv(file, **kwargs)
+        data = open_grid(file)
 
         ## checks
         logger.info("Executing vulnerability checks...")
-
-        # Column check
-        check_duplicate_columns(data.duplicate_columns)
+        apply_constants(data, self.settings.vulnerability.variables)
 
         # When all is done, add it
         self._vulnerability = data

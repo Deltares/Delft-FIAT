@@ -86,14 +86,12 @@ subset = <your-wanted-subdataset>
 
 ### Return periods
 
-The return periods can be set in the [settings file](../settings/optional.qmd#hazard) by supplying a list via
-the `hazard.return_periods` entry. However, the return periods can also be set via the hazard bands directly
-from the `return_period` attribute of the bands. This attribute is simply set using either [xarray](https://docs.xarray.dev/en/stable/),
- [gdal](https://gdal.org/api/python/raster_api.html) or [hydromt](https://deltares.github.io/hydromt/latest/).
+The return period of a band is set per band in the [settings file](../settings/optional.qmd#hazard.variables) with the `rp` entry
+of a `[[hazard.variables]]` entry (required for every band in a risk calculation), see [hazard settings](hazard.qmd#settings).
+An `rp` attribute of the band in the file is not read.
 
-When present in all bands, this attribute will be preferred over the return periods specified in the settings file.
-The reason being that the return period is directly linked to the corresponding band, whereas it is inferred in the
-case of setting it via the settings file.
+Every return period needs a band of every hazard type required by the [methods](vulnerability.qmd#methods)
+of the linked vulnerability datasets (e.g. a `water_depth` and a `flood_duration` band per return period).
 
 Let's have a quick peek at the data using [gdalinfo](https://gdal.org/programs/gdalinfo.html) (it will be at the bottom):
 
