@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Download source distribution
         uses: actions/download-artifact@v8
@@ -31,7 +31,7 @@ jobs:
           enableCrossOsArchive: true
 
       - name: Setup pixi env
-        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
+        uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e
         with:
           pixi-version: "v0.83.0"
           environments: wheel
@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Download source distribution
         uses: actions/download-artifact@v8
@@ -71,7 +71,7 @@ jobs:
           enableCrossOsArchive: true
 
       - name: Setup pixi env
-        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
+        uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e
         with:
           pixi-version: "v0.83.0"
           environments: wheel
@@ -95,7 +95,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Download source distribution
         uses: actions/download-artifact@v8
@@ -111,7 +111,7 @@ jobs:
           enableCrossOsArchive: true
 
       - name: Setup pixi env
-        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
+        uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e
         with:
           pixi-version: "v0.83.0"
           environments: wheel
