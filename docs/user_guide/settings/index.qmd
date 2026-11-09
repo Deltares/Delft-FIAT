@@ -21,109 +21,113 @@ File paths in the settings can be relative to the settings.toml file or absolute
 
 | Entry                          | Type    | Required | Default         |
 |:-------------------------------|---------|----------|-----------------|
-| **[model]**                    |         |          |                 |
-| [model](#type)                 | string  | No       | geom            |
-| **[output]**                   |         |          |                 |
-| [path](#output)                | string  | No       | output          |
-| **[output.csv]**               |         |          |                 |
-| [name[n]](#output.csv)         | string  | No       | -               |
-| **[output.geom]**              |         |          |                 |
-| [name[n]](#output.geom)        | string  | No       | spatial[n].gpkg |
-| **[output.grid]**              |         |          |                 |
-| [name](#output.grid)           | string  | No       | ead.nc          |
+| [type](#type)                  | string  | Yes      |                 |
+| [output_dir](#output_dir)      | string  | No       | output          |
 | **[hazard]**                   |         |          |                 |
 | [file](#hazard)                | string  | Yes      |                 |
-| **[exposure.csv]**             |         |          |                 |
-| [file](#exposure.csv)          | string  | No       | -               |
-| **[exposure.geom]**            |         |          |                 |
-| [file[n]](#exposure.geom)      | string  | Yes      |                 |
-| **[exposure.grid]**            |         |          |                 |
-| [file](#exposure.grid)         | string  | Yes      |                 |
+| **[[exposure]]** (geom)        |         |          |                 |
+| [file](#exposure)              | string  | Yes      |                 |
+| **[exposure.variables]** (geom) |        |          |                 |
+| [vulnerability](#exposure)     | string  | Yes      |                 |
+| **[exposure]** (grid)          |         |          |                 |
+| [file](#exposure)              | string  | Yes      |                 |
 | **[vulnerability]**            |         |          |                 |
 | [file](#vulnerability)         | string  | Yes      |                 |
 : Most basic settings file input {#tbl-toml .hover}
 
-#### [model]
+#### type
 
 - `type`: The type of model. Choice between 'geom' and 'grid'.
 
-#### [output]
+#### output_dir
 
-- `path`:  The path to the output directory in the working directory.
-
-#### [output.csv]
-
-- `name[n]`: The path to the output CSV file(s) that will be created. These are linked to the input geometry files.
-
-#### [output.geom]
-
-- `name[n]`: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.
-
-::: {.callout-warning}
-If provided, the suffix is mandatory. The suffix should match the suffix of the input geometry file for which it is set.
-:::
-
-#### [output.grid]
-
-- `name`: This sets the name and location of the output raster file that contains damages per grid cell.
+- `output_dir`: The path to the output directory.
 
 #### [hazard]
 
-- `file`: The file path to the hazard file.
+- `file`: The file path to the [hazard file](../data/hazard.qmd).
 
-#### [exposure.csv]
+#### [exposure]
 
-- `file`: The path to the exposure CSV file (recommended to be within the [exposure directory](../data/index.qmd)) that contains the [required information](../data/exposure.qmd) per asset. There can only be one exposure CSV file.
+For the geometry model (`type = "geom"`), every geometry file gets its own `[[exposure]]` entry:
 
-#### [exposure.geom]
+- `file`: The path to the exposure vector file (recommended to be within the [exposure directory](../data/index.qmd)) with the [assets](../data/exposure/geometry.qmd).
+- `variables.vulnerability`: The name of the (single) [vulnerability dataset](../data/vulnerability.qmd#linking-exposure-to-datasets) linked to this file. The `[exposure.variables]` table of every entry is required.
 
-- `file[n]`: The path to the exposure vector file (recommended to be within the [exposure directory](../data/index.qmd)) with the assets' geometry and object_id. The user can provide multiple vector files. Therefore the '[n]' suffix, as the user can create mulitple entries for vector files (e.g. `file1`, `file2` etc.).
+For the grid model (`type = "grid"`), there is a single `[exposure]` section:
 
-::: {.callout-warning}
-The suffix is mandatory. So if only one file is provided, name it `file1`.
-:::
-::: {.callout-note}
-Only required when running the geometry based model.
-:::
-
-#### [exposure.grid]
-
-- `file`: The path to the exposure raster file (recommended to be within the [exposure directory](../data/index.qmd)).
-
-::: {.callout-note}
-Only required when running the raster based model.
-:::
+- `file`: The path to the [exposure raster file](../data/exposure/grid.qmd) (recommended to be within the [exposure directory](../data/index.qmd)).
+The vulnerability dataset(s) of the layers are set per variable in the `[[exposure.variables]]` entries, see [grid exposure data](../data/exposure/grid.qmd#layers).
 
 #### [vulnerability]
 
-- `file`: The path to the vulnerability curves CSV file within the [vulnerability directory](../data/index.qmd) that contains the [damage curves](../data/vulnerability.qmd). Only one vulnerability curves file is allowed.
+- `file`: The path to the vulnerability NetCDF file within the [vulnerability directory](../data/index.qmd) that contains the [vulnerability datasets](../data/vulnerability.qmd). Only one vulnerability file is allowed.
+
+::: {.callout-note}
+The calculation method is set per vulnerability dataset (the `method` of the `[[vulnerability.variables]]` settings), see [methods](../data/vulnerability.qmd#methods). There is no global `method` setting.
+:::
+
+The variables (datasets, bands and layers) of the vulnerability, hazard and (gridded) exposure data can be further specified with `[[vulnerability.variables]]`, `[[hazard.variables]]` and `[[exposure.variables]]` entries, see the [optional input](optional.qmd#variables).
 
 ### Example
 
 An example of settings file for running a geometry model is given below:
 
 ```toml
-[model]
+type = "geom"
 risk = false
-
-[output]
-path = "output"
-
-[output.csv]
-name = "output.csv"
-
-[output.geom]
-name1 = "spatial.gpkg"
+output_dir = "output"
 
 [hazard]
-file = "hazard/SL_10yr_reprojected.tif"
+file = "hazard/event_map.nc"
 
-[exposure.geom]
-file1 = "./exposure/buildings.gpkg"
+[[exposure]]
+file = "exposure/buildings.fgb"
 
-[exposure.csv]
-file = "./exposure/exposure.csv"
+[exposure.variables]
+vulnerability = "default"
 
 [vulnerability]
-file = "./vulnerability/vulnerability_curves.csv"
+file = "vulnerability/curves.nc"
+```
+
+An example of settings file for running a grid model with combined depth and duration vulnerability datasets is given below:
+
+```toml
+type = "grid"
+risk = false
+output_dir = "output"
+
+[hazard]
+file = "hazard/event_map_duration.nc"
+
+[[hazard.variables]]
+name = "depth"
+type = "water_depth"
+
+[[hazard.variables]]
+name = "duration"
+type = "flood_duration"
+
+[exposure]
+file = "exposure/spatial.nc"
+
+[[exposure.variables]]
+name = "exposure2"
+type = "default"
+fn_curve = "struct_2"
+vulnerability = ["direct", "indirect"]
+
+[vulnerability]
+file = "vulnerability/curves_multi.nc"
+
+[[vulnerability.variables]]
+name = "direct"
+method = "flood.depth_duration"
+types = { depth_direct = "water_depth" }
+
+[[vulnerability.variables]]
+name = "indirect"
+method = "flood.depth_duration"
+types = { days_indirect = "flood_duration" }
 ```

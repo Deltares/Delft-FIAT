@@ -7,9 +7,9 @@ import pytest
 from fiat.driver.handler import FileBufferHandler
 
 
-def test_buffer_handler_basic(vulnerability_path: Path):
+def test_buffer_handler_basic(csv_path: Path):
     # Open the handler
-    h = FileBufferHandler(vulnerability_path)
+    h = FileBufferHandler(csv_path)
 
     # Assert some simple stuff
     assert h.nchar == b"\n"
@@ -27,9 +27,9 @@ def test_buffer_handler_basic(vulnerability_path: Path):
     assert h.stream.closed
 
 
-def test_buffer_handler_newline(vulnerability_win_path: Path):
+def test_buffer_handler_newline(csv_win_path: Path):
     # Open the handler
-    h = FileBufferHandler(vulnerability_win_path)
+    h = FileBufferHandler(csv_win_path)
 
     # Assert that the newline is windows like (not unix)
     assert h.nchar == b"\r\n"
@@ -40,9 +40,9 @@ def test_buffer_handler_newline(vulnerability_win_path: Path):
     assert line.startswith(b"#UNIT=meter")  # Part of the metadata
 
 
-def test_buffer_handler_newline_back(vulnerability_path: Path):
+def test_buffer_handler_newline_back(csv_path: Path):
     # Open the handler
-    h = FileBufferHandler(vulnerability_path)
+    h = FileBufferHandler(csv_path)
 
     # Bit of voodoo to remove the last newline char
     buffer = BytesIO()
@@ -59,9 +59,9 @@ def test_buffer_handler_newline_back(vulnerability_path: Path):
     assert h.size == 24
 
 
-def test_buffer_handler_context(vulnerability_path: Path):
+def test_buffer_handler_context(csv_path: Path):
     # Open the handler
-    h = FileBufferHandler(vulnerability_path)
+    h = FileBufferHandler(csv_path)
 
     # Open the handler via context manager
     with h as handler:
@@ -74,9 +74,9 @@ def test_buffer_handler_context(vulnerability_path: Path):
     assert h.stream.tell() == h.skip
 
 
-def test_buffer_handler_reduce(vulnerability_path: Path):
+def test_buffer_handler_reduce(csv_path: Path):
     # Open the handler
-    h = FileBufferHandler(vulnerability_path)
+    h = FileBufferHandler(csv_path)
 
     # Dump it to bytes
     dump = pickle.dumps(h)
@@ -91,9 +91,9 @@ def test_buffer_handler_reduce(vulnerability_path: Path):
     assert isinstance(obj, FileBufferHandler)
 
 
-def test_buffer_handler_errors(vulnerability_path: Path):
+def test_buffer_handler_errors(csv_path: Path):
     # Open the handler
-    h = FileBufferHandler(vulnerability_path)
+    h = FileBufferHandler(csv_path)
 
     # This part is a bit hacky, but direct setting of a stream is not supported
     buffer = BytesIO()

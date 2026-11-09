@@ -174,7 +174,7 @@ def test_netcdf_variable_is_spatial(exposure_grid_cat_path: Path):
     ds = NetcdfReader(exposure_grid_cat_path)
 
     # Assert the spatial flag
-    assert ds.names == ["exposure", "exposure_values"]
+    assert ds.names == ["exposure", "exposure_values", "exposure_values2"]
     assert ds.variables["exposure"].is_spatial
     assert not ds.variables["exposure_values"].is_spatial
 
@@ -265,3 +265,53 @@ def test_netcdf_reduce(hazard_event_path: Path):
     obj = pickle.loads(dump)
     # Number of bands should be the same
     assert obj.size == 1
+
+
+def test_reader_attrs_from_file(hazard_event_path: Path):
+    # The attributes are those of the file
+    ds = NetcdfReader(hazard_event_path)
+    assert ds.variables["data"].get_attr("type") == "water_depth"
+    assert ds.variables["data"].get_attr_lazy("type") == "water_depth"
+    assert ds.variables["data"].get_attr_lazy("foo") is None
+
+
+def test_reader_add_constant(hazard_event_path: Path):
+    # Add a constant layer
+    ds = NetcdfReader(hazard_event_path)
+    ds.add_constant("dur", 3.0)
+
+    # Assert the constant layer
+    assert "dur" in ds.names
+    assert ds.size == 2
+    assert ds[1] is ds.variables["dur"]
+    var = ds.variables["dur"]
+    assert var.is_spatial
+    assert var.nodata is None
+    assert var.dims == (ds.ydim.name, ds.xdim.name)
+    # A constant layer has no attributes
+    assert var.get_attr_lazy("type") is None
+    with pytest.raises(AttributeError):
+        var.get_attr("type")
+    assert not var.has_as_dim("y")
+    np.testing.assert_array_equal(
+        var.load(slice(0, 2), slice(0, 3)),
+        np.full((2, 3), 3.0),
+    )
+    assert var.load().shape == (10, 10)
+    assert var.load().dtype == np.float32
+
+
+def test_reader_pickle_keeps_constants(hazard_event_path: Path):
+    # Open the dataset with a constant layer
+    ds = NetcdfReader(hazard_event_path)
+    ds.add_constant("dur", 3.0)
+
+    # Rebuild using pickle
+    obj = pickle.loads(pickle.dumps(ds))
+
+    # Assert the constant layer survived
+    assert obj.names == ["data", "dur"]
+    np.testing.assert_array_equal(
+        obj.variables["dur"].load(slice(0, 2), slice(0, 2)),
+        np.full((2, 2), 3.0),
+    )

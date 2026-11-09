@@ -12,32 +12,32 @@ from fiat.error import DriverNotFoundError
 from fiat.open import open_csv, open_geom, open_grid
 
 
-def test_open_csv_default(vulnerability_path: Path):
+def test_open_csv_default(csv_path: Path):
     # Open the dataset
-    ds = open_csv(vulnerability_path)
+    ds = open_csv(csv_path)
 
     # Assert some simple stuff
     assert isinstance(ds, Table)
     assert isinstance(ds.data, np.ndarray)
 
 
-def test_open_csv_delimiter(vulnerability_path: Path):
+def test_open_csv_delimiter(csv_path: Path):
     # Open the dataset
-    ds = open_csv(vulnerability_path)
+    ds = open_csv(csv_path)
 
     # Assert the shape
     assert ds.shape == (21, 3)  # 5 rows and 6 columns
 
     # Select another delimiter (wrong one)
-    ds = open_csv(vulnerability_path, delimiter=";")
+    ds = open_csv(csv_path, delimiter=";")
 
     # Assert the shape
     assert ds.shape == (21, 1)  # No more columns as they can't be separated
 
 
-def test_open_csv_header(vulnerability_path: Path):
+def test_open_csv_header(csv_path: Path):
     # Open the dataset
-    ds = open_csv(vulnerability_path, header=True)  # Which is default
+    ds = open_csv(csv_path, header=True)  # Which is default
 
     # Assert the columns
     assert ds.columns == (
@@ -47,22 +47,22 @@ def test_open_csv_header(vulnerability_path: Path):
     )  # Very specific, but this should be True for this dataset
 
     # No header
-    ds = open_csv(vulnerability_path, header=False)
+    ds = open_csv(csv_path, header=False)
 
     # Assert the default columns
     assert ds.columns == ("col_0", "col_1", "col_2")
 
 
-def test_open_csv_index(vulnerability_path: Path):
+def test_open_csv_index(csv_path: Path):
     # Open the dataset
-    ds = open_csv(vulnerability_path, index=None)  # Which is default
+    ds = open_csv(csv_path, index=None)  # Which is default
 
     # Assert the index and name
     assert ds.index_name == "index"
     assert ds.index[:5] == (0, 1, 2, 3, 4)  # Default
 
     # Open with selected header
-    ds = open_csv(vulnerability_path, index="depth")
+    ds = open_csv(csv_path, index="depth")
 
     # Assert the new index
     assert ds.index_name == "depth"
