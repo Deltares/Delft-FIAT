@@ -110,7 +110,8 @@ class NetcdfWriter:
     def create_dim(
         self,
         dim: str,
-        size: int,
+        values: np.ndarray,
+        dtype: str = "f4",
     ) -> None:
         """Create a dimension.
 
@@ -118,10 +119,18 @@ class NetcdfWriter:
         ----------
         dim : str
             The name of the dimension.
-        size : int
-            The size of the dimension.
+        values : np.ndarray
+            The values of the dimension.
+        dtype : str, optional
+            The data type of the values.
         """
-        self.src.createDimension(dimname=dim, size=size)
+        self.src.createDimension(dimname=dim, size=len(values))
+        dimvar = self.src.createVariable(
+            varname=dim,
+            datatype=dtype,
+            dimensions=(dim,),
+        )
+        dimvar[:] = values
 
     @check_state
     def create_spatial_dims(
@@ -193,6 +202,65 @@ class NetcdfWriter:
         self._variables.append(dv)
 
     @check_state
+    def create_variable(
+        self,
+        var: str,
+        dims: tuple[str, ...],
+        dtype: str = "f4",
+        nodata: float = NODATA_VALUE,
+    ) -> None:
+        """Create a variable.
+
+        Compression is a dataset-wide setting fixed on the writer (see the
+        ``compression`` / ``complevel`` constructor arguments), not per variable.
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable.
+        dims : tuple[str]
+            The dimensions of the variable.
+        dtype : str, optional
+            The data type of the variable according to netCDF, by default "f4".
+        nodata : float, optional
+            The nodata value of the variable, by default -9999.
+        """
+        data = self.src.createVariable(
+            varname=var,
+            datatype=dtype,
+            dimensions=dims,
+            fill_value=nodata,
+            compression=self._compression,
+            complevel=self._complevel,
+        )
+        dv = NetcdfVariable._create(var=data, ref=self.src)
+        self.variables[var] = dv
+        self._variables.append(dv)
+
+    @check_state
+    def set_spatial_ref(
+        self,
+        crs: CRS,
+    ) -> None:
+        """Set the spatial reference system for the dataset.
+
+        Parameters
+        ----------
+        crs : CRS
+            The coordinate reference system (CRS) to set.
+        """
+        self.reference = self.src.createVariable("spatial_ref", datatype="i4")
+        self.reference.setncatts({"x_dim": self.xdim.name, "y_dim": self.ydim.name})
+        self.reference.setncatts(
+            {
+                "crs_wkt": crs.to_wkt(),
+                "spatial_ref": crs.to_wkt(),
+            }
+        )
+        if self.profile is not None:
+            self.profile.crs_wkt = crs.to_wkt()
+
+    @check_state
     def write_window(
         self,
         origin: tuple[int, int],
@@ -218,26 +286,3 @@ class NetcdfWriter:
             data = data[np.newaxis, ...]
         for i, dv in enumerate(self._variables):
             dv.set(data[i], origin=origin)
-
-    @check_state
-    def set_spatial_ref(
-        self,
-        crs: CRS,
-    ) -> None:
-        """Set the spatial reference system for the dataset.
-
-        Parameters
-        ----------
-        crs : CRS
-            The coordinate reference system (CRS) to set.
-        """
-        self.reference = self.src.createVariable("spatial_ref", datatype="i4")
-        self.reference.setncatts({"x_dim": self.xdim.name, "y_dim": self.ydim.name})
-        self.reference.setncatts(
-            {
-                "crs_wkt": crs.to_wkt(),
-                "spatial_ref": crs.to_wkt(),
-            }
-        )
-        if self.profile is not None:
-            self.profile.crs_wkt = crs.to_wkt()

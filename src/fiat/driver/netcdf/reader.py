@@ -60,6 +60,8 @@ class NetcdfVariable:
         self._dims = self._obj.dimensions
         # The nodata variable
         self._nodata = self._obj.__dict__.get("_FillValue")
+        if self._nodata is None:
+            raise AttributeError(f"'{self.name}' has no nodata value defined")
         # Spatial flag
         yflag = not set(YDIMS).isdisjoint(self._obj.dimensions)
         xflag = not set(XDIMS).isdisjoint(self._obj.dimensions)
