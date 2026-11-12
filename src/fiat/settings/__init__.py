@@ -19,6 +19,11 @@ from pydantic import (
 
 from fiat.log import spawn_logger
 from fiat.log.util import LogLevels
+from fiat.settings.upgrade import (
+    CURRENT_FORMAT_VERSION,
+    SUPPORTED_UPGRADES,
+    upgrade_to_latest,
+)
 from fiat.util import (
     EXPOSURE,
     FILE,
@@ -81,12 +86,23 @@ class BaseSettings(BaseModel):
     _context: FileContext = PrivateAttr()
 
     # Model wide settings
-    loglevel: str = Field(default="INFO", description="The logging level of FIAT.")
-
+    format_version: int = Field(
+        default=CURRENT_FORMAT_VERSION,
+        description=(
+            "The format version of the settings file. Supported "
+            f"versions: {sorted(SUPPORTED_UPGRADES) + [CURRENT_FORMAT_VERSION]}."
+        ),
+    )
+    loglevel: str = Field(
+        default="INFO",
+        description="The logging level of FIAT.",
+    )
     method: str = Field(
         default=FLOOD_DEPTH,
-        description="Method to use for the model. \
-Can be either 'flood.depth' or 'flood.level'.",
+        description=(
+            "Method to use for the model. Can be either 'flood.depth' or"
+            " 'flood.level'.",
+        ),
     )
 
     output_dir: Path = Field(
@@ -161,10 +177,31 @@ Can be either 'flood.depth' or 'flood.level'.",
         max_threads = cpu_count()
         if value > max_threads:
             logger.warning(
-                f"Given number of threads ('{value}') \
-exceeds machine thread count ('{max_threads}')"
+                f"Given number of threads ('{value}') exceeds machine thread count "
+                f"('{max_threads}')"
             )
             value = min(max_threads, value)
+        return value
+
+    @model_validator(mode="before")
+    @classmethod
+    def _migrate(cls, data):
+        if isinstance(data, dict):
+            if data.get("format_version") is None:
+                logger.warning("Format version not specified, assuming a v0 format.")
+                data = {**data, "format_version": 0}
+            data = upgrade_to_latest(data)
+        return data
+
+    @field_validator("format_version", mode="after")
+    @classmethod
+    def validate_format_version(cls, value: int):
+        """After migration only the current version is valid."""
+        if value != CURRENT_FORMAT_VERSION:
+            raise ValueError(
+                f"Unsupported format version: {value}. "
+                f"Expected format version {CURRENT_FORMAT_VERSION}."
+            )
         return value
 
     @model_validator(mode="after")
