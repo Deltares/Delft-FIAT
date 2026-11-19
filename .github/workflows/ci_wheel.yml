@@ -13,4 +13,4 @@ permissions:
 
 jobs:
   build:
-    uses: ./.github/workflows/wheel_build.yml
+    uses: ./.github/workflows/wheel.yml
