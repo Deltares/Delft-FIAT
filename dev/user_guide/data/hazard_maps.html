@@ -79,9 +79,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-47b5536657159bdd56a078fbbe5dc929.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-d4e3b393f4914232455420a91abd4844.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -536,7 +536,7 @@ Tip
 <p>Event maps are generally supplied in singular fashion (i.e.&nbsp;one band per event map). This band just simply contains the hazard values per cell. Let’s have a quick peek at the data:</p>
 <div class="columns">
 <div class="grid-output-scroll">
-<div id="0c87e02c" class="cell" data-execution_count="2">
+<div id="ddedb078" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <pre><code>&lt;class 'netCDF4.Dataset'&gt;
 root group (NETCDF4 data model, file format HDF5):
@@ -579,7 +579,7 @@ Note
 <p>Lets take a look quick look at the data:</p>
 <div class="columns">
 <div style="height: 400px; overflow: auto;">
-<div id="b03e3bcd" class="cell" data-execution_count="3">
+<div id="59ee5165" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-stdout">
 <pre><code>/bin/bash: line 1: gdalinfo: command not found</code></pre>
 </div>
@@ -614,12 +614,12 @@ Note
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">subset</span> <span class="op">=</span> <span class="er">&lt;</span><span class="dt">your-wanted-subdataset</span><span class="er">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="return-periods" class="level3">
 <h3 class="anchored" data-anchor-id="return-periods">Return periods</h3>
-<p>The return periods can be set in the <a href="../../user_guide/settings/optional.html#hazard">settings file</a> by supplying a list via the <code>hazard.return_periods</code> entry. However, the return periods can also be set via the hazard bands directly from the <code>return_period</code> attribute of the bands. This attribute is simply set using either <a href="https://docs.xarray.dev/en/stable/">xarray</a>, <a href="https://gdal.org/api/python/raster_api.html">gdal</a> or <a href="https://deltares.github.io/hydromt/latest/">hydromt</a>.</p>
-<p>When present in all bands, this attribute will be preferred over the return periods specified in the settings file. The reason being that the return period is directly linked to the corresponding band, whereas it is inferred in the case of setting it via the settings file.</p>
+<p>The return period of a band is set per band in the <a href="../../user_guide/settings/optional.html#hazard.variables">settings file</a> with the <code>rp</code> entry of a <code>[[hazard.variables]]</code> entry (required for every band in a risk calculation), see <a href="../../user_guide/data/hazard.html#settings">hazard settings</a>. An <code>rp</code> attribute of the band in the file is not read.</p>
+<p>Every return period needs a band of every hazard type required by the <a href="../../user_guide/data/vulnerability.html#methods">methods</a> of the linked vulnerability datasets (e.g.&nbsp;a <code>water_depth</code> and a <code>flood_duration</code> band per return period).</p>
 <p>Let’s have a quick peek at the data using <a href="https://gdal.org/programs/gdalinfo.html">gdalinfo</a> (it will be at the bottom):</p>
 <div class="columns">
 <div style="height: 400px; overflow: auto;">
-<div id="254de3d8" class="cell" data-execution_count="4">
+<div id="9db5561d" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-stdout">
 <pre><code>/bin/bash: line 1: gdalinfo: command not found</code></pre>
 </div>

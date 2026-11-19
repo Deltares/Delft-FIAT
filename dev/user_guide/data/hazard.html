@@ -23,6 +23,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -44,9 +79,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-47b5536657159bdd56a078fbbe5dc929.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-d4e3b393f4914232455420a91abd4844.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -453,6 +488,11 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#types-of-maps" id="toc-types-of-maps" class="nav-link active" data-scroll-target="#types-of-maps">Types of maps</a></li>
+  <li><a href="#hazard-types" id="toc-hazard-types" class="nav-link" data-scroll-target="#hazard-types">Hazard types</a></li>
+  <li><a href="#settings" id="toc-settings" class="nav-link" data-scroll-target="#settings">Settings</a>
+  <ul class="collapse">
+  <li><a href="#uniform-layers" id="toc-uniform-layers" class="nav-link" data-scroll-target="#uniform-layers">Uniform layers</a></li>
+  </ul></li>
   <li><a href="#supported-formats" id="toc-supported-formats" class="nav-link" data-scroll-target="#supported-formats">Supported formats</a></li>
   </ul>
 </nav>
@@ -519,6 +559,43 @@ Caution
 <li><a href="../../user_guide/data/hazard_maps.html#risk">Risk maps</a></li>
 </ul>
 <p>Risk maps are mainly used to calculate the EAD (Estimated Annual Damages). If <code>risk</code> is not set to <code>true</code> in the <a href="../../user_guide/settings/index.html">settings file</a>, the supplied map will be treated as an event map.</p>
+</section>
+<section id="hazard-types" class="level2">
+<h2 class="anchored" data-anchor-id="hazard-types">Hazard types</h2>
+<p>Every band (variable) of the hazard file that is used has a hazard <strong>type</strong>, set with the <code>type</code> entry of its <code>[[hazard.variables]]</code> entry in the <a href="#settings">settings file</a>, e.g.:</p>
+<ul>
+<li><code>water_depth</code>: flood depth;</li>
+<li><code>water_level</code>: flood elevation (level), only for geometry exposure (method <code>flood.level</code>);</li>
+<li><code>flood_duration</code>: flood duration.</li>
+</ul>
+<p>The <a href="../../user_guide/data/vulnerability.html#methods">methods</a> of the linked vulnerability datasets determine which types are needed. A hazard file can therefore hold bands of several types, e.g.&nbsp;a <code>depth</code> band and a <code>duration</code> band for the method <code>flood.depth_duration</code>. In case of a risk calculation, every return period must have a band of every needed type; the return period of a band is set with the <code>rp</code> entry in the settings file (see <a href="../../user_guide/data/hazard_maps.html#return-periods">risk maps</a>).</p>
+</section>
+<section id="settings" class="level2">
+<h2 class="anchored" data-anchor-id="settings">Settings</h2>
+<p>The bands that are used, and their type and return period, are set in the <a href="../../user_guide/settings/index.html">settings file</a> with a <code>[[hazard.variables]]</code> entry per band. Attributes of the bands in the file (e.g.&nbsp;<code>type</code> or <code>rp</code>) are <strong>not</strong> read, and bands of the file without a <code>[[hazard.variables]]</code> entry are ignored.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[hazard]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"risk_map.nc"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[[hazard.variables]]</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"depth_rp10"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"water_depth"</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">rp</span> <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[[hazard.variables]]</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"duration_rp10"</span>                    <span class="co"># not in the file: uniform layer</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"flood_duration"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">rp</span> <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="dt">value</span> <span class="op">=</span> <span class="fl">3.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><code>name</code>: the name of the band (variable); it must exist in the file, unless <code>value</code> is set.</li>
+<li><code>type</code>: the hazard type of the band (required).</li>
+<li><code>rp</code>: the return period of the band (required for every band in risk calculations).</li>
+<li><code>value</code>: a constant value, see <a href="#uniform-layers">uniform layers</a>.</li>
+</ul>
+<section id="uniform-layers" class="level3">
+<h3 class="anchored" data-anchor-id="uniform-layers">Uniform layers</h3>
+<p>A <code>[[hazard.variables]]</code> entry with a <code>value</code> defines a uniform layer: a band that is not in the file and has the same (constant) value over the whole grid, e.g.&nbsp;a flood duration of 3 days. The <code>name</code> must be a <strong>new</strong> variable (not present in the file) and, like every entry, must have a <code>type</code>. Otherwise FIAT stops with an error when reading the hazard data.</p>
+</section>
 </section>
 <section id="supported-formats" class="level2">
 <h2 class="anchored" data-anchor-id="supported-formats">Supported formats</h2>

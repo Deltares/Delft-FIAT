@@ -23,6 +23,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -44,9 +79,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../../site_libs/bootstrap/bootstrap-dark-47b5536657159bdd56a078fbbe5dc929.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-d4e3b393f4914232455420a91abd4844.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -510,6 +545,17 @@ Warning
 <p>Assets cannot be partially or fully outside the hazard map extent! FIAT will stop if it detects any.</p>
 </div>
 </div>
+<p>Each geometry file is linked to exactly <strong>one</strong> vulnerability dataset via the <code>vulnerability</code> entry of its <code>[exposure.variables]</code> table (a single name, required, even when it is the dataset named <code>default</code>). The dataset may hold 1D or 2D curves; its <a href="../../../user_guide/data/vulnerability.html#methods">method</a> determines the needed hazard types and columns. Methods that combine several datasets (e.g.&nbsp;<code>flood.depth_duration</code>) can not be used for geometries.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[[exposure]]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"exposure/spatial.fgb"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[exposure.variables]</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">area_method</span> <span class="op">=</span> <span class="st">"area"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">vulnerability</span> <span class="op">=</span> <span class="st">"default"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="output" class="level4">
+<h4 class="anchored" data-anchor-id="output">Output</h4>
+<p>The output geometry file holds, per hazard identifier <code>&lt;id&gt;</code> (the band number for an event, the return period for risk), a column per hazard value of the method (e.g.&nbsp;<code>depth_&lt;id&gt;</code>, and <code>duration_&lt;id&gt;</code> for the depth-duration method), a column per impact column (e.g.&nbsp;<code>damage_structure_&lt;id&gt;</code>) and the total per impact type (e.g.&nbsp;<code>total_damage_&lt;id&gt;</code>). In case of a risk calculation the expected annual damage is added per impact type: a column <code>ead</code> when there is a single impact type, <code>ead_&lt;type&gt;</code> (e.g.&nbsp;<code>ead_damage</code>) per impact type otherwise.</p>
+</section>
 <section id="supported-data-formats" class="level4">
 <h4 class="anchored" data-anchor-id="supported-data-formats">Supported data formats</h4>
 <p>An overview of supported formats is presented <a href="../../../user_guide/data/supported.html#geometry-files">here</a></p>
@@ -547,12 +593,18 @@ Table&nbsp;1: exposure input
 <td>struct_2</td>
 </tr>
 <tr class="odd">
-<td><a href="#reference">ref</a></td>
+<td><a href="#elevation">elevation</a></td>
+<td>Yes</td>
+<td>-</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td><a href="#reference">reference</a></td>
 <td>No</td>
 <td>-</td>
 <td>4</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#maximum-value">max_&lt; any &gt;_&lt; any &gt;</a></td>
 <td>Yes</td>
 <td>Yes</td>
@@ -570,11 +622,15 @@ Table&nbsp;1: exposure input
 </section>
 <section id="vulnerability-curves" class="level4">
 <h4 class="anchored" data-anchor-id="vulnerability-curves">Vulnerability curves</h4>
-<p>The user can input as many vulnerability curves and related maximum values as required. However, at least one vulnerability curve and related maximum value must be provides per asset. Vulnerability curve column are named as <code>fn_&lt; exposure_type &gt;_&lt; component &gt;</code> (for exposure types, see <a href="../../../user_guide/settings/optional.html#exposure">here</a>). This name can be chosen freely but it is recommended to give it a descriptive name, such as <strong>damage</strong> (exposure type) in combination with <strong>structure</strong> or <strong>content</strong> (components), and it is required to use the same name in the maximum value column. (i.e.&nbsp;<code>max_&lt; exposure-type &gt;_&lt; component &gt;</code>) The value that must be entered is the name of the vulnerability curve, relating to the names in the corresponding vulnerability curves in the <a href="../../../user_guide/data/vulnerability.html">vulnerability curves file</a>. Globally, continental vulnerability curves can be obtained from <a href="https://publications.jrc.ec.europa.eu/repository/handle/JRC105688">European Commission’s Joint Research Centre</a>, but it is recommended to use more location-specific functions when available.</p>
+<p>The user can input as many vulnerability curves and related maximum values as required. However, at least one vulnerability curve and related maximum value must be provides per asset. Vulnerability curve column are named as <code>fn_&lt; exposure_type &gt;_&lt; component &gt;</code> (for exposure types, see <a href="../../../user_guide/settings/optional.html#exposure-geom">here</a>). This name can be chosen freely but it is recommended to give it a descriptive name, such as <strong>damage</strong> (exposure type) in combination with <strong>structure</strong> or <strong>content</strong> (components), and it is required to use the same name in the maximum value column. (i.e.&nbsp;<code>max_&lt; exposure-type &gt;_&lt; component &gt;</code>) The value that must be entered is the name of the vulnerability curve, relating to the curve ids of the vulnerability dataset linked to the geometry file in the <a href="../../../user_guide/data/vulnerability.html">vulnerability file</a>. Globally, continental vulnerability curves can be obtained from <a href="https://publications.jrc.ec.europa.eu/repository/handle/JRC105688">European Commission’s Joint Research Centre</a>, but it is recommended to use more location-specific functions when available.</p>
+</section>
+<section id="elevation" class="level4">
+<h4 class="anchored" data-anchor-id="elevation">Elevation</h4>
+<p>The elevation of the object (e.g.&nbsp;the ground floor height) relative to the surface. It is subtracted from the water depth at the object. Required by all flood <a href="../../../user_guide/data/vulnerability.html#methods">methods</a>.</p>
 </section>
 <section id="reference" class="level4">
 <h4 class="anchored" data-anchor-id="reference">Reference</h4>
-<p>The reference (height) of the exposure data compared to the hazard data. This can very well be a combination of the ground elevation and the groud floor elevation.</p>
+<p>The reference (height) of the surface compared to the hazard data, e.g.&nbsp;the ground elevation. It is used to convert a water level to a water depth.</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -585,7 +641,7 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Required for flood damage calculation, see <a href="../../../user_guide/settings/optional.html#model">global model types</a></p>
+<p>Only required for the method <code>flood.level</code>, see the <a href="../../../user_guide/data/vulnerability.html#methods">methods</a>.</p>
 </div>
 </div>
 </section>

@@ -79,9 +79,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-47b5536657159bdd56a078fbbe5dc929.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-d4e3b393f4914232455420a91abd4844.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -561,64 +561,16 @@ Table&nbsp;1: Most basic settings file input
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;"><strong>[model]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#type">model</a></td>
+<td style="text-align: left;"><a href="#type">type</a></td>
 <td>string</td>
-<td>No</td>
-<td>geom</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><strong>[output]</strong></td>
-<td></td>
-<td></td>
+<td>Yes</td>
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#output">path</a></td>
+<td style="text-align: left;"><a href="#output_dir">output_dir</a></td>
 <td>string</td>
 <td>No</td>
 <td>output</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><strong>[output.csv]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#output.csv">name[n]</a></td>
-<td>string</td>
-<td>No</td>
-<td>-</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><strong>[output.geom]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#output.geom">name[n]</a></td>
-<td>string</td>
-<td>No</td>
-<td>spatial[n].gpkg</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><strong>[output.grid]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#output.grid">name</a></td>
-<td>string</td>
-<td>No</td>
-<td>ead.nc</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><strong>[hazard]</strong></td>
@@ -633,37 +585,37 @@ Table&nbsp;1: Most basic settings file input
 <td></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><strong>[exposure.csv]</strong></td>
+<td style="text-align: left;"><strong><a href="#exposure">[exposure]</a></strong> (geom)</td>
 <td></td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#exposure.csv">file</a></td>
-<td>string</td>
-<td>No</td>
-<td>-</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><strong>[exposure.geom]</strong></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#exposure.geom">file[n]</a></td>
+<td style="text-align: left;"><a href="#exposure">file</a></td>
 <td>string</td>
 <td>Yes</td>
 <td></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><strong>[exposure.grid]</strong></td>
+<td style="text-align: left;"><strong>[exposure.variables]</strong> (geom)</td>
 <td></td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#exposure.grid">file</a></td>
+<td style="text-align: left;"><a href="#exposure">vulnerability</a></td>
+<td>string</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>[exposure]</strong> (grid)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a href="#exposure">file</a></td>
 <td>string</td>
 <td>Yes</td>
 <td></td>
@@ -685,145 +637,112 @@ Table&nbsp;1: Most basic settings file input
 </div>
 </figure>
 </div>
-<section id="model" class="level4">
-<h4 class="anchored" data-anchor-id="model">[model]</h4>
+<section id="type" class="level4">
+<h4 class="anchored" data-anchor-id="type">type</h4>
 <ul>
 <li><code>type</code>: The type of model. Choice between ‘geom’ and ‘grid’.</li>
 </ul>
 </section>
-<section id="output" class="level4">
-<h4 class="anchored" data-anchor-id="output">[output]</h4>
+<section id="output_dir" class="level4">
+<h4 class="anchored" data-anchor-id="output_dir">output_dir</h4>
 <ul>
-<li><code>path</code>: The path to the output directory in the working directory.</li>
-</ul>
-</section>
-<section id="output.csv" class="level4">
-<h4 class="anchored" data-anchor-id="output.csv">[output.csv]</h4>
-<ul>
-<li><code>name[n]</code>: The path to the output CSV file(s) that will be created. These are linked to the input geometry files.</li>
-</ul>
-</section>
-<section id="output.geom" class="level4">
-<h4 class="anchored" data-anchor-id="output.geom">[output.geom]</h4>
-<ul>
-<li><code>name[n]</code>: This sets the name and location of the output vector file that contains the geometry, location and the damages per asset.</li>
-</ul>
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Warning
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>If provided, the suffix is mandatory. The suffix should match the suffix of the input geometry file for which it is set.</p>
-</div>
-</div>
-</section>
-<section id="output.grid" class="level4">
-<h4 class="anchored" data-anchor-id="output.grid">[output.grid]</h4>
-<ul>
-<li><code>name</code>: This sets the name and location of the output raster file that contains damages per grid cell.</li>
+<li><code>output_dir</code>: The path to the output directory.</li>
 </ul>
 </section>
 <section id="hazard" class="level4">
 <h4 class="anchored" data-anchor-id="hazard">[hazard]</h4>
 <ul>
-<li><code>file</code>: The file path to the hazard file.</li>
+<li><code>file</code>: The file path to the <a href="../../user_guide/data/hazard.html">hazard file</a>.</li>
 </ul>
 </section>
-<section id="exposure.csv" class="level4">
-<h4 class="anchored" data-anchor-id="exposure.csv">[exposure.csv]</h4>
+<section id="exposure" class="level4">
+<h4 class="anchored" data-anchor-id="exposure">[exposure]</h4>
+<p>For the geometry model (<code>type = "geom"</code>), every geometry file gets its own <code>[[exposure]]</code> entry:</p>
 <ul>
-<li><code>file</code>: The path to the exposure CSV file (recommended to be within the <a href="../../user_guide/data/index.html">exposure directory</a>) that contains the <a href="../../user_guide/data/exposure.html">required information</a> per asset. There can only be one exposure CSV file.</li>
+<li><code>file</code>: The path to the exposure vector file (recommended to be within the <a href="../../user_guide/data/index.html">exposure directory</a>) with the <a href="../../user_guide/data/exposure/geometry.html">assets</a>.</li>
+<li><code>variables.vulnerability</code>: The name of the (single) <a href="../../user_guide/data/vulnerability.html#linking-exposure-to-datasets">vulnerability dataset</a> linked to this file. The <code>[exposure.variables]</code> table of every entry is required.</li>
 </ul>
-</section>
-<section id="exposure.geom" class="level4">
-<h4 class="anchored" data-anchor-id="exposure.geom">[exposure.geom]</h4>
+<p>For the grid model (<code>type = "grid"</code>), there is a single <code>[exposure]</code> section:</p>
 <ul>
-<li><code>file[n]</code>: The path to the exposure vector file (recommended to be within the <a href="../../user_guide/data/index.html">exposure directory</a>) with the assets’ geometry and object_id. The user can provide multiple vector files. Therefore the ‘[n]’ suffix, as the user can create mulitple entries for vector files (e.g.&nbsp;<code>file1</code>, <code>file2</code> etc.).</li>
+<li><code>file</code>: The path to the <a href="../../user_guide/data/exposure/grid.html">exposure raster file</a> (recommended to be within the <a href="../../user_guide/data/index.html">exposure directory</a>). The vulnerability dataset(s) of the layers are set per variable in the <code>[[exposure.variables]]</code> entries, see <a href="../../user_guide/data/exposure/grid.html#layers">grid exposure data</a>.</li>
 </ul>
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Warning
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The suffix is mandatory. So if only one file is provided, name it <code>file1</code>.</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Only required when running the geometry based model.</p>
-</div>
-</div>
-</section>
-<section id="exposure.grid" class="level4">
-<h4 class="anchored" data-anchor-id="exposure.grid">[exposure.grid]</h4>
-<ul>
-<li><code>file</code>: The path to the exposure raster file (recommended to be within the <a href="../../user_guide/data/index.html">exposure directory</a>).</li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Only required when running the raster based model.</p>
-</div>
-</div>
 </section>
 <section id="vulnerability" class="level4">
 <h4 class="anchored" data-anchor-id="vulnerability">[vulnerability]</h4>
 <ul>
-<li><code>file</code>: The path to the vulnerability curves CSV file within the <a href="../../user_guide/data/index.html">vulnerability directory</a> that contains the <a href="../../user_guide/data/vulnerability.html">damage curves</a>. Only one vulnerability curves file is allowed.</li>
+<li><code>file</code>: The path to the vulnerability NetCDF file within the <a href="../../user_guide/data/index.html">vulnerability directory</a> that contains the <a href="../../user_guide/data/vulnerability.html">vulnerability datasets</a>. Only one vulnerability file is allowed.</li>
 </ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The calculation method is set per vulnerability dataset (the <code>method</code> of the <code>[[vulnerability.variables]]</code> settings), see <a href="../../user_guide/data/vulnerability.html#methods">methods</a>. There is no global <code>method</code> setting.</p>
+</div>
+</div>
+<p>The variables (datasets, bands and layers) of the vulnerability, hazard and (gridded) exposure data can be further specified with <code>[[vulnerability.variables]]</code>, <code>[[hazard.variables]]</code> and <code>[[exposure.variables]]</code> entries, see the <a href="../../user_guide/settings/optional.html#variables">optional input</a>.</p>
 </section>
 </section>
 <section id="example" class="level3">
 <h3 class="anchored" data-anchor-id="example">Example</h3>
 <p>An example of settings file for running a geometry model is given below:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[model]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"geom"</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">risk</span> <span class="op">=</span> <span class="cn">false</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[output]</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"output"</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.csv]</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"output.csv"</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">[output.geom]</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">name1</span> <span class="op">=</span> <span class="st">"spatial.gpkg"</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="kw">[hazard]</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"hazard/SL_10yr_reprojected.tif"</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">[exposure.geom]</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="dt">file1</span> <span class="op">=</span> <span class="st">"./exposure/buildings.gpkg"</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="kw">[exposure.csv]</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"./exposure/exposure.csv"</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="kw">[vulnerability]</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"./vulnerability/vulnerability_curves.csv"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">output_dir</span> <span class="op">=</span> <span class="st">"output"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[hazard]</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"hazard/event_map.nc"</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">[[exposure]]</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"exposure/buildings.fgb"</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">[exposure.variables]</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">vulnerability</span> <span class="op">=</span> <span class="st">"default"</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="kw">[vulnerability]</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"vulnerability/curves.nc"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>An example of settings file for running a grid model with combined depth and duration vulnerability datasets is given below:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"grid"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">risk</span> <span class="op">=</span> <span class="cn">false</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">output_dir</span> <span class="op">=</span> <span class="st">"output"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[hazard]</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"hazard/event_map_duration.nc"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="kw">[[hazard.variables]]</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"depth"</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"water_depth"</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="kw">[[hazard.variables]]</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"duration"</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"flood_duration"</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="kw">[exposure]</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"exposure/spatial.nc"</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="kw">[[exposure.variables]]</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"exposure2"</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"default"</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="dt">fn_curve</span> <span class="op">=</span> <span class="st">"struct_2"</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="dt">vulnerability</span> <span class="op">=</span> <span class="op">[</span><span class="st">"direct"</span><span class="op">,</span> <span class="st">"indirect"</span><span class="op">]</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="kw">[vulnerability]</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"vulnerability/curves_multi.nc"</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="kw">[[vulnerability.variables]]</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"direct"</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="dt">method</span> <span class="op">=</span> <span class="st">"flood.depth_duration"</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="dt">types</span> <span class="op">=</span> <span class="op">{ </span><span class="dt">depth_direct</span><span class="op"> =</span> <span class="st">"water_depth"</span><span class="op"> }</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="kw">[[vulnerability.variables]]</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"indirect"</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="dt">method</span> <span class="op">=</span> <span class="st">"flood.depth_duration"</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="dt">types</span> <span class="op">=</span> <span class="op">{ </span><span class="dt">days_indirect</span><span class="op"> =</span> <span class="st">"flood_duration"</span><span class="op"> }</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 </section>

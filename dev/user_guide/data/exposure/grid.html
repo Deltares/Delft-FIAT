@@ -23,6 +23,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -44,9 +79,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../../site_libs/bootstrap/bootstrap-dark-47b5536657159bdd56a078fbbe5dc929.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-d4e3b393f4914232455420a91abd4844.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -447,8 +482,19 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#setting" id="toc-setting" class="nav-link active" data-scroll-target="#setting">Setting</a></li>
+  <li><a href="#layers" id="toc-layers" class="nav-link" data-scroll-target="#layers">Layers</a></li>
+  <li><a href="#categorized-layers" id="toc-categorized-layers" class="nav-link" data-scroll-target="#categorized-layers">Categorized layers</a></li>
+  <li><a href="#settings" id="toc-settings" class="nav-link" data-scroll-target="#settings">Settings</a></li>
+  <li><a href="#uniform-layers" id="toc-uniform-layers" class="nav-link" data-scroll-target="#uniform-layers">Uniform layers</a></li>
+  <li><a href="#output" id="toc-output" class="nav-link" data-scroll-target="#output">Output</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -473,8 +519,112 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="setting" class="level3">
+<h3 class="anchored" data-anchor-id="setting">Setting</h3>
+<p>The gridded exposure is a single <a href="../../../user_guide/data/supported.html#gridded-data-files">gridded file</a> (NetCDF advised), set via <code>file</code> under the <code>[exposure]</code> section of the <a href="../../../user_guide/settings/index.html">settings.toml</a>. It must have the same grid (resolution, size and projection) as the hazard data, otherwise one of the two is reprojected (see <code>base</code> under <code>[grid]</code>).</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The grid model only supports methods that need no hazard conversion. The method <code>flood.level</code> (water level hazard) can therefore not be used with gridded exposure, see the <a href="../../../user_guide/data/vulnerability.html#methods">methods</a>.</p>
+</div>
+</div>
+</section>
+<section id="layers" class="level3">
+<h3 class="anchored" data-anchor-id="layers">Layers</h3>
+<p>Every variable (layer) with an exposure <strong>type</strong> in the <code>[[exposure.variables]]</code> entries of the <a href="#settings">settings file</a> is calculated. The type is set with the <code>type</code> entry and is either:</p>
+<ul>
+<li><code>default</code>: the layer holds the maximum value per cell. The vulnerability curve is set by the <code>fn_curve</code> entry (required); this curve id is looked up in <strong>every</strong> vulnerability dataset linked to the layer.</li>
+<li><code>categorized</code>: the layer holds a category (integer) per cell, see <a href="#categorized-layers">categorized layers</a>.</li>
+</ul>
+<p>Category-value variables must be listed with <code>type = "values"</code> (see <a href="#categorized-layers">categorized layers</a>); they are not calculated by themselves but have their own <code>vulnerability</code> link. Variables of the file without a <code>[[exposure.variables]]</code> entry are ignored (except for the discovery of category-value variables).</p>
+<p>The vulnerability dataset(s) of a layer are set by the <strong>required</strong> <code>vulnerability</code> entry of its <code>[[exposure.variables]]</code> entry, even when it is the dataset named <code>default</code>. A link can be a single dataset or a list of datasets, see <a href="../../../user_guide/data/vulnerability.html#linking-exposure-to-datasets">linking exposure to datasets</a>.</p>
+</section>
+<section id="categorized-layers" class="level3">
+<h3 class="anchored" data-anchor-id="categorized-layers">Categorized layers</h3>
+<p>A categorized layer <code>&lt;layer&gt;</code> holds a category per cell. Its maximum values are given by one or more <strong>category-value variables</strong>: 1D variables over a category dimension, by default the variables with the dimension <code>&lt;layer&gt;_cat</code>. Every category-value variable that is used, set with <code>values</code> or found via the dimension, <strong>must</strong> have its own <code>[[exposure.variables]]</code> entry with <code>type = "values"</code>, otherwise FIAT stops with an error. The coordinate of that dimension holds the categories (integers) and the variable holds the maximum value per category. The categories are used as curve ids in every linked vulnerability dataset. Category <code>0</code> means no exposure.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The categories are taken from the category coordinate of the category-value variable; the grid itself is not scanned. Cells holding a category that is not in that coordinate produce <strong>no damage</strong>.</p>
+</div>
+</div>
+<p>The impact of a cell is the maximum value of its category multiplied by the cell area, taken from the <code>area_sqm</code> attribute of the hazard file (1 when absent).</p>
+<p>The vulnerability link of a categorized layer is set on its category-value variables (required, <code>type = "values"</code>); the categorized layer itself has no <code>vulnerability</code> entry. So the category-value variables of one layer may be linked to different datasets. A category-value variable can belong to only one categorized layer.</p>
+</section>
+<section id="settings" class="level3">
+<h3 class="anchored" data-anchor-id="settings">Settings</h3>
+<p>The layers, and their attributes, are set in the <a href="../../../user_guide/settings/index.html">settings file</a> with a <code>[[exposure.variables]]</code> entry per variable. Attributes of the variables in the file (e.g.&nbsp;<code>type</code>, <code>fn_curve</code> or <code>vulnerability</code>) are <strong>not</strong> read.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[exposure]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">file</span> <span class="op">=</span> <span class="st">"exposure/spatial.nc"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[[exposure.variables]]</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"exposure2"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"default"</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">vulnerability</span> <span class="op">=</span> <span class="op">[</span><span class="st">"direct"</span><span class="op">,</span> <span class="st">"indirect"</span><span class="op">]</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dt">fn_curve</span> <span class="op">=</span> <span class="st">"struct_2"</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">[[exposure.variables]]</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"exposure3"</span>                        <span class="co"># not in the file: uniform layer</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"default"</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="dt">fn_curve</span> <span class="op">=</span> <span class="st">"struct_1"</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="dt">vulnerability</span> <span class="op">=</span> <span class="st">"default"</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dt">value</span> <span class="op">=</span> <span class="fl">1500.0</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="kw">[[exposure.variables]]</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"landuse"</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"categorized"</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="dt">values</span> <span class="op">=</span> <span class="op">[</span><span class="st">"exposure_values"</span><span class="op">]</span>              <span class="co"># category-value variables (instead of the</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>                                          <span class="co"># '&lt;name&gt;_cat' dimension discovery)</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="kw">[[exposure.variables]]</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"exposure_values"</span>                  <span class="co"># category-value variable</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="dt">type</span> <span class="op">=</span> <span class="st">"values"</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="dt">vulnerability</span> <span class="op">=</span> <span class="op">[</span><span class="st">"direct"</span><span class="op">,</span> <span class="st">"indirect"</span><span class="op">]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><code>name</code>: the name of the variable; it must exist in the file, unless <code>value</code> is set.</li>
+<li><code>type</code>: the exposure type (required): <code>default</code> or <code>categorized</code> for a layer, <code>values</code> for a category-value variable.</li>
+<li><code>vulnerability</code>: the linked vulnerability dataset(s), a name or a list of names (required for <code>default</code> layers and <code>values</code> variables, not allowed for <code>categorized</code> layers).</li>
+<li><code>fn_curve</code>: the curve id of a <code>default</code> layer (required for <code>type = "default"</code>).</li>
+<li><code>values</code>: the category-value variables of a <code>categorized</code> layer (only allowed with <code>type = "categorized"</code>).</li>
+<li><code>value</code>: a constant value, see <a href="#uniform-layers">uniform layers</a>.</li>
+</ul>
+</section>
+<section id="uniform-layers" class="level3">
+<h3 class="anchored" data-anchor-id="uniform-layers">Uniform layers</h3>
+<p>A <code>[[exposure.variables]]</code> entry with a <code>value</code> defines a uniform layer: a layer that is not in the file and has the same (constant) value over the whole grid. The <code>name</code> must be a <strong>new</strong> variable (not present in the file) and needs a <code>fn_curve</code> for a <code>default</code> layer. Otherwise FIAT stops with an error when reading the exposure data.</p>
+<ul>
+<li>For a <code>default</code> layer the value is the maximum value of every cell.</li>
+<li>For a <code>categorized</code> layer the value is the category of every cell; it must be in the category coordinate of the category-value variable(s), set with <code>values</code>.</li>
+<li>A category-value variable can not be defined by a value.</li>
+</ul>
+</section>
+<section id="output" class="level3">
+<h3 class="anchored" data-anchor-id="output">Output</h3>
+<p>The output file holds a band per calculation and hazard identifier (the band number for an event, the return period for risk):</p>
+<ul>
+<li><code>&lt;layer&gt;_&lt;id&gt;</code>: when a layer gives a single calculation (a single dataset, or combined datasets);</li>
+<li><code>&lt;layer&gt;_&lt;dataset&gt;_&lt;id&gt;</code>: when a layer gives several separate calculations. A combined calculation among them is named after its datasets joined by <code>-</code>, e.g.&nbsp;<code>&lt;layer&gt;_direct-indirect_&lt;id&gt;</code>;</li>
+<li><code>total_&lt;id&gt;</code>: the sum of all calculations;</li>
+<li><code>ead</code>: the expected annual damage (risk only).</li>
+</ul>
+<p>For categorized layers <code>&lt;layer&gt;</code> is the name of the category-value variable.</p>
 
 
+</section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

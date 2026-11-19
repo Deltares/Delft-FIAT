@@ -44,9 +44,9 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-47b5536657159bdd56a078fbbe5dc929.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-429224f252d30ab8fc7e2ff44bab0eb8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-d4e3b393f4914232455420a91abd4844.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-56c9ccfdc41f331d6065ad09d4bef482.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -477,7 +477,7 @@ ul.task-list li input[type="checkbox"] {
 <div id="tbl-toml" class="hover quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-toml-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;1: Settings.toml input (required and optional fields)
+Table&nbsp;1: Settings.toml input (optional fields)
 </figcaption>
 <div aria-describedby="tbl-toml-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="table-hover caption-top table">
@@ -490,164 +490,144 @@ Table&nbsp;1: Settings.toml input (required and optional fields)
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;"><strong>[model]</strong></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
 <td style="text-align: left;"><a href="#model">loglevel</a></td>
 <td>string</td>
 <td>INFO</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><a href="#model">risk</a></td>
 <td>boolean</td>
 <td>false</td>
 </tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>[projection]</strong></td>
+<td></td>
+<td></td>
+</tr>
 <tr class="even">
-<td style="text-align: left;"><strong>[model.srs]</strong></td>
-<td></td>
-<td></td>
+<td style="text-align: left;"><a href="#projection">crs</a></td>
+<td>string</td>
+<td>-</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><a href="#model.srs">value</a></td>
-<td>string</td>
-<td>EPSG:4326</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#model.srs">global</a></td>
-<td>bool</td>
+<td style="text-align: left;"><a href="#projection">force</a></td>
+<td>boolean</td>
 <td>false</td>
 </tr>
+<tr class="even">
+<td style="text-align: left;"><strong><a href="#output">[output]</a></strong> (geom) / <strong>[output]</strong> (grid)</td>
+<td></td>
+<td></td>
+</tr>
 <tr class="odd">
-<td style="text-align: left;"><strong>[model.grid]</strong></td>
-<td></td>
-<td></td>
+<td style="text-align: left;"><a href="#output">file</a></td>
+<td>string</td>
+<td>see below</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#model.grid">prefer</a></td>
-<td>string</td>
-<td>exposure</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;"><strong>[hazard]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#hazard">resampling_method</a></td>
-<td>int</td>
-<td>0</td>
-</tr>
 <tr class="odd">
-<td style="text-align: left;"><a href="#hazard">return_periods</a></td>
-<td>list</td>
-<td>-</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#hazard">type</a></td>
+<td style="text-align: left;"><a href="#hazard">resalg</a></td>
 <td>string</td>
-<td>flood</td>
+<td>nearest</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><strong>[hazard.settings]</strong></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#hazard">srs</a></td>
-<td>string</td>
-<td>-</td>
-</tr>
 <tr class="odd">
-<td style="text-align: left;"><a href="#hazard.settings">subset</a></td>
+<td style="text-align: left;"><a href="#hazard">crs</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#hazard.settings">var_as_band</a></td>
-<td>boolean</td>
-<td>false</td>
+<td style="text-align: left;"><strong>[[hazard.variables]]</strong></td>
+<td></td>
+<td></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><strong>[exposure]</strong></td>
+<td style="text-align: left;"><a href="#hazard.variables">name, type, rp, value</a></td>
+<td></td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>[[exposure]]</strong> (geom)</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>[exposure.variables]</strong> (geom)</td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#exposure">types</a></td>
+<td style="text-align: left;"><a href="#exposure-geom">area_method</a></td>
+<td>string</td>
+<td>centroid</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a href="#exposure-geom">impact_type</a></td>
 <td>list</td>
 <td>[‘damage’]</td>
 </tr>
+<tr class="even">
+<td style="text-align: left;"><a href="#exposure-geom">zonal_method</a></td>
+<td>string</td>
+<td>mean</td>
+</tr>
 <tr class="odd">
-<td style="text-align: left;"><strong>[exposure.csv.settings]</strong></td>
+<td style="text-align: left;"><strong>[exposure.settings]</strong> (geom)</td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#exposure.csv.settings">index</a></td>
-<td>string</td>
-<td>object_id</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><strong>[exposure.geom.settings]</strong></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#exposure.geom.settings">index</a></td>
-<td>string</td>
-<td>object_id</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><a href="#exposure.geom.settings">srs</a></td>
+<td style="text-align: left;"><a href="#exposure-geom">crs</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"><strong>[exposure.grid]</strong></td>
-<td></td>
-<td></td>
-</tr>
 <tr class="odd">
-<td style="text-align: left;"><a href="#exposure.grid">resampling_method</a></td>
-<td>int</td>
-<td>0</td>
+<td style="text-align: left;"><strong>[exposure]</strong> (grid)</td>
+<td></td>
+<td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><strong>[exposure.grid.settings]</strong></td>
+<td style="text-align: left;"><a href="#exposure-grid">resalg</a></td>
+<td>string</td>
+<td>nearest</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>[exposure.settings]</strong> (grid)</td>
 <td></td>
 <td></td>
 </tr>
-<tr class="odd">
-<td style="text-align: left;"><a href="#exposure.grid.settings">srs</a></td>
+<tr class="even">
+<td style="text-align: left;"><a href="#exposure-grid">crs</a></td>
 <td>string</td>
 <td>-</td>
 </tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>[[exposure.variables]]</strong> (grid)</td>
+<td></td>
+<td></td>
+</tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#exposure.grid.settings">var_as_band</a></td>
-<td>boolean</td>
-<td>false</td>
+<td style="text-align: left;"><a href="#exposure.variables">name, type, vulnerability, fn_curve, values, value</a></td>
+<td></td>
+<td>-</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><strong>[vulnerability]</strong></td>
+<td style="text-align: left;"><strong>[[vulnerability.variables]]</strong></td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><a href="#vulnerability">step_size</a></td>
-<td>float</td>
-<td>0.01</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><strong>[vulnerability.settings]</strong></td>
+<td style="text-align: left;"><a href="#vulnerability.variables">name, method, types</a></td>
 <td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><a href="#vulnerability.settings">index</a></td>
-<td>string</td>
-<td>‘water depth’</td>
+<td>-</td>
 </tr>
 </tbody>
 </table>
@@ -655,109 +635,82 @@ Table&nbsp;1: Settings.toml input (required and optional fields)
 </figure>
 </div>
 <section id="model" class="level4">
-<h4 class="anchored" data-anchor-id="model">[model]</h4>
+<h4 class="anchored" data-anchor-id="model">Model</h4>
 <ul>
 <li><p><code>loglevel</code>: Set the loglevel of the fiat logger from the settings file. Choose from ‘DEBUG’, ‘INFO’, ‘WARNING’, ‘ERROR’ or ‘DEAD’.</p></li>
 <li><p><code>risk</code>: In case of a risk calculation this must be set to “true”, for a single events this must be set to “false”.</p></li>
 </ul>
 </section>
-<section id="model.srs" class="level4">
-<h4 class="anchored" data-anchor-id="model.srs">[model.srs]</h4>
+<section id="projection" class="level4">
+<h4 class="anchored" data-anchor-id="projection">[projection]</h4>
 <ul>
-<li><p><code>value</code>: Global projection for the model and the output. If not defined, the default projection is set to WGS84.</p></li>
-<li><p><code>global</code>: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e.&nbsp;prefer the hazard projection.</p></li>
+<li><p><code>crs</code>: Model-wide projection for the model and the output. If not defined, the projection of the hazard data is used.</p></li>
+<li><p><code>force</code>: Whether to force the model-wide projection on all the spatial input files.</p></li>
 </ul>
 </section>
-<section id="model.grid" class="level4">
-<h4 class="anchored" data-anchor-id="model.grid">[model.grid]</h4>
+<section id="output" class="level4">
+<h4 class="anchored" data-anchor-id="output">[output]</h4>
 <ul>
-<li><code>prefer</code>: Whether to spatially prefer exposure data or hazard data. The other will be warped when they are not equal. Chose ‘exposure’ or ‘hazard’.</li>
+<li><code>file</code>: The name of the output file. For the geometry model there is an <code>[[output]]</code> entry per <code>[[exposure]]</code> entry; by default the name of the exposure file. For the grid model it is a single <code>[output]</code> section; by default the name of the exposure file with a <code>.tif</code> suffix.</li>
 </ul>
 </section>
 <section id="hazard" class="level4">
 <h4 class="anchored" data-anchor-id="hazard">[hazard]</h4>
 <ul>
-<li><p><code>resampling_method</code>: Method used during resampling/ reprojecting. Default is 0, i.e.&nbsp;nearest neighbour. For more info, see <a href="https://gdal.org/api/gdalwarp_cpp.html#_CPPv415GDALResampleAlg">this page</a></p></li>
-<li><p><code>return_periods</code>: Return periods for hazard calculation when they cannot be inferred from the data itself.</p></li>
-<li><p><code>type</code>: Type of hazard. Should be the same name as the file containing the functions (e.g.&nbsp;‘flood’ -&gt; <code>fiat.method.flood</code>)</p></li>
+<li><p><code>resalg</code>: Method used during resampling/ reprojecting. Default is ‘nearest’, i.e.&nbsp;nearest neighbour.</p></li>
+<li><p><code>settings.crs</code>: Projection of the hazard data if it cannot be inferred from the dataset itself.</p></li>
 </ul>
 </section>
-<section id="hazard.settings" class="level4">
-<h4 class="anchored" data-anchor-id="hazard.settings">[hazard.settings]</h4>
+<section id="variables" class="level4">
+<h4 class="anchored" data-anchor-id="variables">Variables</h4>
+<p>The variables of the input data (vulnerability datasets, hazard bands and gridded exposure layers) that are used are specified with a <code>variables</code> entry per variable; at least one entry is required for each of them. These entries are the <strong>only</strong> source of the attributes of the variables: attributes in the files (e.g.&nbsp;<code>type</code>, <code>rp</code>, <code>method</code>) are not read, and variables of a file without an entry are ignored. Every <code>name</code> must exist in its file, unless the entry defines a uniform layer with <code>value</code> (hazard and grid exposure only). A <code>value</code> entry must name a variable that is not in the file.</p>
+<section id="hazard.variables" class="level5">
+<h5 class="anchored" data-anchor-id="hazard.variables">[[hazard.variables]]</h5>
 <ul>
-<li><p><code>srs</code>: Projection of the hazard data if it cannot be inferred from the dataset itself.</p></li>
-<li><p><code>subset</code>: Select a specific subdataset by supplying it’s ID (name) here.</p></li>
-<li><p><code>var_as_band</code>: Whether or not to read the subdatasets as classic raster band.</p></li>
+<li><code>name</code>: Name of the band (variable).</li>
+<li><code>type</code>: The hazard type, e.g.&nbsp;‘water_depth’ or ‘duration’ (required).</li>
+<li><code>rp</code>: The return period of the band (required for every band when <code>risk</code> is true).</li>
+<li><code>value</code>: Constant value of a uniform layer that is not in the file.</li>
 </ul>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The entry <code>var_as_band</code> is only applicable to netCDF files.</p>
-</div>
-</div>
+<p>See <a href="../../user_guide/data/hazard.html#settings">hazard data</a>.</p>
 </section>
-<section id="exposure" class="level4">
-<h4 class="anchored" data-anchor-id="exposure">[exposure]</h4>
+<section id="exposure.variables" class="level5">
+<h5 class="anchored" data-anchor-id="exposure.variables">[[exposure.variables]]</h5>
+<p>Only for the grid model.</p>
 <ul>
-<li><code>types</code>: Types of exposure. This could be monetary damages (‘damage’), affected people (‘affected’) etc.</li>
+<li><code>name</code>: Name of the layer (variable).</li>
+<li><code>type</code>: The exposure type (required): ‘default’ or ‘categorized’ for a layer, ‘values’ for a category-value variable.</li>
+<li><code>vulnerability</code>: The vulnerability dataset(s) linked to this variable, a name or a list of names.</li>
+<li><code>fn_curve</code>: The curve id looked up in the linked vulnerability dataset(s) (required for type ‘default’).</li>
+<li><code>values</code>: The category-value variables of a categorized layer.</li>
+<li><code>value</code>: Constant value of a uniform layer that is not in the file.</li>
 </ul>
+<p>See <a href="../../user_guide/data/exposure/grid.html#settings">grid exposure data</a>.</p>
 </section>
-<section id="exposure.csv.settings" class="level4">
-<h4 class="anchored" data-anchor-id="exposure.csv.settings">[exposure.csv.settings]</h4>
+<section id="vulnerability.variables" class="level5">
+<h5 class="anchored" data-anchor-id="vulnerability.variables">[[vulnerability.variables]]</h5>
 <ul>
-<li><code>index</code>: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to ‘object_id’.</li>
+<li><code>name</code>: Name of the vulnerability dataset (variable).</li>
+<li><code>method</code>: The calculation method of the dataset, e.g.&nbsp;‘flood.depth’ (required).</li>
+<li><code>types</code>: The hazard type per index dimension of the dataset, e.g.&nbsp;<code>{ depth_default = "water_depth" }</code> (required).</li>
 </ul>
+<p>See <a href="../../user_guide/data/vulnerability.html#settings">vulnerability data</a>.</p>
 </section>
-<section id="exposure.geom.settings" class="level4">
-<h4 class="anchored" data-anchor-id="exposure.geom.settings">[exposure.geom.settings]</h4>
-<ul>
-<li><p><code>index</code>: Set the index column of the geom file(s). In case nothing is provided, the default value ‘object_id’ is used.</p></li>
-<li><p><code>srs</code>: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.</p></li>
-</ul>
 </section>
-<section id="exposure.grid" class="level4">
-<h4 class="anchored" data-anchor-id="exposure.grid">[exposure.grid]</h4>
+<section id="exposure-geom" class="level4">
+<h4 class="anchored" data-anchor-id="exposure-geom">[exposure] (geom)</h4>
 <ul>
-<li><code>resampling_method</code>: Method used during resampling/ reprojecting. Default is 0, i.e.&nbsp;nearest neighbour. For more info, see <a href="https://gdal.org/api/gdalwarp_cpp.html#_CPPv415GDALResampleAlg">this page</a></li>
-</ul>
-</section>
-<section id="exposure.grid.settings" class="level4">
-<h4 class="anchored" data-anchor-id="exposure.grid.settings">[exposure.grid.settings]</h4>
-<ul>
-<li><p><code>srs</code>: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.</p></li>
-<li><p><code>var_as_band</code>: Whether or not to read the subdatasets as classic raster band.</p></li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The entry <code>var_as_band</code> is only applicable to netCDF files.</p>
-</div>
-</div>
-</section>
-<section id="vulnerability" class="level4">
-<h4 class="anchored" data-anchor-id="vulnerability">[vulnerability]</h4>
-<ul>
-<li><code>step_size</code>: The internal step size of the vulnerability data. The supplied data is interpolated or averaged depending on the minimal step size of the supplied dataset.</li>
+<li><p><code>variables.area_method</code>: The method of extracting hazard values based on the exposure geometry. Choose ‘centroid’ or ‘area’.</p></li>
+<li><p><code>variables.impact_type</code>: Types of impact, a name or a list of names. This could be monetary damages (‘damage’), affected people (‘affected’) etc.</p></li>
+<li><p><code>variables.zonal_method</code>: The method of aggregating the hazard values of an asset when <code>area_method</code> is set to ‘area’. Choose ‘mean’, ‘max’ or ‘min’.</p></li>
+<li><p><code>settings.crs</code>: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.</p></li>
 </ul>
 </section>
-<section id="vulnerability.settings" class="level4">
-<h4 class="anchored" data-anchor-id="vulnerability.settings">[vulnerability.settings]</h4>
+<section id="exposure-grid" class="level4">
+<h4 class="anchored" data-anchor-id="exposure-grid">[exposure] (grid)</h4>
 <ul>
-<li><code>index</code>: Set the index column of the csv file. In case of the vulnerability csv, if no entry is provided then FIAT will default to ‘water depth’.</li>
+<li><p><code>resalg</code>: Method used during resampling/ reprojecting. Default is ‘nearest’, i.e.&nbsp;nearest neighbour.</p></li>
+<li><p><code>settings.crs</code>: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.</p></li>
 </ul>
 
 
