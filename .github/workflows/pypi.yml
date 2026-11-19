@@ -40,18 +40,16 @@ jobs:
           path: dist
 
   wheels:
-    name: "build wheels"
     uses: ./.github/workflows/wheel.yml
 
   test-build:
-    name: "linux-64 - py313"
     needs: wheels
 
     uses: ./.github/workflows/testw.yml
     with:
+      artifact-name: dist-wheel-linux-64-314
       os: ubuntu-latest
-      python-version: "313"
-      artifact-name: dist-wheel-linux-64-313
+      python-version: "314"
 
   upload-testpypi:
     needs: [sdist, wheels, test-build]

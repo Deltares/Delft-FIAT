@@ -335,6 +335,7 @@ dependencies = { quarto = "==1.9.38" }
 [tool.pixi.feature.wheel.dependencies]
 cython = "*"
 pip = "*"
+tomlkit = "*"
 uv = "*"
 
 ## Python environments
@@ -356,4 +357,4 @@ slim = { features = ["py314", "all"] }
 test-py314 = { features = ["py314", "all", "test"] }
 test-py313 = { features = ["py313", "all", "test"] }
 test-py312 = { features = ["py312", "all", "test"] }
-wheel = { features = ["py313", "test", "wheel"], no-default-feature=true }
+wheel = { features = ["py314", "test", "wheel"], no-default-feature=true }

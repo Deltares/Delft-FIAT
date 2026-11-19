@@ -3,9 +3,9 @@ name: Test wheel
 on:
   workflow_call:
     inputs:
-      python-version: { type: string, required: true }
-      os: { type: string, required: true }
       artifact-name: { type: string, required: true }
+      os: { type: string, required: true }
+      python-version: { type: string, required: true }
 
 jobs:
   unit:
@@ -44,6 +44,10 @@ jobs:
           rm -rf src
           WHEEL=$(ls dist/*.whl)
           pixi run -e wheel uv pip install "${WHEEL}"
+
+      - name: Create testdata
+        run: |
+          pixi run -e wheel testdata
 
       - name: Test
         run: pixi run --no-install -e wheel test-cov
@@ -85,6 +89,10 @@ jobs:
           WHEEL=$(ls dist/*.whl)
           pixi run -e wheel uv pip install "${WHEEL}"
 
+      - name: Create testdata
+        run: |
+          pixi run -e wheel testdata
+
       - name: Test
         run: pixi run --no-install -e wheel test-integration
 
@@ -124,6 +132,10 @@ jobs:
           rm -rf src
           WHEEL=$(ls dist/*.whl)
           pixi run -e wheel uv pip install "${WHEEL}"
+
+      - name: Create testdata
+        run: |
+          pixi run -e wheel testdata
 
       - name: Test
         run: pixi run --no-install -e wheel test-system
