@@ -27,6 +27,8 @@ These are the unreleased changes.
 ### Deprecated
 
 ### Fixed
+- Binary wheels (Linux x86_64 and Windows, Python 3.12-3.14) are built with cibuildwheel and published to PyPI together with the sdist; the plain `linux_x86_64` wheel, which PyPI rejects, is no longer built
+- Static linking of zlib in `setup.py` only checked the last library directory and failed when there was none
 - Vulnerability curves are no longer extrapolated: a water depth below the first curve depth gives the first damage fraction (no negative damage) and a depth above the last gives the last ([#205](https://github.com/Deltares/Delft-FIAT/issues/205))
 - Column type of the new geometry output columns (written as double, declared as float), which gave garbled output values
 - Geometry output finalizing could miss the results of the workers, which gave empty output files
