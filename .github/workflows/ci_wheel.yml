@@ -1,0 +1,38 @@
+---
+name: Build wheel
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: "${{ matrix.label }} wheels"
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "ubuntu-latest"
+          - "windows-latest"
+        include:
+          - os: ubuntu-latest
+            label: linux-64
+          - os: windows-latest
+            label: win-64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Build wheels
+        uses: actions/upload-artifact@v4
+        with:
+          output-dir: dist
+
+      - name: List contents
+        run: |
+          ls -la dist/

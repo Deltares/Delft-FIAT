@@ -10,6 +10,19 @@ include = ["fiat*"]
 [tool.setuptools.dynamic]
 version = {attr = "fiat.version.__version__"}
 
+[tool.cibuildwheel]
+build = ["cp312-*", "cp313-*", "cp314-*"]
+skip = [
+    "*-musllinux_*"
+]
+test-command = "python -c \"import fiat; print(fiat.__version__)\""
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
+
 ## Project related stuff
 [project]
 name = "delft_fiat"
