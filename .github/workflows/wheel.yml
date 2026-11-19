@@ -3,7 +3,7 @@ name: Build wheels
 on:
   workflow_call:
 permissions:
-  contents: read 
+  contents: read
 
 jobs:
   wheels:
@@ -45,7 +45,8 @@ jobs:
           if [ "$RUNNER_OS" = "Windows" ]; then
             PREFIX=$(cygpath -m "$PWD/.pixi/envs/build")
           else
-            PREFIX=/project/.pixi/envs/build
+            # -g0 and -s keep debug info out of the extension modules
+            PREFIX="/project/.pixi/envs/build CFLAGS=-g0 CXXFLAGS=-g0 LDFLAGS=-s"
           fi
           echo "CIBW_ENVIRONMENT=PREFIX=$PREFIX" >> "$GITHUB_ENV"
 
