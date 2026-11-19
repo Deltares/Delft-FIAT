@@ -2627,7 +2627,7 @@ packages:
 - pypi: ./
   name: delft-fiat
   requires_dist:
-  - certifi>=2026.10.19
+  - certifi>=2026.10.23
   - netcdf4
   - numpy
   - pydantic
