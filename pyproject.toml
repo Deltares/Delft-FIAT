@@ -20,7 +20,6 @@ test-command = "python -c \"import fiat; print(fiat.__version__)\""
 [tool.cibuildwheel.linux]
 archs = ["x86_64"]
 manylinux-x86_64-image = "manylinux_2_28"
-# repair-wheel-command = "auditwheel repair --strip --only-plat --plat manylinux_2_28_x86_64 -w {dest_dir} {wheel}"
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
