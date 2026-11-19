@@ -450,26 +450,17 @@ ul.task-list li input[type="checkbox"] {
 <section id="added" class="level3">
 <h3 class="anchored" data-anchor-id="added">Added</h3>
 <ul>
-<li>Vulnerability datasets in a NetCDF file: one file can hold several datasets (variables), each with its own calculation method (<code>method</code>) and a hazard type per curve axis (<code>types</code>), both set in the settings</li>
-<li>Grid exposure layers can be linked to several vulnerability datasets (<code>vulnerability</code> as a list), either combined in one calculation or as separate calculations, all added to the total</li>
-<li>Vulnerability datasets with curves over two or more hazard axes (e.g.&nbsp;depth and duration), interpolated with the new multilinear interpolator <code>InterpND</code></li>
-<li>Methods <code>flood.depth_duration</code> (a water depth and a flood duration dataset combined, grid only) and <code>flood.depth_duration_2d</code> (one 2D depth-duration dataset)</li>
-<li><code>[[vulnerability.variables]]</code>, <code>[[hazard.variables]]</code> and <code>[[exposure.variables]]</code> settings to set the attributes of the datasets, hazard bands and grid exposure layers (e.g.&nbsp;<code>method</code>, <code>types</code>, <code>type</code>, <code>rp</code>, <code>fn_curve</code>, <code>vulnerability</code>, <code>values</code>)</li>
-<li>Uniform hazard and grid exposure layers from the settings (<code>value</code> in a <code>variables</code> entry): a layer with a constant value that is not in the file (for a categorized layer the value is the category, which must be in the category coordinate)</li>
-<li><code>vulnerability</code> entry per geometry file (<code>[[exposure]]</code>) linking it to a single vulnerability dataset</li>
-<li><code>close</code> method on the models to close the input data</li>
+<li>Multiple vulnerability datasets in one file (netCDF)</li>
+<li>Support for category based grid calculations</li>
+<li>Support for writing geoTIFF files</li>
 </ul>
 </section>
 <section id="changed" class="level3">
 <h3 class="anchored" data-anchor-id="changed">Changed</h3>
 <ul>
-<li><strong>Breaking</strong>: the <code>[[vulnerability.variables]]</code>, <code>[[hazard.variables]]</code> and <code>[[exposure.variables]]</code> settings are the only source of the attributes of the variables (<code>type</code>, <code>rp</code>, <code>method</code>, <code>types</code>, <code>vulnerability</code>, <code>values</code>, <code>fn_curve</code>). Attributes in the input files are no longer read and variables of the files without an entry in the settings are ignored; the <code>variables</code> of the hazard, vulnerability and grid exposure settings (at least one each), <code>type</code> (hazard and exposure; category-value variables use <code>type = "values"</code> and must always be listed), <code>vulnerability</code> (default exposure layers and category-value variables, not for the categorized layer itself; also required per geometry file; the grid <code>[exposure]</code> <code>vulnerability</code> setting is removed), <code>method</code> and <code>types</code> (vulnerability), <code>fn_curve</code> (default exposure layers) and, for risk, <code>rp</code> (hazard) are required</li>
-<li><strong>Breaking</strong>: the <code>area_method</code>, <code>impact_type</code>, <code>zonal_method</code> and <code>vulnerability</code> settings of a geometry <code>[[exposure]]</code> entry are moved to its <code>[exposure.variables]</code> table (<code>impact_type</code> can be a single name or a list); the <code>rp</code> setting of <code>[hazard]</code> is removed, the return period is set per band in <code>[[hazard.variables]]</code></li>
-<li>The calculation method is set per vulnerability dataset instead of globally</li>
-<li>The method functions have a uniform signature: <code>fn_hazard(hazards, ...)</code> returns a tuple of hazard values and the reduction factor; <code>fn_impact(hazards, exposure, curves, fact)</code></li>
-<li>The hazard types needed (band <code>type</code>) are derived from the methods of the linked vulnerability datasets, so a hazard file can hold bands of several types (e.g.&nbsp;depth and duration)</li>
-<li>Geometry risk output column naming: with a single impact type the expected annual damage column is now <code>ead</code> (previously <code>ead_damage</code>); with several impact types there is one <code>ead_&lt;type&gt;</code> column per type</li>
-<li><code>flood.level</code> can only be used with geometry exposure; linking it to a grid layer gives an error</li>
+<li>More verbose settings file</li>
+<li>Risk mode is defined globally</li>
+<li>Vector files now purely use the fast FlatGeobuf format</li>
 </ul>
 </section>
 <section id="deprecated" class="level3">
@@ -478,17 +469,13 @@ ul.task-list li input[type="checkbox"] {
 <section id="fixed" class="level3">
 <h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
 <ul>
-<li>Vulnerability curves are no longer extrapolated: a water depth below the first curve depth gives the first damage fraction (no negative damage) and a depth above the last gives the last (<a href="https://github.com/Deltares/Delft-FIAT/issues/205">#205</a>)</li>
-<li>Column type of the new geometry output columns (written as double, declared as float), which gave garbled output values</li>
-<li>Geometry output finalizing could miss the results of the workers, which gave empty output files</li>
-<li>Integer hazard bands (e.g.&nbsp;a flood duration stored as <code>int16</code>) are treated as floating point with the nodata value masked, instead of failing in the grid model or using the raw nodata value in the geometry model</li>
+<li>Numerous fixes</li>
 </ul>
 </section>
 <section id="removed" class="level3">
 <h3 class="anchored" data-anchor-id="removed">Removed</h3>
 <ul>
-<li>CSV vulnerability files; use a NetCDF vulnerability file</li>
-<li>The global <code>method</code> setting; the method is set per vulnerability dataset (a leftover <code>method</code> entry in the settings file is ignored)</li>
+<li>CSV vulnerability files</li>
 </ul>
 </section>
 </section>
