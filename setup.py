@@ -81,8 +81,8 @@ def _zlib_linking() -> dict:
     name = "zlibstatic.lib" if sys.platform == "win32" else "libz.a"
     for lib_dir in _library_directories():
         candidate = os.path.join(lib_dir, name)
-    if os.path.isfile(candidate):
-        return {"extra_objects": [candidate]}
+        if os.path.isfile(candidate):
+            return {"extra_objects": [candidate]}
     name = "zlib" if sys.platform == "win32" else "z"
     return {"libraries": [name], "library_dirs": _library_directories()}
 

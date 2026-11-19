@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  sdist:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,30 +28,33 @@ jobs:
         run: |
           pip install build tomli twine wheel
 
-      - name: Build sdist/ wheel
+      - name: Build sdist
         run: |
           python -m build --sdist
-          python -m build --wheel
           python -m twine check dist/*
 
-      - name: Upload sdist/ wheel
+      - name: Upload sdist
         uses: actions/upload-artifact@v7
         with:
-          name: source-distribution
+          name: dist-sdist
           path: dist
+
+  wheels:
+    name: "build wheels"
+    uses: ./.github/workflows/wheel.yml
 
   test-build:
     name: "linux-64 - py313"
-    needs: build
+    needs: wheels
 
-    uses: ./.github/workflows/wheel.yml
+    uses: ./.github/workflows/testw.yml
     with:
       os: ubuntu-latest
       python-version: "313"
-      artifact-name: source-distribution
+      artifact-name: dist-wheel-linux-64-313
 
   upload-testpypi:
-    needs: test-build
+    needs: [sdist, wheels, test-build]
     if: github.event_name == 'push'
     environment:
       name: testpypi
@@ -61,11 +64,12 @@ jobs:
       id-token: write
 
     steps:
-      - name: Download sdist/ wheel
+      - name: Download sdist/ wheels
         uses: actions/download-artifact@v8
         with:
-          name: source-distribution
+          pattern: dist-*
           path: dist
+          merge-multiple: true
 
       - name: Publish TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -73,7 +77,7 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
 
   upload-pypi:
-    needs: test-build
+    needs: [sdist, wheels, test-build]
     if: ${{ github.event_name == 'release' && !github.event.act }}
     runs-on: ubuntu-latest
     environment:
@@ -83,11 +87,12 @@ jobs:
       id-token: write
 
     steps:
-      - name: Download sdist/ wheel
+      - name: Download sdist/ wheels
         uses: actions/download-artifact@v8
         with:
-          name: source-distribution
+          pattern: dist-*
           path: dist
+          merge-multiple: true
 
       - name: Publish PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
