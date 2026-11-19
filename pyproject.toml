@@ -333,6 +333,7 @@ dependencies = { quarto = "==1.9.38" }
 
 # Wheel building env
 [tool.pixi.feature.wheel.dependencies]
+cython = "*"
 pip = "*"
 uv = "*"
 
