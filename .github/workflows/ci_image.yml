@@ -40,9 +40,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Testdata
+      - name: Create the data directory
         run: |
-          pixi run testdata
+          mkdir "${{ github.workspace }}/data"
 
       - name: Build image
         run: |
