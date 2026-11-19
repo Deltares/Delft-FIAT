@@ -3,8 +3,7 @@ name: Build wheels
 on:
   workflow_call:
 permissions:
-  actions: write
-  contents: write
+  contents: read 
 
 jobs:
   wheels:
