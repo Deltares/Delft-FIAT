@@ -54,4 +54,4 @@ jobs:
         run: |
           podman run --rm -v "${{ github.workspace }}/data:/home/deltares/data:U" \
           --entrypoint bash fiat:latest -lc \
-          'pixi run fiat run data/geom_event.toml'
+          'pixi run testdata && pixi run fiat run data/geom_event.toml'
