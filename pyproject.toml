@@ -91,7 +91,7 @@ docs = [
     "quartodoc==0.11.1",
 ]
 test = [
-    "pytest>=9.1.1",
+    "pytest>=9.2.0",
     "pytest-cov",
     "pytest-mock",
     "responses",
