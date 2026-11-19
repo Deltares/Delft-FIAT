@@ -57,14 +57,14 @@ def buffer_handler(buffer: BytesIO) -> BufferHandler:
 
 
 @pytest.fixture(scope="session")
-def file_buffer_handler(vulnerability_path: Path) -> FileBufferHandler:
-    h = FileBufferHandler(vulnerability_path)
+def file_buffer_handler(csv_path: Path) -> FileBufferHandler:
+    h = FileBufferHandler(csv_path)
     return h
 
 
 @pytest.fixture(scope="session")
-def vulnerability_win_path(testdata_dir: Path) -> Path:
-    p = Path(testdata_dir, "vulnerability", "curves_win.csv")
+def csv_win_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "table_win.csv")
     assert p.is_file()
     return p
 
@@ -77,8 +77,8 @@ def table_array() -> np.ndarray:
 
 
 @pytest.fixture
-def vulnerability_table(vulnerability_path: Path):
-    bh = FileBufferHandler(vulnerability_path)
+def vulnerability_table(csv_path: Path):
+    bh = FileBufferHandler(csv_path)
     return parse_csv(bh, delimiter=",", header=True)
 
 

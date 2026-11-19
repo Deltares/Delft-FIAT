@@ -18,7 +18,6 @@ from fiat.model.meta import (
     ExposureGeomMeta,
     HazardMeta,
     RunMeta,
-    VulnerabilityMeta,
 )
 from fiat.typing import MethodType
 from fiat.util import FIAT_METHOD
@@ -43,7 +42,6 @@ def feature_worker(
     run_meta: RunMeta,
     hazard: NetcdfReader,
     hazard_meta: HazardMeta,
-    vulnerability_meta: VulnerabilityMeta,
     exposure_meta: ExposureGeomMeta,
     fn_hazard: Callable,
     fn_impact: Callable,
@@ -62,10 +60,9 @@ def feature_worker(
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
-    vulnerability_meta : VulnerabilityMeta
-        Metadata specific to the vulnerability data.
     exposure_meta : ExposureGeomMeta
-        Metadata specific to the exposure data.
+        Metadata specific to the exposure data (incl. the method, curves and \
+hazard band indices).
     fn_hazard : Callable
         The hazard function.
     fn_impact : Callable
@@ -88,14 +85,16 @@ def feature_worker(
 
     # Loop through the hazard band combo's
     n = 0
-    for idxs in hazard_meta.indices_run:
-        haz = [overlay.clip(hazard[idx], mask, window) for idx in idxs]
-        haz, fact = fn_hazard(
-            *haz,
+    for idxs in exposure_meta.hazard_indices:
+        haz = tuple(overlay.clip(hazard[idx], mask, window) for idx in idxs)
+        values, fact = fn_hazard(
+            haz,
             *haz_args,
-            exposure_meta.zonal_method,
+            method=exposure_meta.zonal_method,
         )
-        out_array[0 + n * exposure_meta.type_length] = haz
+        offset = n * exposure_meta.type_length
+        for i, value in enumerate(values):
+            out_array[offset + i] = value
         for key, value in exposure_meta.indices_type.items():
             tot = 0.0
             for i, (f, m) in enumerate(value):
@@ -104,10 +103,10 @@ def feature_worker(
                 out = 0
                 if curve_id and exposure:
                     out = fn_impact(
-                        hazard=haz,
-                        exposure=exposure,
-                        fn_curve=vulnerability_meta.fn[curve_id],  # type: ignore
-                        fact=fact,
+                        values,
+                        exposure,
+                        (exposure_meta.fn[curve_id],),
+                        fact,
                     )
                     out = 0 if math.isnan(out) else out
                 out_array[exposure_meta.indices_impact[key][n][i]] = out
@@ -115,14 +114,13 @@ def feature_worker(
             out_array[exposure_meta.indices_total[key][n]] = tot
         n += 1
 
-    # Process the results to ead when risk mode
+    # Process the results to ead (per impact type) when risk mode
     if run_meta.risk:
-        for ti, indices in exposure_meta.indices_total.items():
-            ead = fn_ead(
+        for key, index in exposure_meta.indices_ead.items():
+            out_array[index] = fn_ead(
                 hazard_meta.density,
-                out_array[indices],
+                out_array[exposure_meta.indices_total[key]],
             )
-            out_array[-1] = ead  # TODO fix single index
 
 
 def worker(
@@ -130,11 +128,10 @@ def worker(
     run_meta: RunMeta,
     hazard: NetcdfReader,
     hazard_meta: HazardMeta,
-    vulnerability_meta: VulnerabilityMeta,
     exposure: FlatGeobufReader,
     exposure_meta: ExposureGeomMeta,
     chunk: tuple | list,
-):
+) -> str:
     """Run the geometry model.
 
     This is the worker function corresponding to the run method \
@@ -150,17 +147,22 @@ of the [GeomModel](/api/GeomModel.qmd) object.
         The hazard data.
     hazard_meta : HazardMeta
         Metadata specific to the hazard data.
-    vulnerability_meta : VulnerabilityMeta
-        Metadata specific to the vulnerability data.
     exposure : FlatGeobufReader
         The exposure geometries.
     exposure_meta : ExposureGeomMeta
         Metadata specific to the exposure data.
     chunk : tuple | list
         The chunk to run through.
+
+    Returns
+    -------
+    str
+        The output key of which the index records were put on the pipeline.
     """
     # Setup the hazard type method
-    method: MethodType = importlib.import_module(f"{FIAT_METHOD}.{run_meta.type}")
+    method: MethodType = importlib.import_module(
+        f"{FIAT_METHOD}.{exposure_meta.method}"
+    )
     fn_hazard = method.fn_hazard
     fn_impact = method.fn_impact
 
@@ -193,7 +195,6 @@ of the [GeomModel](/api/GeomModel.qmd) object.
             run_meta=run_meta,
             hazard=hazard,
             hazard_meta=hazard_meta,
-            vulnerability_meta=vulnerability_meta,
             exposure_meta=exposure_meta,
             fn_hazard=fn_hazard,
             fn_impact=fn_impact,
@@ -214,3 +215,4 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     # Hand the index records (envelope + body offset) to the parent for finalize.
     pipeline.put((out_key, writer.records))
     writer = None
+    return out_key

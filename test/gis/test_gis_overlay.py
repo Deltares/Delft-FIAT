@@ -1,3 +1,7 @@
+from pathlib import Path
+from typing import Callable
+
+import netCDF4 as nc4
 import numpy as np
 
 from fiat.driver import NetcdfReader
@@ -199,6 +203,40 @@ def test_clip_point(
 
     # Assert the output
     np.testing.assert_array_almost_equal(c, [1.8])
+
+
+def test_clip_int_nodata(
+    feature_polygon,
+    testdata_dir: Path,
+    int16_nc_copy: Callable[[Path, str], Path],
+):
+    # Integer duration band with a nodata value in the polygon
+    p = int16_nc_copy(Path(testdata_dir, "event_map_duration.nc"), "duration")
+    ds = NetcdfReader(p)
+    m, w = area_mask(
+        geom=feature_polygon.geometry,
+        gtf=ds.profile.transform,
+        shape=ds.profile.shape_xy,
+    )
+    ds.close()
+    rows, cols = np.nonzero(m == 1)
+    with nc4.Dataset(p, "a") as nc:
+        nc["duration"][w[0].start + rows[0], w[1].start + cols[0]] = -9999
+    ds = NetcdfReader(p)
+    ds.load()
+    assert np.issubdtype(ds[1].data.dtype, np.integer)
+
+    # Call the function
+    c = clip(
+        var=ds[1],
+        mask=m,
+        window=w,
+    )
+    ds.close()
+
+    # Assert the output
+    assert np.issubdtype(c.dtype, np.floating)
+    np.testing.assert_array_equal(c, [np.nan, 3.0, 3.0, 3.0])
 
 
 def test_clip_weighted_3(

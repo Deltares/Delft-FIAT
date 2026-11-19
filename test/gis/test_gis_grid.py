@@ -5,6 +5,7 @@ from pyproj import Transformer
 
 from fiat.driver import NetcdfReader
 from fiat.gis.grid import default_transform, reproject, transform_bounds
+from fiat.open import open_grid
 from fiat.util import get_crs_repr
 
 
@@ -54,6 +55,41 @@ def test_reproject(tmp_path: Path, hazard_event_repr: NetcdfReader):
         (7.275958e-12, 2.843901e03, 1.116046e06, 1.118890e06),
         decimal=1,
     )
+
+
+def test_reproject_keeps_attributes(tmp_path: Path, hazard_event_repr: NetcdfReader):
+    # Call the function
+    ds = reproject(hazard_event_repr, dst_crs="EPSG:3857", output_dir=tmp_path)
+
+    # Assert the attributes of the source variable are copied
+    assert ds.variables["data"].get_attr("type") == "water_depth"
+    assert ds.variables["data"].get_attr("grid_mapping") == "spatial_ref"
+
+
+def test_reproject_keeps_attributes_risk(tmp_path: Path, hazard_risk_path: Path):
+    # Call the function
+    ds = reproject(
+        open_grid(hazard_risk_path), dst_crs="EPSG:3857", output_dir=tmp_path
+    )
+
+    # Assert the attributes of every source variable are copied
+    for name, rp in zip(ds.names, [2, 5, 10, 25]):
+        assert ds.variables[name].get_attr("type") == "water_depth"
+        assert int(ds.variables[name].get_attr("rp")) == rp
+
+
+def test_reproject_skips_constants(tmp_path: Path, hazard_event_path: Path):
+    # Open the dataset with a constant layer
+    src = open_grid(hazard_event_path)
+    src.add_constant("dur", 3.0)
+
+    # Call the function
+    ds = reproject(src, dst_crs="EPSG:3857", output_dir=tmp_path)
+
+    # Assert the output, the constant layers are not part of the new reader
+    assert ds.names == ["data"]
+    assert "dur" not in ds.src.variables
+    assert ds.variables["data"].get_attr("type") == "water_depth"
 
 
 def test_reproject_resample(tmp_path: Path, hazard_event_repr: NetcdfReader):

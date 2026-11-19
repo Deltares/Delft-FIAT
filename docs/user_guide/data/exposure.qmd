@@ -22,6 +22,6 @@ FIAT can be used to assess flood damages to buildings, roads, utilities, and oth
  This functionality is in beta phase
 :::
 
-Raster files must be **pre-processed** before being ingested into the FIAT model. Raster projection and extent must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a raster file with the **maximum value** per cell is required. A vulnerability curve must be assigned to each raster file as well, linking with the vulnerability curve name in the meta data to the name in the [vulnerability curves file](vulnerability.qmd).
+Raster files must be **pre-processed** before being ingested into the FIAT model. Raster projection and extent must be coherent among exposure rasters and hazard maps. For each object type (e.g. residential buildings, industrial assets) a layer with the **maximum value** per cell is required. Each layer refers to a vulnerability curve (`fn_curve`) in the vulnerability dataset(s) it is linked to in the [vulnerability file](vulnerability.qmd#linking-exposure-to-datasets).
 
 - [Gridded files](exposure/grid.qmd)

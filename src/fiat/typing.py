@@ -3,14 +3,17 @@
 from types import ModuleType
 from typing import Callable
 
+import numpy as np
+
 
 class MethodType(ModuleType):
     """Typing for methods module."""
 
+    AXIS_TYPES: list[str]
     COLUMNS: list[str]
-    INDEX: str
     NAME: str
+    NDATASETS: int
     NEW_COLUMNS: list[str]
     TYPES: list[str]
-    fn_hazard: Callable[[list[float], str], tuple[float]]
-    fn_impact: Callable[[float, float, Callable[[float], float], float], float]
+    fn_hazard: Callable[..., tuple[tuple[float, ...], float]]
+    fn_impact: Callable[..., float | np.ndarray]

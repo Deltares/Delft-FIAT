@@ -8,7 +8,7 @@ from pyproj import Transformer
 from pyproj.crs import CRS
 from scipy.interpolate import RegularGridInterpolator
 
-from fiat.driver import NetcdfReader, NetcdfWriter
+from fiat.driver import ConstantVariable, NetcdfReader, NetcdfWriter
 
 
 def transform_bounds(
@@ -196,14 +196,43 @@ def reproject(
     write_ds = NetcdfWriter(write_path)
     write_ds.create_spatial_dims(lats=lats, lons=lons)
     write_ds.set_spatial_ref(CRS.from_user_input(dst_crs))
+    # Set the other dimensions as a well
+    for dim in ds.dims.values():
+        write_ds.create_dim(dim.name, values=dim[:])
 
     # Loop though the variables
     for var, var_obj in ds.variables.items():
+        # Constant layers are added again by the model
+        if isinstance(var_obj, ConstantVariable):
+            continue
+        # If the variable is non spatial, just set it and continue
+        if not var_obj.is_spatial:
+            write_ds.create_variable(
+                var=var,
+                dims=var_obj.dims,
+                dtype=var_obj.dtype,
+                nodata=var_obj.nodata,
+            )
+            var_obj.load()
+            write_ds.variables[var]._obj[:] = var_obj[:]
+            continue
         # Create the spatial data variable
-        write_ds.create_spatial_variable(var)
+        write_ds.create_spatial_variable(
+            var,
+            dtype=var_obj.dtype,
+            nodata=var_obj.nodata,
+        )
+        # Copy the attributes, the writer manages the nodata and grid mapping
+        attrs = {
+            key: value
+            for key, value in ds.src.variables[var].__dict__.items()
+            if key not in ("_FillValue", "grid_mapping")
+        }
+        write_ds.src.variables[var].setncatts(attrs)
         # Get the data
         data = var_obj.load()
-        data[data == var_obj.nodata] = np.nan
+        if np.issubdtype(data.dtype, np.floating):
+            data[data == var_obj.nodata] = np.nan
 
         # Set up the interpolator
         interpolator = RegularGridInterpolator(
@@ -211,13 +240,13 @@ def reproject(
             data,
             method=method,
             bounds_error=False,
-            fill_value=np.nan,
+            fill_value=var_obj.nodata,
         )
 
         # Resample the data to the new coordinates (in source projection still)
         pts = np.stack([lats_src, lons_src], axis=-1)  # same order
         data_out: np.ndarray = interpolator(pts)
-        data_out[np.isnan(data_out)] = -9999
+        data_out[np.isnan(data_out)] = var_obj.nodata
 
         # Write the array to the dataset variable
         write_ds.variables[var].set(data_out, origin=[0, 0])

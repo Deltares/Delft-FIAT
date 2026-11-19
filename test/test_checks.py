@@ -2,28 +2,46 @@ import re
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import numpy as np
 import pytest
 from pyproj import CRS
 
 from fiat.check import (
     check_available_values,
     check_duplicate_columns,
+    check_exp_cat_uniform,
+    check_exp_cat_value,
+    check_exp_cat_value_settings,
+    check_exp_cat_values,
     check_exp_columns,
     check_exp_derived_types,
-    check_exp_grid_fn,
+    check_exp_variables,
     check_geom_extent,
     check_grid_exact,
     check_hazard_identifier,
     check_hazard_rp,
     check_hazard_subsets,
     check_hazard_types,
+    check_hazard_variable_rp,
+    check_hazard_variables,
     check_input_data,
     check_internal_crs,
     check_vs_crs,
+    check_vuln_axes,
+    check_vuln_axis_types,
+    check_vuln_categories,
+    check_vuln_curve_ids,
+    check_vuln_grid_method,
+    check_vuln_group,
+    check_vuln_method,
+    check_vuln_types_keys,
+    check_vuln_types_missing,
+    check_vuln_variables,
 )
 from fiat.container import Container
 from fiat.error import FIATDataError
 from fiat.log import Logger
+from fiat.method import flood
 from fiat.method.flood.depth import COLUMNS
 
 
@@ -129,26 +147,67 @@ maximum value: ['content']"
     )
 
 
-def test_check_exp_grid_fn_fail():
-    # Call the function with an unknown vulnerability curve
-    with pytest.raises(
-        FIATDataError,
-        match=re.escape(
-            "Unknown impact function identifier found in \
-exposure grid: ['bar']"
-        ),
-    ):
-        check_exp_grid_fn(
-            fn_list=["foo", "bar"],
-            fn_available=["foo", "baz"],
+def test_check_exp_cat_uniform_fail():
+    # Category not in the category coordinate
+    with pytest.raises(FIATDataError, match="Category 7"):
+        check_exp_cat_uniform(
+            layer="cat",
+            value=7,
+            value_var="foo",
+            categories=[0, 1, 2],
         )
 
 
-def test_check_exp_grid_fn_pass():
-    # Call the function with all functions known
-    check_exp_grid_fn(
-        fn_list=["foo", "bar"],
-        fn_available=["foo", "bar", "baz"],
+def test_check_exp_cat_uniform_pass():
+    # Call the function with a known category
+    check_exp_cat_uniform(
+        layer="cat",
+        value=1.0,
+        value_var="foo",
+        categories=[0, 1, 2],
+    )
+
+
+def test_check_exp_cat_value_fail():
+    # Uniform category value variable
+    with pytest.raises(FIATDataError, match="uniform"):
+        check_exp_cat_value(
+            layers={"cat": ["foo", "bar"]},
+            uniform=["bar"],
+        )
+
+    # Category value variable shared between layers
+    with pytest.raises(FIATDataError, match="foo"):
+        check_exp_cat_value(
+            layers={"cat1": ["foo", "bar"], "cat2": ["foo"]},
+            uniform=[],
+        )
+
+
+def test_check_exp_cat_value_pass():
+    # Call the function with distinct, non uniform value variables
+    check_exp_cat_value(
+        layers={"cat1": ["foo"], "cat2": ["bar"]},
+        uniform=["baz"],
+    )
+
+
+def test_check_exp_cat_values_fail():
+    # Call the function with a missing value variable
+    with pytest.raises(FIATDataError, match=re.escape("['bar']")):
+        check_exp_cat_values(
+            layer="cat",
+            values=["foo", "bar"],
+            available=["cat", "foo"],
+        )
+
+
+def test_check_exp_cat_values_pass():
+    # Call the function with all value variables present
+    check_exp_cat_values(
+        layer="cat",
+        values=["foo"],
+        available=["cat", "foo"],
     )
 
 
@@ -462,3 +521,278 @@ def test_check_vs_crs_pass(crs_4326: CRS):
 
     # Assert the output
     assert b
+
+
+def test_check_vuln_axes_fail():
+    # Not strictly increasing (decreasing and duplicate values)
+    with pytest.raises(FIATDataError, match="depth_default"):
+        check_vuln_axes("default", "depth_default", np.array([1.0, 0.5, 0.0]))
+    with pytest.raises(FIATDataError, match="strictly increasing"):
+        check_vuln_axes("default", "depth_default", np.array([0.0, 0.5, 0.5]))
+
+
+def test_check_vuln_axes_pass():
+    # Strictly increasing
+    check_vuln_axes("default", "depth_default", np.array([0.0, 0.5, 1.0]))
+
+
+def test_check_vuln_axis_types_fail():
+    # Wrong axis type for a single dataset method
+    with pytest.raises(FIATDataError, match="duration"):
+        check_vuln_axis_types(
+            "foo",
+            axis_types=["duration"],
+            method_axis_types=["water_depth"],
+            ndatasets=1,
+        )
+
+    # Missing axis type (unknown)
+    with pytest.raises(FIATDataError, match="foo"):
+        check_vuln_axis_types(
+            "foo",
+            axis_types=[None],
+            method_axis_types=["water_depth"],
+            ndatasets=1,
+        )
+
+    # Too many axes for a combined method
+    with pytest.raises(FIATDataError, match="foo"):
+        check_vuln_axis_types(
+            "foo",
+            axis_types=["water_depth", "duration"],
+            method_axis_types=["water_depth", "duration"],
+            ndatasets=2,
+        )
+
+    # Axis type not in a combined method
+    with pytest.raises(FIATDataError, match="foo"):
+        check_vuln_axis_types(
+            "foo",
+            axis_types=["water_level"],
+            method_axis_types=["water_depth", "duration"],
+            ndatasets=2,
+        )
+
+
+def test_check_vuln_axis_types_pass():
+    # Single dataset, order does not matter
+    check_vuln_axis_types(
+        "foo",
+        axis_types=["duration", "water_depth"],
+        method_axis_types=["water_depth", "duration"],
+        ndatasets=1,
+    )
+    # One of the combined method axis types
+    check_vuln_axis_types(
+        "foo",
+        axis_types=["duration"],
+        method_axis_types=["water_depth", "duration"],
+        ndatasets=2,
+    )
+
+
+def test_check_vuln_categories_fail():
+    # Category 3 is missing from the dataset
+    with pytest.raises(FIATDataError, match=re.escape("[3]")):
+        check_vuln_categories(
+            layer="cat",
+            categories=[0, 1, 3],
+            dataset="default",
+            available=[1, 2],
+        )
+
+
+def test_check_vuln_categories_pass():
+    # Category 0 is ignored
+    check_vuln_categories(
+        layer="cat",
+        categories=[0, 1, 2],
+        dataset="default",
+        available=[1, 2],
+    )
+
+
+def test_check_vuln_curve_ids_fail():
+    # Unknown curve id
+    with pytest.raises(FIATDataError, match="'bar'"):
+        check_vuln_curve_ids(
+            layer="exp",
+            curve_id="bar",
+            dataset="default",
+            available=["foo", "baz"],
+        )
+
+
+def test_check_vuln_curve_ids_pass():
+    # Known curve id
+    check_vuln_curve_ids(
+        layer="exp",
+        curve_id="foo",
+        dataset="default",
+        available=["foo", "baz"],
+    )
+
+
+def test_check_vuln_grid_method_fail():
+    # flood.level needs a hazard conversion
+    with pytest.raises(FIATDataError, match="flood.level"):
+        check_vuln_grid_method(
+            layer="exp",
+            method="flood.level",
+            types=flood.level.TYPES,
+            axis_types=flood.level.AXIS_TYPES,
+        )
+
+
+def test_check_vuln_grid_method_pass():
+    # flood.depth needs no hazard conversion
+    check_vuln_grid_method(
+        layer="exp",
+        method="flood.depth",
+        types=flood.depth.TYPES,
+        axis_types=flood.depth.AXIS_TYPES,
+    )
+
+
+def test_check_vuln_group_fail():
+    method_axis_types = ["water_depth", "duration"]
+    # Wrong count
+    with pytest.raises(FIATDataError, match="number of datasets"):
+        check_vuln_group(
+            layer="exp",
+            method="flood.depth_duration",
+            ndatasets=2,
+            axis_types=["water_depth"],
+            method_axis_types=method_axis_types,
+        )
+
+    # Duplicate axis types
+    with pytest.raises(FIATDataError, match="duplicate"):
+        check_vuln_group(
+            layer="exp",
+            method="flood.depth_duration",
+            ndatasets=2,
+            axis_types=["water_depth", "water_depth"],
+            method_axis_types=method_axis_types,
+        )
+
+    # Axis types not equal to the method's
+    with pytest.raises(FIATDataError, match="do not match"):
+        check_vuln_group(
+            layer="exp",
+            method="flood.depth_duration",
+            ndatasets=2,
+            axis_types=["water_depth", "water_level"],
+            method_axis_types=method_axis_types,
+        )
+
+
+def test_check_vuln_group_pass():
+    # Order does not matter
+    check_vuln_group(
+        layer="exp",
+        method="flood.depth_duration",
+        ndatasets=2,
+        axis_types=["duration", "water_depth"],
+        method_axis_types=["water_depth", "duration"],
+    )
+
+
+def test_check_vuln_method_fail():
+    # No method
+    with pytest.raises(FIATDataError, match="no method"):
+        check_vuln_method("foo", None)
+
+    # Unknown method
+    with pytest.raises(FIATDataError, match="flood.nope"):
+        check_vuln_method("foo", "flood.nope")
+    with pytest.raises(FIATDataError, match="nope.depth"):
+        check_vuln_method("foo", "nope.depth")
+
+
+def test_check_vuln_method_pass():
+    # Known method
+    check_vuln_method("foo", "flood.depth")
+
+
+def test_check_vuln_types_keys_fail():
+    # Unknown dimension
+    with pytest.raises(FIATDataError, match=re.escape("['nope']")):
+        check_vuln_types_keys(
+            "direct",
+            keys=["depth_direct", "nope"],
+            dims=["depth_direct"],
+        )
+
+
+def test_check_vuln_types_keys_pass():
+    # Known dimension
+    check_vuln_types_keys("direct", keys=["depth_direct"], dims=["depth_direct"])
+
+
+def test_check_vuln_variables_fail():
+    # Unknown dataset
+    with pytest.raises(FIATDataError, match=re.escape("['nope']")):
+        check_vuln_variables(names=["default", "nope"], available=["default"])
+
+
+def test_check_vuln_variables_pass():
+    # Known dataset
+    check_vuln_variables(names=["default"], available=["default", "direct"])
+
+
+def test_check_vuln_types_missing_fail():
+    # An index dimension without a type
+    with pytest.raises(FIATDataError, match="duration_default"):
+        check_vuln_types_missing(
+            "default",
+            keys=["depth_default"],
+            dims=["depth_default", "duration_default"],
+        )
+
+
+def test_check_vuln_types_missing_pass():
+    # All index dimensions have a type
+    check_vuln_types_missing("default", keys=["depth_default"], dims=["depth_default"])
+
+
+def test_check_hazard_variables_fail():
+    # A variable that is not in the hazard data
+    with pytest.raises(FIATDataError, match=re.escape("['nope']")):
+        check_hazard_variables(["data", "nope"], available=["data"])
+
+
+def test_check_hazard_variables_pass():
+    # All variables in the hazard data
+    check_hazard_variables(["data"], available=["data", "other"])
+
+
+def test_check_hazard_variable_rp_fail():
+    # Variables without a return period
+    with pytest.raises(FIATDataError, match=re.escape("['a']")):
+        check_hazard_variable_rp(["a"])
+
+
+def test_check_hazard_variable_rp_pass():
+    # No variables without a return period
+    check_hazard_variable_rp([])
+
+
+def test_check_exp_cat_value_settings():
+    # A category value variable without an entry in the settings
+    with pytest.raises(FIATDataError, match=re.escape("['values2']")):
+        check_exp_cat_value_settings({"layer": ["values", "values2"]}, ["values"])
+
+    # All set
+    check_exp_cat_value_settings({"layer": ["values"]}, ["values", "other"])
+
+
+def test_check_exp_variables_fail():
+    # A variable that is not in the exposure data
+    with pytest.raises(FIATDataError, match=re.escape("['nope']")):
+        check_exp_variables(["exposure1", "nope"], available=["exposure1"])
+
+
+def test_check_exp_variables_pass():
+    # All variables in the exposure data
+    check_exp_variables(["exposure1"], available=["exposure1", "exposure2"])

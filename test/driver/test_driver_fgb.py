@@ -1,10 +1,12 @@
 import pickle
+from multiprocessing import get_context
 from pathlib import Path
 
 import numpy as np
 import pytest
 from pyproj import CRS
 
+from fiat.driver import fgb
 from fiat.driver.fgb import (
     CT_BINARY,
     CT_BOOL,
@@ -298,3 +300,33 @@ def test_fgb_roundtrip_multipolygon(tmp_path: Path, fgb_multipolygon: Geometry):
     np.testing.assert_array_almost_equal(
         feature.geometry.coords, fgb_multipolygon.coords
     )
+
+
+def test_fgb_finalize_outputs_count(monkeypatch: pytest.MonkeyPatch):
+    # Capture the records handed to the finalize function
+    found = {}
+
+    def _finalize(out_path, body, name, geom_type, cols, types, records, **kwargs):
+        found[out_path] = records
+
+    monkeypatch.setattr(fgb, "finalize", _finalize)
+    params = {
+        "a.fgb": {
+            "name": "a",
+            "geom_type": GT_POLYGON,
+            "col_names": [],
+            "col_types": [],
+            "crs_wkt": None,
+            "crs_org": None,
+            "crs_code": None,
+        }
+    }
+
+    # Records put on the queue right before finalizing are waited for
+    queue = get_context("spawn").Queue()
+    queue.put(("a.fgb", [1, 2]))
+    queue.put(("a.fgb", [3]))
+    fgb._finalize_outputs(queue, params, count=2)
+
+    # Assert the output
+    assert found == {"a.fgb": [1, 2, 3]}

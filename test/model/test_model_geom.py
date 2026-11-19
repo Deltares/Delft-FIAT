@@ -16,6 +16,7 @@ def test_geommodel(model_settings: Callable[[str], GeomSettings]):
 
     # Assert some simple stuff
     assert isinstance(m.exposure, Container)
+    m.close()
 
 
 def test_geommodel_properties(model_settings: Callable[[str], GeomSettings]):
@@ -26,6 +27,8 @@ def test_geommodel_properties(model_settings: Callable[[str], GeomSettings]):
     assert m.type == "geom"
     assert len(m.exposure) == 1
     assert isinstance(m.exposure.ds1.data, FlatGeobufReader)
+    assert m.exposure.ds1.vulnerability == "default"
+    m.close()
 
 
 def test_geommodel_read_exposure(model_settings: Callable[[str], GeomSettings]):
@@ -35,6 +38,7 @@ def test_geommodel_read_exposure(model_settings: Callable[[str], GeomSettings]):
     # Assert nothing's there
     assert len(m.exposure) == 1
     assert m.exposure.ds1.data.size == 4
+    m.close()
 
 
 def test_geommodel_read_exposure_multi(model_settings: Callable[[str], GeomSettings]):
@@ -45,6 +49,7 @@ def test_geommodel_read_exposure_multi(model_settings: Callable[[str], GeomSetti
     assert len(m.exposure) == 2
     assert m.exposure.ds1.data.profile.size == 4
     assert m.exposure.ds2.data.profile.size == 1
+    m.close()
 
 
 def test_geommodel_read_exposure_reproj(
@@ -65,6 +70,7 @@ def test_geommodel_read_exposure_reproj(
     assert len(m.exposure) == 1
     assert m.exposure.ds1.data.profile.size == 4
     assert get_crs_repr(m.exposure.ds1.data.profile.crs) == "EPSG:3857"
+    m.close()
 
 
 def mockworker(*args, **kwargs):
@@ -94,6 +100,7 @@ def test_geommodel_run(
     assert "Running the model" in caplog.text
     assert "Busy..." in caplog.text
     assert "Model run is done!" in caplog.text
+    m.close()
 
 
 def test_geommodel_run_fail(
@@ -114,3 +121,17 @@ def test_geommodel_run_fail(
     assert "Busy..." in caplog.text
     assert "No bueno..." in caplog.text
     assert "Model run is done!" not in caplog.text
+    m.close()
+
+
+def test_geommodel_close(model_settings: Callable[[str], GeomSettings]):
+    # Create the object
+    m = GeomModel(model_settings("geom_event_2g.toml"))
+
+    # Close the data
+    m.close()
+
+    # Assert the state
+    assert m.hazard.closed
+    assert m.vulnerability.closed
+    assert all(item.data.closed for item in m.exposure)

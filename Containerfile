@@ -16,7 +16,8 @@ WORKDIR /home/deltares
 # Install pixi and copy the project meta and code
 RUN curl -fsSL https://pixi.sh/install.sh | bash
 ENV PATH=/home/deltares/.pixi/bin:$PATH
-COPY --chown=deltares:deltares pixi.lock pyproject.toml README.md setup.cfg setup.py ./
+COPY --chown=deltares:deltares pixi.lock pyproject.toml README.md \
+generate.py generate_helpers.py setup.cfg setup.py ./
 COPY --chown=deltares:deltares src/fiat ./src/fiat
 
 # Install pixi environment

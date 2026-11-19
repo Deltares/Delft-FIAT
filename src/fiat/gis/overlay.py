@@ -178,7 +178,7 @@ def clip(
     Returns
     -------
     np.ndarray
-        The resulting values.
+        The resulting values as floating point, with nodata set to ``nan``.
 
     See Also
     --------
@@ -186,16 +186,16 @@ def clip(
     """
     # Gather the masked cells and map nodata -> nan in one compiled pass.
     arr = var[*window]
-    if np.issubdtype(arr.dtype, np.floating):
-        has_nodata = var.nodata is not None
-        return clip_masked(
-            arr,
-            mask,
-            float(var.nodata) if has_nodata else 0.0,
-            1 if has_nodata else 0,
-        )
-    # Fallback for non-floating (e.g. integer) grids: keep numpy semantics.
-    return arr[mask == 1]
+    # Non-floating (e.g. integer) grids are cast to float so nodata can become nan
+    if not np.issubdtype(arr.dtype, np.floating):
+        arr = arr.astype(np.float64)
+    has_nodata = var.nodata is not None
+    return clip_masked(
+        arr,
+        mask,
+        float(var.nodata) if has_nodata else 0.0,
+        1 if has_nodata else 0,
+    )
 
 
 def clip_weighted(

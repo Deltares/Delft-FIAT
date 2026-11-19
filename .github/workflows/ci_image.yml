@@ -40,6 +40,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Create the data directory
+        run: |
+          mkdir "${{ github.workspace }}/data"
+
       - name: Build image
         run: |
           podman build -f Containerfile \

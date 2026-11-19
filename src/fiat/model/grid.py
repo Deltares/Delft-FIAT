@@ -8,7 +8,7 @@ from fiat.check import (
     check_internal_crs,
     check_vs_crs,
 )
-from fiat.driver import NetcdfReader, Table
+from fiat.driver import NetcdfReader
 from fiat.driver.geotiff import create_geotiff_handle
 from fiat.gis import grid
 from fiat.job import execute_pool, generate_jobs
@@ -17,12 +17,14 @@ from fiat.model.base import BaseModel
 from fiat.model.grid_util import equal_grid
 from fiat.model.grid_worker import initialize_pool, worker
 from fiat.model.meta import (
+    get_exposure_grid_datasets,
     get_exposure_grid_meta,
     get_hazard_meta,
+    get_method_types,
     get_run_meta,
     get_vulnerability_meta,
 )
-from fiat.model.util import create_2d_windows
+from fiat.model.util import apply_constants, create_2d_windows
 from fiat.open import open_grid
 from fiat.settings import GridSettings
 from fiat.util import (
@@ -32,7 +34,6 @@ from fiat.util import (
     HAZARD__META,
     RUN__META,
     VULNERABILITY,
-    VULNERABILITY__META,
     WINDOW,
     get_crs_repr,
 )
@@ -59,12 +60,24 @@ class GridModel(BaseModel):
         self._exposure: NetcdfReader | None = None
 
         # Setup the model
-        self._read_exposure()
+        try:
+            self._read_exposure()
+        except BaseException:
+            self.close()
+            raise
 
     @property
     def exposure(self) -> NetcdfReader | None:
         """Return the exposure grid data."""
         return self._exposure
+
+    def close(self) -> None:
+        """Close the model data."""
+        super().close()
+        # Not yet declared when reading the base data fails
+        exposure = getattr(self, "_exposure", None)
+        if exposure is not None and not exposure.closed:
+            exposure.close()
 
     def _read_exposure(self):
         """Read the exposure grid."""
@@ -72,7 +85,6 @@ class GridModel(BaseModel):
         file = self.settings.exposure.file
         kwargs = self.settings.exposure.settings.model_dump(exclude_none=True)
 
-        # Read the file
         logger.info(f"Reading exposure grid ('{file.name}')")
         data = open_grid(file, **kwargs)
         ## checks
@@ -94,6 +106,9 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
             _resalg = self.settings.exposure.resalg
             data = grid.reproject(data, self.crs.to_wkt(), _resalg)
 
+        # Check the listed variables and add the constant layers
+        apply_constants(data, self.settings.exposure.variables)
+
         ## When all is done, add it
         self._exposure = data
 
@@ -107,33 +122,48 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
         # Quick check if all cdata is set
         check_input_data(
             [HAZARD, self.hazard, NetcdfReader],
-            [VULNERABILITY, self.vulnerability, Table],
+            [VULNERABILITY, self.vulnerability, NetcdfReader],
             [EXPOSURE, self.exposure, NetcdfReader],
         )
 
         # Check for equal hazard and exposure grids
-        self._hazard, self._exposure = equal_grid(
+        hazard, exposure = equal_grid(
             self.hazard,
             self.exposure,
             base=self.settings.grid.base,
         )
+        # A reprojected dataset is a new reader, add the constant layers again
+        if hazard is not self.hazard:
+            apply_constants(hazard, self.settings.hazard.variables)
+        if exposure is not self.exposure:
+            apply_constants(exposure, self.settings.exposure.variables)
+        self._hazard, self._exposure = hazard, exposure
 
         # Setup the basic metadata
         run_meta = get_run_meta(
             cell_size=self.hazard.get_attr_lazy("area_sqm") or 1.0,
             risk=self.risk,
-            method=self.method,
+        )
+        # The datasets linked by the exposure variables
+        vulnerability_meta = get_vulnerability_meta(
+            self.vulnerability,
+            self.settings.vulnerability.variables,
+            names=get_exposure_grid_datasets(
+                self.exposure,
+                self.settings.exposure.variables,
+            ),
         )
         hazard_meta = get_hazard_meta(
             self.hazard,
+            self.settings.hazard.variables,
             risk=run_meta.risk,
-            method_types=self.method.TYPES,
+            method_types=get_method_types(vulnerability_meta),
         )
-        vulnerability_meta = get_vulnerability_meta(self.vulnerability)
 
         # Get the exposure meta
         exposure_meta = get_exposure_grid_meta(
             self.exposure,
+            self.settings.exposure.variables,
             run_meta=run_meta,
             hazard_meta=hazard_meta,
             vulnerability_meta=vulnerability_meta,
@@ -167,7 +197,6 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
                 RUN__META: run_meta,
                 HAZARD: self.hazard,
                 HAZARD__META: hazard_meta,
-                VULNERABILITY__META: vulnerability_meta,
                 EXPOSURE: self.exposure,
                 EXPOSURE__META: exposure_meta,
                 WINDOW: windows,

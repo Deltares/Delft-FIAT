@@ -4,9 +4,11 @@ import shutil
 from multiprocessing import get_context
 from multiprocessing.queues import Queue
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from unittest.mock import MagicMock
 
+import netCDF4 as nc4
+import numpy as np
 import pytest
 from pyproj.crs import CRS
 
@@ -82,6 +84,34 @@ def hazard_event_tmp_path(tmp_path: Path, hazard_event_path: Path) -> Path:
     return p
 
 
+@pytest.fixture
+def int16_nc_copy(tmp_path: Path) -> Callable[[Path, str], Path]:
+    # Copy a netcdf file with one variable stored as int16 (_FillValue=-9999)
+    def _factory(src: Path, var: str) -> Path:
+        dst = Path(tmp_path, f"{src.stem}_int16.nc")
+        with nc4.Dataset(src) as ds_src, nc4.Dataset(dst, "w") as ds_dst:
+            ds_src.set_auto_mask(False)
+            for name, dim in ds_src.dimensions.items():
+                ds_dst.createDimension(name, len(dim))
+            for name, v in ds_src.variables.items():
+                attrs = {k: v.getncattr(k) for k in v.ncattrs()}
+                fill = attrs.pop("_FillValue", None)
+                data = v[:]
+                if name == var:
+                    nodata = data == fill if fill is not None else False
+                    data = np.round(data).astype(np.int16)
+                    data[nodata] = -9999
+                    dtype, fill = np.int16, np.int16(-9999)
+                else:
+                    dtype = v.datatype
+                out = ds_dst.createVariable(name, dtype, v.dimensions, fill_value=fill)
+                out.setncatts(attrs)
+                out[:] = data
+        return dst
+
+    return _factory
+
+
 @pytest.fixture(scope="session")
 def hazard_event_highres_path(testdata_dir: Path) -> Path:
     p = Path(testdata_dir, "event_map_highres.nc")
@@ -97,15 +127,22 @@ def hazard_risk_path(testdata_dir: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
+def csv_path(testdata_dir: Path) -> Path:
+    p = Path(testdata_dir, "table.csv")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
 def vulnerability_path(testdata_dir: Path) -> Path:
-    p = Path(testdata_dir, "vulnerability", "curves.csv")
+    p = Path(testdata_dir, "curves.nc")
     assert p.is_file()
     return p
 
 
 @pytest.fixture(scope="session")
 def vulnerability_cat_path(testdata_dir: Path) -> Path:
-    p = Path(testdata_dir, "vulnerability", "curves_cat.csv")
+    p = Path(testdata_dir, "curves_cat.nc")
     assert p.is_file()
     return p
 
@@ -247,21 +284,26 @@ def mp_queue() -> Queue:
 @pytest.fixture
 def settings_dummy() -> dict[str, Any]:
     return {
-        "hazard": {"file": "event_map.nc"},
-        "vulnerability": {"file": "vulnerability/curves.csv"},
+        "hazard": {
+            "file": "event_map.nc",
+            "variables": [{"name": "data", "type": "water_depth"}],
+        },
+        "vulnerability": {
+            "file": "curves.nc",
+            "variables": [
+                {
+                    "name": "default",
+                    "method": "flood.depth",
+                    "types": {"depth_default": "water_depth"},
+                }
+            ],
+        },
     }
 
 
 @pytest.fixture(scope="session")
-def vulnerability_cat_data(vulnerability_cat_path: Path) -> Table:
-    ds = open_csv(vulnerability_cat_path, index="depth")
-    assert isinstance(ds, Table)
-    return ds
-
-
-@pytest.fixture(scope="session")
-def vulnerability_data(vulnerability_path: Path) -> Table:
-    ds = open_csv(vulnerability_path, index="depth")
+def vulnerability_data(csv_path: Path) -> Table:
+    ds = open_csv(csv_path, index="depth")
     assert isinstance(ds, Table)
     return ds
 

@@ -31,7 +31,7 @@ It is recommended to set up a directory structure as shown below to ensure that 
     ├───📁 output/
     |
     ├───📁 vulnerability/
-    │   └───📄 curves.csv
+    │   └───📄 curves.nc
     │
     ├───📄 hazard.nc
     |

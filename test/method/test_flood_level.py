@@ -1,14 +1,23 @@
 import numpy as np
 
+from fiat.method.flood import depth, level
 from fiat.method.flood.level import fn_hazard
+
+
+def test_attributes():
+    # Assert the method definitions
+    assert level.NDATASETS == 1
+    assert level.TYPES == ["water_level"]
+    assert level.AXIS_TYPES == ["water_depth"]
+    assert level.fn_impact is depth.fn_impact
 
 
 def test_fn_hazard():
     # Call the function
-    dmg, red_f = fn_hazard(
-        [2.5, 5, 10],
-        reference=0.0,
-        elevation=1.0,
+    (dmg,), red_f = fn_hazard(
+        (np.array([2.5, 5, 10], dtype=float),),
+        0.0,
+        1.0,
         method="mean",
     )
 
@@ -19,23 +28,24 @@ def test_fn_hazard():
 
 def test_fn_hazard_none():
     # Call the function
-    dmg, _ = fn_hazard(
-        [],
-        reference=0.0,
-        elevation=1.0,
+    (dmg,), red_f = fn_hazard(
+        (np.array([], dtype=float),),
+        0.0,
+        1.0,
         method="mean",
     )
 
     # Assert the output
     assert np.isnan(dmg)
+    assert np.isnan(red_f)
 
 
 def test_fn_hazard_red():
     # Call the function with a zero value added
-    dmg, red_f = fn_hazard(
-        [0, 2.5, 5, 10],
-        reference=2.0,
-        elevation=1.0,
+    (dmg,), red_f = fn_hazard(
+        (np.array([0, 2.5, 5, 10], dtype=float),),
+        2.0,
+        1.0,
         method="mean",
     )
 
@@ -46,10 +56,10 @@ def test_fn_hazard_red():
 
 def test_fn_hazard_high_elev():
     # Call the function with higher ref
-    dmg, red_f = fn_hazard(
-        [0, 2.5, 5, 10],
-        reference=0.0,
-        elevation=2.0,
+    (dmg,), red_f = fn_hazard(
+        (np.array([0, 2.5, 5, 10], dtype=float),),
+        0.0,
+        2.0,
         method="mean",
     )
 
@@ -60,10 +70,10 @@ def test_fn_hazard_high_elev():
 
 def test_fn_hazard_high_ref():
     # Call the function with higher ref
-    dmg, red_f = fn_hazard(
-        [0, 2.5, 5, 10],
-        reference=4.0,
-        elevation=2.0,
+    (dmg,), red_f = fn_hazard(
+        (np.array([0, 2.5, 5, 10], dtype=float),),
+        4.0,
+        2.0,
         method="mean",
     )
 
@@ -74,10 +84,10 @@ def test_fn_hazard_high_ref():
 
 def test_fn_hazard_high_elev_red():
     # Call the function with different input
-    dmg, red_f = fn_hazard(
-        [0, 0, 5, 10],
-        reference=1.0,
-        elevation=2.0,
+    (dmg,), red_f = fn_hazard(
+        (np.array([0, 0, 5, 10], dtype=float),),
+        1.0,
+        2.0,
         method="mean",
     )
 

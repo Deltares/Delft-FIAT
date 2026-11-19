@@ -352,9 +352,9 @@ def test_re_filter_edge():
     assert "fn_damage_" not in filt
 
 
-def test_regex_pattern(vulnerability_path: Path):
+def test_regex_pattern(csv_path: Path):
     # Open the data as binary
-    with open(vulnerability_path, "rb") as r:
+    with open(csv_path, "rb") as r:
         data = r.read()
 
     # Call the function
@@ -370,9 +370,9 @@ def test_regex_pattern(vulnerability_path: Path):
     assert len(elem) == 70
 
 
-def test_regex_pattern_other(vulnerability_path: Path):
+def test_regex_pattern_other(csv_path: Path):
     # Open the data as binary
-    with open(vulnerability_path, "rb") as r:
+    with open(csv_path, "rb") as r:
         data = r.read()
 
     # Call the function
@@ -406,9 +406,9 @@ def test_replace_emptry():
     assert out == ["1", "2", "nan"]
 
 
-def test_text_chunk_gen(vulnerability_path: Path):
+def test_text_chunk_gen(csv_path: Path):
     # Get a stream handler
-    data = open(vulnerability_path, "rb")
+    data = open(csv_path, "rb")
     # Setup a pattern
     pat = regex_pattern(",", multi=True)
 

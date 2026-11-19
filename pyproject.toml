@@ -228,7 +228,7 @@ clean-docs-site = { cmd = ["rm", "-rf", "docs/_site"] }
 docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 
 # Testdata
-testdata = { cmd = ["python", "data/generate.py"] }
+testdata = { cmd = ["python", "generate.py"] }
 
 # Dev specific taskss
 [tool.pixi.feature.dev.tasks]

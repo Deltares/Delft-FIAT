@@ -9,45 +9,47 @@ from fiat.method.flood.depth import fn_impact
 from fiat.method.util import ZONAL_CODES
 from fiat.util import DEPTH, FLOOD_LEVEL, LEVEL
 
-__all__ = ["fn_impact"]
+__all__ = ["fn_hazard", "fn_impact"]
 
 COLUMNS = ["reference", "elevation"]
 NAME = FLOOD_LEVEL
+NDATASETS = 1
 NEW_COLUMNS = [DEPTH]
 TYPES = [f"water_{LEVEL}"]
+AXIS_TYPES = [f"water_{DEPTH}"]
 
 
 def fn_hazard(
-    hazard: np.ndarray | list[float],
+    hazards: tuple[np.ndarray, ...],
     reference: float,
     elevation: float,
     method: str = "mean",
-) -> tuple[float]:
+) -> tuple[tuple[float, ...], float]:
     """Calculate the hazard value for flood level hazard.
 
     Parameters
     ----------
-    hazard : np.ndarray | list
-        Raw hazard values.
+    hazards : tuple[np.ndarray, ...]
+        Raw hazard values, one array (water level).
     reference : float
         Surface elevation reference to the hazard values.
     elevation : float
         The elevation of the object relative to the surface.
     method : str, optional
-        Chose 'max' or 'mean' for either the maximum value or the average,
+        Chose 'max', 'mean' or 'min' for the maximum, average or minimum value,
         by default 'mean'.
 
     Returns
     -------
-    float
-        A representative hazard value.
+    tuple[tuple[float, ...], float]
+        The representative hazard value(s) (water depth) and the reduction factor.
     """
     # Subtract the reference, filter to positive values and reduce in one pass.
     value, redf = zonal_reduce(
-        np.ascontiguousarray(hazard, dtype=np.float64),
+        np.ascontiguousarray(hazards[0], dtype=np.float64),
         ZONAL_CODES[method],
         reference,
     )
     if math.isnan(value):
-        return math.nan, math.nan
-    return value - elevation, redf
+        return (math.nan,), math.nan
+    return (value - elevation,), redf

@@ -2,9 +2,66 @@
 
 import math
 from itertools import product
-from typing import Generator
+from typing import Generator, Sequence
+
+from fiat.driver import ConstantVariable, NetcdfReader
+from fiat.error import FIATDataError
+from fiat.settings.variables import Variable
+from fiat.util import VALUE
 
 GEOM_DEFAULT_CHUNK = 50000
+
+
+def apply_constants(
+    reader: NetcdfReader,
+    variables: Sequence[Variable],
+) -> None:
+    """Check the listed variables and add the constant layers to the reader.
+
+    Variables of the reader that are not listed are ignored. Listed variables
+    without a value must be in the reader, listed variables with a value (constant
+    layers) must not be and are added to the reader. The reader is closed when
+    this fails.
+
+    Parameters
+    ----------
+    reader : NetcdfReader
+        The reader of the dataset.
+    variables : Sequence[Variable]
+        The settings of the variables of the dataset.
+    """
+    name = reader.path.name
+    try:
+        missing = [
+            item.name
+            for item in variables
+            if getattr(item, VALUE, None) is None and item.name not in reader.variables
+        ]
+        if missing:
+            raise FIATDataError(f"'{name}': variable(s) {missing} not found")
+
+        for item in variables:
+            value = getattr(item, VALUE, None)
+            if value is None:
+                continue
+            existing = reader.variables.get(item.name)
+            # Already added, e.g. to a reader that was copied by pickling
+            if isinstance(existing, ConstantVariable):
+                continue
+            if existing is not None:
+                raise FIATDataError(
+                    f"'{name}': variable '{item.name}' exists, can't define it by a \
+value"
+                )
+            if reader.profile is None:
+                raise FIATDataError(
+                    f"'{name}': no spatial dimensions for variable '{item.name}' \
+defined by a value"
+                )
+            reader.add_constant(item.name, value)
+    except BaseException:
+        reader.close()
+        raise
 
 
 def create_1d_chunks(

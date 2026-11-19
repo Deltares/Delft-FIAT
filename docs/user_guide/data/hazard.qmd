@@ -29,5 +29,41 @@ FIAT knows two types of hazard maps:
 Risk maps are mainly used to calculate the EAD (Estimated Annual Damages).
 If `risk` is not set to `true` in the [settings file](../settings/index.qmd), the supplied map will be treated as an event map.
 
+## Hazard types
+Every band (variable) of the hazard file that is used has a hazard **type**, set with the `type` entry of its `[[hazard.variables]]` entry in the [settings file](#settings), e.g.:
+
+- `water_depth`: flood depth;
+- `water_level`: flood elevation (level), only for geometry exposure (method `flood.level`);
+- `flood_duration`: flood duration.
+
+The [methods](vulnerability.qmd#methods) of the linked vulnerability datasets determine which types are needed. A hazard file can therefore hold bands of several types, e.g. a `depth` band and a `duration` band for the method `flood.depth_duration`. In case of a risk calculation, every return period must have a band of every needed type; the return period of a band is set with the `rp` entry in the settings file (see [risk maps](hazard_maps.qmd#return-periods)).
+
+## Settings
+The bands that are used, and their type and return period, are set in the [settings file](../settings/index.qmd) with a `[[hazard.variables]]` entry per band. Attributes of the bands in the file (e.g. `type` or `rp`) are **not** read, and bands of the file without a `[[hazard.variables]]` entry are ignored.
+
+```toml
+[hazard]
+file = "risk_map.nc"
+
+[[hazard.variables]]
+name = "depth_rp10"
+type = "water_depth"
+rp = 10
+
+[[hazard.variables]]
+name = "duration_rp10"                    # not in the file: uniform layer
+type = "flood_duration"
+rp = 10
+value = 3.0
+```
+
+- `name`: the name of the band (variable); it must exist in the file, unless `value` is set.
+- `type`: the hazard type of the band (required).
+- `rp`: the return period of the band (required for every band in risk calculations).
+- `value`: a constant value, see [uniform layers](#uniform-layers).
+
+### Uniform layers
+A `[[hazard.variables]]` entry with a `value` defines a uniform layer: a band that is not in the file and has the same (constant) value over the whole grid, e.g. a flood duration of 3 days. The `name` must be a **new** variable (not present in the file) and, like every entry, must have a `type`. Otherwise FIAT stops with an error when reading the hazard data.
+
 ## Supported formats
 An overview of supported formats is presented [here](supported.qmd#gridded-data-files)

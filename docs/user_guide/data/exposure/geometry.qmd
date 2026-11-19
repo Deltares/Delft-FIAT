@@ -15,6 +15,20 @@ When providing a polygon or line geometry file, a user can choose to use the *ar
 Assets cannot be partially or fully outside the hazard map extent! FIAT will stop if it detects any.
 :::
 
+Each geometry file is linked to exactly **one** vulnerability dataset via the `vulnerability` entry of its `[exposure.variables]` table (a single name, required, even when it is the dataset named `default`). The dataset may hold 1D or 2D curves; its [method](../vulnerability.qmd#methods) determines the needed hazard types and columns. Methods that combine several datasets (e.g. `flood.depth_duration`) can not be used for geometries.
+
+```toml
+[[exposure]]
+file = "exposure/spatial.fgb"
+
+[exposure.variables]
+area_method = "area"
+vulnerability = "default"
+```
+
+#### Output
+The output geometry file holds, per hazard identifier `<id>` (the band number for an event, the return period for risk), a column per hazard value of the method (e.g. `depth_<id>`, and `duration_<id>` for the depth-duration method), a column per impact column (e.g. `damage_structure_<id>`) and the total per impact type (e.g. `total_damage_<id>`). In case of a risk calculation the expected annual damage is added per impact type: a column `ead` when there is a single impact type, `ead_<type>` (e.g. `ead_damage`) per impact type otherwise.
+
 #### Supported data formats
 An overview of supported formats is presented [here](../supported.qmd#geometry-files)
 
@@ -25,7 +39,8 @@ In the table down below, an overview is provided od the necessary inputs in eith
 |--------------------------------------------------------|----------|----------|---------------------------|
 | [object_type](#object_type)                            | No       | -        | residential               |
 | [fn_< any >_< any >](#vulnerability-curves)            | Yes      | Yes      | struct_2                  |
-| [ref](#reference)                                      | No       | -        | 4                         |
+| [elevation](#elevation)                                | Yes      | -        | 0.5                       |
+| [reference](#reference)                                | No       | -        | 4                         |
 | [max_< any >_< any >](#maximum-value)                  | Yes      | Yes      | 193457.00                 |
 : exposure input {#tbl-exposure .hover}
 
@@ -35,14 +50,16 @@ A more detailed description of the data fields can be found below.
 The type of the object according to the type of the vector dataset, e.g. occupancy type for a building dataset.
 
 #### Vulnerability curves
-The user can input as many vulnerability curves and related maximum values as required. However, at least one vulnerability curve and related maximum value must be provides per asset. Vulnerability curve column are named as `fn_< exposure_type >_< component >` (for exposure types, see [here](../../settings/optional.qmd#exposure)). This name can be chosen freely but it is recommended to give it a descriptive name, such as **damage** (exposure type) in combination with **structure** or **content** (components), and it is required to use the same name in the maximum value column. (i.e. `max_< exposure-type >_< component >`) The value that must be entered is the name of the vulnerability curve, relating to the names in the corresponding vulnerability curves in the [vulnerability curves file](../vulnerability.qmd). Globally, continental vulnerability curves can be obtained from [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific functions when available.
+The user can input as many vulnerability curves and related maximum values as required. However, at least one vulnerability curve and related maximum value must be provides per asset. Vulnerability curve column are named as `fn_< exposure_type >_< component >` (for exposure types, see [here](../../settings/optional.qmd#exposure-geom)). This name can be chosen freely but it is recommended to give it a descriptive name, such as **damage** (exposure type) in combination with **structure** or **content** (components), and it is required to use the same name in the maximum value column. (i.e. `max_< exposure-type >_< component >`) The value that must be entered is the name of the vulnerability curve, relating to the curve ids of the vulnerability dataset linked to the geometry file in the [vulnerability file](../vulnerability.qmd). Globally, continental vulnerability curves can be obtained from [European Commission's Joint Research Centre](https://publications.jrc.ec.europa.eu/repository/handle/JRC105688), but it is recommended to use more location-specific functions when available.
+
+#### Elevation
+The elevation of the object (e.g. the ground floor height) relative to the surface. It is subtracted from the water depth at the object. Required by all flood [methods](../vulnerability.qmd#methods).
 
 #### Reference
-The reference (height) of the exposure data compared to the hazard data. This can very well be
-a combination of the ground elevation and the groud floor elevation.
+The reference (height) of the surface compared to the hazard data, e.g. the ground elevation. It is used to convert a water level to a water depth.
 
 ::: {.callout-important}
- Required for flood damage calculation, see [global model types](../../settings/optional.qmd#model)
+ Only required for the method `flood.level`, see the [methods](../vulnerability.qmd#methods).
 :::
 
 #### Maximum value

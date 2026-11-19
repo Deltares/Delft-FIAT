@@ -15,6 +15,7 @@ __pycache__/
 # Local documentation and temporary files (calculation etc.)
 .cov/
 .docs/
+data/
 tmp/
 whl/
 

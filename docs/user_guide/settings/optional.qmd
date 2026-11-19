@@ -4,110 +4,105 @@ title: "Optional input"
 
 Here we provide an overview of all optional/ non essential settings that the user can provide to FIAT. These are listed in the table (@tbl-toml) below.
 
-| Field                                  | Type    | Default       |
-|:---------------------------------------|---------|---------------|
-| **[model]**                            |         |               |
-| [loglevel](#model)                     | string  | INFO          |
-| [risk](#model)                         | boolean | false         |
-| **[model.srs]**                        |         |               |
-| [value](#model.srs)                    | string  | EPSG:4326     |
-| [global](#model.srs)            | bool    | false         |
-| **[model.grid]**                       |         |               |
-| [prefer](#model.grid)                  | string  | exposure      |
-| **[hazard]**                           |         |               |
-| [resampling_method](#hazard)           | int     | 0             |
-| [return_periods](#hazard)              | list    | -             |
-| [type](#hazard)                        | string  | flood         |
-| **[hazard.settings]**                  |         |               |
-| [srs](#hazard)                         | string  | -             |
-| [subset](#hazard.settings)             | string  | -             |
-| [var_as_band](#hazard.settings)        | boolean | false         |
-| **[exposure]**                         |         |               |
-| [types](#exposure)                     | list    | ['damage']    |
-| **[exposure.csv.settings]**            |         |               |
-| [index](#exposure.csv.settings)        | string  | object_id     |
-| **[exposure.geom.settings]**           |         |               |
-| [index](#exposure.geom.settings)       | string  | object_id     |
-| [srs](#exposure.geom.settings)         | string  | -             |
-| **[exposure.grid]**                    |         |               |
-| [resampling_method](#exposure.grid)    | int     | 0             |
-| **[exposure.grid.settings]**           |         |               |
-| [srs](#exposure.grid.settings)         | string  | -             |
-| [var_as_band](#exposure.grid.settings) | boolean | false         |
-| **[vulnerability]**                    |         |               |
-| [step_size](#vulnerability)            | float   | 0.01          |
-| **[vulnerability.settings]**           |         |               |
-| [index](#vulnerability.settings)       | string  | 'water depth' |
-: Settings.toml input (required and optional fields) {#tbl-toml .hover}
+| Field                                         | Type        | Default       |
+|:----------------------------------------------|-------------|---------------|
+| [loglevel](#model)                            | string      | INFO          |
+| [risk](#model)                                | boolean     | false         |
+| **[projection]**                              |             |               |
+| [crs](#projection)                            | string      | -             |
+| [force](#projection)                          | boolean     | false         |
+| **[[output]]** (geom) / **[output]** (grid)   |             |               |
+| [file](#output)                               | string      | see below     |
+| **[hazard]**                                  |             |               |
+| [resalg](#hazard)                             | string      | nearest       |
+| **[hazard.settings]**                         |             |               |
+| [crs](#hazard)                                | string      | -             |
+| **[[hazard.variables]]**                      |             |               |
+| [name, type, rp, value](#hazard.variables)    |             | -             |
+| **[[exposure]]** (geom)                       |             |               |
+| **[exposure.variables]** (geom)               |             |               |
+| [area_method](#exposure-geom)                 | string      | centroid      |
+| [impact_type](#exposure-geom)                 | list        | ['damage']    |
+| [zonal_method](#exposure-geom)                | string      | mean          |
+| **[exposure.settings]** (geom)                |             |               |
+| [crs](#exposure-geom)                         | string      | -             |
+| **[exposure]** (grid)                         |             |               |
+| [resalg](#exposure-grid)                      | string      | nearest       |
+| **[exposure.settings]** (grid)                |             |               |
+| [crs](#exposure-grid)                         | string      | -             |
+| **[[exposure.variables]]** (grid)             |             |               |
+| [name, type, vulnerability, fn_curve, values, value](#exposure.variables) | | - |
+| **[[vulnerability.variables]]**               |             |               |
+| [name, method, types](#vulnerability.variables) |           | -             |
+: Settings.toml input (optional fields) {#tbl-toml .hover}
 
-#### [model]
+#### Model
 
 - `loglevel`: Set the loglevel of the fiat logger from the settings file. Choose from 'DEBUG', 'INFO', 'WARNING', 'ERROR' or 'DEAD'.
 
 - `risk`: In case of a risk calculation this must be set to "true", for a single events this must be set to "false".
 
-#### [model.srs]
+#### [projection]
 
-- `value`: Global projection for the model and the output. If not defined, the default projection is set to WGS84.
+- `crs`: Model-wide projection for the model and the output. If not defined, the projection of the hazard data is used.
 
-- `global`: Whether to prefer the global projection or one defined by the hazard data. By default false, i.e. prefer the hazard projection.
+- `force`: Whether to force the model-wide projection on all the spatial input files.
 
-#### [model.grid]
+#### [output]
 
-- `prefer`: Whether to spatially prefer exposure data or hazard data. The other will be warped when they are not equal. Chose 'exposure' or 'hazard'.
+- `file`: The name of the output file. For the geometry model there is an `[[output]]` entry per `[[exposure]]` entry; by default the name of the exposure file. For the grid model it is a single `[output]` section; by default the name of the exposure file with a `.tif` suffix.
 
 #### [hazard]
 
-- `resampling_method`: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see [this page](https://gdal.org/api/gdalwarp_cpp.html#_CPPv415GDALResampleAlg)
+- `resalg`: Method used during resampling/ reprojecting. Default is 'nearest', i.e. nearest neighbour.
 
-- `return_periods`: Return periods for hazard calculation when they cannot be inferred from the data itself.
+- `settings.crs`: Projection of the hazard data if it cannot be inferred from the dataset itself.
 
-- `type`: Type of hazard. Should be the same name as the file containing the functions (e.g. 'flood' -> `fiat.method.flood`)
+#### Variables
+The variables of the input data (vulnerability datasets, hazard bands and gridded exposure layers) that are used are specified with a `variables` entry per variable; at least one entry is required for each of them. These entries are the **only** source of the attributes of the variables: attributes in the files (e.g. `type`, `rp`, `method`) are not read, and variables of a file without an entry are ignored. Every `name` must exist in its file, unless the entry defines a uniform layer with `value` (hazard and grid exposure only). A `value` entry must name a variable that is not in the file.
 
-####  [hazard.settings]
+##### [[hazard.variables]]
 
-- `srs`: Projection of the hazard data if it cannot be inferred from the dataset itself.
+- `name`: Name of the band (variable).
+- `type`: The hazard type, e.g. 'water_depth' or 'duration' (required).
+- `rp`: The return period of the band (required for every band when `risk` is true).
+- `value`: Constant value of a uniform layer that is not in the file.
 
-- `subset`: Select a specific subdataset by supplying it's ID (name) here.
+See [hazard data](../data/hazard.qmd#settings).
 
-- `var_as_band`:	Whether or not to read the subdatasets as classic raster band.
+##### [[exposure.variables]]
 
-::: {.callout-note}
-The entry `var_as_band` is only applicable to netCDF files.
-:::
+Only for the grid model.
 
-#### [exposure]
+- `name`: Name of the layer (variable).
+- `type`: The exposure type (required): 'default' or 'categorized' for a layer, 'values' for a category-value variable.
+- `vulnerability`: The vulnerability dataset(s) linked to this variable, a name or a list of names.
+- `fn_curve`: The curve id looked up in the linked vulnerability dataset(s) (required for type 'default').
+- `values`: The category-value variables of a categorized layer.
+- `value`: Constant value of a uniform layer that is not in the file.
 
-- `types`: Types of exposure. This could be monetary damages ('damage'), affected people ('affected') etc.
+See [grid exposure data](../data/exposure/grid.qmd#settings).
 
-#### [exposure.csv.settings]
+##### [[vulnerability.variables]]
 
-- `index`: Set the index column of the csv file. In case of the exposure csv, if no entry is provided then FIAT will default to 'object_id'.
+- `name`: Name of the vulnerability dataset (variable).
+- `method`: The calculation method of the dataset, e.g. 'flood.depth' (required).
+- `types`: The hazard type per index dimension of the dataset, e.g. `{ depth_default = "water_depth" }` (required).
 
-#### [exposure.geom.settings]
+See [vulnerability data](../data/vulnerability.qmd#settings).
 
-- `index`: Set the index column of the geom file(s). In case nothing is provided, the default value 'object_id' is used.
+#### [exposure] (geom) {#exposure-geom}
 
-- `srs`: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.
+- `variables.area_method`: The method of extracting hazard values based on the exposure geometry. Choose 'centroid' or 'area'.
 
-#### [exposure.grid]
+- `variables.impact_type`: Types of impact, a name or a list of names. This could be monetary damages ('damage'), affected people ('affected') etc.
 
-- `resampling_method`: Method used during resampling/ reprojecting. Default is 0, i.e. nearest neighbour. For more info, see [this page](https://gdal.org/api/gdalwarp_cpp.html#_CPPv415GDALResampleAlg)
+- `variables.zonal_method`: The method of aggregating the hazard values of an asset when `area_method` is set to 'area'. Choose 'mean', 'max' or 'min'.
 
-#### [exposure.grid.settings]
+- `settings.crs`: Projection of the exposure geometry data if it cannot be inferred from the dataset itself.
 
-- `srs`: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.
+#### [exposure] (grid) {#exposure-grid}
 
-- `var_as_band`:	Whether or not to read the subdatasets as classic raster band.
+- `resalg`: Method used during resampling/ reprojecting. Default is 'nearest', i.e. nearest neighbour.
 
-::: {.callout-note}
-The entry `var_as_band` is only applicable to netCDF files.
-:::
-
-#### [vulnerability]
-
-- `step_size`: The internal step size of the vulnerability data. The supplied data is interpolated or averaged depending on the minimal step size of the supplied dataset.
-
-#### [vulnerability.settings]
-
-- `index`: Set the index column of the csv file. In case of the vulnerability csv, if no entry is provided then FIAT will default to 'water depth'.
+- `settings.crs`: Projection of the gridded exposure data if it cannot be inferred from the dataset itself.

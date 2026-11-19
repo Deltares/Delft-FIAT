@@ -1,9 +1,10 @@
+import math
 import pickle
 
 import numpy as np
 import pytest
 
-from fiat._core import Interp1D
+from fiat._core import Interp1D, InterpND
 
 
 def test_interp1d():
@@ -100,3 +101,76 @@ def test_interp1d_pickle():
     assert isinstance(restored, Interp1D)
     # (4.0 lies above the last knot and holds the last value)
     np.testing.assert_array_almost_equal(restored([0.5, 2.0, 4.0]), [1.0, 5.0, 8.0])
+
+
+@pytest.fixture
+def interpnd() -> InterpND:
+    return InterpND(([0, 1, 2], [0, 10]), [[0, 0], [1, 2], [2, 4]])
+
+
+def test_interpnd(interpnd: InterpND):
+    # Assert values between and on the knots
+    np.testing.assert_almost_equal(interpnd(1.0, 5.0), 1.5)
+    np.testing.assert_almost_equal(interpnd(0.5, 0.0), 0.5)
+    np.testing.assert_almost_equal(interpnd(2.0, 10.0), 4.0)
+    assert isinstance(interpnd(1.0, 5.0), float)
+
+
+def test_interpnd_3d():
+    # Linear function f(x, y, z) = x + 2y + 3z is reproduced exactly
+    axes = ([0.0, 1.0, 3.0], [0.0, 2.0], [0.0, 1.0, 2.0, 4.0])
+    grid = np.meshgrid(*axes, indexing="ij")
+    values = grid[0] + 2 * grid[1] + 3 * grid[2]
+    fn = InterpND(axes, values)
+    np.testing.assert_almost_equal(fn(2.0, 0.5, 3.0), 2.0 + 1.0 + 9.0)
+
+
+def test_interpnd_outside_grid(interpnd: InterpND):
+    # Queries outside the grid are clamped per axis
+    np.testing.assert_almost_equal(interpnd(-1, -5), 0.0)
+    np.testing.assert_almost_equal(interpnd(9, 99), 4.0)
+    np.testing.assert_almost_equal(interpnd(1.0, 99), 2.0)
+
+
+def test_interpnd_array(interpnd: InterpND):
+    # Call with arrays, the shape is preserved
+    out = interpnd(np.array([1.0, 2.0]), np.array([5.0, 10.0]))
+    assert isinstance(out, np.ndarray)
+    assert out.dtype == np.float64
+    np.testing.assert_array_almost_equal(out, [1.5, 4.0])
+
+    out = interpnd(np.ones((2, 2)), np.full((2, 2), 5.0))
+    assert out.shape == (2, 2)
+    np.testing.assert_array_almost_equal(out, np.full((2, 2), 1.5))
+
+
+def test_interpnd_nan(interpnd: InterpND):
+    # Any nan input gives a nan output
+    assert math.isnan(interpnd(math.nan, 1.0))
+    assert math.isnan(interpnd(1.0, math.nan))
+    out = interpnd(np.array([1.0, math.nan]), np.array([math.nan, 5.0]))
+    assert np.isnan(out).all()
+
+
+def test_interpnd_pickle(interpnd: InterpND):
+    # Pickle round trip
+    fn = pickle.loads(pickle.dumps(interpnd))
+    np.testing.assert_almost_equal(fn(1.0, 5.0), 1.5)
+
+
+def test_interpnd_shape_error():
+    # Only one axis
+    with pytest.raises(ValueError, match="at least two axes"):
+        InterpND(([0, 1],), [[0, 1]])
+    # Number of axes not equal to the number of value dimensions
+    with pytest.raises(ValueError, match="number of axes"):
+        InterpND(([0, 1], [0, 1]), [0, 1])
+    # Axis length not equal to the value dimension length
+    with pytest.raises(ValueError, match="length of axis 0"):
+        InterpND(([0, 1, 2], [0, 1]), [[0, 1], [1, 2]])
+
+
+def test_interpnd_query_error(interpnd: InterpND):
+    # Wrong number of query arguments
+    with pytest.raises(ValueError, match="expected 2 query arguments"):
+        interpnd(1.0)

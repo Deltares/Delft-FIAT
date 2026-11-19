@@ -13,7 +13,7 @@ from fiat.check import (
     check_vs_crs,
 )
 from fiat.container import Container
-from fiat.driver import NetcdfReader, Table, fgb
+from fiat.driver import NetcdfReader, fgb
 from fiat.gis import geom
 from fiat.job import execute_pool, generate_jobs
 from fiat.log import spawn_logger
@@ -24,6 +24,7 @@ from fiat.model.meta import (
     ExposureGeomData,
     get_exposure_geom_meta,
     get_hazard_meta,
+    get_method_types,
     get_run_meta,
     get_vulnerability_meta,
 )
@@ -39,7 +40,6 @@ from fiat.util import (
     OUTPUT__PATH,
     RUN__META,
     VULNERABILITY,
-    VULNERABILITY__META,
     distribute_threads,
     get_crs_repr,
 )
@@ -76,13 +76,25 @@ class GeomModel(BaseModel):
         self._exposure: Container[ExposureGeomData] = Container()
 
         # Setup the geometry model
-        self._read_exposure()
+        try:
+            self._read_exposure()
+        except BaseException:
+            self.close()
+            raise
 
     ## Properties
     @property
     def exposure(self) -> Container:
         """Return the exposure data."""
         return self._exposure
+
+    ## I/O
+    def close(self) -> None:
+        """Close the model data."""
+        super().close()
+        # Not yet declared when reading the base data fails
+        for item in getattr(self, "_exposure", []):
+            item.data.close()
 
     ## Read methods
     def _read_exposure(self):
@@ -92,8 +104,9 @@ class GeomModel(BaseModel):
 
         # Move though the found paths
         for element in self.settings.exposure:
-            # Get the file path and the reading kwargs
+            # Get the file path, the variables and the reading kwargs
             file = element.file
+            variables = element.variables
             kwargs = element.settings.model_dump(exclude_none=True)
 
             # Read the file
@@ -121,11 +134,12 @@ class GeomModel(BaseModel):
             # Set the data
             self._exposure.set(
                 ExposureGeomData(
-                    area_method=element.area_method,
+                    area_method=variables.area_method,
                     data=data,
-                    impact_types=element.impact_type,
+                    impact_types=variables.impact_type,
                     path=file,
-                    zonal_method=element.zonal_method,
+                    vulnerability=variables.vulnerability,
+                    zonal_method=variables.zonal_method,
                 )
             )
 
@@ -142,21 +156,26 @@ class GeomModel(BaseModel):
         # Quick check if all data is set
         check_input_data(
             [HAZARD, self.hazard, NetcdfReader],
-            [VULNERABILITY, self.vulnerability, Table],
+            [VULNERABILITY, self.vulnerability, NetcdfReader],
             [EXPOSURE, self.exposure, ExposureGeomData],
         )
 
         # Setup the basic metadata
         run_meta = get_run_meta(
             risk=self.risk,
-            method=self.method,
+        )
+        # One dataset per exposure file, the hazard types from all their methods
+        vulnerability_meta = get_vulnerability_meta(
+            self.vulnerability,
+            self.settings.vulnerability.variables,
+            names=list(dict.fromkeys(item.vulnerability for item in self.exposure)),
         )
         hazard_meta = get_hazard_meta(
             self.hazard,
+            self.settings.hazard.variables,
             risk=self.risk,
-            method_types=self.method.TYPES,
+            method_types=get_method_types(vulnerability_meta),
         )
-        vulnerability_meta = get_vulnerability_meta(self.vulnerability)
 
         # Get the thread loads
         logger.info("Distributing work load")
@@ -186,7 +205,7 @@ class GeomModel(BaseModel):
                 exposure=exposure,
                 run_meta=run_meta,
                 hazard_meta=hazard_meta,
-                method=self.method,
+                vulnerability_meta=vulnerability_meta,
             )
             # Check the output file path
             ensure_writable_filepath(output_path)
@@ -206,7 +225,6 @@ class GeomModel(BaseModel):
                     RUN__META: run_meta,
                     HAZARD: self.hazard,
                     HAZARD__META: hazard_meta,
-                    VULNERABILITY__META: vulnerability_meta,
                     EXPOSURE: exposure.data,
                     EXPOSURE__META: exposure_meta,
                     CHUNK: chunks,
@@ -219,7 +237,7 @@ class GeomModel(BaseModel):
         try:
             _s = time.time()
             logger.info("Busy...")
-            execute_pool(
+            keys = execute_pool(
                 ctx=self.ctx,
                 func=worker,
                 jobs=chain(*jobs_list),
@@ -239,6 +257,10 @@ class GeomModel(BaseModel):
         else:
             # Finalize the output: build the packed R-tree and write indexed .fgb
             logger.info("Building spatial index and writing output...")
-            fgb._finalize_outputs(self.queue, parameters)
+            fgb._finalize_outputs(
+                self.queue,
+                parameters,
+                count=len([item for item in keys if item is not None]),
+            )
             logger.info(f"Output generated in: '{self.settings.output_dir}'")
             logger.info("Model run is done!")

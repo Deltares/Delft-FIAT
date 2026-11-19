@@ -12,69 +12,70 @@ from fiat.util import DEPTH, FLOOD_DEPTH
 __all__ = ["fn_hazard", "fn_impact"]
 
 COLUMNS = ["elevation"]
-INDEX = DEPTH
 NAME = FLOOD_DEPTH
+NDATASETS = 1
 NEW_COLUMNS = [DEPTH]
 TYPES = [f"water_{DEPTH}"]
+AXIS_TYPES = TYPES
 
 
 def fn_hazard(
-    hazard: np.ndarray | list[float],
+    hazards: tuple[np.ndarray, ...],
     elevation: float,
     method: str = "mean",
-) -> tuple[float]:
+) -> tuple[tuple[float, ...], float]:
     """Calculate the hazard value for flood depth hazard.
 
     Parameters
     ----------
-    hazard : np.ndarray | list
-        Raw hazard values.
+    hazards : tuple[np.ndarray, ...]
+        Raw hazard values, one array (water depth).
     elevation : float
         Elevation of the object relative to the surface.
     method : str, optional
-        Chose 'max' or 'mean' for either the maximum value or the average,
+        Chose 'max', 'mean' or 'min' for the maximum, average or minimum value,
         by default 'mean'.
 
     Returns
     -------
-    float
-        A representative hazard value.
+    tuple[tuple[float, ...], float]
+        The representative hazard value(s) and the reduction factor.
     """
     # Filter to positive values and reduce in one compiled pass.
     value, redf = zonal_reduce(
-        np.ascontiguousarray(hazard, dtype=np.float64),
+        np.ascontiguousarray(hazards[0], dtype=np.float64),
         ZONAL_CODES[method],
         0.0,
     )
     if math.isnan(value):
-        return math.nan, math.nan
-    return value - elevation, redf
+        return (math.nan,), math.nan
+    return (value - elevation,), redf
 
 
 def fn_impact(
-    hazard: float | int,
-    exposure: float | int,
-    fn_curve: Callable,
-    fact: float | int,
-) -> float:
+    hazards: tuple[float | np.ndarray, ...],
+    exposure: float | np.ndarray,
+    curves: tuple[Callable[..., float | np.ndarray], ...],
+    fact: float,
+) -> float | np.ndarray:
     """Calculate the impact from flood depths.
+
+    Works on scalars (geometries) as well as on arrays (grid cells).
 
     Parameters
     ----------
-    hazard : float | int
+    hazards : tuple[float | np.ndarray, ...]
         The flood depth hazard values.
-    exposure : float | int
+    exposure : float | np.ndarray
         The maximum exposure impact (damage) value.
-    fn_curve : Callable
-        The vulnerability curve.
-    fact : float | int
+    curves : tuple[Callable, ...]
+        The vulnerability curve (one).
+    fact : float
         The reduction factor (area method).
 
     Returns
     -------
-    float
+    float | np.ndarray
         Impact.
     """
-    f = fn_curve(hazard)
-    val = f * exposure * fact
-    return val
+    return curves[0](hazards[0]) * exposure * fact
