@@ -47,7 +47,7 @@ jobs:
 
       - name: Create testdata
         run: |
-          pixi run -e wheel testdata
+          pixi run -e wheel python generate.py
 
       - name: Test
         run: pixi run --no-install -e wheel test-cov
@@ -91,7 +91,7 @@ jobs:
 
       - name: Create testdata
         run: |
-          pixi run -e wheel testdata
+          pixi run -e wheel python generate.py
 
       - name: Test
         run: pixi run --no-install -e wheel test-integration
@@ -135,7 +135,7 @@ jobs:
 
       - name: Create testdata
         run: |
-          pixi run -e wheel testdata
+          pixi run -e wheel python generate.py
 
       - name: Test
         run: pixi run --no-install -e wheel test-system
