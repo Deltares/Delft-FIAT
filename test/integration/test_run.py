@@ -138,6 +138,7 @@ def spot_value(output_dir: Path, file: str, name: str, location) -> float:
         reader.close()
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("settings_name", MODEL_SETTINGS)
 def test_model_run(
     tmp_path: Path,
@@ -170,6 +171,7 @@ def test_model_run(
     assert value == pytest.approx(expected, rel=1e-5)
 
 
+@pytest.mark.integration
 def test_run_missing_variable(
     model_settings: Callable[[str], GridSettings],
 ):
