@@ -211,7 +211,7 @@ cdef class GeotiffReader:
         # Build one band per sample, falling back to a generic name
         self.variables = {}
         self._variables = []
-        for i in range(self._spp):
+        for i in range(<size_t>self._spp):
             name = band_names[i] if band_names[i] else f"band_{i + 1}"
             band = GeotiffBand._create(
                 self, i, name, nodata, self._dtype_native, band_attrs[i]

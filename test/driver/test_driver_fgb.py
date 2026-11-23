@@ -197,6 +197,57 @@ def test_fgb_reduced_iter(exposure_geom_data: FlatGeobufReader):
     assert all(isinstance(ft, Feature) for ft in feats)
 
 
+def _write_scattered_layer(path: Path, count: int = 40) -> FlatGeobufReader:
+    """Write polygons at random locations and return a reader on the file."""
+    rng = np.random.default_rng(1)
+    writer = FlatGeobufWriter(
+        path.as_posix(),
+        col_names=["object_id"],
+        col_types=[CT_INT],
+        geom_type=GT_POLYGON,
+        name="scattered",
+    )
+    for i in range(count):
+        x, y = rng.uniform(0, 100, 2)
+        geom = _square(x, y, x + 1, y + 2)
+        writer.add_feature(geom.xy, geom.ends, geom.parts, [i])
+    writer.finalize()
+    return FlatGeobufReader(path.as_posix())
+
+
+def test_fgb_reduced_iter_seek(tmp_path: Path):
+    reader = _write_scattered_layer(Path(tmp_path, "scattered.fgb"))
+    assert reader.indexed
+    ids = [ft.get_field("object_id") for ft in reader]
+
+    # The seeking iteration is equal to a slice of the sequential one
+    for si, ei in [(1, 40), (7, 7), (12, 31), (39, 45), (41, 45)]:
+        feats = reader.reduced_iter(si, ei)
+        assert [ft.get_field("object_id") for ft in feats] == ids[si - 1 : ei]
+
+
+def test_fgb_chunk_bounds(tmp_path: Path):
+    reader = _write_scattered_layer(Path(tmp_path, "scattered.fgb"))
+    envelopes = np.array([ft.geometry.envelope() for ft in reader])
+
+    # The bounds of a chunk are the union of the envelopes of its features
+    for si, ei in [(1, 40), (1, 1), (5, 23), (40, 40)]:
+        env = envelopes[si - 1 : ei]
+        expected = (
+            env[:, 0].min(),
+            env[:, 1].min(),
+            env[:, 2].max(),
+            env[:, 3].max(),
+        )
+        assert reader.chunk_bounds(si, ei) == pytest.approx(expected)
+
+    # An invalid range
+    with pytest.raises(ValueError, match="out of range"):
+        reader.chunk_bounds(0, 3)
+    with pytest.raises(ValueError, match="out of range"):
+        reader.chunk_bounds(3, 41)
+
+
 ## CRS handling
 def test_fgb_crs_from_file(exposure_geom_path: Path):
     # The CRS is induced from the file header

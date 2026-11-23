@@ -4,6 +4,9 @@
 
 import numpy as np
 
+from itertools import islice
+
+from libc.math cimport INFINITY
 from libc.stdint cimport uint32_t, uint64_t, uint8_t
 from libc.string cimport memcpy
 from libcpp.string cimport string
@@ -24,6 +27,8 @@ from fiat.driver.vector cimport VectorProfile
 # FlatGeobuf magic bytes (8-byte prefix validated on open).
 cdef bytes _MAGIC = MAGIC
 DEF _MAGIC_LEN = 8
+# Packed R-tree node: minx, miny, maxx, maxy (doubles) and a feature byte offset.
+DEF _NODE_LEN = 40
 
 
 # --- Geometry / Feature ---------------------------------------------------
@@ -227,6 +232,7 @@ cdef class FlatGeobufReader:
     cdef size_t _feature_start
     cdef size_t _index_start
     cdef size_t _index_len
+    cdef size_t _leaf_start
     cdef readonly str name
     cdef readonly int geometry_type
     cdef readonly unsigned long long features_count
@@ -285,11 +291,14 @@ cdef class FlatGeobufReader:
         off = _MAGIC_LEN + consumed
         self._index_start = off
         self._index_len = 0
+        self._leaf_start = 0
         if self.index_node_size > 0 and self.features_count > 0:
             # The index byte size is a pure function of count and node size,
             # so we can skip past it without parsing it.
             self._index_len = index_size(self.features_count, self.index_node_size)
             off += self._index_len
+            # The leaves are stored last, one node per feature in feature order.
+            self._leaf_start = self._index_len // _NODE_LEN - self.features_count
         self._feature_start = off
 
         # Store the source path and build the shared vector profile.
@@ -320,23 +329,16 @@ cdef class FlatGeobufReader:
     def __iter__(self):
         """Yield all features in file order."""
         # Sequentially walk the feature section: parse one feature, advance by
-        # its byte length, repeat. The C++ struct is reused (cleared) each time.
+        # its byte length, repeat.
         cdef size_t off = self._feature_start
         cdef GeometryResult g
         cdef string props
-        cdef size_t consumed
+        cdef Feature ft
         while off < self._len:
-            # Reset the reused result struct before the next parse.
-            g.xy.clear()
-            g.ends.clear()
-            g.parts.clear()
-            g.empty = 1
-            props.clear()
-            consumed = parse_feature(self._ptr + off, self._len - off, g, props)
-            if consumed == 0:
+            ft = self._parse_feature_at(&off, &g, &props)
+            if ft is None:
                 break
-            off += consumed
-            yield self._feature_from(&g, &props)
+            yield ft
 
     def __len__(self):
         """Return the number of features advertised by the header."""
@@ -362,18 +364,40 @@ cdef class FlatGeobufReader:
         ft._columns = self.columns
         return ft
 
+    cdef Feature _parse_feature_at(self, size_t* off, GeometryResult* g, string* props):
+        """Parse the feature at byte ``off`` and move ``off`` past it.
+
+        The result structs are owned by the caller, so they can be reused.
+        """
+        cdef size_t consumed
+        # Reset the reused result struct before the next parse.
+        g.xy.clear()
+        g.ends.clear()
+        g.parts.clear()
+        g.empty = 1
+        props.clear()
+        consumed = parse_feature(self._ptr + off[0], self._len - off[0], g[0], props[0])
+        if consumed == 0:
+            return None
+        off[0] += consumed
+        return self._feature_from(g, props)
+
     cdef Feature _read_feature_at(self, size_t off):
         """Parse a single feature at byte ``off`` (used by the R-tree search)."""
         cdef GeometryResult g
         cdef string props
-        cdef size_t consumed = parse_feature(
-            self._ptr + off, self._len - off, g, props,
-        )
-        if consumed == 0:
-            return None
-        return self._feature_from(&g, &props)
+        return self._parse_feature_at(&off, &g, &props)
+
+    cdef const uint8_t* _leaf(self, size_t pos):
+        """Return the index node of the feature at 1-based position ``pos``."""
+        return self._ptr + self._index_start + (self._leaf_start + pos - 1) * _NODE_LEN
 
     # Properties
+    @property
+    def indexed(self):
+        """Return whether the file has a spatial index."""
+        return self._index_len > 0
+
     @property
     def size(self):
         """Return the number of features."""
@@ -389,6 +413,7 @@ cdef class FlatGeobufReader:
         """Close the reader."""
         self._closed = True
 
+    # Work methods
     def bbox_iter(self, bbox):
         """Select features intersecting a bounding box tuple.
 
@@ -403,6 +428,57 @@ cdef class FlatGeobufReader:
             Iterator returned by :meth:`select`.
         """
         return self.select(bbox[0], bbox[1], bbox[2], bbox[3])
+
+    def chunk_bounds(self, long si, long ei):
+        """Return the bounding box of the features in ``[si, ei]``.
+
+        Only the leaf nodes of the spatial index are read, no feature is parsed.
+
+        Parameters
+        ----------
+        si : int
+            First 1-based feature position.
+        ei : int
+            Last 1-based feature position (inclusive).
+
+        Returns
+        -------
+        tuple[float, float, float, float] | None
+            The bounds as ``(minx, miny, maxx, maxy)``, None when none of the
+            features has an envelope (e.g. empty geometries).
+
+        Raises
+        ------
+        ValueError
+            When the file has no spatial index or ``[si, ei]`` is out of range.
+        """
+        cdef double env[4]
+        cdef double minx = INFINITY
+        cdef double miny = INFINITY
+        cdef double maxx = -INFINITY
+        cdef double maxy = -INFINITY
+        cdef const uint8_t* node
+        cdef long _i
+        if self._index_len == 0:
+            raise ValueError(f"{self.path} has no spatial index")
+        if not 1 <= si <= ei <= <long>self.features_count:
+            raise ValueError(f"Feature range [{si}, {ei}] out of range")
+        node = self._leaf(si)
+        # NaN envelopes (empty geometries) never win a comparison and are skipped.
+        for _i in range(ei - si + 1):
+            memcpy(env, node, sizeof(env))
+            node += _NODE_LEN
+            if env[0] < minx:
+                minx = env[0]
+            if env[1] < miny:
+                miny = env[1]
+            if env[2] > maxx:
+                maxx = env[2]
+            if env[3] > maxy:
+                maxy = env[3]
+        if minx > maxx or miny > maxy:
+            return None
+        return (minx, miny, maxx, maxy)
 
     def reduced_iter(self, long si, long ei):
         """Yield features whose 1-based position lies in ``[si, ei]``.
@@ -419,14 +495,29 @@ cdef class FlatGeobufReader:
         Feature
             Feature in the requested inclusive range.
         """
-        cdef long c = 1
-        for ft in self:
-            if si <= c <= ei:
-                yield ft
-            elif c > ei:
-                # Past the requested range; no need to parse the rest.
+        cdef size_t off
+        cdef uint64_t rel
+        cdef GeometryResult g
+        cdef string props
+        cdef Feature ft
+        cdef long _i
+        si = max(si, 1)
+        if self._index_len == 0:
+            # No index to seek with: parse (and skip) the features before ``si``.
+            yield from islice(self, si - 1, ei)
+            return
+        ei = min(ei, <long>self.features_count)
+        if si > ei:
+            return
+        # Seek to the first feature via its leaf node, which holds the feature's
+        # byte offset (relative to the feature section) after the envelope.
+        memcpy(&rel, self._leaf(si) + 4 * sizeof(double), sizeof(rel))
+        off = self._feature_start + rel
+        for _i in range(ei - si + 1):
+            ft = self._parse_feature_at(&off, &g, &props)
+            if ft is None:
                 break
-            c += 1
+            yield ft
 
     def select(self, double minx, double miny, double maxx, double maxy):
         """Yield features intersecting a bounding box using the R-tree.
