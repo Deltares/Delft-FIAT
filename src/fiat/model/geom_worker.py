@@ -12,6 +12,7 @@ import numpy as np
 from fiat.driver import FlatGeobufReader, NetcdfReader, fgb
 from fiat.driver.fgb import Feature, FlatGeobufWriter
 from fiat.gis import overlay
+from fiat.gis.util import subtransform_from_pixel, world2pixel
 from fiat.method.ead import fn_ead
 from fiat.model.geom_util import AREA_METHODS
 from fiat.model.meta import (
@@ -43,6 +44,7 @@ def feature_worker(
     hazard: NetcdfReader,
     hazard_meta: HazardMeta,
     exposure_meta: ExposureGeomMeta,
+    transform: tuple[float, ...],
     fn_hazard: Callable,
     fn_impact: Callable,
 ) -> None:
@@ -63,6 +65,8 @@ def feature_worker(
     exposure_meta : ExposureGeomMeta
         Metadata specific to the exposure data (incl. the method, curves and \
 hazard band indices).
+    transform : tuple[float, ...]
+        The transform specifically of the loaded hazard chunk.
     fn_hazard : Callable
         The hazard function.
     fn_impact : Callable
@@ -79,7 +83,7 @@ hazard band indices).
     # Mask and window for this feature
     mask, window = AREA_METHODS[exposure_meta.area_method](
         geom=ft.geometry,
-        gtf=hazard.profile.transform,
+        gtf=transform,
         shape=hazard.profile.shape_xy,
     )
 
@@ -166,8 +170,14 @@ of the [GeomModel](/api/GeomModel.qmd) object.
     fn_hazard = method.fn_hazard
     fn_impact = method.fn_impact
 
+    # Get the indices from the array to load
+    bbox = exposure.chunk_bounds(*chunk)
+    ul = world2pixel(hazard.profile.transform, bbox[0], bbox[3])
+    br = world2pixel(hazard.profile.transform, bbox[2], bbox[1])
+
     # Load the data
-    hazard.load()
+    hazard.load(slice(ul[0], br[0]), slice(ul[1], br[1]))
+    transform = subtransform_from_pixel(hazard.profile.transform, ul, br)
 
     # Setup the buffered FlatGeobuf writer (shared body file + finalize by parent)
     profile = exposure.profile
@@ -196,6 +206,7 @@ of the [GeomModel](/api/GeomModel.qmd) object.
             hazard=hazard,
             hazard_meta=hazard_meta,
             exposure_meta=exposure_meta,
+            transform=transform,
             fn_hazard=fn_hazard,
             fn_impact=fn_impact,
         )

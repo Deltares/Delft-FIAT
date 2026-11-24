@@ -91,3 +91,30 @@ def pixel2world(
     coorX = ulX + (x * xDist)
     coorY = ulY + (y * yDist)
     return (coorX, coorY)
+
+
+def subtransform_from_pixel(
+    gtf: tuple[float, ...],
+    ul: tuple[int, int],
+    br: tuple[int, int],
+) -> tuple[float, ...]:
+    """Get the transform within the grid defined by a transform based on pixels.
+
+    Parameters
+    ----------
+    gtf : tuple[float, ...]
+        The total geotransform.
+    ul : tuple[int, int]
+        The upper left corner in indices.
+    br : tuple[int, int]
+        The bottom right corner in indices.
+
+    Returns
+    -------
+    tuple[float, ...]
+        The sub geotransform.
+    """
+    x, y = pixel2world(gtf, ul[0], ul[1])
+    if gtf[5] > 0:
+        _, y = pixel2world(gtf, br[0], br[1])
+    return (x, gtf[1], gtf[2], y, gtf[4], gtf[5])
