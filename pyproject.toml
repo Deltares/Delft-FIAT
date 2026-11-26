@@ -209,16 +209,6 @@ preview = ["pixi-build"]
 ## The different tasks of this workspace
 # First general tasks
 [tool.pixi.tasks]
-# Build fiat
-build = { cmd = [
-    "pyinstaller",
-    "$PIXI_PROJECT_ROOT/pyi/build.spec",
-    "--distpath",
-    "$PIXI_PROJECT_ROOT/bin",
-    "--workpath",
-    "$PIXI_PROJECT_ROOT/bin/intermediates",
-] }
-
 # Clean up (some of) the temporary files
 clean = { depends-on = [
     "clean-bin",
@@ -243,6 +233,17 @@ docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 
 # Testdata
 testdata = { cmd = ["python", "generate.py"] }
+
+[tool.pixi.feature.build-exe.tasks]
+# Build fiat
+build = { cmd = [
+    "pyinstaller",
+    "$PIXI_PROJECT_ROOT/pyi/build.spec",
+    "--distpath",
+    "$PIXI_PROJECT_ROOT/bin",
+    "--workpath",
+    "$PIXI_PROJECT_ROOT/bin/intermediates",
+] }
 
 # Dev specific taskss
 [tool.pixi.feature.dev.tasks]
@@ -353,7 +354,7 @@ dependencies = { python = "3.12.*" }
 build = { features = ["build"], no-default-feature=true }
 default = { features = ["py314", "all", "dev", "docs", "test"] }
 docs = { features = ["py314", "all", "docs"] }
-slim = { features = ["py314", "all"] }
+slim = { features = ["py314", "all", "build-exe"] }
 test-py314 = { features = ["py314", "all", "test"] }
 test-py313 = { features = ["py313", "all", "test"] }
 test-py312 = { features = ["py312", "all", "test"] }
