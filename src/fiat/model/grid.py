@@ -205,21 +205,23 @@ model spatial reference ('{get_crs_repr(self.crs)}')"
 
         # Execute the jobs in a multiprocessing pool; workers write tiles
         # directly to the shared output and return their tile index records.
-        try:
-            _s = time.time()
-            logger.info("Busy...")
-            records = execute_pool(
-                ctx=self.ctx,
-                func=worker,
-                jobs=jobs,
-                threads=self.threads,
-                initializer=initialize_pool,
-                initargs=(desc, lock),
-            )
-            handle.collect_records(records)
-            _e = time.time() - _s
-            logger.info(f"Elapsed time: {round(_e, 2)} seconds")
+        # try:
+        _s = time.time()
+        logger.info("Busy...")
+        records = execute_pool(
+            ctx=self.ctx,
+            func=worker,
+            jobs=jobs,
+            threads=self.threads,
+            initializer=initialize_pool,
+            initargs=(desc, lock),
+        )
+        handle.collect_records(records)
+        _e = time.time() - _s
+        logger.info(f"Elapsed time: {round(_e, 2)} seconds")
 
+        try:
+            ...
         except BaseException:
             exc_info = sys.exc_info()
             msg = ",".join([str(item) for item in exc_info[1].args])

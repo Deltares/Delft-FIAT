@@ -596,26 +596,6 @@ has no single category dimension"
     return np.asarray(exposure.dims[dims[0]][:]).tolist()
 
 
-def _grid_category_ids(
-    layer: str,
-    categories: list[Any],
-) -> list[int]:
-    """Return the categories (zero excluded) as integers."""
-    ids = []
-    for item in categories:
-        try:
-            valid = float(item).is_integer()
-        except (TypeError, ValueError):
-            valid = False
-        if not valid:
-            raise FIATDataError(
-                f"Category '{item}' of exposure layer '{layer}' is not an integer"
-            )
-        if int(item) != 0:
-            ids.append(int(item))
-    return ids
-
-
 def _grid_groups(
     layer: str,
     names: list[str],
@@ -623,16 +603,16 @@ def _grid_groups(
 ) -> list[tuple[str, list[VulnerabilityDataset]]]:
     """Group the linked datasets of a layer into calculation units.
 
-    Datasets sharing a method that combines several datasets form one group, ordered
-    like the method's `AXIS_TYPES`. Every other dataset is a group by itself.
+    Datasets sharing a method that combines several datasets form one group. They are
+    ordered like the method's `AXIS_TYPES`, or like the links when the datasets share
+    an axis type. Every other dataset is a group by itself.
     """
     check_vuln_variables(names, list(vulnerability_meta.datasets.keys()))
     groups: dict[tuple[bool, str], list[VulnerabilityDataset]] = {}
     for name in names:
         ds = vulnerability_meta.datasets[name]
-        method = import_module(f"{FIAT_METHOD}.{ds.method}")
-        key = (True, ds.method) if method.NDATASETS > 1 else (False, name)
-        groups.setdefault(key, []).append(ds)
+        combined = import_module(f"{FIAT_METHOD}.{ds.method}").NDATASETS > 1
+        groups.setdefault((combined, ds.method if combined else name), []).append(ds)
 
     out = []
     for group in groups.values():
@@ -653,20 +633,11 @@ def _grid_groups(
                 axis_types=axis_types,
                 method_axis_types=method.AXIS_TYPES,
             )
-            group = [group[axis_types.index(t)] for t in method.AXIS_TYPES]
+            # Datasets sharing an axis type keep the order of the links
+            if len(method.AXIS_TYPES) == method.NDATASETS:
+                group = [group[axis_types.index(t)] for t in method.AXIS_TYPES]
         out.append((method_name, group))
     return out
-
-
-def _grid_unit_name(
-    name: str,
-    groups: list[tuple[str, list[VulnerabilityDataset]]],
-    group: list[VulnerabilityDataset],
-) -> str:
-    """Return the output name of a unit, with its datasets when there are several."""
-    if len(groups) == 1:
-        return name
-    return f"{name}_{'-'.join([ds.name for ds in group])}"
 
 
 def _grid_layers(
@@ -776,13 +747,32 @@ def get_exposure_grid_meta(
 
     for idx, value_index, links in layers:
         layer = names[idx]
-        var = exposure[idx]
         groups = _grid_groups(layer, links, vulnerability_meta)
+        categorized = value_index is not None
+        # Default layers are named after the layer, categorized after the value variable
+        base = names[value_index] if categorized else layer
 
-        # Default layer, a single curve id looked up in every linked dataset
-        if value_index is None:
-            fn = settings[layer].fn_curve
-            for _, group in groups:
+        if categorized:
+            categories = _grid_categories(exposure, layer, base)
+            # A uniform layer only has its value as category
+            if isinstance(exposure[idx], ConstantVariable):
+                check_exp_cat_uniform(
+                    layer,
+                    value=exposure[idx].value,
+                    value_var=base,
+                    categories=categories,
+                )
+
+        for method_name, group in groups:
+            # Default: one curve id from the layer settings, categorized: the
+            # categories are the curve ids
+            if categorized:
+                curves = {
+                    int(cat): tuple(ds.fn[cat] for ds in group)
+                    for cat in group[0].curve_ids
+                }
+            else:
+                fn = settings[layer].fn_curve
                 for ds in group:
                     check_vuln_curve_ids(
                         layer,
@@ -790,38 +780,10 @@ def get_exposure_grid_meta(
                         dataset=ds.name,
                         available=ds.curve_ids,
                     )
-            for method_name, group in groups:
-                units.append(
-                    GridUnit(
-                        curves=tuple(ds.fn[fn] for ds in group),
-                        exp_index=idx,
-                        hazard_indices=_hazard_indices(method_name, hazard_meta),
-                        method=method_name,
-                        out_indices=[],
-                    )
-                )
-                unit_names.append(_grid_unit_name(layer, groups, group))
-            continue
-
-        # Categorized layer, the categories as curve ids per category value variable
-        value_var = names[value_index]
-        categories = _grid_categories(exposure, layer, value_var)
-        # A uniform layer only has its value as category
-        if isinstance(var, ConstantVariable):
-            check_exp_cat_uniform(
-                layer,
-                value=var.value,
-                value_var=value_var,
-                categories=categories,
-            )
-            categories = [var.value]
-        for method_name, group in groups:
+                curves = tuple(ds.fn[fn] for ds in group)
             units.append(
                 GridUnit(
-                    curves={
-                        int(cat): tuple(ds.fn[cat] for ds in group)
-                        for cat in group[0].curve_ids
-                    },
+                    curves=curves,
                     exp_index=idx,
                     hazard_indices=_hazard_indices(method_name, hazard_meta),
                     method=method_name,
@@ -829,7 +791,12 @@ def get_exposure_grid_meta(
                     value_index=value_index,
                 )
             )
-            unit_names.append(_grid_unit_name(value_var, groups, group))
+            # The datasets are in the name when the links make several units
+            unit_names.append(
+                base
+                if len(groups) == 1
+                else f"{base}_{'-'.join(ds.name for ds in group)}"
+            )
 
     # Set the output indices and names
     nunits = len(units)

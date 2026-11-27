@@ -654,6 +654,16 @@ def test_check_vuln_grid_method_pass():
     )
 
 
+def test_check_vuln_grid_method_extra_hazards():
+    # Curve axes that are among more hazard types need no conversion
+    check_vuln_grid_method(
+        layer="exp",
+        method="casualties",
+        types=["water_depth", "velocity", "rising_velocity"],
+        axis_types=["water_depth"],
+    )
+
+
 def test_check_vuln_group_fail():
     method_axis_types = ["water_depth", "duration"]
     # Wrong count
@@ -684,6 +694,25 @@ def test_check_vuln_group_fail():
             ndatasets=2,
             axis_types=["water_depth", "water_level"],
             method_axis_types=method_axis_types,
+        )
+
+
+def test_check_vuln_group_shared_axis():
+    # Datasets sharing the (single) method axis are allowed
+    check_vuln_group(
+        layer="exp",
+        method="casualties",
+        ndatasets=2,
+        axis_types=["water_depth", "water_depth"],
+        method_axis_types=["water_depth"],
+    )
+    with pytest.raises(FIATDataError, match="do not match"):
+        check_vuln_group(
+            layer="exp",
+            method="casualties",
+            ndatasets=2,
+            axis_types=["water_depth", "duration"],
+            method_axis_types=["water_depth"],
         )
 
 

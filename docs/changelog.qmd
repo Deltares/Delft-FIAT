@@ -9,6 +9,7 @@ These are the unreleased changes.
 - Multiple vulnerability datasets in one file (netCDF)
 - Support for category based grid calculations
 - Support for writing geoTIFF files
+- Grid layers (default and categorized) can combine multiple vulnerability datasets that share an axis type in one calculation, in the order of the links
 
 ### Changed
 - More verbose settings file

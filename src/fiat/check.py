@@ -519,8 +519,8 @@ def check_vuln_grid_method(
 ) -> None:
     """Check whether a method can be used for a grid layer.
 
-    The grid calculations do not convert the hazard (`fn_hazard`), so the hazard
-    types have to equal the curve axis types.
+    The grid calculations do not convert the hazard (`fn_hazard`), so every curve
+    axis type has to be one of the hazard types of the method.
 
     Parameters
     ----------
@@ -533,7 +533,7 @@ def check_vuln_grid_method(
     axis_types : list[str]
         The curve axis types of the method (`AXIS_TYPES`).
     """
-    if list(types) != list(axis_types):
+    if not set(axis_types) <= set(types):
         raise FIATDataError(
             f"Method '{method}' of exposure layer '{layer}' needs a hazard \
 conversion ({types} -> {axis_types}), not supported for grid calculations"
@@ -567,12 +567,14 @@ def check_vuln_group(
             f"Exposure layer '{layer}' links {len(axis_types)} dataset(s) with \
 method '{method}', number of datasets should be {ndatasets}"
         )
-    if len(set(axis_types)) != len(axis_types):
+    # One axis per dataset needs distinct axis types, else the datasets share axes
+    distinct = len(method_axis_types) == ndatasets
+    if distinct and len(set(axis_types)) != len(axis_types):
         raise FIATDataError(
             f"Exposure layer '{layer}' links datasets with duplicate axis types \
 {axis_types} for method '{method}'"
         )
-    if set(axis_types) != set(method_axis_types):
+    if not set(axis_types) <= set(method_axis_types):
         raise FIATDataError(
             f"Axis types {axis_types} of the datasets linked to exposure layer \
 '{layer}' do not match method '{method}', expected {method_axis_types}"

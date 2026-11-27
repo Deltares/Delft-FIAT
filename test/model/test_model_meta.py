@@ -14,6 +14,7 @@ from fiat.model.meta import (
     ExposureGeomData,
     HazardMeta,
     RunMeta,
+    VulnerabilityDataset,
     VulnerabilityMeta,
     _grid_layers,
     get_exposure_geom_meta,
@@ -1525,3 +1526,119 @@ def test_get_exposure_grid_meta_risk(
     assert "exposure2_10" in meta.new
     assert "total_25" in meta.new
     assert meta.new[-1] == "ead"
+
+
+def _zones_meta(curves: list) -> VulnerabilityMeta:
+    # Two datasets with the same axis type, combined by the casualties method
+    datasets = {
+        name: VulnerabilityDataset(
+            axis_types=("water_depth",),
+            curve_ids=curves,
+            fn={curve: (lambda x, n=name, c=curve: (n, c)) for curve in curves},
+            method="casualties",
+            name=name,
+        )
+        for name in ("zone2", "zone4")
+    }
+    return VulnerabilityMeta(datasets=datasets)
+
+
+@pytest.fixture
+def vulnerability_zones_meta() -> VulnerabilityMeta:
+    return _zones_meta(["struct_1", "struct_2"])
+
+
+@pytest.fixture
+def vulnerability_zones_cat_meta() -> VulnerabilityMeta:
+    return _zones_meta([1, 2])
+
+
+@pytest.fixture
+def hazard_meta_casualties() -> HazardMeta:
+    return HazardMeta(
+        density=None,
+        ids=["1"],
+        indices_run=[[0, 1, 2]],
+        indices_type=[[0, 1, 2]],
+        length=1,
+        rp=None,
+        types=["water_depth", "velocity", "rising_velocity"],
+    )
+
+
+def test_get_exposure_grid_meta_shared_axis(
+    variables,
+    exposure_grid_data: NetcdfReader,
+    run_meta: RunMeta,
+    hazard_meta_casualties: HazardMeta,
+    vulnerability_zones_meta: VulnerabilityMeta,
+):
+    # Both layers link the same datasets, in an order that is not alphabetical
+    meta = get_exposure_grid_meta(
+        exposure=exposure_grid_data,
+        variables=variables.exp_grid(default=["zone4", "zone2"]),
+        run_meta=run_meta,
+        hazard_meta=hazard_meta_casualties,
+        vulnerability_meta=vulnerability_zones_meta,
+    )
+
+    # Assert one unit per layer with the curves in the order of the links
+    ds = vulnerability_zones_meta.datasets
+    assert meta.new == ["exposure1_1", "exposure2_1", "total_1"]
+    assert len(meta.units) == 2
+    assert meta.units[0].method == "casualties"
+    assert meta.units[0].hazard_indices == [(0, 1, 2)]
+    assert meta.units[0].curves == (
+        ds["zone4"].fn["struct_1"],
+        ds["zone2"].fn["struct_1"],
+    )
+    assert meta.units[1].curves == (
+        ds["zone4"].fn["struct_2"],
+        ds["zone2"].fn["struct_2"],
+    )
+    assert meta.totals == [[0, 1]]
+
+
+def test_get_exposure_grid_meta_shared_axis_cat(
+    variables,
+    exposure_grid_cat_data: NetcdfReader,
+    run_meta: RunMeta,
+    hazard_meta_casualties: HazardMeta,
+    vulnerability_zones_cat_meta: VulnerabilityMeta,
+):
+    # Call the function with a categorized layer
+    meta = get_exposure_grid_meta(
+        exposure=exposure_grid_cat_data,
+        variables=[variables.exp_cat()]
+        + variables.exp_values(
+            exposure_values=["zone2", "zone4"], exposure_values2=["zone4", "zone2"]
+        ),
+        run_meta=run_meta,
+        hazard_meta=hazard_meta_casualties,
+        vulnerability_meta=vulnerability_zones_cat_meta,
+    )
+
+    # Assert one unit per category value variable, with both curves per category
+    ds = vulnerability_zones_cat_meta.datasets
+    assert meta.new == ["exposure_values_1", "exposure_values2_1", "total_1"]
+    assert len(meta.units) == 2
+    assert meta.units[0].curves[1] == (ds["zone2"].fn[1], ds["zone4"].fn[1])
+    assert meta.units[1].curves[2] == (ds["zone4"].fn[2], ds["zone2"].fn[2])
+
+
+def test_get_exposure_grid_meta_shared_axis_count(
+    variables,
+    exposure_grid_data: NetcdfReader,
+    run_meta: RunMeta,
+    hazard_meta_casualties: HazardMeta,
+    vulnerability_zones_meta: VulnerabilityMeta,
+):
+    # A single dataset can't be combined by a method that needs two
+    with pytest.raises(FIATDataError, match="number of datasets"):
+        get_exposure_grid_meta(
+            exposure=exposure_grid_data,
+            variables=variables.exp_grid(default="zone2"),
+            run_meta=run_meta,
+            hazard_meta=hazard_meta_casualties,
+            vulnerability_meta=vulnerability_zones_meta,
+        )

@@ -64,7 +64,7 @@ def fn_impact(
     hazards : tuple[float | np.ndarray, ...]
         The hazard values.
     exposure : float | np.ndarray
-        The maximum exposure impact (damage) value.
+        The maximum exposure impact value.
     curves : tuple[Callable, ...]
         The vulnerability curve (one).
     fact : float

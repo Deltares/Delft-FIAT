@@ -75,7 +75,7 @@ def fn_impact(
     hazards : tuple[float | np.ndarray, ...]
         The flood depth and flood duration hazard values.
     exposure : float | np.ndarray
-        The maximum exposure impact (damage) value.
+        The maximum exposure impact value.
     curves : tuple[Callable, ...]
         The depth and the duration vulnerability curve.
     fact : float
